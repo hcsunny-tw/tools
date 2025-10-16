@@ -24,11 +24,11 @@
             user-select: none; /* Standard syntax */
         }
         
-        /* 列印時的樣式 */
+        /* 列印時的樣式 - 已調整為更緊湊的版面 */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 1cm;
+                margin: 0.8cm; /* 縮小頁邊距 */
             }
             /* 隱藏主畫面所有內容，只顯示列印專用區塊 */
             body > *:not(#print-area) {
@@ -56,32 +56,37 @@
             
             /* 縮小列印內容的字體和間距以確保能完整顯示 */
             .print-copy {
-                padding: 1rem !important;
-                font-size: 9pt;
+                padding: 0.5rem !important; /* 縮小內邊距 */
+                font-size: 8pt; /* 縮小基礎字體 */
             }
             .print-copy h2 {
-                font-size: 14pt;
-                margin-bottom: 0.5rem !important;
+                font-size: 13pt; /* 縮小主題標題 */
+                margin-bottom: 0.4rem !important;
             }
             .print-copy .flex.justify-between { /* Name/Date 標頭 */
-                 font-size: 10pt;
-                 padding-bottom: 0.5rem !important;
-                 margin-bottom: 0.5rem !important;
+                 font-size: 9pt; /* 縮小 Name/Date 字體 */
+                 padding-bottom: 0.4rem !important;
+                 margin-bottom: 0.4rem !important;
             }
              .print-copy #main-content-area {
-                gap: 1rem !important;
+                gap: 0.5rem !important; /* 縮小格線和單字列表的間距 */
              }
             .print-copy h3 {
-                font-size: 11pt;
-                margin-bottom: 0.5rem !important;
+                font-size: 10pt; /* 縮小 "Find these words" 標題 */
+                margin-bottom: 0.4rem !important;
             }
             .print-copy #grid-container td {
-                font-size: 8pt;
+                font-size: 7pt; /* 大幅縮小格線中的字體 */
                 font-weight: normal;
                 padding: 0;
+                line-height: 1; /* 讓行高更緊湊 */
+                letter-spacing: -0.5px; /* 縮小字元間距 */
+            }
+            .print-copy #word-list {
+                gap: 1px !important; /* 縮小單字列表的行距 */
             }
             .print-copy #word-list div {
-                font-size: 9pt;
+                font-size: 8pt; /* 縮小單字列表的字體 */
                 padding: 0;
             }
         }
