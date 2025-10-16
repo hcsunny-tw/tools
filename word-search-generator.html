@@ -171,6 +171,22 @@
                         <input type="checkbox" id="dir-bt" value="bt" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <label for="dir-bt" class="ml-2 text-sm text-gray-600">從下到上</label>
                     </div>
+                     <div>
+                        <input type="checkbox" id="dir-tlbr" value="tlbr" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="dir-tlbr" class="ml-2 text-sm text-gray-600">左上到右下</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="dir-brtl" value="brtl" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="dir-brtl" class="ml-2 text-sm text-gray-600">右下到左上</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="dir-trbl" value="trbl" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="dir-trbl" class="ml-2 text-sm text-gray-600">右上到左下</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="dir-bltr" value="bltr" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="dir-bltr" class="ml-2 text-sm text-gray-600">左下到右上</label>
+                    </div>
                 </div>
             </div>
 
@@ -249,10 +265,14 @@
 
         // 定義方向向量
         const directions = {
-            lr: { r: 0, c: 1 },  // 左到右
-            rl: { r: 0, c: -1 }, // 右到左
-            tb: { r: 1, c: 0 },  // 上到下
-            bt: { r: -1, c: 0 }, // 下到上
+            lr: { r: 0, c: 1 },    // 從左到右
+            rl: { r: 0, c: -1 },   // 從右到左
+            tb: { r: 1, c: 0 },    // 從上到下
+            bt: { r: -1, c: 0 },   // 從下到上
+            tlbr: { r: 1, c: 1 },  // 左上到右下
+            brtl: { r: -1, c: -1}, // 右下到左上
+            trbl: { r: 1, c: -1},  // 右上到左下
+            bltr: { r: -1, c: 1}   // 左下到右上
         };
         
         // 定義 20x20 的形狀遮罩
