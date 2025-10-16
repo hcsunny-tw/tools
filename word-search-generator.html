@@ -24,11 +24,11 @@
             user-select: none; /* Standard syntax */
         }
         
-        /* 列印時的樣式 - 已調整為更緊湊的版面 */
+        /* 列印時的樣式 - 已調整為單張A4滿版 */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 0.8cm; /* 縮小頁邊距 */
+                margin: 1cm; /* 頁邊距 */
             }
             /* 隱藏主畫面所有內容，只顯示列印專用區塊 */
             body > *:not(#print-area) {
@@ -36,57 +36,53 @@
             }
 
             #print-area {
-                display: flex !important;
-                flex-direction: column;
-                justify-content: space-around;
-                height: 98vh; /* 佔滿列印頁面的高度 */
+                display: block !important;
             }
 
-            /* 針對要列印的每一份學習單的樣式 */
+            /* 針對要列印的學習單樣式 */
             .print-copy {
-                height: 49%; /* 每份佔頁面高度的一半，留點間距 */
                 width: 100%;
-                overflow: hidden;
+                height: 100%;
                 border: 1px solid #ccc;
                 box-sizing: border-box;
-                page-break-inside: avoid; /* 避免一份學習單被中斷換頁 */
-                -webkit-print-color-adjust: exact; /* 確保背景色和邊框能被列印 */
+                page-break-inside: avoid;
+                -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
             
-            /* 縮小列印內容的字體和間距以確保能完整顯示 */
+            /* 放大列印內容的字體和間距以填滿頁面 */
             .print-copy {
-                padding: 0.5rem !important; /* 縮小內邊距 */
-                font-size: 8pt; /* 縮小基礎字體 */
+                padding: 1rem !important;
+                font-size: 12pt;
             }
             .print-copy h2 {
-                font-size: 13pt; /* 縮小主題標題 */
-                margin-bottom: 0.4rem !important;
+                font-size: 20pt;
+                margin-bottom: 1rem !important;
             }
-            .print-copy .flex.justify-between { /* Name/Date 標頭 */
-                 font-size: 9pt; /* 縮小 Name/Date 字體 */
-                 padding-bottom: 0.4rem !important;
-                 margin-bottom: 0.4rem !important;
+            .print-copy .flex.justify-between {
+                 font-size: 12pt;
+                 padding-bottom: 0.8rem !important;
+                 margin-bottom: 0.8rem !important;
             }
              .print-copy #main-content-area {
-                gap: 0.5rem !important; /* 縮小格線和單字列表的間距 */
+                gap: 1rem !important;
              }
             .print-copy h3 {
-                font-size: 10pt; /* 縮小 "Find these words" 標題 */
-                margin-bottom: 0.4rem !important;
+                font-size: 14pt;
+                margin-bottom: 0.8rem !important;
             }
             .print-copy #grid-container td {
-                font-size: 7pt; /* 大幅縮小格線中的字體 */
+                font-size: 11pt; /* 放大格線字體 */
                 font-weight: normal;
                 padding: 0;
-                line-height: 1; /* 讓行高更緊湊 */
-                letter-spacing: -0.5px; /* 縮小字元間距 */
+                line-height: 1.1;
+                letter-spacing: -1.5px; /* 縮小字元間距至最小 */
             }
             .print-copy #word-list {
-                gap: 1px !important; /* 縮小單字列表的行距 */
+                gap: 0.5rem !important; /* 加大單字行距 */
             }
             .print-copy #word-list div {
-                font-size: 8pt; /* 縮小單字列表的字體 */
+                font-size: 12pt; /* 放大單字列表字體 */
                 padding: 0;
             }
         }
@@ -141,7 +137,7 @@
                         <label for="dir-lr" class="ml-2 text-sm text-gray-600">從左到右</label>
                     </div>
                     <div>
-                        <input type="checkbox" id="dir-rl" value="rl" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                        <input type="checkbox" id="dir-rl" value="rl" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <label for="dir-rl" class="ml-2 text-sm text-gray-600">從右到左</label>
                     </div>
                     <div>
@@ -149,7 +145,7 @@
                         <label for="dir-tb" class="ml-2 text-sm text-gray-600">從上到下</label>
                     </div>
                     <div>
-                        <input type="checkbox" id="dir-bt" value="bt" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                        <input type="checkbox" id="dir-bt" value="bt" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <label for="dir-bt" class="ml-2 text-sm text-gray-600">從下到上</label>
                     </div>
                 </div>
@@ -312,17 +308,14 @@
             // 清除之前的列印內容
             printArea.innerHTML = '';
 
-            // 建立兩個複製品
+            // 建立一個複製品
             const clone1 = worksheet.cloneNode(true);
-            const clone2 = worksheet.cloneNode(true);
 
             // 為複製品添加用於列印的 class
             clone1.classList.add('print-copy');
-            clone2.classList.add('print-copy');
             
             // 將複製品加到列印專用區塊
             printArea.appendChild(clone1);
-            printArea.appendChild(clone2);
 
             window.print();
         });
