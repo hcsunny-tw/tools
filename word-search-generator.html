@@ -79,11 +79,11 @@
                 margin-bottom: 0.8rem !important;
             }
             .print-copy #grid-container td {
-                font-size: 24pt; /* 再放大格線字體 */
+                font-size: 22pt; /* 大幅放大格線字體 */
                 font-weight: normal;
                 padding: 0;
                 line-height: 1;
-                letter-spacing: -6.5px; /* 再縮小字元間距 */
+                letter-spacing: -4px; /* 對應放大字體，再縮小字元間距 */
             }
             /* 列印時移除答案高亮 */
             .print-copy .answer-highlight {
@@ -515,7 +515,7 @@
                     td.dataset.c = c;
                     td.textContent = grid[r][c];
                     // 計算適合的字體大小
-                    const fontSize = Math.max(8, 24 - size);
+                    const fontSize = Math.max(12, 32 - size); // 提高基礎與計算後的字體大小
                     td.style.fontSize = `${fontSize}px`;
 
                     if (!isInsideShape(r, c, size, shape)) {
