@@ -24,6 +24,13 @@
             user-select: none; /* Standard syntax */
         }
         
+        /* 答案高亮樣式 */
+        .answer-highlight {
+            background-color: #fef9c3; /* Tailwind yellow-100 */
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
         /* 列印時的樣式 - 已調整為單張A4滿版 */
         @media print {
             @page {
@@ -56,7 +63,7 @@
                 font-size: 12pt;
             }
             .print-copy h2 {
-                font-size: 20pt;
+                font-size: 22pt;
                 margin-bottom: 1rem !important;
             }
             .print-copy .flex.justify-between {
@@ -72,18 +79,25 @@
                 margin-bottom: 0.8rem !important;
             }
             .print-copy #grid-container td {
-                font-size: 11pt; /* 放大格線字體 */
+                font-size: 14pt; /* 放大格線字體 */
                 font-weight: normal;
                 padding: 0;
-                line-height: 1.1;
-                letter-spacing: -1.5px; /* 縮小字元間距至最小 */
+                line-height: 1;
+                letter-spacing: -2px; /* 縮小字元間距至最小 */
+            }
+            /* 列印時移除答案高亮 */
+            .print-copy .answer-highlight {
+                background-color: transparent !important;
             }
             .print-copy #word-list {
-                gap: 0.5rem !important; /* 加大單字行距 */
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 0.2rem 1rem !important; /* 加大單字行距 */
             }
             .print-copy #word-list div {
-                font-size: 12pt; /* 放大單字列表字體 */
+                font-size: 9pt; /* 放大單字列表字體 */
                 padding: 0;
+                white-space: nowrap;
             }
         }
     </style>
@@ -92,8 +106,8 @@
 
     <main class="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- ===== 設定面板 ===== -->
-        <div id="settings-panel" class="lg-col-span-1 bg-white p-6 rounded-2xl shadow-lg h-fit">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">學習單產生器設定</h1>
+        <div id="settings-panel" class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg h-fit">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">單字找找產生器設定</h1>
 
             <!-- 主題 -->
             <div class="mb-4">
@@ -120,11 +134,20 @@
             <div class="mb-4">
                 <label for="shape" class="block text-sm font-medium text-gray-700 mb-2">學習單形狀</label>
                 <select id="shape" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                    <option value="square" selected>方形 (Square)</option>
-                    <option value="circle">圓形 (Circle)</option>
-                    <option value="car">汽車 (Car)</option>
-                    <option value="train">火車 (Train)</option>
-                    <option value="flower">花朵 (Flower)</option>
+                    <option value="square" selected>方形 (自動尺寸)</option>
+                    <option value="circle">圓形 (自動尺寸)</option>
+                    <option value="car">汽車 (固定20x20)</option>
+                    <option value="train">火車 (固定20x20)</option>
+                    <option value="flower">花朵 (固定20x20)</option>
+                </select>
+            </div>
+
+            <!-- 大小寫模式 -->
+            <div class="mb-4">
+                <label for="case-mode" class="block text-sm font-medium text-gray-700 mb-2">字母大小寫</label>
+                <select id="case-mode" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    <option value="upper" selected>全部大寫 (Uppercase)</option>
+                    <option value="lower">全部小寫 (Lowercase)</option>
                 </select>
             </div>
 
@@ -180,15 +203,18 @@
                     <!-- 單字列表 (右側) -->
                     <div id="word-list-wrapper" class="w-full md:w-1/3 md:pl-6 md:border-l-2 border-gray-200">
                         <h3 class="text-xl font-bold text-center md:text-left text-gray-700 mb-4">Find these words:</h3>
-                        <div id="word-list" class="flex flex-col items-center md:items-start gap-2 text-lg">
-                             <p class="text-gray-400 text-base">...</p>
+                        <div id="word-list" class="grid grid-cols-2 gap-x-4 gap-y-1 text-base">
+                             <p class="text-gray-400 text-base col-span-2">...</p>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 列印按鈕容器 -->
-            <div id="print-button-container" class="mt-6 text-center">
+            <!-- 操作按鈕容器 -->
+            <div id="action-buttons-container" class="mt-6 text-center space-x-4">
+                 <button id="toggle-answers-btn" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-transform transform hover:scale-105 hidden">
+                    💡 顯示/隱藏答案
+                </button>
                  <button id="print-btn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-transform transform hover:scale-105 hidden">
                     🖨️ 列印
                 </button>
@@ -202,12 +228,16 @@
     <script>
         const generateBtn = document.getElementById('generate-btn');
         const printBtn = document.getElementById('print-btn');
+        const toggleAnswersBtn = document.getElementById('toggle-answers-btn');
         const errorMessage = document.getElementById('error-message');
         const gridContainer = document.getElementById('grid-container');
         const wordListContainer = document.getElementById('word-list');
         const worksheetTopic = document.getElementById('worksheet-topic');
         const themeSelector = document.getElementById('theme');
         const wordCountSelector = document.getElementById('word-count');
+
+        let placedWordDetails = [];
+        let answersVisible = false;
 
         const wordBank = {
             numbers1_10: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN'],
@@ -295,6 +325,7 @@
                 errorMessage.textContent = '';
                 generateWorksheet();
                 printBtn.classList.remove('hidden');
+                toggleAnswersBtn.classList.remove('hidden');
             } catch (e) {
                 errorMessage.textContent = e.message;
                 console.error(e);
@@ -305,26 +336,54 @@
             const printArea = document.getElementById('print-area');
             const worksheet = document.getElementById('worksheet-container');
 
-            // 清除之前的列印內容
+            // 確保答案在列印前是隱藏的
+            if (answersVisible) {
+                toggleAnswers(true); // 傳入參數強制隱藏
+            }
+
             printArea.innerHTML = '';
-
-            // 建立一個複製品
             const clone1 = worksheet.cloneNode(true);
-
-            // 為複製品添加用於列印的 class
             clone1.classList.add('print-copy');
-            
-            // 將複製品加到列印專用區塊
             printArea.appendChild(clone1);
 
             window.print();
         });
+        
+        toggleAnswersBtn.addEventListener('click', () => toggleAnswers());
+
+        function toggleAnswers(forceHide = false) {
+            if (forceHide) {
+                answersVisible = false;
+            } else {
+                answersVisible = !answersVisible;
+            }
+
+            placedWordDetails.forEach(wordDetail => {
+                wordDetail.coords.forEach(coord => {
+                    const cell = document.querySelector(`#grid-container td[data-r='${coord.r}'][data-c='${coord.c}']`);
+                    if (cell) {
+                        if (answersVisible) {
+                            cell.classList.add('answer-highlight');
+                        } else {
+                            cell.classList.remove('answer-highlight');
+                        }
+                    }
+                });
+            });
+        }
 
         function generateWorksheet() {
+            // 重設答案狀態
+            placedWordDetails = [];
+            if (answersVisible) {
+                toggleAnswers(true); // 強制隱藏舊答案
+            }
+            
             const theme = themeSelector.value;
             const themeText = themeSelector.options[themeSelector.selectedIndex].text;
             const wordCount = parseInt(wordCountSelector.value, 10);
             const shape = document.getElementById('shape').value;
+            const caseMode = document.getElementById('case-mode').value;
             
             if (!theme || !wordCount) {
                 throw new Error('請選擇主題和單字數量！');
@@ -336,35 +395,49 @@
             }
 
             const fullWordList = [...wordBank[theme]];
-            const words = fullWordList.sort(() => 0.5 - Math.random()).slice(0, wordCount);
+            let words = fullWordList.sort(() => 0.5 - Math.random()).slice(0, wordCount);
             
-            const size = 20;
-            let grid = Array(size).fill(null).map(() => Array(size).fill(null));
+            if (caseMode === 'lower') {
+                words = words.map(word => word.toLowerCase());
+            }
 
-            const placedWords = [];
+            let size;
+            if (shape === 'square' || shape === 'circle') {
+                const longestWordLength = words.reduce((max, word) => Math.max(max, word.length), 0);
+                size = Math.max(longestWordLength + 2, Math.ceil(Math.sqrt(words.length * 15)));
+                size = Math.min(Math.max(size, 10), 22); // 限制尺寸在 10 到 22 之間
+            } else {
+                size = 20; // 不規則形狀使用固定尺寸
+            }
+
+            let grid = Array(size).fill(null).map(() => Array(size).fill(null));
             words.sort((a, b) => b.length - a.length);
 
             words.forEach(word => {
                 let placed = false;
                 let attempts = 0;
-                while (!placed && attempts < 100) {
+                while (!placed && attempts < 200) { // 增加嘗試次數
                     const dirKey = selectedDirections[Math.floor(Math.random() * selectedDirections.length)];
                     const direction = directions[dirKey];
                     const startR = Math.floor(Math.random() * size);
                     const startC = Math.floor(Math.random() * size);
 
                     if (canPlaceWord(word, grid, startR, startC, direction, shape)) {
+                        const wordDetail = { word: word, coords: [] };
                         for (let i = 0; i < word.length; i++) {
-                            grid[startR + i * direction.r][startC + i * direction.c] = word[i];
+                            const r = startR + i * direction.r;
+                            const c = startC + i * direction.c;
+                            grid[r][c] = word[i];
+                            wordDetail.coords.push({ r, c });
                         }
-                        placedWords.push(word);
+                        placedWordDetails.push(wordDetail);
                         placed = true;
                     }
                     attempts++;
                 }
             });
 
-            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const alphabet = caseMode === 'lower' ? "abcdefghijklmnopqrstuvwxyz" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             for (let r = 0; r < size; r++) {
                 for (let c = 0; c < size; c++) {
                     if (grid[r][c] === null) {
@@ -374,7 +447,7 @@
             }
             
             renderGrid(grid, shape);
-            renderWordList(placedWords);
+            renderWordList(words.filter(w => placedWordDetails.some(pd => pd.word === w))); // 只顯示成功放置的單字
             worksheetTopic.textContent = themeText;
         }
 
@@ -386,7 +459,8 @@
                 return Math.sqrt(Math.pow(r - center, 2) + Math.pow(c - center, 2)) <= radius;
             }
             if (shapeMasks[shape]) {
-                if (r >= 0 && r < size && c >= 0 && c < size) {
+                const maskSize = shapeMasks[shape].length;
+                if (r >= 0 && r < maskSize && c >= 0 && c < maskSize) {
                     return shapeMasks[shape][r][c] === 1;
                 }
                 return false;
@@ -417,12 +491,18 @@
                 const tr = document.createElement('tr');
                 for (let c = 0; c < size; c++) {
                     const td = document.createElement('td');
+                    td.dataset.r = r; // 加上座標方便選取
+                    td.dataset.c = c;
                     td.textContent = grid[r][c];
+                    // 計算適合的字體大小
+                    const fontSize = Math.max(8, 24 - size);
+                    td.style.fontSize = `${fontSize}px`;
+
                     if (!isInsideShape(r, c, size, shape)) {
                         td.style.color = 'transparent';
                         td.style.backgroundColor = 'white';
                     } else {
-                         td.className = 'text-center text-sm md:text-base font-bold text-gray-700 leading-none';
+                         td.className = 'text-center font-bold text-gray-700 leading-none';
                     }
                     tr.appendChild(td);
                 }
@@ -434,7 +514,7 @@
         function renderWordList(words) {
             wordListContainer.innerHTML = '';
             if (words.length === 0) {
-                 wordListContainer.innerHTML = '<p class="text-gray-400 text-base">沒有可以成功放置的單字。</p>';
+                 wordListContainer.innerHTML = '<p class="text-gray-400 text-base col-span-full">沒有可以成功放置的單字。</p>';
                  return;
             }
             
@@ -446,7 +526,11 @@
                     'ELEVEN': 11, 'TWELVE': 12, 'THIRTEEN': 13, 'FOURTEEN': 14, 'FIFTEEN': 15, 'SIXTEEN': 16, 'SEVENTEEN': 17, 'EIGHTEEN': 18, 'NINETEEN': 19, 'TWENTY': 20,
                     'THIRTY': 30, 'FORTY': 40, 'FIFTY': 50, 'SIXTY': 60, 'SEVENTY': 70, 'EIGHTY': 80, 'NINETY': 90, 'HUNDRED': 100
                 };
-                words.sort((a, b) => numberOrder[a] - numberOrder[b]);
+                 words.sort((a, b) => {
+                    const wordA = a.toUpperCase();
+                    const wordB = b.toUpperCase();
+                    return (numberOrder[wordA] || 0) - (numberOrder[wordB] || 0);
+                });
             } else {
                 // 其他主題則按照字母順序排序
                 words.sort(); 
@@ -455,7 +539,7 @@
             words.forEach(word => {
                 const wordEl = document.createElement('div');
                 wordEl.textContent = word;
-                wordEl.className = 'font-medium text-gray-600 tracking-widest';
+                wordEl.className = 'font-medium text-gray-600 tracking-wide';
                 wordListContainer.appendChild(wordEl);
             });
         }
