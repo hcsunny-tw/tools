@@ -10,6 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 引入 html2canvas 函式庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" xintegrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibVccNEQtXbUT0ay4Lzxn+PrS2YHpGCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         /* 自訂樣式 */
         body {
@@ -31,10 +33,10 @@
             transition: background-color 0.3s ease;
         }
 
-        /* 列印時的樣式 - 重新校正以確保塞滿A4 */
+        /* 列印時的樣式 - 已改回直向 */
         @media print {
             @page {
-                size: A4 landscape; /* 頁面改為橫向 */
+                size: A4 portrait; /* 頁面改為直向 */
                 margin: 1cm;
             }
             body > *:not(#print-area) {
@@ -54,21 +56,29 @@
                 box-shadow: none !important;
                 border: 1px solid #ddd;
                 font-size: 10pt;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .print-copy .worksheet-main-content {
+                flex-grow: 1;
             }
             
             .print-copy #main-content-area {
                 display: flex !important;
-                flex-direction: row !important;
+                flex-direction: column !important;
                 gap: 1rem !important;
             }
             
             .print-copy #grid-container-wrapper {
-                width: 66.666667% !important;
+                width: 100% !important;
             }
             .print-copy #word-list-wrapper {
-                 width: 33.333333% !important;
-                 padding-left: 1rem !important;
-                 border-left: 2px solid #eee !important;
+                 width: 100% !important;
+                 padding-left: 0 !important;
+                 border-left: none !important;
+                 border-top: 2px solid #eee !important;
+                 padding-top: 1rem !important;
             }
 
             .print-copy h2 {
@@ -94,7 +104,7 @@
             
             .print-copy #word-list {
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-columns: repeat(5, 1fr) !important;
                 gap: 0.1rem 0.5rem !important;
             }
             .print-copy #word-list div {
@@ -214,7 +224,7 @@
             </button>
                         <!-- 頁尾 -->
             <div class="worksheet-footer text-center text-xs text-gray-400 mt-6 pt-4 border-t border-gray-200">
-                學習單由「英文單字尋找產生器」製作
+               Copyright © 2025 HC Peng. All rights reserved.
             </div>
             <p id="error-message" class="text-red-500 text-sm mt-2 text-center"></p>
 
@@ -254,6 +264,9 @@
             
             <!-- 操作按鈕容器 -->
             <div id="action-buttons-container" class="mt-6 text-center space-x-4">
+                 <button id="save-image-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 transition-transform transform hover:scale-105 hidden">
+                    📷 儲存圖片
+                </button>
                  <button id="toggle-answers-btn" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-transform transform hover:scale-105 hidden">
                     💡 顯示/隱藏答案
                 </button>
@@ -271,6 +284,7 @@
         const generateBtn = document.getElementById('generate-btn');
         const printBtn = document.getElementById('print-btn');
         const toggleAnswersBtn = document.getElementById('toggle-answers-btn');
+        const saveImageBtn = document.getElementById('save-image-btn');
         const errorMessage = document.getElementById('error-message');
         const gridContainer = document.getElementById('grid-container');
         const wordListContainer = document.getElementById('word-list');
@@ -387,6 +401,7 @@
                 generateWorksheet();
                 printBtn.classList.remove('hidden');
                 toggleAnswersBtn.classList.remove('hidden');
+                saveImageBtn.classList.remove('hidden');
             } catch (e) {
                 errorMessage.textContent = e.message;
                 console.error(e);
@@ -397,9 +412,8 @@
             const printArea = document.getElementById('print-area');
             const worksheet = document.getElementById('worksheet-container');
 
-            // 確保答案在列印前是隱藏的
             if (answersVisible) {
-                toggleAnswers(true); // 傳入參數強制隱藏
+                toggleAnswers(true); 
             }
 
             printArea.innerHTML = '';
@@ -411,6 +425,24 @@
         });
         
         toggleAnswersBtn.addEventListener('click', () => toggleAnswers());
+
+        saveImageBtn.addEventListener('click', () => {
+            if (answersVisible) {
+                toggleAnswers(true); 
+            }
+            const worksheetElement = document.getElementById('worksheet-container');
+            html2canvas(worksheetElement, {
+                 scale: 2, // 提高解析度
+                 useCORS: true,
+                 backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'word-search-worksheet.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
 
         function toggleAnswers(forceHide = false) {
             if (forceHide) {
