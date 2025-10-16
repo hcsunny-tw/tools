@@ -133,6 +133,12 @@
                 </select>
             </div>
 
+            <!-- 自訂主題名稱 -->
+            <div id="custom-theme-name-container" class="mb-4 hidden">
+                <label for="custom-theme-name" class="block text-sm font-medium text-gray-700 mb-2">自訂主題名稱</label>
+                <input type="text" id="custom-theme-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="例如：交通工具 (Transportation)">
+            </div>
+
             <!-- 自訂單字輸入 -->
             <div id="custom-words-container" class="mb-4 hidden">
                 <label for="custom-words" class="block text-sm font-medium text-gray-700 mb-2">請輸入單字 (每行一個)</label>
@@ -276,6 +282,7 @@
         const wordCountSelector = document.getElementById('word-count');
         const customWordsContainer = document.getElementById('custom-words-container');
         const wordCountContainer = document.getElementById('word-count-container');
+        const customThemeNameContainer = document.getElementById('custom-theme-name-container');
 
         let placedWordDetails = [];
         let answersVisible = false;
@@ -328,9 +335,11 @@
         themeSelector.addEventListener('change', () => {
             const selectedTheme = themeSelector.value;
             if (selectedTheme === 'custom') {
+                customThemeNameContainer.classList.remove('hidden');
                 customWordsContainer.classList.remove('hidden');
                 wordCountContainer.classList.add('hidden');
             } else {
+                customThemeNameContainer.classList.add('hidden');
                 customWordsContainer.classList.add('hidden');
                 wordCountContainer.classList.remove('hidden');
                 updateWordCountOptions();
@@ -442,6 +451,7 @@
             let words;
 
             if (theme === 'custom') {
+                const customThemeName = document.getElementById('custom-theme-name').value.trim();
                 const customWordsInput = document.getElementById('custom-words').value;
                 if (!customWordsInput.trim()) {
                     throw new Error('請在自訂主題中輸入單字！');
@@ -449,7 +459,7 @@
                 words = customWordsInput.split('\n')
                                    .map(w => w.trim())
                                    .filter(w => w.length > 0);
-                themeText = "自訂單字 (Custom Words)";
+                themeText = customThemeName || "自訂單字 (Custom Words)";
             } else {
                 const wordCount = parseInt(wordCountSelector.value, 10);
                 if (!theme || !wordCount) {
