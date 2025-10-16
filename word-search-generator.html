@@ -93,7 +93,7 @@
                 font-weight: normal;
                 padding: 0;
                 line-height: 1;
-                letter-spacing: -4px; /* 對應放大字體，再縮小字元間距 */
+                letter-spacing: -5.5px; /* 進一步縮小字元間距以節省空間 */
             }
             /* 列印時移除答案高亮 */
             .print-copy .answer-highlight {
@@ -124,16 +124,23 @@
                 <label for="theme" class="block text-sm font-medium text-gray-700 mb-2">主題</label>
                 <select id="theme" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
                     <option value="" disabled selected>請選擇一個主題</option>
-                    <option value="numbers1_10">數字 1-10</option>
-                    <option value="numbers11_20">數字 11-20</option>
-                    <option value="tens">10的倍數</option>
-                    <option value="fruits">水果</option>
-                    <option value="animals">動物</option>
+                    <option value="numbers1_10">數字 1-10 (Numbers 1-10)</option>
+                    <option value="numbers11_20">數字 11-20 (Numbers 11-20)</option>
+                    <option value="tens">10的倍數 (Multiples of 10)</option>
+                    <option value="fruits">水果 (Fruits)</option>
+                    <option value="animals">動物 (Animals)</option>
+                    <option value="custom">自訂主題 (Custom Theme)</option>
                 </select>
             </div>
 
+            <!-- 自訂單字輸入 -->
+            <div id="custom-words-container" class="mb-4 hidden">
+                <label for="custom-words" class="block text-sm font-medium text-gray-700 mb-2">請輸入單字 (每行一個)</label>
+                <textarea id="custom-words" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="APPLE&#10;BANANA&#10;CHERRY"></textarea>
+            </div>
+
             <!-- 單字數量 -->
-            <div class="mb-4">
+            <div id="word-count-container" class="mb-4">
                 <label for="word-count" class="block text-sm font-medium text-gray-700 mb-2">單字數量</label>
                 <select id="word-count" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" disabled>
                     <option value="" disabled selected>請先選擇主題</option>
@@ -238,7 +245,7 @@
                 </div>
                 <!-- 頁尾 -->
                 <div class="worksheet-footer text-center text-xs text-gray-400 mt-8 pt-4 border-t border-gray-200">
-                    本頁面由Sunny HC Peng製作
+                    學習單由「英文單字尋找產生器」製作
                 </div>
             </div>
             
@@ -267,6 +274,8 @@
         const worksheetTopic = document.getElementById('worksheet-topic');
         const themeSelector = document.getElementById('theme');
         const wordCountSelector = document.getElementById('word-count');
+        const customWordsContainer = document.getElementById('custom-words-container');
+        const wordCountContainer = document.getElementById('word-count-container');
 
         let placedWordDetails = [];
         let answersVisible = false;
@@ -316,7 +325,17 @@
             ].map(row => row.split('').map(Number)),
         };
 
-        themeSelector.addEventListener('change', updateWordCountOptions);
+        themeSelector.addEventListener('change', () => {
+            const selectedTheme = themeSelector.value;
+            if (selectedTheme === 'custom') {
+                customWordsContainer.classList.remove('hidden');
+                wordCountContainer.classList.add('hidden');
+            } else {
+                customWordsContainer.classList.add('hidden');
+                wordCountContainer.classList.remove('hidden');
+                updateWordCountOptions();
+            }
+        });
 
         function updateWordCountOptions() {
             const selectedTheme = themeSelector.value;
@@ -416,25 +435,39 @@
             }
             
             const theme = themeSelector.value;
-            const themeText = themeSelector.options[themeSelector.selectedIndex].text;
-            const wordCount = parseInt(wordCountSelector.value, 10);
+            let themeText = themeSelector.options[themeSelector.selectedIndex].text;
             const shape = document.getElementById('shape').value;
             const caseMode = document.getElementById('case-mode').value;
             
-            if (!theme || !wordCount) {
-                throw new Error('請選擇主題和單字數量！');
+            let words;
+
+            if (theme === 'custom') {
+                const customWordsInput = document.getElementById('custom-words').value;
+                if (!customWordsInput.trim()) {
+                    throw new Error('請在自訂主題中輸入單字！');
+                }
+                words = customWordsInput.split('\n')
+                                   .map(w => w.trim())
+                                   .filter(w => w.length > 0);
+                themeText = "自訂單字 (Custom Words)";
+            } else {
+                const wordCount = parseInt(wordCountSelector.value, 10);
+                if (!theme || !wordCount) {
+                    throw new Error('請選擇主題和單字數量！');
+                }
+                const fullWordList = [...wordBank[theme]];
+                words = fullWordList.sort(() => 0.5 - Math.random()).slice(0, wordCount);
+            }
+            
+            if (caseMode === 'lower') {
+                words = words.map(word => word.toLowerCase());
+            } else {
+                words = words.map(word => word.toUpperCase());
             }
 
             const selectedDirections = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
             if (selectedDirections.length === 0) {
                 throw new Error('請至少選擇一種排列方式！');
-            }
-
-            const fullWordList = [...wordBank[theme]];
-            let words = fullWordList.sort(() => 0.5 - Math.random()).slice(0, wordCount);
-            
-            if (caseMode === 'lower') {
-                words = words.map(word => word.toLowerCase());
             }
 
             let size;
