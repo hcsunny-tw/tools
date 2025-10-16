@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文單字尋找學習單產生器</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自訂樣式 */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        /* 用於學習單格線的等寬字體 */
+        #grid-container {
+            font-family: 'Roboto Mono', monospace;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
+        
+        /* 列印時的樣式 */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 1cm;
+            }
+            /* 隱藏主畫面所有內容，只顯示列印專用區塊 */
+            body > *:not(#print-area) {
+                display: none !important;
+            }
+
+            #print-area {
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-around;
+                height: 98vh; /* 佔滿列印頁面的高度 */
+            }
+
+            /* 針對要列印的每一份學習單的樣式 */
+            .print-copy {
+                height: 49%; /* 每份佔頁面高度的一半，留點間距 */
+                width: 100%;
+                overflow: hidden;
+                border: 1px solid #ccc;
+                box-sizing: border-box;
+                page-break-inside: avoid; /* 避免一份學習單被中斷換頁 */
+                -webkit-print-color-adjust: exact; /* 確保背景色和邊框能被列印 */
+                print-color-adjust: exact;
+            }
+            
+            /* 縮小列印內容的字體和間距以確保能完整顯示 */
+            .print-copy {
+                padding: 1rem !important;
+                font-size: 9pt;
+            }
+            .print-copy h2 {
+                font-size: 14pt;
+                margin-bottom: 0.5rem !important;
+            }
+            .print-copy .flex.justify-between { /* Name/Date 標頭 */
+                 font-size: 10pt;
+                 padding-bottom: 0.5rem !important;
+                 margin-bottom: 0.5rem !important;
+            }
+             .print-copy #main-content-area {
+                gap: 1rem !important;
+             }
+            .print-copy h3 {
+                font-size: 11pt;
+                margin-bottom: 0.5rem !important;
+            }
+            .print-copy #grid-container td {
+                font-size: 8pt;
+                font-weight: normal;
+                padding: 0;
+            }
+            .print-copy #word-list div {
+                font-size: 9pt;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <main class="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- ===== 設定面板 ===== -->
+        <div id="settings-panel" class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg h-fit">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">學習單產生器設定</h1>
+
+            <!-- 主題 -->
+            <div class="mb-4">
+                <label for="theme" class="block text-sm font-medium text-gray-700 mb-2">主題</label>
+                <select id="theme" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    <option value="" disabled selected>請選擇一個主題</option>
+                    <option value="numbers1_10">數字 1-10</option>
+                    <option value="numbers11_20">數字 11-20</option>
+                    <option value="tens">10的倍數</option>
+                    <option value="fruits">水果</option>
+                    <option value="animals">動物</option>
+                </select>
+            </div>
+
+            <!-- 單字數量 -->
+            <div class="mb-4">
+                <label for="word-count" class="block text-sm font-medium text-gray-700 mb-2">單字數量</label>
+                <select id="word-count" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" disabled>
+                    <option value="" disabled selected>請先選擇主題</option>
+                </select>
+            </div>
+
+            <!-- 形狀選擇 -->
+            <div class="mb-4">
+                <label for="shape" class="block text-sm font-medium text-gray-700 mb-2">學習單形狀</label>
+                <select id="shape" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    <option value="square" selected>方形 (Square)</option>
+                    <option value="circle">圓形 (Circle)</option>
+                    <option value="car">汽車 (Car)</option>
+                    <option value="train">火車 (Train)</option>
+                    <option value="flower">花朵 (Flower)</option>
+                </select>
+            </div>
+
+            <!-- 排列方式 -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">答案排列方式 (可複選)</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <input type="checkbox" id="dir-lr" value="lr" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                        <label for="dir-lr" class="ml-2 text-sm text-gray-600">從左到右</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="dir-rl" value="rl" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                        <label for="dir-rl" class="ml-2 text-sm text-gray-600">從右到左</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="dir-tb" value="tb" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                        <label for="dir-tb" class="ml-2 text-sm text-gray-600">從上到下</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="dir-bt" value="bt" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                        <label for="dir-bt" class="ml-2 text-sm text-gray-600">從下到上</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <button id="generate-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform transform hover:scale-105">
+                生成學習單
+            </button>
+            <p id="error-message" class="text-red-500 text-sm mt-2 text-center"></p>
+        </div>
+
+        <!-- ===== 學習單預覽區 ===== -->
+        <div class="lg:col-span-2">
+            <div id="worksheet-container" class="bg-white p-8 rounded-2xl shadow-lg">
+                <!-- 學習單標頭 -->
+                <div class="flex justify-between items-center border-b-2 border-gray-200 pb-4 mb-4 text-lg">
+                    <span><strong>Name:</strong> _________________</span>
+                    <span><strong>Date:</strong> _________________</span>
+                </div>
+                <h2 id="worksheet-topic" class="text-2xl font-bold text-center text-gray-800 mb-6"></h2>
+
+                <!-- 主要內容區: 格線 + 單字列表 -->
+                <div id="main-content-area" class="flex flex-col md:flex-row gap-8">
+                    <!-- 學習單格線 (左側) -->
+                    <div id="grid-container-wrapper" class="w-full md:w-2/3">
+                        <div id="grid-container" class="w-full aspect-square flex items-center justify-center p-2 border-2 border-dashed rounded-lg">
+                            <p class="text-gray-400">請點擊左側按鈕生成學習單</p>
+                        </div>
+                    </div>
+
+                    <!-- 單字列表 (右側) -->
+                    <div id="word-list-wrapper" class="w-full md:w-1/3 md:pl-6 md:border-l-2 border-gray-200">
+                        <h3 class="text-xl font-bold text-center md:text-left text-gray-700 mb-4">Find these words:</h3>
+                        <div id="word-list" class="flex flex-col items-center md:items-start gap-2 text-lg">
+                             <p class="text-gray-400 text-base">...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 列印按鈕容器 -->
+            <div id="print-button-container" class="mt-6 text-center">
+                 <button id="print-btn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-transform transform hover:scale-105 hidden">
+                    🖨️ 列印
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 這個容器預設為隱藏，只在列印時使用 -->
+    <div id="print-area" class="hidden"></div>
+
+    <script>
+        const generateBtn = document.getElementById('generate-btn');
+        const printBtn = document.getElementById('print-btn');
+        const errorMessage = document.getElementById('error-message');
+        const gridContainer = document.getElementById('grid-container');
+        const wordListContainer = document.getElementById('word-list');
+        const worksheetTopic = document.getElementById('worksheet-topic');
+        const themeSelector = document.getElementById('theme');
+        const wordCountSelector = document.getElementById('word-count');
+
+        const wordBank = {
+            numbers1_10: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN'],
+            numbers11_20: ['ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN', 'TWENTY'],
+            tens: ['TEN', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY', 'HUNDRED'],
+            fruits: ['APPLE', 'BANANA', 'CHERRY', 'ORANGE', 'GRAPE', 'LEMON', 'MANGO', 'PEACH', 'KIWI', 'PEAR', 'PLUM', 'BERRY', 'LIME', 'MELON'],
+            animals: ['LION', 'TIGER', 'BEAR', 'WOLF', 'FOX', 'DEER', 'GOAT', 'PANDA', 'SNAKE', 'EAGLE', 'HORSE', 'MOUSE', 'RABBIT', 'SHARK', 'WHALE', 'BIRD', 'FISH']
+        };
+
+        // 定義方向向量
+        const directions = {
+            lr: { r: 0, c: 1 },  // 左到右
+            rl: { r: 0, c: -1 }, // 右到左
+            tb: { r: 1, c: 0 },  // 上到下
+            bt: { r: -1, c: 0 }, // 下到上
+        };
+        
+        // 定義 20x20 的形狀遮罩
+        const shapeMasks = {
+            car: [
+              '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000011111100000000',
+              '00001111111111000000', '00011111111111110000', '00111111111111111100', '00111111111111111100',
+              '11111111111111111111', '11111111111111111111', '11111111111111111111', '01111111111111111110',
+              '00111001111110011100', '00111001111110011100', '00111001111110011100', '00000000000000000000',
+              '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000',
+            ].map(row => row.split('').map(Number)),
+            train: [
+                '00000000000000000000', '00000000000000000000', '00000000110000000000', '00000001111000000000',
+                '00000011111100000000', '00111111111111111000', '01111111111111111110', '11111111111111111111',
+                '11111111111111111111', '11111111111111111111', '11111111111111111111', '01111111111111111110',
+                '00111001111110011100', '00111001111110011100', '00111001111110011100', '00000000000000000000',
+                '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000',
+            ].map(row => row.split('').map(Number)),
+            flower: [
+              '00000000000000000000', '00000110000001100000', '0001111100011111000', '00111111111111111100',
+              '01111111111111111110', '11111111111111111111', '11111111111111111111', '01111111111111111110',
+              '00111111111111111100', '0001111100011111000', '00000110000001100000', '00000000011000000000',
+              '00000000111100000000', '00000001111110000000', '00000011111111000000', '00000001111110000000',
+              '00000000111100000000', '00000000011000000000', '00000000000000000000', '00000000000000000000',
+            ].map(row => row.split('').map(Number)),
+        };
+
+        themeSelector.addEventListener('change', updateWordCountOptions);
+
+        function updateWordCountOptions() {
+            const selectedTheme = themeSelector.value;
+            const availableWords = wordBank[selectedTheme] || [];
+            const maxWords = availableWords.length;
+
+            wordCountSelector.innerHTML = ''; // 清空舊選項
+            wordCountSelector.disabled = false;
+
+            if (maxWords === 0) {
+                wordCountSelector.innerHTML = '<option value="" disabled selected>請先選擇主題</option>';
+                wordCountSelector.disabled = true;
+                return;
+            }
+
+            const countOptions = [5, 8, 10, 12, 15];
+            let hasOptions = false;
+            countOptions.forEach(count => {
+                if (count <= maxWords) {
+                    const option = document.createElement('option');
+                    option.value = count;
+                    option.textContent = `${count} 個單字`;
+                    wordCountSelector.appendChild(option);
+                    hasOptions = true;
+                }
+            });
+            
+            if (!hasOptions && maxWords > 0) {
+                 const option = document.createElement('option');
+                 option.value = maxWords;
+                 option.textContent = `${maxWords} 個單字`;
+                 wordCountSelector.appendChild(option);
+            }
+
+            if (wordCountSelector.options.length > 0) {
+                wordCountSelector.selectedIndex = wordCountSelector.options.length - 1;
+            }
+        }
+
+        generateBtn.addEventListener('click', () => {
+            try {
+                errorMessage.textContent = '';
+                generateWorksheet();
+                printBtn.classList.remove('hidden');
+            } catch (e) {
+                errorMessage.textContent = e.message;
+                console.error(e);
+            }
+        });
+
+        printBtn.addEventListener('click', () => {
+            const printArea = document.getElementById('print-area');
+            const worksheet = document.getElementById('worksheet-container');
+
+            // 清除之前的列印內容
+            printArea.innerHTML = '';
+
+            // 建立兩個複製品
+            const clone1 = worksheet.cloneNode(true);
+            const clone2 = worksheet.cloneNode(true);
+
+            // 為複製品添加用於列印的 class
+            clone1.classList.add('print-copy');
+            clone2.classList.add('print-copy');
+            
+            // 將複製品加到列印專用區塊
+            printArea.appendChild(clone1);
+            printArea.appendChild(clone2);
+
+            window.print();
+        });
+
+        function generateWorksheet() {
+            const theme = themeSelector.value;
+            const themeText = themeSelector.options[themeSelector.selectedIndex].text;
+            const wordCount = parseInt(wordCountSelector.value, 10);
+            const shape = document.getElementById('shape').value;
+            
+            if (!theme || !wordCount) {
+                throw new Error('請選擇主題和單字數量！');
+            }
+
+            const selectedDirections = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+            if (selectedDirections.length === 0) {
+                throw new Error('請至少選擇一種排列方式！');
+            }
+
+            const fullWordList = [...wordBank[theme]];
+            const words = fullWordList.sort(() => 0.5 - Math.random()).slice(0, wordCount);
+            
+            const size = 20;
+            let grid = Array(size).fill(null).map(() => Array(size).fill(null));
+
+            const placedWords = [];
+            words.sort((a, b) => b.length - a.length);
+
+            words.forEach(word => {
+                let placed = false;
+                let attempts = 0;
+                while (!placed && attempts < 100) {
+                    const dirKey = selectedDirections[Math.floor(Math.random() * selectedDirections.length)];
+                    const direction = directions[dirKey];
+                    const startR = Math.floor(Math.random() * size);
+                    const startC = Math.floor(Math.random() * size);
+
+                    if (canPlaceWord(word, grid, startR, startC, direction, shape)) {
+                        for (let i = 0; i < word.length; i++) {
+                            grid[startR + i * direction.r][startC + i * direction.c] = word[i];
+                        }
+                        placedWords.push(word);
+                        placed = true;
+                    }
+                    attempts++;
+                }
+            });
+
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    if (grid[r][c] === null) {
+                        grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+                    }
+                }
+            }
+            
+            renderGrid(grid, shape);
+            renderWordList(placedWords);
+            worksheetTopic.textContent = themeText;
+        }
+
+        function isInsideShape(r, c, size, shape) {
+            if (shape === 'square') return true;
+            if (shape === 'circle') {
+                const radius = size / 2;
+                const center = radius - 0.5;
+                return Math.sqrt(Math.pow(r - center, 2) + Math.pow(c - center, 2)) <= radius;
+            }
+            if (shapeMasks[shape]) {
+                if (r >= 0 && r < size && c >= 0 && c < size) {
+                    return shapeMasks[shape][r][c] === 1;
+                }
+                return false;
+            }
+            return false;
+        }
+
+        function canPlaceWord(word, grid, r, c, direction, shape) {
+            const size = grid.length;
+            for (let i = 0; i < word.length; i++) {
+                const newR = r + i * direction.r;
+                const newC = c + i * direction.c;
+                if (newR < 0 || newR >= size || newC < 0 || newC >= size) return false;
+                if (!isInsideShape(newR, newC, size, shape)) return false;
+                const existingLetter = grid[newR][newC];
+                if (existingLetter !== null && existingLetter !== word[i]) return false;
+            }
+            return true;
+        }
+
+        function renderGrid(grid, shape) {
+            gridContainer.innerHTML = '';
+            gridContainer.classList.remove('p-2', 'border-2', 'border-dashed', 'items-center', 'justify-center');
+            const size = grid.length;
+            const table = document.createElement('table');
+            table.className = 'w-full h-full border-collapse';
+            for (let r = 0; r < size; r++) {
+                const tr = document.createElement('tr');
+                for (let c = 0; c < size; c++) {
+                    const td = document.createElement('td');
+                    td.textContent = grid[r][c];
+                    if (!isInsideShape(r, c, size, shape)) {
+                        td.style.color = 'transparent';
+                        td.style.backgroundColor = 'white';
+                    } else {
+                         td.className = 'text-center text-sm md:text-base font-bold text-gray-700 leading-none';
+                    }
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+            gridContainer.appendChild(table);
+        }
+
+        function renderWordList(words) {
+            wordListContainer.innerHTML = '';
+            if (words.length === 0) {
+                 wordListContainer.innerHTML = '<p class="text-gray-400 text-base">沒有可以成功放置的單字。</p>';
+                 return;
+            }
+            
+            const currentTheme = themeSelector.value;
+            // 如果是數字相關主題，則進行數字大小排序
+            if (currentTheme.startsWith('numbers') || currentTheme === 'tens') {
+                const numberOrder = {
+                    'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5, 'SIX': 6, 'SEVEN': 7, 'EIGHT': 8, 'NINE': 9, 'TEN': 10,
+                    'ELEVEN': 11, 'TWELVE': 12, 'THIRTEEN': 13, 'FOURTEEN': 14, 'FIFTEEN': 15, 'SIXTEEN': 16, 'SEVENTEEN': 17, 'EIGHTEEN': 18, 'NINETEEN': 19, 'TWENTY': 20,
+                    'THIRTY': 30, 'FORTY': 40, 'FIFTY': 50, 'SIXTY': 60, 'SEVENTY': 70, 'EIGHTY': 80, 'NINETY': 90, 'HUNDRED': 100
+                };
+                words.sort((a, b) => numberOrder[a] - numberOrder[b]);
+            } else {
+                // 其他主題則按照字母順序排序
+                words.sort(); 
+            }
+
+            words.forEach(word => {
+                const wordEl = document.createElement('div');
+                wordEl.textContent = word;
+                wordEl.className = 'font-medium text-gray-600 tracking-widest';
+                wordListContainer.appendChild(wordEl);
+            });
+        }
+    </script>
+</body>
+</html>
+
