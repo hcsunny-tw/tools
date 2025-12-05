@@ -1,0 +1,789 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+    getAuth, 
+    signInAnonymously, 
+    signInWithCustomToken, 
+    onAuthStateChanged,
+    GoogleAuthProvider, 
+    signInWithPopup,
+    signOut 
+} from 'firebase/auth';
+import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    collection, 
+    query, 
+    onSnapshot, 
+    runTransaction,
+    writeBatch,
+    deleteDoc,
+    updateDoc
+} from 'firebase/firestore';
+
+// ⚠️ 【重要：部署時請在此處替換為您的 Firebase 配置】 ⚠️
+// 在 GitHub 專案中，您可以將此資訊存放在 .env 文件中並使用 Vite/CRA 載入。
+// 這裡我們直接硬編碼，但在實際專案中請使用環境變數來保護您的 apiKey。
+const FIREBASE_CONFIG = {
+    apiKey: "YOUR_API_KEY", // <-- 請替換
+    authDomain: "YOUR_AUTH_DOMAIN", // <-- 請替換
+    projectId: "YOUR_PROJECT_ID",   // <-- 請替換
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_FIREBASE_APP_ID"
+};
+
+// 由於 Canvas 環境的全域變數（如 __app_id）在部署後不存在，
+// 我們將使用 FIREBASE_CONFIG.projectId 作為一個固定的 appId，這在 Firebase 中是唯一的。
+const DEPLOY_APP_ID = FIREBASE_CONFIG.projectId || 'deployed-attendance-app';
+
+// 初始化 Firebase 實例
+let app;
+let db;
+let auth;
+
+// 點名狀態定義
+const STATUS_MAP = {
+    'N/A': { code: 'N/A', name: '未點名', color: 'bg-gray-200 text-gray-700 hover:bg-gray-300' },
+    'P': { code: 'P', name: '出席', color: 'bg-green-500 text-white hover:bg-green-600' },
+    'L': { code: 'L', name: '遲到', color: 'bg-yellow-400 text-yellow-900 hover:bg-yellow-500' },
+    'A': { code: 'A', name: '缺席', color: 'bg-red-500 text-white hover:bg-red-600' },
+};
+const STATUS_ORDER = ['N/A', 'P', 'L', 'A'];
+
+// 預設學生名單 (在沒有資料時載入)
+const DEFAULT_STUDENTS = [
+    { id: 'S001', name: '王小明', email: '' },
+    { id: 'S002', name: '陳大華', email: '' },
+    { id: 'S003', name: '李美玲', email: '' },
+    { id: 'S004', name: '張志豪', email: '' },
+    { id: 'S005', name: '林雅雯', email: '' },
+];
+
+// 獲取台灣時區 (UTC+8) 的日期 YYYY-MM-DD
+const getTaiwanDate = () => {
+    const now = new Date();
+    // 計算 UTC 時間 (毫秒)
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    // 加上 UTC+8 偏移量 (8 小時)
+    const twTime = new Date(utcTime + (3600000 * 8));
+    return twTime.toISOString().split('T')[0];
+};
+
+/**
+ * 學生管理 Modal/表單元件
+ */
+const StudentManagerModal = ({ isOpen, onClose, student, onSave, onRemove }) => {
+    const [id, setId] = useState(student ? student.id : '');
+    const [name, setName] = useState(student ? student.name : '');
+    const [email, setEmail] = useState(student ? student.email : '');
+    
+    useEffect(() => {
+        if (student) {
+            setId(student.id);
+            setName(student.name);
+            setEmail(student.email);
+        } else {
+            setId('');
+            setName('');
+            setEmail('');
+        }
+    }, [student]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // 檢查是否有同名學生，這裡只檢查 ID 和 Name
+        if (!id || !name) return;
+        onSave({ id: id.trim(), name: name.trim(), email: email.trim() });
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                <h2 className="text-2xl font-bold text-indigo-700 mb-4">{student ? '編輯學生資訊' : '新增學生'}</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">學號 (ID)</label>
+                        <input
+                            type="text"
+                            value={id}
+                            onChange={(e) => setId(e.target.value.toUpperCase())}
+                            readOnly={!!student} // 編輯時學號不可改
+                            required
+                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 ${student ? 'bg-gray-100' : 'border'}`}
+                        />
+                        {student && <p className="text-xs text-red-500 mt-1">學號不可更改</p>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">姓名</label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Email (選填)</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2"
+                        />
+                    </div>
+                    
+                    <div className="flex justify-between pt-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                        >
+                            取消
+                        </button>
+                        <div className="space-x-3">
+                            {student && (
+                                <button
+                                    type="button"
+                                    onClick={() => onRemove(student.firebaseId)}
+                                    className="py-2 px-4 bg-red-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-red-700 transition"
+                                >
+                                    刪除
+                                </button>
+                            )}
+                            <button
+                                type="submit"
+                                className="py-2 px-4 bg-indigo-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 transition"
+                            >
+                                儲存
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * 統計報表檢視元件
+ */
+const StatsView = ({ students, allTimeStats }) => {
+    // 提取所有點名天數 (用於計算分母)
+    const allDays = new Set();
+    Object.values(allTimeStats).forEach(stats => {
+        stats.days.forEach(day => allDays.add(day));
+    });
+    const totalDaysCount = allDays.size;
+
+    const statsList = students.map(student => {
+        const stats = allTimeStats[student.id] || { A: 0, L: 0, totalDays: 0 };
+        // 缺勤率計算: (缺席 + 遲到) / 總點名天數
+        const absenceRate = totalDaysCount > 0 
+            ? ((stats.A + stats.L) / totalDaysCount) * 100 
+            : 0;
+
+        return {
+            ...student,
+            ...stats,
+            absenceRate: absenceRate.toFixed(1), // 保留一位小數
+        };
+    }).sort((a, b) => b.absenceRate - a.absenceRate); // 按缺勤率降序排列
+
+    return (
+        <div className="p-4">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">總出缺勤統計 ({totalDaysCount} 總堂課)</h2>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                學生
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                學號
+                            </th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                缺席 (A)
+                            </th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                遲到 (L)
+                            </th>
+                            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider text-red-600">
+                                缺勤率 (%)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {statsList.map((s) => (
+                            <tr key={s.id} className={s.absenceRate > 10 ? 'bg-red-50/50' : ''}>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {s.name}
+                                </td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                                    {s.id}
+                                </td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-red-500 font-bold">
+                                    {s.A || 0}
+                                </td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-yellow-600 font-bold">
+                                    {s.L || 0}
+                                </td>
+                                <td className={`px-3 py-2 whitespace-nowrap text-sm text-right font-extrabold ${s.absenceRate > 10 ? 'text-red-700' : 'text-gray-700'}`}>
+                                    {s.absenceRate}%
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <p className="mt-4 text-xs text-gray-500">
+                註：缺勤率 = (缺席次數 + 遲到次數) / 總點名天數。表格按缺勤率降序排列。
+            </p>
+        </div>
+    );
+};
+
+
+/**
+ * 主要應用程式元件
+ */
+const App = () => {
+    const [userId, setUserId] = useState(null);
+    const [isAuthReady, setIsAuthReady] = useState(false);
+    const [students, setStudents] = useState([]);
+    const [todayAttendance, setTodayAttendance] = useState({});
+    const [allTimeStats, setAllTimeStats] = useState({});
+    const [date, setDate] = useState(getTaiwanDate()); // 台灣時區日期
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [currentView, setCurrentView] = useState('attendance'); // 'attendance', 'stats', 'manage'
+    const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+    const [editingStudent, setEditingStudent] = useState(null);
+
+    // 1. Firebase 初始化和認證
+    useEffect(() => {
+        // 檢查配置是否有效
+        if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
+            console.error("Firebase Configuration is missing or using default values. Please replace YOUR_API_KEY, YOUR_AUTH_DOMAIN, and YOUR_PROJECT_ID in the code.");
+            // 在沒有配置的情況下，我們仍然可以模擬運行，但不能連接到 Firebase
+            setIsAuthReady(true);
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            app = initializeApp(FIREBASE_CONFIG);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // 監聽認證狀態
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    setUserId(user.uid);
+                    setCurrentUser(user);
+                    console.log("Authenticated with UID:", user.uid);
+                } else {
+                    setUserId(null);
+                    setCurrentUser(null);
+                }
+                setIsAuthReady(true);
+                setIsLoading(false); // 認證狀態確定後即可解除載入狀態
+            });
+            
+            // 由於沒有 Canvas 的 custom token，我們讓用戶必須手動登入。
+            // 首次載入時不自動執行匿名登入，除非 Google 登入失敗。
+
+            return () => unsubscribe();
+        } catch (e) {
+            console.error("Error initializing Firebase:", e);
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Google 登入處理
+    const handleGoogleSignIn = async () => {
+        if (!auth) return;
+        const provider = new GoogleAuthProvider();
+        try {
+            // 這裡可以選擇性地使用 `prompt: 'select_account'` 強制選擇帳號
+            provider.setCustomParameters({ prompt: 'select_account' });
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error("Google Sign-In failed:", error.message);
+            // 如果 Google 登入失敗，嘗試匿名登入作為 fallback
+            try {
+                await signInAnonymously(auth);
+                console.log("Fallback: Signed in anonymously.");
+            } catch(anonError) {
+                 console.error("Anonymous sign-in failed:", anonError);
+            }
+        }
+    };
+    
+    // 登出處理
+    const handleSignOut = async () => {
+        if (!auth) return;
+        try {
+            await signOut(auth);
+            // 登出後，用戶需要再次手動登入
+        } catch (error) {
+            console.error("Sign Out failed:", error.message);
+        }
+    };
+
+    // 2. 數據路徑建構函式 (私人資料)
+    const getPrivateCollectionPath = (collectionName) => {
+        if (!userId) return null;
+        // 使用部署時的固定 APP ID
+        return `artifacts/${DEPLOY_APP_ID}/users/${userId}/${collectionName}`; 
+    };
+    
+    // 3. 獲取學生名單
+    const fetchStudents = useCallback(() => {
+        if (!db) return;
+        const studentPath = getPrivateCollectionPath('students');
+        if (!studentPath) return;
+
+        // 載入或初始化學生名單
+        const q = collection(db, studentPath);
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const studentList = [];
+            snapshot.forEach((doc) => {
+                studentList.push({ ...doc.data(), firebaseId: doc.id });
+            });
+            
+            if (studentList.length === 0) {
+                // 如果沒有資料，且是首次載入，寫入預設名單
+                if (students.length === 0 && userId) { // 確保用戶已登入
+                    console.log("No student data found, initializing default list.");
+                    const batch = writeBatch(db);
+                    DEFAULT_STUDENTS.forEach(student => {
+                        // 使用 ID 作為 Firestore 文檔 ID
+                        const studentRef = doc(q, student.id);
+                        batch.set(studentRef, student);
+                    });
+                    batch.commit().catch(e => console.error("Error writing default students:", e));
+                    setStudents(DEFAULT_STUDENTS.map(s => ({ ...s, firebaseId: s.id })));
+                } else {
+                    setStudents([]);
+                }
+            } else {
+                // 排序：先按 ID 排序，然後更新 State
+                setStudents(studentList.sort((a, b) => a.id.localeCompare(b.id)));
+            }
+        }, (error) => {
+            console.error("Error fetching students:", error);
+        });
+
+        return unsubscribe;
+    }, [userId, db]);
+
+    // 4. 獲取當日點名記錄
+    const fetchTodayAttendance = useCallback(() => {
+        if (!db) return;
+        const attendancePath = getPrivateCollectionPath('attendance');
+        if (!attendancePath || !date) return;
+        
+        // 每日點名記錄的文件 ID 就是日期 (YYYY-MM-DD)
+        const docRef = doc(db, attendancePath, date);
+
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                setTodayAttendance(docSnap.data().records || {});
+            } else {
+                setTodayAttendance({});
+            }
+            setIsLoading(false);
+        }, (error) => {
+            console.error("Error fetching today's attendance:", error);
+            setIsLoading(false);
+        });
+
+        return unsubscribe;
+    }, [userId, date, db]);
+
+    // 5. 獲取總體統計 (所有點名次數)
+    const fetchAllTimeStats = useCallback(() => {
+        if (!db) return;
+        const attendancePath = getPrivateCollectionPath('attendance');
+        if (!attendancePath) return;
+
+        const q = collection(db, attendancePath);
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const stats = {};
+            snapshot.forEach((docSnap) => {
+                const dateKey = docSnap.id;
+                const records = docSnap.data().records || {};
+                
+                // 遍歷當日記錄
+                Object.entries(records).forEach(([studentId, status]) => {
+                    if (!stats[studentId]) {
+                        stats[studentId] = { A: 0, L: 0, days: new Set() };
+                    }
+
+                    // 僅計算已點名狀態的總次數
+                    if (status === 'A' || status === 'L' || status === 'P') {
+                        stats[studentId].days.add(dateKey); // 記錄點名天數
+                        if (status === 'A') stats[studentId].A += 1;
+                        if (status === 'L') stats[studentId].L += 1;
+                    }
+                });
+            });
+            // 轉換 Set 為陣列或計數，方便傳遞給子元件
+            const finalStats = {};
+            Object.entries(stats).forEach(([id, s]) => {
+                finalStats[id] = { 
+                    A: s.A, 
+                    L: s.L, 
+                    totalDays: s.days.size, 
+                    days: Array.from(s.days)
+                };
+            });
+            setAllTimeStats(finalStats);
+        }, (error) => {
+            console.error("Error fetching all time stats:", error);
+        });
+
+        return unsubscribe;
+    }, [userId, db]);
+
+    // 6. 主 Effect - 認證完成後，開始載入資料
+    useEffect(() => {
+        if (isAuthReady && userId && db) {
+            setIsLoading(true);
+            const unsubscribeStudents = fetchStudents();
+            const unsubscribeToday = fetchTodayAttendance();
+            const unsubscribeStats = fetchAllTimeStats();
+
+            return () => {
+                unsubscribeStudents && unsubscribeStudents();
+                unsubscribeToday && unsubscribeToday();
+                unsubscribeStats && unsubscribeStats();
+            };
+        } else if (isAuthReady && !userId) {
+             // 如果認證完成但沒有 userId (未登入狀態)，只顯示 UI，不嘗試載入數據
+             setIsLoading(false);
+             setStudents([]);
+             setTodayAttendance({});
+             setAllTimeStats({});
+        }
+    }, [isAuthReady, userId, db, date, fetchStudents, fetchTodayAttendance, fetchAllTimeStats]);
+
+
+    // 7. 點名狀態切換邏輯 (核心功能)
+    const toggleAttendance = async (studentId) => {
+        if (isSaving || !userId || !db) return;
+        setIsSaving(true);
+        
+        const attendancePath = getPrivateCollectionPath('attendance');
+        
+        const currentStatus = todayAttendance[studentId] || 'N/A';
+        const currentIndex = STATUS_ORDER.indexOf(currentStatus);
+        const nextIndex = (currentIndex + 1) % STATUS_ORDER.length;
+        const newStatus = STATUS_ORDER[nextIndex];
+        
+        const docRef = doc(db, attendancePath, date);
+
+        try {
+            await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(docRef);
+                const records = docSnap.exists() ? docSnap.data().records : {};
+
+                records[studentId] = newStatus;
+                transaction.set(docRef, { date, records }, { merge: true });
+            });
+        } catch (e) {
+            console.error("Transaction failed: ", e);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    
+    // 8. 一鍵點名全出席
+    const markAllPresent = async () => {
+        if (isSaving || students.length === 0 || !userId || !db) return;
+        
+        // 顯示確認框 (替代 alert())
+        if (!window.confirm(`確定要將 ${date} 所有的 ${students.length} 位學生都標記為「出席 (P)」嗎？`)) {
+            return;
+        }
+
+        setIsSaving(true);
+        const attendancePath = getPrivateCollectionPath('attendance');
+        const docRef = doc(db, attendancePath, date);
+        
+        try {
+            await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(docRef);
+                const records = docSnap.exists() ? docSnap.data().records : {};
+
+                students.forEach(student => {
+                    records[student.id] = 'P'; // 設定為出席
+                });
+
+                transaction.set(docRef, { date, records }, { merge: true });
+            });
+        } catch (e) {
+            console.error("Transaction failed during Mark All Present: ", e);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // 9. 學生管理 CRUD 邏輯
+    const saveStudent = async (studentData) => {
+        if (!userId || !db) return;
+        setIsSaving(true);
+        const studentPath = getPrivateCollectionPath('students');
+        // 使用學號作為文件 ID
+        const docRef = doc(db, studentPath, studentData.id); 
+
+        try {
+            await setDoc(docRef, studentData, { merge: true });
+            setIsManageModalOpen(false);
+        } catch (e) {
+            console.error("Error saving student:", e);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const deleteStudent = async (firebaseId) => {
+        if (!userId || !db) return;
+        // 顯示確認框 (替代 alert())
+        if (!window.confirm(`確定要刪除學號 ${firebaseId} 的學生嗎？這將無法恢復。`)) {
+            return;
+        }
+
+        setIsSaving(true);
+        const studentPath = getPrivateCollectionPath('students');
+        const docRef = doc(db, studentPath, firebaseId); 
+
+        try {
+            await deleteDoc(docRef);
+            setIsManageModalOpen(false);
+            setEditingStudent(null);
+        } catch (e) {
+            console.error("Error deleting student:", e);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // 渲染函式
+    const renderStudentRow = (student) => {
+        const studentId = student.id;
+        const status = todayAttendance[studentId] || 'N/A';
+        const statusData = STATUS_MAP[status];
+        const stats = allTimeStats[studentId] || { A: 0, L: 0, totalDays: 0 };
+        
+        // 總缺勤次數 (A + L)
+        const totalAbsences = stats.A + stats.L;
+
+        return (
+            <li key={studentId} className="flex items-center justify-between p-3 border-b hover:bg-gray-50 transition duration-150 ease-in-out">
+                {/* 學生資訊 */}
+                <div className="flex-1 min-w-0" onClick={() => {
+                    if(!userId) return;
+                    setEditingStudent(student);
+                    setIsManageModalOpen(true);
+                }}>
+                    <p className="text-sm font-semibold text-gray-800 truncate cursor-pointer hover:text-indigo-600">
+                        {student.name} ({student.id})
+                    </p>
+                    <p className="text-xs text-gray-500">
+                        總缺勤/遲到: <span className="font-mono font-bold text-red-600">{totalAbsences}</span> 次
+                        <span className="ml-2 text-gray-400">({stats.totalDays} 總點名天數)</span>
+                    </p>
+                </div>
+
+                {/* 狀態切換按鈕 */}
+                <button
+                    onClick={() => toggleAttendance(studentId)}
+                    disabled={isSaving || isLoading || !userId}
+                    className={`ml-4 w-28 py-2 px-3 text-sm font-medium rounded-full shadow-md transform transition duration-150 ease-in-out 
+                                ${statusData.color} 
+                                ${isSaving || isLoading || !userId ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                >
+                    {statusData.name} ({statusData.code})
+                </button>
+            </li>
+        );
+    };
+
+    // 渲染當前主要視圖
+    const renderCurrentView = () => {
+        if (!userId) {
+            return (
+                 <div className="p-10 text-center text-gray-600">
+                    <p className="text-lg font-semibold mb-4">請先登入以存取您的學生名單和點名數據。</p>
+                    <p className="text-sm">點擊上方的 **使用 Google 登入 (推薦)** 開始使用。</p>
+                </div>
+            )
+        }
+        
+        if (currentView === 'stats') {
+            return <StatsView students={students} allTimeStats={allTimeStats} />;
+        }
+        
+        // 預設為點名 ('attendance') 視圖
+        return (
+            <>
+                <div className="p-4 border-b bg-indigo-50 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+                    <div className="flex items-center space-x-2">
+                        <label htmlFor="attendance-date" className="text-sm font-medium text-indigo-700 whitespace-nowrap">
+                            點名日期 (UTC+8):
+                        </label>
+                        <input
+                            type="date"
+                            id="attendance-date"
+                            value={date}
+                            onChange={(e) => {
+                                setDate(e.target.value);
+                                setIsLoading(true); // 切換日期時重新載入
+                            }}
+                            className="p-2 border border-indigo-300 rounded-lg text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
+                    
+                    <button
+                        onClick={markAllPresent}
+                        disabled={isSaving || isLoading || students.length === 0}
+                        className="py-2 px-4 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition duration-150 text-sm font-medium disabled:opacity-50"
+                    >
+                        {isSaving ? '儲存中...' : '一鍵點名全出席'}
+                    </button>
+                </div>
+                
+                {/* 學生列表 */}
+                <div className="max-h-[60vh] overflow-y-auto">
+                    {isLoading ? (
+                         <div className="p-10 text-center text-indigo-600 flex justify-center items-center space-x-2">
+                            <svg className="animate-spin h-5 w-5" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="text-sm">資料載入中...</span>
+                        </div>
+                    ) : students.length > 0 ? (
+                        <ul className="divide-y divide-gray-100">
+                            {students.map(renderStudentRow)}
+                        </ul>
+                    ) : (
+                        <div className="p-10 text-center text-gray-500">
+                            <p>學生名單為空。請點擊上方「管理學生」按鈕新增學生。</p>
+                        </div>
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans">
+            
+            {/* 頂部標頭和導航 */}
+            <header className="max-w-xl mx-auto mb-6">
+                <h1 className="text-3xl font-extrabold text-indigo-700 text-center mb-1">
+                    學生快捷點名系統
+                </h1>
+                
+                <div className="flex justify-center space-x-4 mt-3">
+                    <button
+                        onClick={() => setCurrentView('attendance')}
+                        className={`py-1 px-3 text-sm font-medium rounded-full transition ${currentView === 'attendance' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-indigo-600 border border-indigo-300'}`}
+                        disabled={!userId}
+                    >
+                        📝 點名模式
+                    </button>
+                    <button
+                        onClick={() => setCurrentView('stats')}
+                        className={`py-1 px-3 text-sm font-medium rounded-full transition ${currentView === 'stats' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-indigo-600 border border-indigo-300'}`}
+                        disabled={!userId}
+                    >
+                        📊 期末統計
+                    </button>
+                    <button
+                        onClick={() => {
+                            if(!userId) return;
+                            setEditingStudent(null); // 清除正在編輯的學生
+                            setIsManageModalOpen(true);
+                        }}
+                        className={`py-1 px-3 text-sm font-medium rounded-full transition bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 disabled:opacity-50`}
+                        disabled={!userId}
+                    >
+                        👨‍🎓 管理學生
+                    </button>
+                </div>
+            </header>
+
+            {/* 認證狀態區 */}
+            <div className="max-w-xl mx-auto text-center mb-4 p-3 bg-white rounded-lg shadow-md">
+                {currentUser && currentUser.isAnonymous === false ? (
+                    <div className="text-sm text-gray-700">
+                        <p>歡迎, <span className="font-semibold text-indigo-600">{currentUser.displayName || currentUser.email || '老師'}</span></p>
+                        <p className="text-xs text-gray-500 mt-1">
+                            用戶 ID: <span className="font-mono text-xs break-all">{userId}</span>
+                        </p>
+                        <button onClick={handleSignOut} className="mt-2 text-red-500 hover:text-red-700 text-xs">
+                            登出
+                        </button>
+                    </div>
+                ) : (
+                    <button 
+                        onClick={handleGoogleSignIn} 
+                        disabled={!isAuthReady}
+                        className="flex items-center justify-center mx-auto py-2 px-4 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50"
+                    >
+                        <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h6.01c-.26 1.34-1.03 2.53-2.22 3.3l3.57 2.76c2.09-1.93 3.3-4.75 3.3-8.07z" fill="#4285F4"/><path d="M12 23c3.08 0 5.67-1.02 7.56-2.76l-3.57-2.76c-.98.67-2.23 1.06-3.99 1.06-3.08 0-5.71-2.07-6.65-4.99H2.86l-3.79 2.93c1.88 3.75 5.74 6.34 10.93 6.34z" fill="#34A853"/><path d="M5.35 14.84c-.21-.63-.33-1.3-.33-2.03s.12-1.4.33-2.03V7.88L1.56 4.95C.85 6.45.5 8.16.5 10c0 1.84.35 3.55 1.06 5.05L5.35 14.84z" fill="#FBBC05"/><path d="M12 4.19c1.72 0 3.31.59 4.54 1.76l3.18-3.18C17.67 1.25 15.08.19 12 .19 6.81.19 2.95 2.78 1.06 6.53L5.35 9.46c.94-2.92 3.57-4.99 6.65-4.99z" fill="#EA4335"/></svg>
+                        使用 Google 登入 (推薦)
+                    </button>
+                )}
+                {!isAuthReady && <p className="text-xs text-gray-400 mt-2">連線驗證中...</p>}
+            </div>
+
+
+            {/* 主要內容區塊 */}
+            <main className="max-w-xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+                {renderCurrentView()}
+            </main>
+            
+            {/* 狀態說明 */}
+            <footer className="max-w-xl mx-auto mt-6 p-4 bg-white rounded-xl shadow-md">
+                <h3 className="text-lg font-bold text-gray-700 mb-2">點名狀態說明：</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                    {Object.values(STATUS_MAP).map(status => (
+                        <div key={status.code} className="flex items-center">
+                            <span className={`inline-block w-4 h-4 rounded-full mr-2 ${status.color.split(' ')[0]} ${status.color.includes('white') ? '' : 'border border-gray-300'}`}></span>
+                            <span className="text-gray-600">{status.name} ({status.code})</span>
+                        </div>
+                    ))}
+                    <div className="col-span-2 mt-2 pt-2 border-t text-gray-500">
+                        <p>💡 **快捷操作：** 點擊學生的**姓名或學號**可以快速進入編輯學生資訊的模式。</p>
+                        <p>⚠️ **注意：** 部署時請務必在程式碼中替換 **FIREBASE_CONFIG** 的值！</p>
+                    </div>
+                </div>
+            </footer>
+            
+            {/* 學生管理 Modal */}
+            <StudentManagerModal 
+                isOpen={isManageModalOpen}
+                onClose={() => {
+                    setIsManageModalOpen(false);
+                    setEditingStudent(null);
+                }}
+                student={editingStudent}
+                onSave={saveStudent}
+                onRemove={deleteStudent}
+            />
+        </div>
+    );
+};
+
+export default App;
