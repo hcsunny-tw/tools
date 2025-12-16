@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 二甲冒險者公會</title>
+  <title>🛡️ 冒險者公會</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
@@ -21,7 +21,6 @@
       --radius: 8px; --seat: 56px; --seat-font: 16px; 
     }
     html[data-color-theme='guild'] body {
-      font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
       background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
     html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
@@ -46,6 +45,8 @@
     /* 🟣 神秘紫 (Purple) */
     html[data-color-theme='purple'] { --primary: #9333ea; --accent: #7e22ce; --ring: rgba(147, 51, 234, 0.3); --bg: #faf5ff; --card: #fff; --tbl-head: #f3e8ff; --tbl-alt: #fafaf9; --tbl-hover: #faf5ff; --tbl-border: #d8b4fe; --text-main: #581c87; --text-light: #9333ea; --muted: #7e22ce; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
 
+    /* 深色模式 */
+    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
     html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
     html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
     html[data-color-theme='purple'][data-theme='dark'] { --primary: #c084fc; --bg: #3b0764; --card: #2e0650; --text-main: #f3e8ff; --tbl-head: #3b0764; --tbl-alt: #2e0650; --tbl-hover: #581c87; --tbl-border: #6b21a8; }
@@ -80,9 +81,12 @@
     .btn.chest { background: #DAA520; border-color: #B8860B; color: #fff; }
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
+    
+    /* User Email Display */
     .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
     .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
     
+    /* Table & Grid */
     .table-wrap{ overflow:auto; border-radius:6px; border:2px solid var(--tbl-border); background:var(--card); }
     table{ width:100%; border-collapse:collapse; font-size:14px; }
     thead th{ position:sticky; top:0; background:var(--tbl-head); text-align:left; padding:10px; border-bottom:2px solid var(--tbl-border); white-space:nowrap; cursor:pointer; }
@@ -101,20 +105,24 @@
     .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+    /* 進度條 & 標籤 */
     progress { -webkit-appearance: none; width: 100%; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); border: 1px solid var(--text-light); }
     progress::-webkit-progress-value { background-color: var(--success); }
     .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
     .p-gray{ background:#e2e8f0; color:#475569; } .p-yellow{ background:#fefce8; color:#854d0e; }
     .p-orange{ background:#fff7ed; color:#9a3412; } .p-green{ background:#f0fdf4; color:#166534; }
 
+    /* Tooltip */
     .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
     .custom-tooltip.show { display: block; animation: fadeIn .1s ease-out; }
 
+    /* Status Picker */
     #statusPicker { display: none; position: absolute; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 10000; width: 160px; flex-direction: column; gap: 8px; }
     #statusPicker.show { display: flex; }
     .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
     .sp-1 { background: #fef9c3; color: #713f12; } .sp-2 { background: #fdba74; color: #9a3412; } .sp-3 { background: #86efac; color: #14532d; }
 
+    /* Numpad */
     .numpad-container { display: none; position: absolute; top: 100%; right: 0; width: 300px; z-index: 100; background: var(--card); border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; padding-top: 36px; margin-top: 8px; }
     .numpad-container.show { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .numpad-close { position: absolute; top: 2px; right: 4px; background: none; border: none; color: var(--danger); font-size: 24px; cursor: pointer; transition: transform 0.2s; }
@@ -122,6 +130,7 @@
     .num-key { padding: 12px 0; font-size: 20px; font-weight: bold; background: var(--bg); border: 1px solid var(--tbl-border); cursor: pointer; border-radius: 6px; color: var(--text-main); font-family: monospace; }
     .num-key.action-key { background: var(--tbl-head); color: var(--primary); }
 
+    /* Modals & Login */
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; }
@@ -129,23 +138,28 @@
     .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
     .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-    .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
+
+    /* 漂亮的關閉按鈕 (封蠟章風格) */
+    .modal-close-btn { 
+        background: var(--danger); color: #fff; border: 2px solid #8B0000; 
+        width: 32px; height: 32px; border-radius: 50%; 
+        font-size: 20px; line-height: 1; cursor: pointer; 
+        display: flex; align-items: center; justify-content: center; 
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;
+    }
     .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
 
+    /* Settings UI (Simplified) */
     .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
     .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
     .theme-option:hover { transform: scale(1.1); }
     .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
-    
-    /* 修正：為所有主題選項加上背景色，確保顯示 */
+    /* Colors */
     .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
     .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
-    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-    .theme-option[data-theme="green"] { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
     .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
-    .theme-option[data-theme="pink"] { background: linear-gradient(135deg, #ec4899, #d946ef); }
     .theme-option[data-theme="purple"] { background: linear-gradient(135deg, #9333ea, #7e22ce); }
-    .theme-option[data-theme="teal"] { background: linear-gradient(135deg, #14b8a6, #0d9488); }
     
     .dark-mode-toggle { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); margin-top: 20px; }
     .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
@@ -155,6 +169,7 @@
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(22px); }
 
+    /* Accordion (風琴式選單) */
     .accordion-item { border: 1px solid var(--tbl-border); border-radius: 6px; margin-bottom: 8px; overflow: hidden; background: var(--bg); }
     .accordion-header { padding: 12px; background: var(--tbl-head); font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background .2s; }
     .accordion-header:hover { background: var(--tbl-hover); }
@@ -166,6 +181,7 @@
     .task-tag i { margin-left: 6px; cursor: pointer; color: var(--danger); opacity: 0.6; }
     .task-tag i:hover { opacity: 1; }
 
+    /* Roster Tabs */
     .roster-tabs { display: flex; gap: 4px; margin-bottom: 0; }
     .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 800; cursor: pointer; color: var(--text-light); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; transition: all .2s; }
     .tab-btn:hover { background: var(--tbl-hover); }
@@ -174,16 +190,21 @@
     .roster-content.show { display: block; }
     .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; }
     .roster-item, .teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-bottom: 1px dashed var(--tbl-border); }
-    .roster-no-input { flex: 0 0 60px; min-width: 0; }
-    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
 
+    /* Student Status */
     .student-status-list { list-style: none; padding: 0; }
     .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
+    
     .batch-export-checkbox { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); display: none; }
     .batch-mode .batch-export-checkbox { display: inline-block; }
+    
+    .roster-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:8px; }
+    .roster-item, .teacher-item{ display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--tbl-border); border-radius:10px; padding:8px; }
+    .roster-no-input { flex: 0 0 60px; min-width: 0; }
+    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
 
     @media print { .no-print { display: none !important; } }
   </style>
@@ -212,7 +233,9 @@
         </div>
       </div>
       <div class="actions">
+        <!-- 1. 優化：只顯示 @ 前面的帳號，字體縮小 -->
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> ...</span>
+        
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
         <button class="btn ghost" id="btnNavRoster"><i class="bi bi-people"></i> 公會名冊</button>
@@ -222,7 +245,7 @@
       </div>
     </header>
 
-    <!-- Dashboard -->
+    <!-- VIEWS -->
     <section id="view-dashboard" class="view show">
       <div class="card">
         <h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2>
@@ -262,9 +285,7 @@
         </div>
         <div class="actions">
             <button class="btn" id="btnCreate"><i class="bi bi-quill-pen"></i> 發布委託</button>
-            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份資料 (JSON)</button>
-            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原資料</label>
-            <input id="fileImport" type="file" accept="application/json" hidden />
+            <!-- 移除本地存取按鈕，因為已轉移至 Firebase -->
         </div>
       </div>
       <div class="card">
@@ -286,7 +307,6 @@
       </div>
     </section>
     
-    <!-- Detail -->
     <section id="view-detail" class="view">
       <div class="card">
         <div class="assignment-bar">
@@ -310,7 +330,7 @@
       </div>
     </section>
 
-    <!-- Roster -->
+    <!-- 4. 公會名冊 UI 優化 -->
     <section id="view-roster" class="view">
         <div class="roster-tabs">
             <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
@@ -339,7 +359,6 @@
         </div>
     </section>
 
-    <!-- Student Status -->
     <section id="view-student-status" class="view">
       <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -355,24 +374,23 @@
 
   </div>
 
-  <!-- Settings Modal -->
+  <!-- 外觀設定 Modal -->
   <div id="settingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
             <h2><i class="bi bi-gear-fill"></i> 系統設定</h2>
+            <!-- 6. 關閉按鈕優化 -->
             <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="field" style="margin-bottom: 20px;">
+        <div class="field">
             <label>風格主題</label>
             <div class="theme-options" id="themeOptionsContainer">
+                <!-- 1 & 2. 優化主題按鈕 -->
                 <div class="theme-option" data-theme="guild" title="探險公會 (預設)"></div>
                 <div class="theme-option" data-theme="christmas" title="聖誕節"></div>
                 <div class="theme-option" data-theme="blue" title="皇家藍"></div>
                 <div class="theme-option" data-theme="orange" title="活力橘"></div>
                 <div class="theme-option" data-theme="purple" title="神秘紫"></div>
-                <div class="theme-option" data-theme="green" title="森林綠"></div>
-                <div class="theme-option" data-theme="pink" title="櫻花粉"></div>
-                <div class="theme-option" data-theme="teal" title="湖水青"></div>
             </div>
         </div>
         <div class="field">
@@ -388,20 +406,26 @@
     </div>
   </div>
   
-  <!-- Quest Config Modal -->
+  <!-- 3. 委託內容 (作業名稱) 設定 Modal (風琴式 UI) -->
   <div id="questSettingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
         <div class="modal-header">
             <h2><i class="bi bi-journal-plus"></i> 編輯任務選單</h2>
             <button class="modal-close-btn">&times;</button>
         </div>
-        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;"></div>
+        <p class="muted" style="margin-top: -10px;">點擊科目可展開編輯任務。</p>
+        
+        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;">
+            <!-- 動態生成 Accordion -->
+        </div>
+
         <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="ipNewSubject" placeholder="輸入新科目名稱..." style="flex:1;">
                 <button class="btn sm" id="btnAddSubject"><i class="bi bi-plus-lg"></i> 新增科目</button>
             </div>
         </div>
+
         <div class="modal-footer">
             <button class="btn ghost modal-close-btn">取消</button>
             <button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button>
@@ -409,7 +433,7 @@
     </div>
   </div>
   
-  <!-- Admin Profile Modal -->
+  <!-- 4. 公會長執務室 (Admin Profile Modal) -->
   <div id="adminProfileModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 600px;">
           <div class="modal-header">
@@ -418,16 +442,19 @@
           </div>
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 20px;">
               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/需重試 > 5)</h3>
-              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <!-- JS 生成 -->
+              </div>
           </div>
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border);">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
                <p class="muted">目前顯示最近 5 筆封存 (功能開發中)</p>
+               <!-- 未來可擴充 -->
           </div>
       </div>
   </div>
 
-  <!-- Assign Modal -->
+  <!-- 指派學生 Modal -->
   <div id="assignStudentModal" class="modal-overlay">
       <div class="modal-content">
           <div class="modal-header">
@@ -446,12 +473,14 @@
       </div>
   </div>
 
-  <!-- Tools -->
+  <!-- 狀態選擇轉盤 -->
   <div id="statusPicker">
       <button class="status-option-btn sp-1" data-status="1"><span class="dot s1"></span> 已回報</button>
       <button class="status-option-btn sp-2" data-status="2"><span class="dot s2"></span> 需再挑戰</button>
       <button class="status-option-btn sp-3" data-status="3"><span class="dot s3"></span> 討伐成功</button>
   </div>
+  
+  <!-- 自訂懸浮提示 -->
   <div id="customTooltip" class="custom-tooltip"></div>
 
   <!-- Firebase Scripts -->
@@ -469,10 +498,14 @@ const firebaseConfig = {
   measurementId: "G-FR4LMZ630Q"
 };
 
+    // ============================================================
+    // 程式邏輯 (系統核心)
+    // ============================================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+    // 初始化 Firebase
     let app, db, auth;
     try {
         app = initializeApp(firebaseConfig);
@@ -517,6 +550,7 @@ const firebaseConfig = {
             currentUser = user;
             loginOverlay.style.display = 'none';
             mainApp.style.display = 'block';
+            // 2. 優化：只顯示 @ 前面的帳號，字體縮小
             const userName = user.email.split('@')[0];
             document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${userName}`;
             initApp();
@@ -526,6 +560,7 @@ const firebaseConfig = {
         }
     });
 
+    // 資料同步 (即時監聽)
     function loadDataFromFirebase() {
         if (unsubscribe) unsubscribe(); 
         const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
@@ -612,6 +647,7 @@ const firebaseConfig = {
         document.documentElement.setAttribute('data-color-theme', savedColorTheme);
         document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
         
+        // Highlight active theme
         document.querySelectorAll('.theme-option').forEach(el => {
             el.classList.toggle('active', el.dataset.theme === savedColorTheme);
         });
@@ -623,8 +659,7 @@ const firebaseConfig = {
         populateTeacherDropdowns();
         updateSubjectDropdown();
         resetNewAssignmentState();
-        // 修正：預設只顯示 Dashboard
-        switchView('view-dashboard');
+        renderAll();
     }
 
     function renderAll() {
@@ -637,13 +672,11 @@ const firebaseConfig = {
     }
 
     function switchView(targetId) {
-        views.forEach(view => {
-             if(view.id === targetId) view.classList.add('show');
-             else view.classList.remove('show');
-        });
+        views.forEach(view => view.classList.toggle('show', view.id === targetId));
         if (targetId === 'view-dashboard') renderDashboard(); 
     }
 
+    // --- Dashboard & Filter ---
     function populateTeacherDropdowns() {
         const teachers = data.teachers || [];
         const ipSelect = document.getElementById('ipTeacherSelect');
@@ -657,6 +690,7 @@ const firebaseConfig = {
         const db = data.questSettings || defaultData.questSettings;
         const selSubject = document.getElementById('selSubject');
         const subjectFilter = document.getElementById('subjectFilter');
+
         selSubject.innerHTML = '<option value="">📂 科目...</option>';
         subjectFilter.innerHTML = '<option value="all">📚 所有科目</option>';
         if(db) {
@@ -669,7 +703,6 @@ const firebaseConfig = {
 
     function filterAssignments(assignments) {
         return assignments.filter(a => {
-            if (a.archived) return false;
             const matchTeacher = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
             const matchSubject = currentFilter.subject === 'all' || a.title.includes(currentFilter.subject);
             const matchDate = !currentFilter.date || a.date === currentFilter.date;
@@ -712,12 +745,21 @@ const firebaseConfig = {
             const progress = total > 0 ? (completed / total) * 100 : 0;
             
             const pending = [];
-            data.roster.forEach((student, i) => {
-                if ((indices === 'all' || indices.includes(i)) && (statuses[i] === 0 || statuses[i] === 2)) {
-                    pending.push(student.no);
+            const redo = [];
+            data.roster.forEach((s, i) => {
+                if ((indices === 'all' || indices.includes(i))) {
+                    if (statuses[i] === 0) pending.push(s.no);
+                    if (statuses[i] === 2) redo.push(s.no);
                 }
             });
-            const tooltipText = pending.length > 0 ? `待: ${pending.join(', ')}` : '🎉 全員完成';
+            
+            let tooltip = '';
+            if (pending.length > 0) tooltip += `回：${pending.join(', ')}`;
+            if (redo.length > 0) {
+                if(tooltip) tooltip += '<br>';
+                tooltip += `重：${redo.join(', ')}`;
+            }
+            if(!tooltip) tooltip = '🎉 全員完成';
 
             const tr = document.createElement('tr');
             tr.dataset.id = a.id;
@@ -725,9 +767,9 @@ const firebaseConfig = {
                 <td>${a.date}</td>
                 <td>${a.title}</td>
                 <td>${a.teacher}</td>
-                <td class="has-tooltip" data-tooltip="${tooltipText}" style="cursor:help;">${submitted}/${total}</td>
+                <td class="has-tooltip" data-tooltip="${tooltip}" style="cursor:help;">${submitted}/${total}</td>
                 <td>
-                    <div class="has-tooltip" data-tooltip="${tooltipText}" style="display:flex; align-items:center; gap:8px;">
+                    <div class="has-tooltip" data-tooltip="${tooltip}" style="display:flex; align-items:center; gap:8px;">
                         <progress class="progress-success" value="${progress}" max="100"></progress>
                         <span>${completed}/${total}</span>
                     </div>
@@ -768,7 +810,6 @@ const firebaseConfig = {
         data.roster.forEach((s, idx) => {
             let pCount = 0, tasks = [];
             data.assignments.forEach(a => {
-                if(a.archived) return;
                 const indices = a.assignedIndices || 'all';
                 if ((indices === 'all' || indices.includes(idx))) {
                     const status = (a.statuses || [])[idx] || 0;
@@ -836,6 +877,7 @@ const firebaseConfig = {
         });
     }
 
+    // 3. 委託內容設定 (風琴式 UI)
     function renderQuestConfig() {
         const div = document.getElementById('questConfigList');
         div.innerHTML = '';
@@ -843,10 +885,12 @@ const firebaseConfig = {
             Object.keys(tempQuestSettings).forEach(s => {
                 const item = document.createElement('div'); item.className = 'accordion-item';
                 
+                // Header
                 const header = document.createElement('div'); header.className = 'accordion-header';
                 header.innerHTML = `<span>📂 ${s}</span> <i class="bi bi-chevron-down"></i>`;
                 header.addEventListener('click', () => item.classList.toggle('active'));
                 
+                // Body
                 const body = document.createElement('div'); body.className = 'accordion-body';
                 const listDiv = document.createElement('div'); listDiv.className = 'task-list';
                 
@@ -856,6 +900,7 @@ const firebaseConfig = {
                     tag.innerHTML = `${t} <i class="bi bi-x-circle-fill"></i>`;
                     tag.querySelector('i').addEventListener('click', () => { 
                         tempQuestSettings[s].splice(i, 1); renderQuestConfig(); 
+                        // Restore expanded state logic is tricky in re-render, simple fix:
                         setTimeout(() => document.querySelectorAll('.accordion-item').forEach(el => {
                             if(el.querySelector('.accordion-header span').innerText.includes(s)) el.classList.add('active');
                         }), 0);
@@ -863,6 +908,7 @@ const firebaseConfig = {
                     listDiv.appendChild(tag);
                 });
                 
+                // Add Task Input inside Body
                 const addDiv = document.createElement('div'); 
                 addDiv.style.padding='8px'; addDiv.style.borderTop='1px dashed var(--tbl-border)';
                 addDiv.style.display='flex'; addDiv.style.gap='4px';
@@ -879,6 +925,7 @@ const firebaseConfig = {
                     }
                 });
                 
+                // Delete Subject Button (in body for safety)
                 const delSubjDiv = document.createElement('div');
                 delSubjDiv.style.padding='8px'; delSubjDiv.style.textAlign='right';
                 delSubjDiv.innerHTML = `<button class="btn sm warn">刪除此科目</button>`;
@@ -906,12 +953,7 @@ const firebaseConfig = {
     document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
     document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
 
-    // 2. 修復：公會長自行輸入邏輯
-    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => { 
-        document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
-        if(e.target.value === 'custom') document.getElementById('ipTeacherCustom').focus();
-    });
-
+    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => { document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none'; });
     document.getElementById('selSubject').addEventListener('change', (e) => {
         const selTask = document.getElementById('selPresetTask'); selTask.innerHTML = '<option value="">📜 常用任務...</option>';
         const db = data.questSettings || defaultData.questSettings;
@@ -920,15 +962,10 @@ const firebaseConfig = {
     document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
 
     document.getElementById('btnCreate').addEventListener('click', () => {
-        // 2. 修復：正確抓取自訂公會長姓名
         let teacher = document.getElementById('ipTeacherSelect').value;
-        if(teacher === 'custom') {
-            teacher = document.getElementById('ipTeacherCustom').value.trim();
-        }
-        
+        if(teacher === 'custom') teacher = document.getElementById('ipTeacherCustom').value.trim();
         const title = document.getElementById('ipTitle').value.trim();
         const date = document.getElementById('ipDate').value;
-        
         if(!teacher || !title || !date) { alert("請填寫完整！"); return; }
         
         if(!data.teachers.includes(teacher)) data.teachers.push(teacher);
@@ -944,6 +981,7 @@ const firebaseConfig = {
         renderAll();
     });
 
+    // Fix: Listeners for Detail View Buttons and Slider
     document.getElementById('btnMarkAllYellow').addEventListener('click', () => {
         const a = data.assignments.find(i => i.id == currentAssignmentId);
         if(!a) return;
@@ -992,6 +1030,7 @@ const firebaseConfig = {
         renderDashboard();
     });
 
+    // Student Status List Click
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         if(e.target.closest('.btn-export-report') || e.target.classList.contains('batch-export-checkbox')) return;
         const li = e.target.closest('li');
@@ -1032,6 +1071,7 @@ const firebaseConfig = {
         });
     });
 
+    // List Actions
     document.getElementById('assignmentList').addEventListener('click', (e) => {
         const btnDel = e.target.closest('.btn-delete');
         if(btnDel) { 
@@ -1047,11 +1087,13 @@ const firebaseConfig = {
         const tr = e.target.closest('tr'); if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
     });
 
+    // Filters
     ['teacherFilter','subjectFilter','dateFilter'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
         currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard();
     }));
     document.getElementById('btnClearFilter').addEventListener('click', () => { currentFilter={teacher:'all',subject:'all',date:''}; document.getElementById('teacherFilter').value='all'; document.getElementById('subjectFilter').value='all'; document.getElementById('dateFilter').value=''; renderDashboard(); });
 
+    // Settings
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
         renderQuestConfig();
@@ -1076,6 +1118,8 @@ const firebaseConfig = {
             const t = btn.dataset.theme; 
             document.documentElement.setAttribute('data-color-theme', t); 
             localStorage.setItem('homeworkSystemColorTheme', t);
+            
+            // Highlight
             document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
         }
@@ -1087,6 +1131,7 @@ const firebaseConfig = {
         localStorage.setItem('homeworkSystemTheme', t);
     });
 
+    // Numpad Logic
     const numpadContainer = document.getElementById('numpadContainer');
     const btnToggleNumpad = document.getElementById('btnToggleNumpad');
     
@@ -1132,6 +1177,7 @@ const firebaseConfig = {
         });
     }
 
+    // Roster Management
     document.getElementById('btnAddStudentRow').addEventListener('click', () => {
         const listDiv = document.getElementById('rosterEditor');
         const count = listDiv.querySelectorAll('.roster-item').length + 1;
@@ -1144,6 +1190,7 @@ const firebaseConfig = {
     document.getElementById('btnApplyRoster').addEventListener('click', () => {
         if(!confirm("確定修改名單？")) return;
         const newRoster = [];
+        // Fix: Query only inside rosterEditor
         document.getElementById('rosterEditor').querySelectorAll('.roster-item').forEach(div => {
             const no = parseInt(div.querySelector('.roster-no-input').value);
             const name = div.querySelector('.roster-name-input').value.trim();
@@ -1172,6 +1219,7 @@ const firebaseConfig = {
         }
     });
 
+    // Tooltip Events
     document.body.addEventListener('mouseover', (e) => {
         const t = e.target.closest('.has-tooltip');
         if(t && t.dataset.tooltip) { customTooltip.innerHTML = t.dataset.tooltip; customTooltip.classList.add('show'); }
@@ -1181,6 +1229,7 @@ const firebaseConfig = {
     });
     document.body.addEventListener('mouseout', () => customTooltip.classList.remove('show'));
     
+    // Assign Modal
     document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
         const list = document.getElementById('assignStudentListContainer');
         list.innerHTML = '';
@@ -1202,6 +1251,7 @@ const firebaseConfig = {
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = false));
 
+    // Admin Profile Modal Logic
     document.getElementById('userEmailDisplay').addEventListener('click', () => {
         const adminModal = document.getElementById('adminProfileModal');
         const debtList = document.getElementById('adminDebtList');
@@ -1211,7 +1261,7 @@ const firebaseConfig = {
         data.roster.forEach((student, idx) => {
             let count = 0;
             data.assignments.forEach(a => {
-                if(a.archived) return; 
+                if(a.archived) return; // 忽略已封存
                 const assigned = a.assignedIndices === 'all' || a.assignedIndices.includes(idx);
                 if (assigned && (a.statuses[idx] === 0 || a.statuses[idx] === 2)) count++;
             });
