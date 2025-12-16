@@ -3,14 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 🛡️</title>
+  <title>🛡️ 二甲冒險者公會 🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
     /* ============================================================
-       🎨 核心變數 & 主題
+       🚨 核心視圖控制 (優先載入，防止跑版)
        ============================================================ */
-    /* 📜 探險公會 (預設) */
+    .view { display: none !important; } 
+    .view.show { display: block !important; animation: fadeIn .3s ease; }
+    @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+    /* ============================================================
+       🎨 變數與主題
+       ============================================================ */
     :root, html[data-color-theme='guild'] {
       --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
       --bg: #F4E4BC; --card: #FDF5E6; 
@@ -20,44 +26,34 @@
       --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
       --radius: 8px; --seat: 56px; --seat-font: 16px; 
     }
+    
     html[data-color-theme='guild'] body {
+      font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
       background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
     html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
     html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
-    
-    html[data-theme='dark'] {
-      --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037;
-    }
 
-    /* 🎄 聖誕節 (Christmas) */
+    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
+
+    /* 其他主題 */
     html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --seat: 56px; --seat-font: 16px; }
     html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3C!-- 雪人 --%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
     html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
     html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
 
-    /* 🌊 皇家藍 (Blue) */
     html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
-
-    /* 🍊 活力橘 (Orange) */
     html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
-
-    /* 🟣 神秘紫 (Purple) */
     html[data-color-theme='purple'] { --primary: #9333ea; --accent: #7e22ce; --ring: rgba(147, 51, 234, 0.3); --bg: #faf5ff; --card: #fff; --tbl-head: #f3e8ff; --tbl-alt: #fafaf9; --tbl-hover: #faf5ff; --tbl-border: #d8b4fe; --text-main: #581c87; --text-light: #9333ea; --muted: #7e22ce; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
-
-    /* 深色模式 */
-    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
     html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
     html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
     html[data-color-theme='purple'][data-theme='dark'] { --primary: #c084fc; --bg: #3b0764; --card: #2e0650; --text-main: #f3e8ff; --tbl-head: #3b0764; --tbl-alt: #2e0650; --tbl-hover: #581c87; --tbl-border: #6b21a8; }
 
-
-    /* 通用基礎樣式 */
+    /* 通用 */
     *{ box-sizing:border-box; }
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; }
-    
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
     .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
@@ -66,7 +62,6 @@
     
     .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
     .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
-    
     .row{ display:grid; gap:12px; grid-template-columns:repeat(12, 1fr); }
     .field{ grid-column:span 12; display:flex; flex-direction:column; gap:4px; }
     @media (min-width:720px){ .sm-6{ grid-column:span 6; } .sm-5{ grid-column:span 5; } .sm-4{ grid-column:span 4; } .sm-3{ grid-column:span 3; } .sm-2{ grid-column:span 2; } }
@@ -74,7 +69,6 @@
     label{ font-weight:800; font-size:13px; color: var(--text-light); }
     input, select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
     input:focus, select:focus{ border-color:var(--primary); }
-    
     .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
     .btn{ border:2px solid var(--text-light); border-radius:6px; padding:8px 16px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#fff; font-size:14px; }
     .btn.ghost{ background:var(--card); color:var(--text-light); border:2px dashed var(--tbl-border); }
@@ -82,12 +76,9 @@
     .btn.chest { background: #DAA520; border-color: #B8860B; color: #fff; }
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
-    
-    /* User Email Display */
     .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
     .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
     
-    /* Table & Grid */
     .table-wrap{ overflow:auto; border-radius:6px; border:2px solid var(--tbl-border); background:var(--card); }
     table{ width:100%; border-collapse:collapse; font-size:14px; }
     thead th{ position:sticky; top:0; background:var(--tbl-head); text-align:left; padding:10px; border-bottom:2px solid var(--tbl-border); white-space:nowrap; cursor:pointer; }
@@ -106,24 +97,20 @@
     .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-    /* 進度條 & 標籤 */
     progress { -webkit-appearance: none; width: 100%; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); border: 1px solid var(--text-light); }
     progress::-webkit-progress-value { background-color: var(--success); }
     .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
     .p-gray{ background:#e2e8f0; color:#475569; } .p-yellow{ background:#fefce8; color:#854d0e; }
     .p-orange{ background:#fff7ed; color:#9a3412; } .p-green{ background:#f0fdf4; color:#166534; }
 
-    /* Tooltip */
     .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
     .custom-tooltip.show { display: block; animation: fadeIn .1s ease-out; }
 
-    /* Status Picker */
     #statusPicker { display: none; position: absolute; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 10000; width: 160px; flex-direction: column; gap: 8px; }
     #statusPicker.show { display: flex; }
     .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
     .sp-1 { background: #fef9c3; color: #713f12; } .sp-2 { background: #fdba74; color: #9a3412; } .sp-3 { background: #86efac; color: #14532d; }
 
-    /* Numpad */
     .numpad-container { display: none; position: absolute; top: 100%; right: 0; width: 300px; z-index: 100; background: var(--card); border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; padding-top: 36px; margin-top: 8px; }
     .numpad-container.show { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .numpad-close { position: absolute; top: 2px; right: 4px; background: none; border: none; color: var(--danger); font-size: 24px; cursor: pointer; transition: transform 0.2s; }
@@ -131,25 +118,16 @@
     .num-key { padding: 12px 0; font-size: 20px; font-weight: bold; background: var(--bg); border: 1px solid var(--tbl-border); cursor: pointer; border-radius: 6px; color: var(--text-main); font-family: monospace; }
     .num-key.action-key { background: var(--tbl-head); color: var(--primary); }
 
-    /* Modals & Login */
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; }
     .modal-overlay.show { display: flex; }
     .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
-    
-    /* 漂亮的關閉按鈕 (封蠟章風格) */
-    .modal-close-btn { 
-        background: var(--danger); color: #fff; border: 2px solid #8B0000; 
-        width: 32px; height: 32px; border-radius: 50%; 
-        font-size: 20px; line-height: 1; cursor: pointer; 
-        display: flex; align-items: center; justify-content: center; 
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;
-    }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
     .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
 
-    /* Settings UI (Simplified) */
     .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
     .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
     .theme-option:hover { transform: scale(1.1); }
@@ -157,7 +135,8 @@
     /* Colors */
     .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
     .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
-    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .theme-option[data-theme="green"] { background: linear-gradient(135deg, #22c55e, #16a34a); }
     .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
     .theme-option[data-theme="purple"] { background: linear-gradient(135deg, #9333ea, #7e22ce); }
     
@@ -169,7 +148,6 @@
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(22px); }
 
-    /* Accordion (風琴式選單) */
     .accordion-item { border: 1px solid var(--tbl-border); border-radius: 6px; margin-bottom: 8px; overflow: hidden; background: var(--bg); }
     .accordion-header { padding: 12px; background: var(--tbl-head); font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background .2s; }
     .accordion-header:hover { background: var(--tbl-hover); }
@@ -181,7 +159,6 @@
     .task-tag i { margin-left: 6px; cursor: pointer; color: var(--danger); opacity: 0.6; }
     .task-tag i:hover { opacity: 1; }
 
-    /* Roster Tabs */
     .roster-tabs { display: flex; gap: 4px; margin-bottom: 0; }
     .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 800; cursor: pointer; color: var(--text-light); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; transition: all .2s; }
     .tab-btn:hover { background: var(--tbl-hover); }
@@ -190,21 +167,16 @@
     .roster-content.show { display: block; }
     .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; }
     .roster-item, .teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-bottom: 1px dashed var(--tbl-border); }
+    .roster-no-input { flex: 0 0 60px; min-width: 0; }
+    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
 
-    /* Student Status */
     .student-status-list { list-style: none; padding: 0; }
     .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
-    
     .batch-export-checkbox { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); display: none; }
     .batch-mode .batch-export-checkbox { display: inline-block; }
-    
-    .roster-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:8px; }
-    .roster-item, .teacher-item{ display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--tbl-border); border-radius:10px; padding:8px; }
-    .roster-no-input { flex: 0 0 60px; min-width: 0; }
-    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
 
     @media print { .no-print { display: none !important; } }
   </style>
@@ -245,7 +217,7 @@
       </div>
     </header>
 
-    <!-- VIEWS -->
+    <!-- Dashboard -->
     <section id="view-dashboard" class="view show">
       <div class="card">
         <h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2>
@@ -285,7 +257,9 @@
         </div>
         <div class="actions">
             <button class="btn" id="btnCreate"><i class="bi bi-quill-pen"></i> 發布委託</button>
-            <!-- 移除本地存取按鈕，因為已轉移至 Firebase -->
+            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份資料 (JSON)</button>
+            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原資料</label>
+            <input id="fileImport" type="file" accept="application/json" hidden />
         </div>
       </div>
       <div class="card">
@@ -307,6 +281,7 @@
       </div>
     </section>
     
+    <!-- Detail -->
     <section id="view-detail" class="view">
       <div class="card">
         <div class="assignment-bar">
@@ -330,7 +305,7 @@
       </div>
     </section>
 
-    <!-- 4. 公會名冊 UI 優化 -->
+    <!-- Roster -->
     <section id="view-roster" class="view">
         <div class="roster-tabs">
             <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
@@ -359,6 +334,7 @@
         </div>
     </section>
 
+    <!-- Student Status -->
     <section id="view-student-status" class="view">
       <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -374,7 +350,7 @@
 
   </div>
 
-  <!-- 外觀設定 Modal -->
+  <!-- Settings Modal -->
   <div id="settingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
@@ -382,7 +358,7 @@
             <!-- 6. 關閉按鈕優化 -->
             <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="field">
+        <div class="field" style="margin-bottom: 20px;">
             <label>風格主題</label>
             <div class="theme-options" id="themeOptionsContainer">
                 <!-- 1 & 2. 優化主題按鈕 -->
@@ -391,6 +367,9 @@
                 <div class="theme-option" data-theme="blue" title="皇家藍"></div>
                 <div class="theme-option" data-theme="orange" title="活力橘"></div>
                 <div class="theme-option" data-theme="purple" title="神秘紫"></div>
+                <div class="theme-option" data-theme="green" title="森林綠"></div>
+                <div class="theme-option" data-theme="pink" title="櫻花粉"></div>
+                <div class="theme-option" data-theme="teal" title="湖水青"></div>
             </div>
         </div>
         <div class="field">
@@ -406,26 +385,20 @@
     </div>
   </div>
   
-  <!-- 3. 委託內容 (作業名稱) 設定 Modal (風琴式 UI) -->
+  <!-- Quest Config Modal -->
   <div id="questSettingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
         <div class="modal-header">
             <h2><i class="bi bi-journal-plus"></i> 編輯任務選單</h2>
             <button class="modal-close-btn">&times;</button>
         </div>
-        <p class="muted" style="margin-top: -10px;">點擊科目可展開編輯任務。</p>
-        
-        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;">
-            <!-- 動態生成 Accordion -->
-        </div>
-
+        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;"></div>
         <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="ipNewSubject" placeholder="輸入新科目名稱..." style="flex:1;">
                 <button class="btn sm" id="btnAddSubject"><i class="bi bi-plus-lg"></i> 新增科目</button>
             </div>
         </div>
-
         <div class="modal-footer">
             <button class="btn ghost modal-close-btn">取消</button>
             <button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button>
@@ -433,7 +406,7 @@
     </div>
   </div>
   
-  <!-- 4. 公會長執務室 (Admin Profile Modal) -->
+  <!-- Admin Profile Modal -->
   <div id="adminProfileModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 600px;">
           <div class="modal-header">
@@ -442,19 +415,16 @@
           </div>
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 20px;">
               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/需重試 > 5)</h3>
-              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <!-- JS 生成 -->
-              </div>
+              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
           </div>
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border);">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
                <p class="muted">目前顯示最近 5 筆封存 (功能開發中)</p>
-               <!-- 未來可擴充 -->
           </div>
       </div>
   </div>
 
-  <!-- 指派學生 Modal -->
+  <!-- Assign Modal -->
   <div id="assignStudentModal" class="modal-overlay">
       <div class="modal-content">
           <div class="modal-header">
@@ -473,14 +443,12 @@
       </div>
   </div>
 
-  <!-- 狀態選擇轉盤 -->
+  <!-- Tools -->
   <div id="statusPicker">
       <button class="status-option-btn sp-1" data-status="1"><span class="dot s1"></span> 已回報</button>
       <button class="status-option-btn sp-2" data-status="2"><span class="dot s2"></span> 需再挑戰</button>
       <button class="status-option-btn sp-3" data-status="3"><span class="dot s3"></span> 討伐成功</button>
   </div>
-  
-  <!-- 自訂懸浮提示 -->
   <div id="customTooltip" class="custom-tooltip"></div>
 
   <!-- Firebase Scripts -->
@@ -489,23 +457,18 @@
     // 🔥 FIREBASE 設定區 (請將下方 Config 替換為您的)
     // ============================================================
     const firebaseConfig = {
-  apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
-  authDomain: "hwcheck-8888.firebaseapp.com",
-  projectId: "hwcheck-8888",
-  storageBucket: "hwcheck-8888.firebasestorage.app",
-  messagingSenderId: "661808262560",
-  appId: "1:661808262560:web:413e036d53b19ea3c108c5",
-  measurementId: "G-FR4LMZ630Q"
-};;
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    // ============================================================
-    // 程式邏輯 (系統核心)
-    // ============================================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 初始化 Firebase
     let app, db, auth;
     try {
         app = initializeApp(firebaseConfig);
@@ -550,7 +513,6 @@
             currentUser = user;
             loginOverlay.style.display = 'none';
             mainApp.style.display = 'block';
-            // 2. 優化：只顯示 @ 前面的帳號，字體縮小
             const userName = user.email.split('@')[0];
             document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${userName}`;
             initApp();
@@ -560,7 +522,6 @@
         }
     });
 
-    // 資料同步 (即時監聽)
     function loadDataFromFirebase() {
         if (unsubscribe) unsubscribe(); 
         const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
@@ -647,11 +608,12 @@
         document.documentElement.setAttribute('data-color-theme', savedColorTheme);
         document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
         
-        // Highlight active theme
         document.querySelectorAll('.theme-option').forEach(el => {
             el.classList.toggle('active', el.dataset.theme === savedColorTheme);
         });
         
+        // 確保初始只顯示 Dashboard
+        switchView('view-dashboard');
         loadDataFromFirebase();
     }
 
@@ -672,11 +634,13 @@
     }
 
     function switchView(targetId) {
-        views.forEach(view => view.classList.toggle('show', view.id === targetId));
+        views.forEach(view => {
+             if(view.id === targetId) view.classList.add('show');
+             else view.classList.remove('show');
+        });
         if (targetId === 'view-dashboard') renderDashboard(); 
     }
 
-    // --- Dashboard & Filter ---
     function populateTeacherDropdowns() {
         const teachers = data.teachers || [];
         const ipSelect = document.getElementById('ipTeacherSelect');
@@ -703,6 +667,7 @@
 
     function filterAssignments(assignments) {
         return assignments.filter(a => {
+            if (a.archived) return false;
             const matchTeacher = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
             const matchSubject = currentFilter.subject === 'all' || a.title.includes(currentFilter.subject);
             const matchDate = !currentFilter.date || a.date === currentFilter.date;
@@ -810,6 +775,7 @@
         data.roster.forEach((s, idx) => {
             let pCount = 0, tasks = [];
             data.assignments.forEach(a => {
+                if(a.archived) return;
                 const indices = a.assignedIndices || 'all';
                 if ((indices === 'all' || indices.includes(idx))) {
                     const status = (a.statuses || [])[idx] || 0;
@@ -877,7 +843,6 @@
         });
     }
 
-    // 3. 委託內容設定 (風琴式 UI)
     function renderQuestConfig() {
         const div = document.getElementById('questConfigList');
         div.innerHTML = '';
@@ -885,12 +850,10 @@
             Object.keys(tempQuestSettings).forEach(s => {
                 const item = document.createElement('div'); item.className = 'accordion-item';
                 
-                // Header
                 const header = document.createElement('div'); header.className = 'accordion-header';
                 header.innerHTML = `<span>📂 ${s}</span> <i class="bi bi-chevron-down"></i>`;
                 header.addEventListener('click', () => item.classList.toggle('active'));
                 
-                // Body
                 const body = document.createElement('div'); body.className = 'accordion-body';
                 const listDiv = document.createElement('div'); listDiv.className = 'task-list';
                 
@@ -900,7 +863,6 @@
                     tag.innerHTML = `${t} <i class="bi bi-x-circle-fill"></i>`;
                     tag.querySelector('i').addEventListener('click', () => { 
                         tempQuestSettings[s].splice(i, 1); renderQuestConfig(); 
-                        // Restore expanded state logic is tricky in re-render, simple fix:
                         setTimeout(() => document.querySelectorAll('.accordion-item').forEach(el => {
                             if(el.querySelector('.accordion-header span').innerText.includes(s)) el.classList.add('active');
                         }), 0);
@@ -908,7 +870,6 @@
                     listDiv.appendChild(tag);
                 });
                 
-                // Add Task Input inside Body
                 const addDiv = document.createElement('div'); 
                 addDiv.style.padding='8px'; addDiv.style.borderTop='1px dashed var(--tbl-border)';
                 addDiv.style.display='flex'; addDiv.style.gap='4px';
@@ -925,7 +886,6 @@
                     }
                 });
                 
-                // Delete Subject Button (in body for safety)
                 const delSubjDiv = document.createElement('div');
                 delSubjDiv.style.padding='8px'; delSubjDiv.style.textAlign='right';
                 delSubjDiv.innerHTML = `<button class="btn sm warn">刪除此科目</button>`;
