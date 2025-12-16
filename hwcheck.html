@@ -10,6 +10,7 @@
     /* ============================================================
        🎨 核心變數 & 主題
        ============================================================ */
+    /* 📜 探險公會 (預設) */
     :root, html[data-color-theme='guild'] {
       --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
       --bg: #F4E4BC; --card: #FDF5E6; 
@@ -19,43 +20,57 @@
       --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
       --radius: 8px; --seat: 56px; --seat-font: 16px; 
     }
-
     html[data-color-theme='guild'] body {
-      font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
       background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
     html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
     html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
+    
+    html[data-theme='dark'] {
+      --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037;
+    }
+
+    /* 🎄 聖誕節 (Christmas) */
+    html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --seat: 56px; --seat-font: 16px; }
+    html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3C!-- 雪人 --%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
+    html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
+    html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
+
+    /* 🌊 皇家藍 (Blue) */
+    html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+
+    /* 🍊 活力橘 (Orange) */
+    html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+
+    /* 🟣 神秘紫 (Purple) */
+    html[data-color-theme='purple'] { --primary: #9333ea; --accent: #7e22ce; --ring: rgba(147, 51, 234, 0.3); --bg: #faf5ff; --card: #fff; --tbl-head: #f3e8ff; --tbl-alt: #fafaf9; --tbl-hover: #faf5ff; --tbl-border: #d8b4fe; --text-main: #581c87; --text-light: #9333ea; --muted: #7e22ce; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
 
     /* 深色模式 */
     html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
+    html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
+    html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
+    html[data-color-theme='purple'][data-theme='dark'] { --primary: #c084fc; --bg: #3b0764; --card: #2e0650; --text-main: #f3e8ff; --tbl-head: #3b0764; --tbl-alt: #2e0650; --tbl-hover: #581c87; --tbl-border: #6b21a8; }
 
-    /* 聖誕模式 */
-    html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --seat: 56px; --seat-font: 16px; }
-    html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
-    html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
-    
-    /* 基礎樣式 */
+
+    /* 通用基礎樣式 */
     *{ box-sizing:border-box; }
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; }
     
-    /* Header */
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
     .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
     h1{ margin:0; font-size:clamp(18px,2.2vw,24px); font-weight:800; }
     .muted{ color:var(--muted); font-size:12px; }
     
-    /* Cards & Layout */
     .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
     .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
+    
     .row{ display:grid; gap:12px; grid-template-columns:repeat(12, 1fr); }
     .field{ grid-column:span 12; display:flex; flex-direction:column; gap:4px; }
     @media (min-width:720px){ .sm-6{ grid-column:span 6; } .sm-5{ grid-column:span 5; } .sm-4{ grid-column:span 4; } .sm-3{ grid-column:span 3; } .sm-2{ grid-column:span 2; } }
     
-    /* Inputs & Buttons */
     label{ font-weight:800; font-size:13px; color: var(--text-light); }
     input, select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
     input:focus, select:focus{ border-color:var(--primary); }
@@ -69,7 +84,8 @@
     .btn:active{ transform:translateY(2px); box-shadow:none; }
     
     /* User Email Display */
-    .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; }
+    .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
+    .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
     
     /* Table & Grid */
     .table-wrap{ overflow:auto; border-radius:6px; border:2px solid var(--tbl-border); background:var(--card); }
@@ -89,6 +105,13 @@
     .s2{ background:#fdba74; color:#9a3412; } 
     .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* 進度條 & 標籤 */
+    progress { -webkit-appearance: none; width: 100%; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); border: 1px solid var(--text-light); }
+    progress::-webkit-progress-value { background-color: var(--success); }
+    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
+    .p-gray{ background:#e2e8f0; color:#475569; } .p-yellow{ background:#fefce8; color:#854d0e; }
+    .p-orange{ background:#fff7ed; color:#9a3412; } .p-green{ background:#f0fdf4; color:#166534; }
 
     /* Tooltip */
     .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
@@ -126,7 +149,7 @@
     }
     .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
 
-    /* Settings UI */
+    /* Settings UI (Simplified) */
     .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
     .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
     .theme-option:hover { transform: scale(1.1); }
@@ -134,12 +157,9 @@
     /* Colors */
     .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
     .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
-    .theme-option[data-theme="blue"] { background: #3b82f6; }
-    .theme-option[data-theme="green"] { background: #22c55e; }
-    .theme-option[data-theme="orange"] { background: #f97316; }
-    .theme-option[data-theme="pink"] { background: #ec4899; }
-    .theme-option[data-theme="purple"] { background: #a855f7; }
-    .theme-option[data-theme="teal"] { background: #14b8a6; }
+    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .theme-option[data-theme="purple"] { background: linear-gradient(135deg, #9333ea, #7e22ce); }
     
     .dark-mode-toggle { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); margin-top: 20px; }
     .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
@@ -175,7 +195,17 @@
     .student-status-list { list-style: none; padding: 0; }
     .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: start; }
-    .view{ display:none; } .view.show{ display:block; animation:fadeIn .3s ease; }
+    .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
+    
+    .batch-export-checkbox { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); display: none; }
+    .batch-mode .batch-export-checkbox { display: inline-block; }
+    
+    .roster-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:8px; }
+    .roster-item, .teacher-item{ display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--tbl-border); border-radius:10px; padding:8px; }
+    .roster-no-input { flex: 0 0 60px; min-width: 0; }
+    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
+
     @media print { .no-print { display: none !important; } }
   </style>
 </head>
@@ -204,7 +234,7 @@
       </div>
       <div class="actions">
         <!-- 1. 優化：只顯示 @ 前面的帳號，字體縮小 -->
-        <span id="userEmailDisplay" class="user-badge"><i class="bi bi-person-circle"></i> ...</span>
+        <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> ...</span>
         
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
@@ -255,9 +285,7 @@
         </div>
         <div class="actions">
             <button class="btn" id="btnCreate"><i class="bi bi-quill-pen"></i> 發布委託</button>
-            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份資料 (JSON)</button>
-            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原資料</label>
-            <input id="fileImport" type="file" accept="application/json" hidden />
+            <!-- 移除本地存取按鈕，因為已轉移至 Firebase -->
         </div>
       </div>
       <div class="card">
@@ -357,15 +385,12 @@
         <div class="field">
             <label>風格主題</label>
             <div class="theme-options" id="themeOptionsContainer">
-                <!-- 1. 修復主題按鈕 (確保 data-theme 屬性正確) -->
+                <!-- 1 & 2. 優化主題按鈕 -->
                 <div class="theme-option" data-theme="guild" title="探險公會 (預設)"></div>
                 <div class="theme-option" data-theme="christmas" title="聖誕節"></div>
-                <div class="theme-option" data-theme="blue" title="預設藍"></div>
-                <div class="theme-option" data-theme="green" title="森林綠"></div>
-                <div class="theme-option" data-theme="orange" title="日落橙"></div>
-                <div class="theme-option" data-theme="pink" title="櫻花粉"></div>
-                <div class="theme-option" data-theme="purple" title="夢幻紫"></div>
-                <div class="theme-option" data-theme="teal" title="湖水青"></div>
+                <div class="theme-option" data-theme="blue" title="皇家藍"></div>
+                <div class="theme-option" data-theme="orange" title="活力橘"></div>
+                <div class="theme-option" data-theme="purple" title="神秘紫"></div>
             </div>
         </div>
         <div class="field">
@@ -406,6 +431,27 @@
             <button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button>
         </div>
     </div>
+  </div>
+  
+  <!-- 4. 公會長執務室 (Admin Profile Modal) -->
+  <div id="adminProfileModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-header">
+              <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
+              <button class="modal-close-btn">&times;</button>
+          </div>
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 20px;">
+              <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/需重試 > 5)</h3>
+              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <!-- JS 生成 -->
+              </div>
+          </div>
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border);">
+               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
+               <p class="muted">目前顯示最近 5 筆封存 (功能開發中)</p>
+               <!-- 未來可擴充 -->
+          </div>
+      </div>
   </div>
 
   <!-- 指派學生 Modal -->
@@ -1028,7 +1074,16 @@ const firebaseConfig = {
     // List Actions
     document.getElementById('assignmentList').addEventListener('click', (e) => {
         const btnDel = e.target.closest('.btn-delete');
-        if(btnDel) { e.stopPropagation(); if(confirm("確定刪除？")) { data.assignments = data.assignments.filter(a => a.id != btnDel.dataset.id); saveDataToFirebase(); renderDashboard(); } return; }
+        if(btnDel) { 
+            e.stopPropagation(); 
+            if(confirm("確定要封存(刪除)此委託嗎？")) { 
+                const a = data.assignments.find(x => x.id == btnDel.dataset.id);
+                if(a) a.archived = true;
+                saveDataToFirebase(); 
+                renderDashboard(); 
+            } 
+            return; 
+        }
         const tr = e.target.closest('tr'); if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
     });
 
@@ -1123,20 +1178,6 @@ const firebaseConfig = {
     }
 
     // Roster Management
-    document.getElementById('tabBtnStudents').addEventListener('click', () => {
-        document.getElementById('tabBtnStudents').classList.add('active');
-        document.getElementById('tabBtnTeachers').classList.remove('active');
-        document.getElementById('roster-content-students').classList.add('show');
-        document.getElementById('roster-content-teachers').classList.remove('show');
-    });
-    
-    document.getElementById('tabBtnTeachers').addEventListener('click', () => {
-        document.getElementById('tabBtnTeachers').classList.add('active');
-        document.getElementById('tabBtnStudents').classList.remove('active');
-        document.getElementById('roster-content-teachers').classList.add('show');
-        document.getElementById('roster-content-students').classList.remove('show');
-    });
-
     document.getElementById('btnAddStudentRow').addEventListener('click', () => {
         const listDiv = document.getElementById('rosterEditor');
         const count = listDiv.querySelectorAll('.roster-item').length + 1;
@@ -1146,23 +1187,10 @@ const firebaseConfig = {
         listDiv.scrollTop = listDiv.scrollHeight;
     });
 
-    // 5. 修復「從羊皮紙貼上」邏輯
-    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
-        const txt = document.getElementById('taRosterPaste').value.trim();
-        if(!txt) return;
-        const names = txt.split('\n').map(n => n.trim()).filter(Boolean);
-        const listDiv = document.getElementById('rosterEditor');
-        listDiv.innerHTML = '';
-        names.forEach((n, i) => {
-            const item = document.createElement('div'); item.className = 'roster-item';
-            item.innerHTML = `<input type="number" value="${i+1}" class="roster-no-input" style="width:60px;"><input type="text" value="${n}" class="roster-name-input" style="flex:1;">`;
-            listDiv.appendChild(item);
-        });
-    });
-
     document.getElementById('btnApplyRoster').addEventListener('click', () => {
         if(!confirm("確定修改名單？")) return;
         const newRoster = [];
+        // Fix: Query only inside rosterEditor
         document.getElementById('rosterEditor').querySelectorAll('.roster-item').forEach(div => {
             const no = parseInt(div.querySelector('.roster-no-input').value);
             const name = div.querySelector('.roster-name-input').value.trim();
@@ -1222,6 +1250,37 @@ const firebaseConfig = {
     });
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = false));
+
+    // Admin Profile Modal Logic
+    document.getElementById('userEmailDisplay').addEventListener('click', () => {
+        const adminModal = document.getElementById('adminProfileModal');
+        const debtList = document.getElementById('adminDebtList');
+        debtList.innerHTML = '';
+
+        const debtStudents = [];
+        data.roster.forEach((student, idx) => {
+            let count = 0;
+            data.assignments.forEach(a => {
+                if(a.archived) return; // 忽略已封存
+                const assigned = a.assignedIndices === 'all' || a.assignedIndices.includes(idx);
+                if (assigned && (a.statuses[idx] === 0 || a.statuses[idx] === 2)) count++;
+            });
+            if (count >= 5) debtStudents.push({ ...student, count });
+        });
+
+        if (debtStudents.length > 0) {
+            debtStudents.forEach(s => {
+                const tag = document.createElement('span');
+                tag.style.cssText = "background:#fee2e2; color:#b91c1c; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:14px; border:1px solid #fca5a5;";
+                tag.innerHTML = `${s.name} <small>(${s.count})</small>`;
+                debtList.appendChild(tag);
+            });
+        } else {
+            debtList.innerHTML = '<p style="color:var(--success);width:100%;">目前無人欠款超過 5 項！</p>';
+        }
+        
+        adminModal.classList.add('show');
+    });
 
   </script>
 
