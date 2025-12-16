@@ -4,71 +4,58 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🛡️ 二甲冒險者公會</title>
-  <!-- 圖示 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <style>
     /* ============================================================
-        📜 探險公會 (Adventurer's Guild) - 經典牛皮紙風格
-        ============================================================ */
+       🎨 核心變數 & 主題
+       ============================================================ */
     :root, html[data-color-theme='guild'] {
-      --primary: #8B4513;       /* 皮革棕 */
-      --accent: #CD853F;        /* 秘銀/銅色 */
-      --ring: rgba(139, 69, 19, 0.3);
-      --bg: #F4E4BC;            /* 淺羊皮紙色 */
-      --card: #FDF5E6;          /* 舊紙張色 */
-      --tbl-head: #E6D2B5;      /* 舊地圖黃 */
-      --tbl-alt: #FAF0E6;       /* 亞麻色 */
-      --tbl-hover: #DEB887;     /* 亮羊皮紙 */
-      --tbl-border: #D2B48C;    /* 曬痕色 */
-      --text-main: #3E2723;     /* 深褐色墨水 */
-      --text-light: #5D4037;    /* 淺褐色墨水 */
-      --muted: #8D6E63;
-      --success: #556B2F;       /* 森林綠 */
-      --danger: #8B0000;        /* 龍血紅 */
+      --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
+      --bg: #F4E4BC; --card: #FDF5E6; 
+      --tbl-head: #E6D2B5; --tbl-alt: #FAF0E6; --tbl-hover: #DEB887; --tbl-border: #D2B48C;
+      --text-main: #3E2723; --text-light: #5D4037; --muted: #8D6E63;
+      --success: #556B2F; --danger: #8B0000;
       --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
-      --radius: 4px;
-      --seat: 56px; 
-      --seat-font: 16px; 
+      --radius: 8px; --seat: 56px; --seat-font: 16px; 
     }
 
     html[data-color-theme='guild'] body {
       font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
       background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
-
     html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
     html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
-    
-    html[data-theme='dark'] {
-      --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037;
-    }
 
-    /* 🎄 聖誕節 (Christmas) */
+    /* 深色模式 */
+    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
+
+    /* 聖誕模式 */
     html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --seat: 56px; --seat-font: 16px; }
     html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
     html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
-    html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
-
-    /* 通用基礎樣式 */
+    
+    /* 基礎樣式 */
     *{ box-sizing:border-box; }
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; }
     
+    /* Header */
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
     .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
     h1{ margin:0; font-size:clamp(18px,2.2vw,24px); font-weight:800; }
     .muted{ color:var(--muted); font-size:12px; }
     
+    /* Cards & Layout */
     .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
     .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
-    
     .row{ display:grid; gap:12px; grid-template-columns:repeat(12, 1fr); }
     .field{ grid-column:span 12; display:flex; flex-direction:column; gap:4px; }
     @media (min-width:720px){ .sm-6{ grid-column:span 6; } .sm-5{ grid-column:span 5; } .sm-4{ grid-column:span 4; } .sm-3{ grid-column:span 3; } .sm-2{ grid-column:span 2; } }
     
+    /* Inputs & Buttons */
     label{ font-weight:800; font-size:13px; color: var(--text-light); }
     input, select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
     input:focus, select:focus{ border-color:var(--primary); }
@@ -81,17 +68,16 @@
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
     
-    .view{ display:none; } .view.show{ display:block; animation:fadeIn .3s ease; }
-    @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
-
-    /* 表格與列表 */
+    /* User Email Display */
+    .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; }
+    
+    /* Table & Grid */
     .table-wrap{ overflow:auto; border-radius:6px; border:2px solid var(--tbl-border); background:var(--card); }
     table{ width:100%; border-collapse:collapse; font-size:14px; }
     thead th{ position:sticky; top:0; background:var(--tbl-head); text-align:left; padding:10px; border-bottom:2px solid var(--tbl-border); white-space:nowrap; cursor:pointer; }
     tbody td{ padding:10px; border-bottom:1px solid var(--tbl-border); }
     tbody tr:hover{ background:var(--tbl-hover); }
-
-    /* 座位表 Grid */
+    
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(calc(var(--seat) + 70px), 1fr)); background:var(--bg); border:2px solid var(--tbl-border); border-radius:var(--radius); padding:10px; }
     .seatItem{ display:flex; align-items:center; gap:8px; }
     .seatItem.not-assigned { opacity: 0.35; filter: grayscale(80%); pointer-events: none; }
@@ -104,15 +90,8 @@
     .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-    /* 進度條 & 標籤 */
-    progress { -webkit-appearance: none; width: 100%; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); border: 1px solid var(--text-light); }
-    progress::-webkit-progress-value { background-color: var(--success); }
-    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
-    .p-gray{ background:#e2e8f0; color:#475569; } .p-yellow{ background:#fefce8; color:#854d0e; }
-    .p-orange{ background:#fff7ed; color:#9a3412; } .p-green{ background:#f0fdf4; color:#166534; }
-
     /* Tooltip */
-    .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 12px 16px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
+    .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
     .custom-tooltip.show { display: block; animation: fadeIn .1s ease-out; }
 
     /* Status Picker */
@@ -124,53 +103,79 @@
     /* Numpad */
     .numpad-container { display: none; position: absolute; top: 100%; right: 0; width: 300px; z-index: 100; background: var(--card); border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; padding-top: 36px; margin-top: 8px; }
     .numpad-container.show { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .numpad-close { position: absolute; top: 2px; right: 4px; background: none; border: none; color: var(--danger); font-size: 24px; cursor: pointer; }
+    .numpad-close { position: absolute; top: 2px; right: 4px; background: none; border: none; color: var(--danger); font-size: 24px; cursor: pointer; transition: transform 0.2s; }
+    .numpad-close:hover { transform: scale(1.2); }
     .num-key { padding: 12px 0; font-size: 20px; font-weight: bold; background: var(--bg); border: 1px solid var(--tbl-border); cursor: pointer; border-radius: 6px; color: var(--text-main); font-family: monospace; }
     .num-key.action-key { background: var(--tbl-head); color: var(--primary); }
 
-    /* Login & Modal */
+    /* Modals & Login */
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; }
     .modal-overlay.show { display: flex; }
-    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); }
+    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
+    
+    /* 漂亮的關閉按鈕 (封蠟章風格) */
+    .modal-close-btn { 
+        background: var(--danger); color: #fff; border: 2px solid #8B0000; 
+        width: 32px; height: 32px; border-radius: 50%; 
+        font-size: 20px; line-height: 1; cursor: pointer; 
+        display: flex; align-items: center; justify-content: center; 
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;
+    }
+    .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
 
-    /* Settings UI (Simplified) */
+    /* Settings UI */
     .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
-    .theme-option { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--bg); cursor: pointer; outline: none; transition: transform .1s; }
+    .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
     .theme-option:hover { transform: scale(1.1); }
-    .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 2px var(--ring); }
+    .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
     /* Colors */
     .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
     .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
-    /* Added other theme styles for completeness */
-    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #3b82f6, #14b8a6); }
-    .theme-option[data-theme="green"] { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
-    .theme-option[data-theme="pink"] { background: linear-gradient(135deg, #ec4899, #d946ef); }
-    .theme-option[data-theme="purple"] { background: linear-gradient(135deg, #a855f7, #9333ea); }
-    .theme-option[data-theme="teal"] { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+    .theme-option[data-theme="blue"] { background: #3b82f6; }
+    .theme-option[data-theme="green"] { background: #22c55e; }
+    .theme-option[data-theme="orange"] { background: #f97316; }
+    .theme-option[data-theme="pink"] { background: #ec4899; }
+    .theme-option[data-theme="purple"] { background: #a855f7; }
+    .theme-option[data-theme="teal"] { background: #14b8a6; }
+    
+    .dark-mode-toggle { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); margin-top: 20px; }
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    /* Accordion (風琴式選單) */
+    .accordion-item { border: 1px solid var(--tbl-border); border-radius: 6px; margin-bottom: 8px; overflow: hidden; background: var(--bg); }
+    .accordion-header { padding: 12px; background: var(--tbl-head); font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background .2s; }
+    .accordion-header:hover { background: var(--tbl-hover); }
+    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: var(--card); }
+    .accordion-item.active .accordion-body { max-height: 500px; overflow-y: auto; border-top: 1px solid var(--tbl-border); }
+    .accordion-item.active .accordion-header { color: var(--primary); }
+    .task-list { padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .task-tag { display: inline-flex; align-items: center; background: var(--bg); border: 1px solid var(--tbl-border); padding: 6px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+    .task-tag i { margin-left: 6px; cursor: pointer; color: var(--danger); opacity: 0.6; }
+    .task-tag i:hover { opacity: 1; }
+
+    /* Roster Tabs */
+    .roster-tabs { display: flex; gap: 4px; margin-bottom: 0; }
+    .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 800; cursor: pointer; color: var(--text-light); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; transition: all .2s; }
+    .tab-btn:hover { background: var(--tbl-hover); }
+    .tab-btn.active { background: var(--card); color: var(--primary); border-bottom-color: var(--primary); }
+    .roster-content { display: none; background: var(--card); padding: 16px; border-radius: 0 0 8px 8px; border: 1px solid var(--tbl-border); border-top: none; }
+    .roster-content.show { display: block; }
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; }
+    .roster-item, .teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-bottom: 1px dashed var(--tbl-border); }
 
     /* Student Status */
     .student-status-list { list-style: none; padding: 0; }
     .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: start; }
-    .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
-    
-    .batch-export-checkbox { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); display: none; }
-    .batch-mode .batch-export-checkbox { display: inline-block; }
-    
-    /* 修正名冊的 UI 跑版問題 */
-    .roster-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:8px; }
-    .roster-item, .teacher-item { 
-        display:flex; align-items:center; gap:8px; 
-        background:var(--card); border:1px solid var(--tbl-border); border-radius:10px; padding:8px; 
-        width: 100%; /* 確保滿寬 */
-    }
-    .roster-no-input { flex: 0 0 60px; min-width: 0; }
-    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
-
+    .view{ display:none; } .view.show{ display:block; animation:fadeIn .3s ease; }
     @media print { .no-print { display: none !important; } }
   </style>
 </head>
@@ -198,8 +203,8 @@
         </div>
       </div>
       <div class="actions">
-        <!-- Email Display -->
-        <span id="userEmailDisplay" class="badge" style="background:var(--bg);color:var(--text-light);border-color:var(--primary);"><i class="bi bi-person-circle"></i> 載入中...</span>
+        <!-- 1. 優化：只顯示 @ 前面的帳號，字體縮小 -->
+        <span id="userEmailDisplay" class="user-badge"><i class="bi bi-person-circle"></i> ...</span>
         
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
@@ -227,7 +232,7 @@
                 <select id="selSubject" style="width:40%; padding:6px; font-size:12px;">
                     <option value="">📂 科目...</option>
                 </select>
-                <button id="btnOpenQuestSettings" class="btn sm ghost" style="padding: 4px 8px;" title="編輯科目與任務"><i class="bi bi-gear-fill"></i></button>
+                <button id="btnOpenQuestSettings" class="btn sm ghost" style="padding: 4px 8px;" title="編輯任務"><i class="bi bi-gear-fill"></i></button>
                 <select id="selPresetTask" style="width:50%; padding:6px; font-size:12px; flex-grow: 1;">
                     <option value="">📜 常用任務...</option>
                 </select>
@@ -297,30 +302,31 @@
       </div>
     </section>
 
+    <!-- 4. 公會名冊 UI 優化 -->
     <section id="view-roster" class="view">
-        <div class="card" style="padding:8px">
-            <div class="roster-tabs">
-                <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
-                <button id="tabBtnTeachers" class="tab-btn"><i class="bi bi-person-badge"></i> 公會長名冊</button>
-            </div>
+        <div class="roster-tabs">
+            <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
+            <button id="tabBtnTeachers" class="tab-btn"><i class="bi bi-person-badge"></i> 公會長名冊</button>
         </div>
         <div id="roster-content-students" class="roster-content show">
-            <div class="card">
-                <h2><i class="bi bi-person-lines-fill"></i> 編輯冒險者名單</h2>
-                <div class="roster-wrapper"><div class="roster-grid" id="rosterEditor"></div></div>
-                <div class="actions" style="margin-top:12px; justify-content:space-between;">
-                    <button class="btn sm secondary" id="btnAddStudentRow"><i class="bi bi-plus-lg"></i> 新增一行</button>
-                    <button class="btn" id="btnApplyRoster"><i class="bi bi-check-circle"></i> 儲存名冊變更</button>
+            <div class="roster-grid" id="rosterEditor"></div>
+            <div class="actions" style="margin-top:16px; justify-content:space-between; border-top:1px dashed var(--tbl-border); padding-top:12px;">
+                <button class="btn sm secondary" id="btnAddStudentRow"><i class="bi bi-plus-lg"></i> 新增一行</button>
+                <div style="display:flex; gap:8px;">
+                     <details style="display:inline-block;"><summary class="btn sm ghost" style="list-style:none; cursor:pointer;">📜 貼上名單</summary>
+                        <div style="position:absolute; bottom:60px; right:20px; background:var(--card); padding:10px; border:2px solid var(--primary); border-radius:8px; width:250px; z-index:100;">
+                            <textarea id="taRosterPaste" rows="10" style="width:100%;" placeholder="一行一個姓名..."></textarea>
+                            <button class="btn sm secondary" id="btnLoadFromPaste" style="width:100%; margin-top:8px;">載入</button>
+                        </div>
+                     </details>
+                     <button class="btn" id="btnApplyRoster"><i class="bi bi-check-circle"></i> 儲存變更</button>
                 </div>
-                <details style="margin-top:12px;"><summary>📜 從羊皮紙貼上 (一行一個姓名)</summary><textarea id="taRosterPaste" rows="10" style="width:100%; margin-top:10px;" placeholder="S.Coups&#10;淨漢..."></textarea><div class="actions" style="justify-content: flex-end;"><button class="btn secondary sm" id="btnLoadFromPaste"><i class="bi bi-upload"></i> 還原資料</button></div></details>
             </div>
         </div>
         <div id="roster-content-teachers" class="roster-content">
-            <div class="card">
-                <h2><i class="bi bi-person-badge"></i> 編輯公會長名單</h2>
-                <p class="muted" style="margin-top:-8px; margin-bottom:12px;">修改姓名將同步更新相關委託。</p>
-                <div class="roster-wrapper"><div class="roster-grid" id="teacherEditor"></div></div>
-                <div class="actions"><button class="btn" id="btnApplyTeachers"><i class="bi bi-check-circle"></i> 儲存姓名變更</button></div>
+            <div class="roster-grid" id="teacherEditor"></div>
+            <div class="actions" style="margin-top:16px; justify-content:flex-end;">
+                 <button class="btn" id="btnApplyTeachers"><i class="bi bi-check-circle"></i> 儲存變更</button>
             </div>
         </div>
     </section>
@@ -345,19 +351,21 @@
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
             <h2><i class="bi bi-gear-fill"></i> 系統設定</h2>
+            <!-- 6. 關閉按鈕優化 -->
             <button class="modal-close-btn">&times;</button>
         </div>
-        <div class="field" style="margin-bottom: 20px;">
+        <div class="field">
             <label>風格主題</label>
             <div class="theme-options" id="themeOptionsContainer">
-                <button class="theme-option" data-theme="guild" title="探險公會 (預設)"></button>
-                <button class="theme-option" data-theme="christmas" title="聖誕節"></button>
-                <button class="theme-option" data-theme="blue" title="預設藍"></button>
-                <button class="theme-option" data-theme="green" title="森林綠"></button>
-                <button class="theme-option" data-theme="orange" title="日落橙"></button>
-                <button class="theme-option" data-theme="pink" title="櫻花粉"></button>
-                <button class="theme-option" data-theme="purple" title="夢幻紫"></button>
-                <button class="theme-option" data-theme="teal" title="湖水青"></button>
+                <!-- 1. 修復主題按鈕 (確保 data-theme 屬性正確) -->
+                <div class="theme-option" data-theme="guild" title="探險公會 (預設)"></div>
+                <div class="theme-option" data-theme="christmas" title="聖誕節"></div>
+                <div class="theme-option" data-theme="blue" title="預設藍"></div>
+                <div class="theme-option" data-theme="green" title="森林綠"></div>
+                <div class="theme-option" data-theme="orange" title="日落橙"></div>
+                <div class="theme-option" data-theme="pink" title="櫻花粉"></div>
+                <div class="theme-option" data-theme="purple" title="夢幻紫"></div>
+                <div class="theme-option" data-theme="teal" title="湖水青"></div>
             </div>
         </div>
         <div class="field">
@@ -373,20 +381,26 @@
     </div>
   </div>
   
-  <!-- 任務選單設定 Modal -->
+  <!-- 3. 委託內容 (作業名稱) 設定 Modal (風琴式 UI) -->
   <div id="questSettingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
         <div class="modal-header">
             <h2><i class="bi bi-journal-plus"></i> 編輯任務選單</h2>
             <button class="modal-close-btn">&times;</button>
         </div>
-        <div id="questConfigList" style="flex: 1; overflow-y: auto; border: 2px solid var(--tbl-border); border-radius: 6px; padding: 10px; margin-bottom: 10px;"></div>
-        <div style="background: var(--bg); padding: 10px; border-radius: 6px; border: 1px dashed var(--primary);">
+        <p class="muted" style="margin-top: -10px;">點擊科目可展開編輯任務。</p>
+        
+        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;">
+            <!-- 動態生成 Accordion -->
+        </div>
+
+        <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="ipNewSubject" placeholder="輸入新科目名稱..." style="flex:1;">
                 <button class="btn sm" id="btnAddSubject"><i class="bi bi-plus-lg"></i> 新增科目</button>
             </div>
         </div>
+
         <div class="modal-footer">
             <button class="btn ghost modal-close-btn">取消</button>
             <button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button>
@@ -426,17 +440,16 @@
   <!-- Firebase Scripts -->
   <script type="module">
     // ============================================================
-    // 🔥 FIREBASE 設定區 (請在此處填入您的資料)
+    // 🔥 FIREBASE 設定區 (請將下方 Config 替換為您的)
     // ============================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
-  authDomain: "hwcheck-8888.firebaseapp.com",
-  projectId: "hwcheck-8888",
-  storageBucket: "hwcheck-8888.firebasestorage.app",
-  messagingSenderId: "661808262560",
-  appId: "1:661808262560:web:413e036d53b19ea3c108c5",
-  measurementId: "G-FR4LMZ630Q"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     // ============================================================
     // 程式邏輯 (系統核心)
@@ -490,7 +503,9 @@ const firebaseConfig = {
             currentUser = user;
             loginOverlay.style.display = 'none';
             mainApp.style.display = 'block';
-            document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${user.email}`;
+            // 2. 優化：只顯示 @ 前面的帳號，字體縮小
+            const userName = user.email.split('@')[0];
+            document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${userName}`;
             initApp();
         } else {
             loginOverlay.style.display = 'flex';
@@ -498,6 +513,7 @@ const firebaseConfig = {
         }
     });
 
+    // 資料同步 (即時監聽)
     function loadDataFromFirebase() {
         if (unsubscribe) unsubscribe(); 
         const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
@@ -583,6 +599,12 @@ const firebaseConfig = {
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.documentElement.setAttribute('data-color-theme', savedColorTheme);
         document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
+        
+        // Highlight active theme
+        document.querySelectorAll('.theme-option').forEach(el => {
+            el.classList.toggle('active', el.dataset.theme === savedColorTheme);
+        });
+        
         loadDataFromFirebase();
     }
 
@@ -652,7 +674,6 @@ const firebaseConfig = {
             return 0;
         });
 
-        // Update sort icons
         document.querySelectorAll('#assignmentTable thead th[data-sort]').forEach(th => {
             const icon = th.querySelector('i');
             th.style.color = 'var(--text-main)'; icon.style.opacity = '0.3';
@@ -712,7 +733,6 @@ const firebaseConfig = {
         });
     }
 
-    // --- Detail View ---
     function renderDetail(id) {
         const a = data.assignments.find(x => x.id == id);
         if (!a) { switchView('view-dashboard'); return; }
@@ -731,7 +751,6 @@ const firebaseConfig = {
         });
     }
 
-    // --- Student Status ---
     function renderStudentStatus() {
         const container = document.getElementById('studentStatusContainer');
         container.innerHTML = '';
@@ -811,35 +830,65 @@ const firebaseConfig = {
         });
     }
 
+    // 3. 委託內容設定 (風琴式 UI)
     function renderQuestConfig() {
         const div = document.getElementById('questConfigList');
         div.innerHTML = '';
         if(tempQuestSettings) {
             Object.keys(tempQuestSettings).forEach(s => {
-                const item = document.createElement('div'); item.className = 'quest-config-item';
-                const header = document.createElement('div'); header.className = 'quest-config-header';
-                header.innerHTML = `<span>📂 ${s}</span> <button class="btn sm warn btn-del-subj">刪除</button>`;
-                header.querySelector('.btn-del-subj').addEventListener('click', (e) => {
-                    e.stopPropagation(); if(confirm(`刪除科目 ${s}?`)) { delete tempQuestSettings[s]; renderQuestConfig(); }
-                });
-                header.addEventListener('click', () => item.classList.toggle('open'));
+                const item = document.createElement('div'); item.className = 'accordion-item';
                 
-                const body = document.createElement('div'); body.className = 'quest-config-body';
+                // Header
+                const header = document.createElement('div'); header.className = 'accordion-header';
+                header.innerHTML = `<span>📂 ${s}</span> <i class="bi bi-chevron-down"></i>`;
+                header.addEventListener('click', () => item.classList.toggle('active'));
+                
+                // Body
+                const body = document.createElement('div'); body.className = 'accordion-body';
+                const listDiv = document.createElement('div'); listDiv.className = 'task-list';
+                
                 const tasks = tempQuestSettings[s] || [];
                 tasks.forEach((t, i) => {
                     const tag = document.createElement('span'); tag.className = 'task-tag';
                     tag.innerHTML = `${t} <i class="bi bi-x-circle-fill"></i>`;
-                    tag.querySelector('i').addEventListener('click', () => { tempQuestSettings[s].splice(i, 1); renderQuestConfig(); setTimeout(()=>item.classList.add('open'),0); });
-                    body.appendChild(tag);
+                    tag.querySelector('i').addEventListener('click', () => { 
+                        tempQuestSettings[s].splice(i, 1); renderQuestConfig(); 
+                        // Restore expanded state logic is tricky in re-render, simple fix:
+                        setTimeout(() => document.querySelectorAll('.accordion-item').forEach(el => {
+                            if(el.querySelector('.accordion-header span').innerText.includes(s)) el.classList.add('active');
+                        }), 0);
+                    });
+                    listDiv.appendChild(tag);
                 });
                 
-                const addDiv = document.createElement('div'); addDiv.style.marginTop='8px'; addDiv.style.display='flex'; addDiv.style.gap='4px';
-                addDiv.innerHTML = `<input type="text" placeholder="新增..." class="ip-new-task" style="flex:1;padding:4px;"><button class="btn sm secondary btn-add-task">新增</button>`;
+                // Add Task Input inside Body
+                const addDiv = document.createElement('div'); 
+                addDiv.style.padding='8px'; addDiv.style.borderTop='1px dashed var(--tbl-border)';
+                addDiv.style.display='flex'; addDiv.style.gap='4px';
+                addDiv.innerHTML = `<input type="text" placeholder="新增任務..." class="ip-new-task" style="flex:1;padding:4px;"><button class="btn sm secondary btn-add-task">新增</button>`;
                 addDiv.querySelector('.btn-add-task').addEventListener('click', () => {
                     const val = addDiv.querySelector('.ip-new-task').value.trim();
-                    if(val) { if(!tempQuestSettings[s]) tempQuestSettings[s]=[]; tempQuestSettings[s].push(val); renderQuestConfig(); setTimeout(()=>item.classList.add('open'),0); }
+                    if(val) { 
+                        if(!tempQuestSettings[s]) tempQuestSettings[s]=[]; 
+                        tempQuestSettings[s].push(val); 
+                        renderQuestConfig(); 
+                        setTimeout(() => document.querySelectorAll('.accordion-item').forEach(el => {
+                            if(el.querySelector('.accordion-header span').innerText.includes(s)) el.classList.add('active');
+                        }), 0);
+                    }
                 });
+                
+                // Delete Subject Button (in body for safety)
+                const delSubjDiv = document.createElement('div');
+                delSubjDiv.style.padding='8px'; delSubjDiv.style.textAlign='right';
+                delSubjDiv.innerHTML = `<button class="btn sm warn">刪除此科目</button>`;
+                delSubjDiv.querySelector('button').addEventListener('click', () => {
+                     if(confirm(`確定刪除科目「${s}」及其所有任務？`)) { delete tempQuestSettings[s]; renderQuestConfig(); }
+                });
+
+                body.appendChild(listDiv);
                 body.appendChild(addDiv);
+                body.appendChild(delSubjDiv);
                 
                 item.appendChild(header); item.appendChild(body); div.appendChild(item);
             });
@@ -1012,7 +1061,11 @@ const firebaseConfig = {
         if(btn) { 
             const t = btn.dataset.theme; 
             document.documentElement.setAttribute('data-color-theme', t); 
-            localStorage.setItem('homeworkSystemColorTheme', t); 
+            localStorage.setItem('homeworkSystemColorTheme', t);
+            
+            // Highlight
+            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
         }
     });
     
@@ -1069,6 +1122,20 @@ const firebaseConfig = {
     }
 
     // Roster Management
+    document.getElementById('tabBtnStudents').addEventListener('click', () => {
+        document.getElementById('tabBtnStudents').classList.add('active');
+        document.getElementById('tabBtnTeachers').classList.remove('active');
+        document.getElementById('roster-content-students').classList.add('show');
+        document.getElementById('roster-content-teachers').classList.remove('show');
+    });
+    
+    document.getElementById('tabBtnTeachers').addEventListener('click', () => {
+        document.getElementById('tabBtnTeachers').classList.add('active');
+        document.getElementById('tabBtnStudents').classList.remove('active');
+        document.getElementById('roster-content-teachers').classList.add('show');
+        document.getElementById('roster-content-students').classList.remove('show');
+    });
+
     document.getElementById('btnAddStudentRow').addEventListener('click', () => {
         const listDiv = document.getElementById('rosterEditor');
         const count = listDiv.querySelectorAll('.roster-item').length + 1;
@@ -1076,6 +1143,20 @@ const firebaseConfig = {
         item.innerHTML = `<input type="number" value="${count}" class="roster-no-input" style="width:60px;"><input type="text" value="" placeholder="新冒險者" class="roster-name-input" style="flex:1;">`;
         listDiv.appendChild(item);
         listDiv.scrollTop = listDiv.scrollHeight;
+    });
+
+    // 5. 修復「從羊皮紙貼上」邏輯
+    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
+        const txt = document.getElementById('taRosterPaste').value.trim();
+        if(!txt) return;
+        const names = txt.split('\n').map(n => n.trim()).filter(Boolean);
+        const listDiv = document.getElementById('rosterEditor');
+        listDiv.innerHTML = '';
+        names.forEach((n, i) => {
+            const item = document.createElement('div'); item.className = 'roster-item';
+            item.innerHTML = `<input type="number" value="${i+1}" class="roster-no-input" style="width:60px;"><input type="text" value="${n}" class="roster-name-input" style="flex:1;">`;
+            listDiv.appendChild(item);
+        });
     });
 
     document.getElementById('btnApplyRoster').addEventListener('click', () => {
