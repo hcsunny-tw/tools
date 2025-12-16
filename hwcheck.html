@@ -8,15 +8,9 @@
 
   <style>
     /* ============================================================
-       🚨 核心視圖控制 (修復跑版問題)
+       🎨 核心變數 & 主題
        ============================================================ */
-    .view { display: none !important; } 
-    .view.show { display: block !important; animation: fadeIn .3s ease; }
-    @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
-
-    /* ============================================================
-       🎨 變數與主題
-       ============================================================ */
+    /* 📜 探險公會 (預設) */
     :root, html[data-color-theme='guild'] {
       --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
       --bg: #F4E4BC; --card: #FDF5E6; 
@@ -26,7 +20,6 @@
       --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
       --radius: 8px; --seat: 56px; --seat-font: 16px; 
     }
-    
     html[data-color-theme='guild'] body {
       font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
       background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
@@ -35,25 +28,34 @@
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
     html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
 
+    /* 深色模式 */
     html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
 
-    /* 其他主題 */
+    /* 🎄 聖誕節 (Christmas) */
     html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --seat: 56px; --seat-font: 16px; }
     html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3C!-- 雪人 --%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
     html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
     html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
 
+    /* 🌊 皇家藍 (Blue) */
     html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+
+    /* 🍊 活力橘 (Orange) */
     html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+
+    /* 🟣 神秘紫 (Purple) */
     html[data-color-theme='purple'] { --primary: #9333ea; --accent: #7e22ce; --ring: rgba(147, 51, 234, 0.3); --bg: #faf5ff; --card: #fff; --tbl-head: #f3e8ff; --tbl-alt: #fafaf9; --tbl-hover: #faf5ff; --tbl-border: #d8b4fe; --text-main: #581c87; --text-light: #9333ea; --muted: #7e22ce; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+
     html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
     html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
     html[data-color-theme='purple'][data-theme='dark'] { --primary: #c084fc; --bg: #3b0764; --card: #2e0650; --text-main: #f3e8ff; --tbl-head: #3b0764; --tbl-alt: #2e0650; --tbl-hover: #581c87; --tbl-border: #6b21a8; }
 
-    /* 通用 */
+
+    /* 通用基礎樣式 */
     *{ box-sizing:border-box; }
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; }
+    
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
     .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
@@ -62,6 +64,7 @@
     
     .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
     .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
+    
     .row{ display:grid; gap:12px; grid-template-columns:repeat(12, 1fr); }
     .field{ grid-column:span 12; display:flex; flex-direction:column; gap:4px; }
     @media (min-width:720px){ .sm-6{ grid-column:span 6; } .sm-5{ grid-column:span 5; } .sm-4{ grid-column:span 4; } .sm-3{ grid-column:span 3; } .sm-2{ grid-column:span 2; } }
@@ -69,6 +72,7 @@
     label{ font-weight:800; font-size:13px; color: var(--text-light); }
     input, select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
     input:focus, select:focus{ border-color:var(--primary); }
+    
     .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
     .btn{ border:2px solid var(--text-light); border-radius:6px; padding:8px 16px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#fff; font-size:14px; }
     .btn.ghost{ background:var(--card); color:var(--text-light); border:2px dashed var(--tbl-border); }
@@ -132,6 +136,16 @@
     .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
     .theme-option:hover { transform: scale(1.1); }
     .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
+    
+    /* 修正：為所有主題選項加上背景色，確保顯示 */
+    .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
+    .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
+    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .theme-option[data-theme="green"] { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .theme-option[data-theme="pink"] { background: linear-gradient(135deg, #ec4899, #d946ef); }
+    .theme-option[data-theme="purple"] { background: linear-gradient(135deg, #9333ea, #7e22ce); }
+    .theme-option[data-theme="teal"] { background: linear-gradient(135deg, #14b8a6, #0d9488); }
     
     .dark-mode-toggle { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); margin-top: 20px; }
     .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
@@ -218,6 +232,7 @@
             <select id="ipTeacherSelect"></select>
             <input id="ipTeacherCustom" type="text" placeholder="請輸入姓名" style="display: none; margin-top: 8px;">
           </div>
+          
           <div class="field sm-5">
             <label>委託內容 (作業名稱)</label>
             <div style="display:flex; gap:8px; margin-bottom:4px; align-items: center;">
@@ -235,6 +250,7 @@
                 <div id="numpadContainer" class="numpad-container"></div>
             </div>
           </div>
+
           <div class="field sm-3"><label>發布日期</label><input id="ipDate" type="date" /></div>
         </div>
         <div class="field" style="margin-top: 8px;">
@@ -354,6 +370,9 @@
                 <div class="theme-option" data-theme="blue" title="皇家藍"></div>
                 <div class="theme-option" data-theme="orange" title="活力橘"></div>
                 <div class="theme-option" data-theme="purple" title="神秘紫"></div>
+                <div class="theme-option" data-theme="green" title="森林綠"></div>
+                <div class="theme-option" data-theme="pink" title="櫻花粉"></div>
+                <div class="theme-option" data-theme="teal" title="湖水青"></div>
             </div>
         </div>
         <div class="field">
@@ -440,15 +459,15 @@
     // ============================================================
     // 🔥 FIREBASE 設定區 (請將下方 Config 替換為您的)
     // ============================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
-      authDomain: "hwcheck-8888.firebaseapp.com",
-      projectId: "hwcheck-8888",
-      storageBucket: "hwcheck-8888.firebasestorage.app",
-      messagingSenderId: "661808262560",
-      appId: "1:661808262560:web:413e036d53b19ea3c108c5",
-      measurementId: "G-FR4LMZ630Q"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
+  authDomain: "hwcheck-8888.firebaseapp.com",
+  projectId: "hwcheck-8888",
+  storageBucket: "hwcheck-8888.firebasestorage.app",
+  messagingSenderId: "661808262560",
+  appId: "1:661808262560:web:413e036d53b19ea3c108c5",
+  measurementId: "G-FR4LMZ630Q"
+};
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -597,8 +616,6 @@
             el.classList.toggle('active', el.dataset.theme === savedColorTheme);
         });
         
-        // 確保初始只顯示 Dashboard
-        switchView('view-dashboard');
         loadDataFromFirebase();
     }
 
@@ -606,7 +623,8 @@
         populateTeacherDropdowns();
         updateSubjectDropdown();
         resetNewAssignmentState();
-        renderAll();
+        // 修正：預設只顯示 Dashboard
+        switchView('view-dashboard');
     }
 
     function renderAll() {
@@ -888,7 +906,12 @@
     document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
     document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
 
-    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => { document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none'; });
+    // 2. 修復：公會長自行輸入邏輯
+    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => { 
+        document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+        if(e.target.value === 'custom') document.getElementById('ipTeacherCustom').focus();
+    });
+
     document.getElementById('selSubject').addEventListener('change', (e) => {
         const selTask = document.getElementById('selPresetTask'); selTask.innerHTML = '<option value="">📜 常用任務...</option>';
         const db = data.questSettings || defaultData.questSettings;
@@ -897,10 +920,15 @@
     document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
 
     document.getElementById('btnCreate').addEventListener('click', () => {
+        // 2. 修復：正確抓取自訂公會長姓名
         let teacher = document.getElementById('ipTeacherSelect').value;
-        if(teacher === 'custom') teacher = document.getElementById('ipTeacherCustom').value.trim();
+        if(teacher === 'custom') {
+            teacher = document.getElementById('ipTeacherCustom').value.trim();
+        }
+        
         const title = document.getElementById('ipTitle').value.trim();
         const date = document.getElementById('ipDate').value;
+        
         if(!teacher || !title || !date) { alert("請填寫完整！"); return; }
         
         if(!data.teachers.includes(teacher)) data.teachers.push(teacher);
