@@ -59,7 +59,7 @@
     /* 通用 */
     *{ box-sizing:border-box; }
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
-    .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; }
+    .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
     .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
@@ -75,7 +75,6 @@
     label{ font-weight:800; font-size:13px; color: var(--text-light); }
     input:not([type="checkbox"]), select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
     input:focus, select:focus{ border-color:var(--primary); }
-    /* 🔥 Fix: 確保 Checkbox 樣式，並用 !important 確保隱藏時生效 */
     input[type="checkbox"] { width: auto; display: inline-block; cursor: pointer; }
 
     .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
@@ -185,8 +184,6 @@
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
-    
-    /* 🔥 Fix: Checkbox 完全隱藏邏輯 (使用 !important 防止被蓋過) */
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
 
@@ -194,7 +191,25 @@
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
     .assign-student-item:hover { background: var(--tbl-hover); }
 
-    @media print { .no-print { display: none !important; } }
+    /* New Footer Style */
+    .app-footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px dashed var(--tbl-border); width: 100%; }
+
+    /* Toolbox Style */
+    .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.2s; }
+    .toolbox-toggle:hover { transform: scale(1.1); }
+    .toolbox-panel { background: var(--card); border: 3px solid var(--primary); border-radius: 12px; padding: 16px; width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: none; flex-direction: column; gap: 12px; animation: slideInUp 0.2s ease-out; margin-bottom: 10px; }
+    .toolbox-panel.show { display: flex; }
+    @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .tb-section { border-bottom: 1px dashed var(--tbl-border); padding-bottom: 12px; margin-bottom: 4px; }
+    .tb-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+    .tb-section h3 { margin: 0 0 8px; font-size: 16px; color: var(--text-light); display: flex; align-items: center; gap: 6px; }
+    .tb-clock { font-family: monospace; font-size: 32px; font-weight: bold; text-align: center; color: var(--primary); letter-spacing: 2px; }
+    .timer-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    #timerDisplay { font-family: monospace; font-size: 24px; font-weight: bold; flex: 1; text-align: center; color: var(--text-main); }
+    #luckyDrawResult { font-size: 24px; font-weight: 900; text-align: center; color: var(--danger); min-height: 40px; display: grid; place-items: center; margin-bottom: 8px; border: 2px dashed var(--accent); border-radius: 8px; background: var(--bg); }
+
+    @media print { .no-print, .toolbox-container { display: none !important; } }
   </style>
 </head>
 <body>
@@ -357,6 +372,10 @@
       </div>
     </section>
 
+    <footer class="app-footer">
+        Created by HCSunny & Abby
+    </footer>
+
   </div>
 
   <div id="settingsModal" class="modal-overlay">
@@ -455,6 +474,34 @@
   </div>
   <div id="customTooltip" class="custom-tooltip"></div>
 
+  <div class="toolbox-container">
+      <div class="toolbox-panel" id="toolboxPanel">
+         <div class="tb-section">
+             <h3><i class="bi bi-clock"></i> 標準時間</h3>
+             <div id="tbClock" class="tb-clock">00:00:00</div>
+         </div>
+         <div class="tb-section">
+             <h3><i class="bi bi-stopwatch"></i> 計時器</h3>
+             <div class="timer-controls">
+                 <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
+                 <div id="timerDisplay">00:00</div>
+             </div>
+             <div class="actions sm" style="justify-content: flex-end;">
+                 <button class="btn sm" id="btnTimerStart">開始</button>
+                 <button class="btn sm warn" id="btnTimerReset">重置</button>
+             </div>
+         </div>
+         <div class="tb-section">
+             <h3><i class="bi bi-gift"></i> 幸運抽籤</h3>
+             <div id="luckyDrawResult">???</div>
+             <button class="btn sm chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
+         </div>
+      </div>
+      <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱">
+          <i class="bi bi-box-seam-fill"></i>
+      </div>
+  </div>
+
   <script type="module">
 const firebaseConfig = {
   apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
@@ -513,7 +560,8 @@ const firebaseConfig = {
         if (user) {
             currentUser = user;
             loginOverlay.style.display = 'none';
-            mainApp.style.display = 'block';
+            mainApp.style.display = 'flex'; // Changed to flex for sticky footer layout
+            mainApp.style.flexDirection = 'column';
             const userName = user.email.split('@')[0];
             document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${userName}`;
             initApp();
@@ -616,6 +664,12 @@ const firebaseConfig = {
         // 確保初始只顯示 Dashboard
         switchView('view-dashboard');
         loadDataFromFirebase();
+        
+        // Start Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('tbClock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
+        }, 1000);
     }
 
     function onDataLoaded() {
@@ -1426,6 +1480,88 @@ const firebaseConfig = {
         });
         document.getElementById('taRosterPaste').value = '';
         alert(`已載入 ${lines.length} 位冒險者，請記得按「儲存變更」！`);
+    });
+
+    // Toolbox Logic
+    document.getElementById('btnToggleToolbox').addEventListener('click', () => {
+        document.getElementById('toolboxPanel').classList.toggle('show');
+    });
+
+    // Timer Logic
+    let timerInterval = null;
+    let timerSeconds = 0;
+    
+    function updateTimerDisplay() {
+        const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+        const s = (timerSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+    }
+
+    document.getElementById('btnTimerStart').addEventListener('click', (e) => {
+        const btn = e.target;
+        if(timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            btn.innerText = "繼續";
+            btn.classList.remove('warn');
+        } else {
+            if(timerSeconds === 0) {
+               const inputVal = parseInt(document.getElementById('timerInput').value);
+               if(inputVal && inputVal > 0) timerSeconds = inputVal * 60;
+               else if(timerSeconds === 0) return; // Nothing to start
+            }
+            btn.innerText = "暫停";
+            btn.classList.add('warn');
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if(timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    btn.innerText = "開始";
+                    btn.classList.remove('warn');
+                    alert("時間到！");
+                    playSuccessSound();
+                }
+            }, 1000);
+        }
+    });
+
+    document.getElementById('btnTimerReset').addEventListener('click', () => {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        timerSeconds = 0;
+        updateTimerDisplay();
+        document.getElementById('btnTimerStart').innerText = "開始";
+        document.getElementById('btnTimerStart').classList.remove('warn');
+        document.getElementById('timerInput').value = '';
+    });
+
+    // Lucky Draw Logic
+    document.getElementById('btnLuckyDraw').addEventListener('click', () => {
+        const resDiv = document.getElementById('luckyDrawResult');
+        if(!data.roster || data.roster.length === 0) {
+            resDiv.innerText = "無人可抽";
+            return;
+        }
+        
+        let count = 0;
+        const max = 20;
+        const interval = setInterval(() => {
+            const rand = Math.floor(Math.random() * data.roster.length);
+            resDiv.innerText = `${data.roster[rand].no}. ${data.roster[rand].name}`;
+            count++;
+            if(count >= max) {
+                clearInterval(interval);
+                resDiv.style.color = 'var(--danger)';
+                resDiv.style.transform = 'scale(1.2)';
+                setTimeout(() => resDiv.style.transform = 'scale(1)', 200);
+            } else {
+                resDiv.style.color = 'var(--text-light)';
+            }
+        }, 50);
     });
 
   </script>
