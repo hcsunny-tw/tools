@@ -23,13 +23,14 @@
       --tbl-head: #E6D2B5; --tbl-alt: #FAF0E6; --tbl-hover: #DEB887; --tbl-border: #D2B48C;
       --text-main: #3E2723; --text-light: #5D4037; --muted: #8D6E63;
       --success: #556B2F; --danger: #8B0000;
+      --progress-bar: #32CD32; /* 4. 獨立定義進度條顏色 (亮綠色) */
       --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
       --radius: 8px; --seat: 56px; --seat-font: 16px; 
     }
     
     html[data-color-theme='guild'] body {
       font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
-      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
     html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
@@ -38,20 +39,20 @@
     html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
 
     /* 2. 主題：聖誕 */
-    html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --seat: 56px; --seat-font: 16px; }
+    html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --progress-bar: #00e676; --seat: 56px; --seat-font: 16px; }
     html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3C!-- 雪人 --%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
     html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
     html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
 
     /* 3. 主題：藍 & 橘 */
-    html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
-    html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+    html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #3b82f6; }
+    html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #f97316; }
     
     html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
     html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
 
     /* 4. 新增主題：護眼綠 */
-    html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --ring: rgba(46, 125, 50, 0.3); --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; }
+    html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --ring: rgba(46, 125, 50, 0.3); --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #4caf50; }
     html[data-color-theme='green'][data-theme='dark'] { --primary: #66bb6a; --bg: #1b5e20; --card: #2e7d32; --text-main: #e8f5e9; --tbl-head: #1b5e20; --tbl-alt: #14421b; --tbl-hover: #388e3c; --tbl-border: #4caf50; }
 
 
@@ -83,6 +84,8 @@
     .btn.chest { background: #DAA520; border-color: #B8860B; color: #fff; }
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
+    .btn.warn { background: var(--danger); border-color: var(--danger); color: #fff; } /* 3. 批量取消按鈕樣式 */
+
     .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
     .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
     
@@ -104,8 +107,9 @@
     .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+    /* 4. 修改進度條顏色為亮色 */
     progress { -webkit-appearance: none; width: 100%; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); border: 1px solid var(--text-light); }
-    progress::-webkit-progress-value { background-color: var(--success); }
+    progress::-webkit-progress-value { background-color: var(--progress-bar); }
     .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
     .p-gray{ background:#e2e8f0; color:#475569; } .p-yellow{ background:#fefce8; color:#854d0e; }
     .p-orange{ background:#fff7ed; color:#9a3412; } .p-green{ background:#f0fdf4; color:#166534; }
@@ -181,6 +185,7 @@
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
+    /* 2. Checkbox 預設隱藏 logic */
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none; }
     .batch-mode .batch-export-checkbox { display: inline-block; }
 
@@ -792,15 +797,20 @@ const firebaseConfig = {
     function renderStudentStatus() {
         const container = document.getElementById('studentStatusContainer');
         const headerTitle = document.getElementById('studentStatusHeaderTitle');
+        const btnToggle = document.getElementById('btnToggleBatchMode');
+        
         container.innerHTML = '';
         if(isBatchMode) { 
             container.classList.add('batch-mode'); 
-            document.getElementById('btnToggleBatchMode').classList.add('warn'); 
+            // 3. 切換按鈕文字與樣式
+            btnToggle.classList.add('warn'); 
+            btnToggle.innerHTML = `<i class="bi bi-x-square"></i> 取消批量模式`;
             document.getElementById('btnBatchExport').style.display='inline-flex';
             headerTitle.innerHTML = `<i class="bi bi-check2-square"></i> 請勾選要匯出的對象`;
         } else { 
             container.classList.remove('batch-mode'); 
-            document.getElementById('btnToggleBatchMode').classList.remove('warn'); 
+            btnToggle.classList.remove('warn'); 
+            btnToggle.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
             document.getElementById('btnBatchExport').style.display='none'; 
             headerTitle.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者待辦清單`;
         }
@@ -822,19 +832,19 @@ const firebaseConfig = {
                 }
             });
             if (pCount > 0) pendingList.push({ idx, tasks });
-            else allClearList.push(s); // 1. 紀錄完成所有任務的學生
+            else allClearList.push(s); 
             if (pCount >= 5) healingList.push(s);
         });
 
         const summaryDiv = document.createElement('div');
         summaryDiv.style.display='flex'; summaryDiv.style.gap='12px'; summaryDiv.style.flexWrap='wrap'; summaryDiv.style.marginBottom='20px';
         
-        // 1. 新增討伐成就卡片
+        // 1. 優化：只顯示數字，改為類似座位的圓形樣式
         const successCard = document.createElement('div');
         successCard.className = 'card'; successCard.style.flex='1'; successCard.style.backgroundColor='#f0fdf4'; successCard.style.border='2px dashed var(--success)';
         let successHTML = `<h2 style="color:var(--success);"><i class="bi bi-trophy-fill"></i> 討伐成就</h2>`;
         if (allClearList.length > 0) {
-            successHTML += `<div style="display:flex;gap:8px;flex-wrap:wrap;">` + allClearList.map(s => `<span style="font-weight:bold;color:#14532d;background:#dcfce7;padding:6px 12px;border-radius:20px;font-size:14px;"><i class="bi bi-award-fill"></i> ${s.no}.${s.name}</span>`).join('') + `</div>`;
+            successHTML += `<div style="display:flex;gap:8px;flex-wrap:wrap;">` + allClearList.map(s => `<div class="seat s3" style="width:40px;height:40px;font-size:14px;cursor:help;" title="${s.name}">${s.no}</div>`).join('') + `</div>`;
         } else { successHTML += `<p style="color:var(--muted);font-weight:bold;">目前無人達成全清空...</p>`; }
         successCard.innerHTML = successHTML;
         summaryDiv.appendChild(successCard);
@@ -843,7 +853,7 @@ const firebaseConfig = {
         healCard.className = 'card'; healCard.style.flex='1'; healCard.style.backgroundColor='#fff0f0'; healCard.style.border='2px dashed var(--danger)';
         let healHTML = `<h2 style="color:var(--danger);"><i class="bi bi-heart-pulse"></i> 需補血成員</h2>`;
         if (healingList.length > 0) {
-            healHTML += `<div style="display:flex;gap:8px;flex-wrap:wrap;">` + healingList.map(s => `<span style="font-weight:bold;color:#b91c1c;background:#fee2e2;padding:6px 12px;border-radius:20px;font-size:14px;">${s.name}</span>`).join('') + `</div>`;
+            healHTML += `<div style="display:flex;gap:8px;flex-wrap:wrap;">` + healingList.map(s => `<div class="seat" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5;width:40px;height:40px;font-size:14px;cursor:help;" title="${s.name}">${s.no}</div>`).join('') + `</div>`;
         } else { healHTML += `<p style="color:var(--success);font-weight:bold;">目前沒有成員需要急救！</p>`; }
         healCard.innerHTML = healHTML;
         summaryDiv.appendChild(healCard);
@@ -862,7 +872,6 @@ const firebaseConfig = {
                     listHTML += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${stClass}">${stText}</span></li>`;
                 });
                 listHTML += `</ul>`;
-                // 4. 補上個人列印按鈕
                 card.innerHTML = `<div class="student-card-header">
                     <h2>
                         <input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}"> 
