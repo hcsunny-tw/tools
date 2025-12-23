@@ -194,25 +194,43 @@
     /* New Footer Style */
     .app-footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px dashed var(--tbl-border); width: 100%; }
 
-    /* Toolbox Style */
-    .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.2s; }
+    /* ============================================================
+       🚨 優化：新版工具箱樣式 (懸浮選單 + 獨立視窗)
+       ============================================================ */
+    .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+    
+    /* 主開關按鈕 */
+    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5002; }
     .toolbox-toggle:hover { transform: scale(1.1); }
-    .toolbox-panel { background: var(--card); border: 3px solid var(--primary); border-radius: 12px; padding: 16px; width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: none; flex-direction: column; gap: 12px; animation: slideInUp 0.2s ease-out; margin-bottom: 10px; }
-    .toolbox-panel.show { display: flex; }
-    @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .tb-section { border-bottom: 1px dashed var(--tbl-border); padding-bottom: 12px; margin-bottom: 4px; }
-    .tb-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-    .tb-section h3 { margin: 0 0 8px; font-size: 16px; color: var(--text-light); display: flex; align-items: center; gap: 6px; }
-    .tb-clock { font-family: monospace; font-size: 32px; font-weight: bold; text-align: center; color: var(--primary); letter-spacing: 2px; }
-    .timer-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-    #timerDisplay { font-family: monospace; font-size: 24px; font-weight: bold; flex: 1; text-align: center; color: var(--text-main); }
-    #luckyDrawResult { font-size: 24px; font-weight: 900; text-align: center; color: var(--danger); min-height: 40px; display: grid; place-items: center; margin-bottom: 8px; border: 2px dashed var(--accent); border-radius: 8px; background: var(--bg); }
-    .tb-control-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .toolbox-toggle.active { transform: rotate(45deg); background: var(--danger); border-color: #ffcccc; }
 
-    /* New Styles for Timer Presets */
-    .timer-presets { display: flex; gap: 6px; margin-bottom: 8px; }
-    .timer-presets button { flex: 1; padding: 4px 0; justify-content: center; font-size: 13px; }
+    /* 懸浮選單 (Speed Dial) */
+    .toolbox-menu { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 5px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+    .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    
+    .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; position: relative; }
+    .fab-btn:hover { transform: scale(1.15); color: #fff; background: var(--primary); border-color: #fff; }
+    .fab-btn::after { content: attr(title); position: absolute; right: 60px; background: var(--text-main); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; font-weight: bold; }
+    .fab-btn:hover::after { opacity: 1; }
+
+    /* 獨立工具視窗 (Pop-up Panels) */
+    .tool-window { position: absolute; bottom: 85px; right: 80px; width: 300px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5001; }
+    .tool-window.show { display: flex; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    
+    .tool-header { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; }
+    .tool-close:hover { opacity: 1; transform: scale(1.2); }
+    .tool-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .tb-clock { font-family: monospace; font-size: 32px; font-weight: bold; text-align: center; color: var(--primary); letter-spacing: 2px; text-shadow: 1px 1px 0px var(--tbl-head); }
+    .timer-controls { display: flex; gap: 8px; align-items: center; }
+    #timerDisplay { font-family: monospace; font-size: 28px; font-weight: bold; flex: 1; text-align: center; color: var(--text-main); }
+    #luckyDrawResult { font-size: 24px; font-weight: 900; text-align: center; color: var(--danger); min-height: 60px; display: grid; place-items: center; margin-bottom: 4px; border: 2px dashed var(--accent); border-radius: 8px; background: var(--bg); }
+    
+    .tb-control-row { display: flex; gap: 8px; align-items: center; }
+    .timer-presets { display: flex; gap: 6px; }
+    .timer-presets button { flex: 1; padding: 6px 0; justify-content: center; font-size: 13px; }
 
     /* ============================================================
        🚨 新增：刪除選項模態視窗專用樣式
@@ -269,7 +287,7 @@
         white-space: nowrap;
         font-weight: 900;
         padding-left: 100%; /* 從螢幕右側外開始 */
-        animation: marquee-anim 20s linear infinite; /* 預設 20s，JS可動態調整 */
+        animation: marquee-anim linear infinite; /* JS 控制 duration */
         font-family: "Microsoft JhengHei", monospace;
         text-shadow: 2px 2px 0px #000;
     }
@@ -586,51 +604,79 @@
   </div>
   <div id="customTooltip" class="custom-tooltip"></div>
 
+  <!-- 🚀 優化後的工具箱結構 -->
   <div class="toolbox-container">
-      <div class="toolbox-panel" id="toolboxPanel">
-         <div class="tb-section">
-             <h3><i class="bi bi-clock"></i> 標準時間</h3>
-             <div id="tbClock" class="tb-clock">00:00:00</div>
-         </div>
-         
-         <!-- 新增：跑馬燈設定 -->
-         <div class="tb-section">
-            <h3><i class="bi bi-broadcast"></i> 公告跑馬燈</h3>
-            <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:8px;">
-            <div class="tb-control-row">
-                <input type="color" id="mqColorInput" value="#FFD700" title="文字顏色" style="width:40px; padding:0; height:36px; cursor:pointer;">
-                <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1" title="文字大小">
-                <span id="mqSizeDisplay" style="font-size:12px; font-weight:bold; width:30px;">24px</span>
-            </div>
-            <div class="actions sm" style="justify-content: flex-end;">
-                <button class="btn sm" id="btnMqShow">播放</button>
-                <button class="btn sm warn" id="btnMqHide">關閉</button>
-            </div>
-         </div>
-
-         <div class="tb-section">
-             <h3><i class="bi bi-stopwatch"></i> 計時器</h3>
-             <div class="timer-presets">
-                <button class="btn sm ghost btn-timer-preset" data-min="1">1分</button>
-                <button class="btn sm ghost btn-timer-preset" data-min="3">3分</button>
-                <button class="btn sm ghost btn-timer-preset" data-min="5">5分</button>
-                <button class="btn sm ghost btn-timer-preset" data-min="10">10分</button>
-             </div>
-             <div class="timer-controls">
-                 <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
-                 <div id="timerDisplay">00:00</div>
-             </div>
-             <div class="actions sm" style="justify-content: flex-end;">
-                 <button class="btn sm" id="btnTimerStart">開始</button>
-                 <button class="btn sm warn" id="btnTimerReset">重置</button>
-             </div>
-         </div>
-         <div class="tb-section">
-             <h3><i class="bi bi-gift"></i> 幸運抽籤</h3>
-             <div id="luckyDrawResult">???</div>
-             <button class="btn sm chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
-         </div>
+      
+      <!-- 1. 跑馬燈視窗 -->
+      <div id="panelMarquee" class="tool-window">
+          <div class="tool-header">
+              <span><i class="bi bi-broadcast"></i> 公告跑馬燈</span>
+              <button class="tool-close" onclick="closeToolWindow(this)">&times;</button>
+          </div>
+          <div class="tool-body">
+              <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
+              <div class="tb-control-row">
+                  <label style="font-size:12px;">顏色</label>
+                  <input type="color" id="mqColorInput" value="#FFD700" style="width:40px;height:36px;padding:0;">
+                  <label style="font-size:12px; margin-left:8px;">大小</label>
+                  <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1">
+              </div>
+              <div class="tb-control-row">
+                  <label style="font-size:12px;">速度</label>
+                  <input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快">
+              </div>
+              <div class="actions sm" style="justify-content: flex-end;">
+                  <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
+                  <button class="btn sm warn" id="btnMqHide">關閉</button>
+              </div>
+          </div>
       </div>
+
+      <!-- 2. 計時器視窗 -->
+      <div id="panelTimer" class="tool-window">
+          <div class="tool-header">
+              <span><i class="bi bi-stopwatch"></i> 計時器 & 時鐘</span>
+              <button class="tool-close" onclick="closeToolWindow(this)">&times;</button>
+          </div>
+          <div class="tool-body">
+               <div id="tbClock" class="tb-clock" style="margin-bottom:8px;">00:00:00</div>
+               <div class="timer-presets">
+                  <button class="btn sm ghost btn-timer-preset" data-min="1">1分</button>
+                  <button class="btn sm ghost btn-timer-preset" data-min="3">3分</button>
+                  <button class="btn sm ghost btn-timer-preset" data-min="5">5分</button>
+                  <button class="btn sm ghost btn-timer-preset" data-min="10">10分</button>
+               </div>
+               <div class="timer-controls">
+                   <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
+                   <div id="timerDisplay">00:00</div>
+               </div>
+               <div class="actions sm" style="justify-content: flex-end;">
+                   <button class="btn sm" id="btnTimerStart">開始</button>
+                   <button class="btn sm warn" id="btnTimerReset">重置</button>
+               </div>
+          </div>
+      </div>
+
+      <!-- 3. 幸運抽籤視窗 -->
+      <div id="panelDraw" class="tool-window">
+          <div class="tool-header">
+              <span><i class="bi bi-gift"></i> 幸運抽籤</span>
+              <button class="tool-close" onclick="closeToolWindow(this)">&times;</button>
+          </div>
+          <div class="tool-body">
+              <div id="luckyDrawResult">???</div>
+              <button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
+          </div>
+      </div>
+
+      <!-- 懸浮選單 (點擊主按鈕後出現) -->
+      <div class="toolbox-menu" id="toolboxMenu">
+          <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
+          <button class="fab-btn" id="btnOpenTimer" title="計時器"><i class="bi bi-stopwatch"></i></button>
+          <button class="fab-btn" id="btnOpenDraw" title="抽籤"><i class="bi bi-gift"></i></button>
+      </div>
+
+      <!-- 主開關按鈕 -->
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱">
           <i class="bi bi-box-seam-fill"></i>
       </div>
@@ -1659,10 +1705,52 @@ const firebaseConfig = {
         alert(`已載入 ${lines.length} 位冒險者，請記得按「儲存變更」！`);
     });
 
-    document.getElementById('btnToggleToolbox').addEventListener('click', () => {
-        document.getElementById('toolboxPanel').classList.toggle('show');
+    // 🚀 優化：新版工具箱邏輯 (Speed Dial + Windows)
+    
+    // 1. 切換選單
+    document.getElementById('btnToggleToolbox').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('toolboxMenu');
+        const btn = document.getElementById('btnToggleToolbox');
+        const isActive = menu.classList.contains('show');
+        
+        if (isActive) {
+            menu.classList.remove('show');
+            btn.classList.remove('active');
+            // 同時關閉所有打開的視窗
+            document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
+        } else {
+            menu.classList.add('show');
+            btn.classList.add('active');
+        }
     });
 
+    // 2. 開啟特定視窗功能
+    function openToolWindow(windowId) {
+        // 先關閉所有其他視窗
+        document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
+        // 開啟目標視窗
+        document.getElementById(windowId).classList.add('show');
+    }
+
+    // 將 closeToolWindow 掛載到 window 物件以便 HTML onclick 調用
+    window.closeToolWindow = function(btn) {
+        btn.closest('.tool-window').classList.remove('show');
+    };
+
+    document.getElementById('btnOpenMarquee').addEventListener('click', (e) => { e.stopPropagation(); openToolWindow('panelMarquee'); });
+    document.getElementById('btnOpenTimer').addEventListener('click', (e) => { e.stopPropagation(); openToolWindow('panelTimer'); });
+    document.getElementById('btnOpenDraw').addEventListener('click', (e) => { e.stopPropagation(); openToolWindow('panelDraw'); });
+
+    // 點擊外部關閉選單 (UX)
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.toolbox-container')) {
+            document.getElementById('toolboxMenu').classList.remove('show');
+            document.getElementById('btnToggleToolbox').classList.remove('active');
+        }
+    });
+
+    // 計時器邏輯
     let timerInterval = null;
     let timerSeconds = 0;
     
@@ -1729,6 +1817,7 @@ const firebaseConfig = {
         document.getElementById('timerInput').value = '';
     });
 
+    // 幸運抽籤邏輯
     document.getElementById('btnLuckyDraw').addEventListener('click', () => {
         const resDiv = document.getElementById('luckyDrawResult');
         if(!data.roster || data.roster.length === 0) {
@@ -1753,15 +1842,31 @@ const firebaseConfig = {
         }, 50);
     });
 
-    // 🌟 新增：跑馬燈邏輯
+    // 🚀 優化：跑馬燈邏輯 (含速度調整)
     const mqSizeInput = document.getElementById('mqSizeInput');
-    const mqSizeDisplay = document.getElementById('mqSizeDisplay');
+    const mqSpeedInput = document.getElementById('mqSpeedInput'); // 新增速度滑桿
     
     mqSizeInput.addEventListener('input', (e) => {
-        mqSizeDisplay.innerText = e.target.value + 'px';
         const mqText = document.getElementById('marqueeText');
         if(mqText) mqText.style.fontSize = e.target.value + 'px';
     });
+
+    // 速度調整監聽
+    mqSpeedInput.addEventListener('input', (e) => {
+        updateMarqueeSpeed();
+    });
+
+    function updateMarqueeSpeed() {
+        const text = document.getElementById('mqTextInput').value.trim();
+        const mqText = document.getElementById('marqueeText');
+        if (!text) return;
+
+        const speedFactor = parseFloat(document.getElementById('mqSpeedInput').value); // 1~5
+        const baseDuration = Math.max(10, text.length * 0.8); // 基礎時間
+        const finalDuration = baseDuration / speedFactor; // 速度越快，時間越短
+        
+        mqText.style.animationDuration = finalDuration + 's';
+    }
     
     document.getElementById('btnMqShow').addEventListener('click', () => {
         const text = document.getElementById('mqTextInput').value.trim();
@@ -1777,8 +1882,7 @@ const firebaseConfig = {
         mqText.style.color = color;
         mqText.style.fontSize = size + 'px';
         
-        const duration = Math.max(10, text.length * 0.8);
-        mqText.style.animationDuration = duration + 's';
+        updateMarqueeSpeed(); // 計算並套用速度
         
         mqContainer.style.display = 'block';
     });
