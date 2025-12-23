@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🛡️ 冒險者公會 🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- 引入彩帶特效庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     /* ============================================================
@@ -296,6 +298,47 @@
         100% { transform: translateX(-100%); }
     }
 
+    /* ============================================================
+       🚨 新增：Toast 復原樣式
+       ============================================================ */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #333;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 50px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        z-index: 6000;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .toast-container.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+    }
+    .btn-undo {
+        background: transparent;
+        border: 1px solid #999;
+        color: #fff;
+        font-size: 13px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-undo:hover {
+        background: #fff;
+        color: #333;
+    }
+
     @media print { .no-print, .toolbox-container, .marquee-container { display: none !important; } }
   </style>
 </head>
@@ -304,6 +347,12 @@
   <!-- 新增：跑馬燈容器 (預設隱藏) -->
   <div id="topMarquee" class="marquee-container" style="display:none;">
       <div id="marqueeText" class="marquee-content"></div>
+  </div>
+
+  <!-- 新增：復原通知 (Toast) -->
+  <div id="undoToast" class="toast-container">
+      <span id="toastMessage">已銷毀契約</span>
+      <button class="btn-undo" id="btnUndoDelete"><i class="bi bi-arrow-counterclockwise"></i> 復原</button>
   </div>
 
   <div id="loginOverlay">
@@ -538,7 +587,7 @@
                <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
           </div>
           
-          <!-- 🌟 新增：危險區域 -->
+          <!-- 危險區域 -->
           <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
                 <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -572,7 +621,7 @@
       </div>
   </div>
 
-  <!-- 新增：刪除/封存選擇視窗 -->
+  <!-- 刪除/封存選擇視窗 -->
   <div id="deleteChoiceModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 450px;">
           <div class="modal-header">
@@ -614,7 +663,7 @@
   </div>
   <div id="customTooltip" class="custom-tooltip"></div>
 
-  <!-- 🚀 優化後的工具箱結構 -->
+  <!-- 工具箱結構 -->
   <div class="toolbox-container">
       
       <!-- 1. 跑馬燈視窗 -->
@@ -633,7 +682,7 @@
               </div>
               <div class="tb-control-row">
                   <label style="font-size:12px;">速度</label>
-                  <input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快">
+                  <input type="range" id="mqSpeedInput" min="1" max="10" step="1" value="3" style="flex:1" title="越右邊越快">
               </div>
               <div class="actions sm" style="justify-content: flex-end;">
                   <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
@@ -658,6 +707,9 @@
                </div>
                <div class="timer-controls">
                    <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
+                   <span>:</span>
+                   <!-- 新增：秒數輸入 -->
+                   <input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;">
                    <div id="timerDisplay">00:00</div>
                </div>
                <div class="actions sm" style="justify-content: flex-end;">
@@ -679,7 +731,7 @@
           </div>
       </div>
 
-      <!-- 懸浮選單 (點擊主按鈕後出現) -->
+      <!-- 懸浮選單 -->
       <div class="toolbox-menu" id="toolboxMenu">
           <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
           <button class="fab-btn" id="btnOpenTimer" title="計時器"><i class="bi bi-stopwatch"></i></button>
@@ -704,7 +756,7 @@ const firebaseConfig = {
 };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // 🔄 改用 getDoc, 移除 onSnapshot
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let app, db, auth;
@@ -719,6 +771,8 @@ const firebaseConfig = {
 
     let currentUser = null;
     let data = { roster: [], assignments: [], teachers: [], questSettings: {} };
+    // 用於 Undo 功能
+    let lastDeletedItem = null; 
     
     const defaultData = {
         roster: [ { no: 1, name: "勇者A" }, { no: 2, name: "法師B" }, { no: 3, name: "弓手C" } ],
@@ -760,7 +814,6 @@ const firebaseConfig = {
         }
     });
 
-    // 🔄 優化讀取邏輯：改為一次性讀取 (getDoc)
     async function loadDataFromFirebase() {
         if (!currentUser) return;
         updateSaveStatus('saving', '讀取中...');
@@ -773,7 +826,6 @@ const firebaseConfig = {
                 data = docSnap.data();
                 if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
             } else {
-                // 初次使用，建立預設資料
                 data = JSON.parse(JSON.stringify(defaultData));
                 await setDoc(docRef, data);
             }
@@ -801,7 +853,6 @@ const firebaseConfig = {
         }
     }
 
-    // 🔄 防抖動儲存：避免頻繁寫入
     function triggerAutoSave() {
         clearTimeout(saveTimeout);
         updateSaveStatus('pending');
@@ -825,6 +876,7 @@ const firebaseConfig = {
     let tempQuestSettings = {};
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    // 🔊 音效產生器：一般成功
     function playSuccessSound() {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const oscillator = audioCtx.createOscillator();
@@ -838,6 +890,58 @@ const firebaseConfig = {
         gainNode.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.5);
+    }
+
+    // 🔊 音效產生器：轉動時的滴答聲
+    function playTickSound() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.05);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+
+    // 🔊 音效產生器：5秒勝利音樂
+    function playAlarmSound() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; // C E G C G C
+        let time = now;
+        
+        notes.forEach((freq, i) => {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(freq, time);
+            gainNode.gain.setValueAtTime(0.2, time);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start(time);
+            oscillator.stop(time + 0.4);
+            time += 0.25;
+        });
+        
+        // 結尾長音
+        setTimeout(() => {
+             const osc = audioCtx.createOscillator();
+             const gain = audioCtx.createGain();
+             osc.type = 'sine';
+             osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime);
+             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+             gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2);
+             osc.connect(gain);
+             gain.connect(audioCtx.destination);
+             osc.start();
+             osc.stop(audioCtx.currentTime + 2);
+        }, 1500);
     }
 
     const views = document.querySelectorAll('.view');
@@ -857,9 +961,8 @@ const firebaseConfig = {
         });
         
         switchView('view-dashboard');
-        loadDataFromFirebase(); // 🔄 初始讀取一次
+        loadDataFromFirebase();
         
-        // Start Clock
         setInterval(() => {
             const now = new Date();
             document.getElementById('tbClock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
@@ -945,11 +1048,8 @@ const firebaseConfig = {
         return assignments.filter(a => {
             if (a.archived) return false;
             const matchTeacher = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
-            
-            // 🌟 修正篩選邏輯：優先檢查是否有 subject 欄位，若無則檢查標題是否包含
             const matchSubject = currentFilter.subject === 'all' || 
                                  (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject));
-            
             const matchDate = !currentFilter.date || a.date === currentFilter.date;
             return matchTeacher && matchSubject && matchDate;
         });
@@ -1041,6 +1141,24 @@ const firebaseConfig = {
             div.innerHTML = `<div class="seat s${status}" data-index="${i}">${s.no}</div><div class="seatName"><span class="seatNo">${s.no}.</span> ${s.name}</div>`;
             grid.appendChild(div);
         });
+    }
+
+    // 檢查完成度並噴彩帶
+    function checkCompletionAndCelebrate(assignmentId) {
+        const a = data.assignments.find(i => i.id == assignmentId);
+        if(!a) return;
+        const indices = a.assignedIndices || 'all';
+        const total = indices === 'all' ? data.roster.length : indices.length;
+        const completed = a.statuses.filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
+        
+        if (total > 0 && completed === total) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            playAlarmSound(); // 也播放勝利音樂
+        }
     }
 
     function renderStudentStatus() {
@@ -1225,7 +1343,6 @@ const firebaseConfig = {
         });
     });
 
-    // 🔄 新增：手動重新整理按鈕事件
     document.getElementById('btnRefreshData').addEventListener('click', () => {
         if(confirm("確定要重新讀取資料嗎？未儲存的變更將會遺失。")) {
             loadDataFromFirebase();
@@ -1261,7 +1378,6 @@ const firebaseConfig = {
         let teacher = document.getElementById('ipTeacherSelect').value;
         if(teacher === 'custom') teacher = document.getElementById('ipTeacherCustom').value.trim();
         const title = document.getElementById('ipTitle').value.trim();
-        // 🌟 修正：擷取選擇的科目
         const subject = document.getElementById('selSubject').value;
         const date = document.getElementById('ipDate').value;
         if(!teacher || !title || !date) { alert("請填寫完整！"); return; }
@@ -1269,12 +1385,11 @@ const firebaseConfig = {
         if(!data.teachers.includes(teacher)) data.teachers.push(teacher);
         const isAll = newAssignmentAssignedIndices.length === data.roster.length || newAssignmentAssignedIndices.length === 0;
         
-        // 🌟 修正：將 subject 存入資料物件
         const newA = { 
             id: Date.now(), 
             teacher, 
             title, 
-            subject, // 新增此欄位
+            subject,
             date, 
             assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, 
             statuses: Array(data.roster.length).fill(0) 
@@ -1332,6 +1447,7 @@ const firebaseConfig = {
         triggerAutoSave();
         renderDetail(currentAssignmentId);
         renderDashboard();
+        checkCompletionAndCelebrate(currentAssignmentId); // 🎉 檢查是否放煙火
     });
 
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
@@ -1355,7 +1471,14 @@ const firebaseConfig = {
             const closePicker = (evt) => { if(!statusPicker.contains(evt.target) && !li.contains(evt.target)) { statusPicker.classList.remove('show'); document.removeEventListener('click', closePicker); } };
             setTimeout(() => document.addEventListener('click', closePicker), 50);
         } else {
-            if(confirm("標記為討伐成功？")) { a.statuses[sidx] = 3; playSuccessSound(); triggerAutoSave(); renderStudentStatus(); renderDashboard(); }
+            if(confirm("標記為討伐成功？")) { 
+                a.statuses[sidx] = 3; 
+                playSuccessSound(); 
+                triggerAutoSave(); 
+                renderStudentStatus(); 
+                renderDashboard();
+                checkCompletionAndCelebrate(aid); // 🎉 檢查是否放煙火
+            }
         }
     });
 
@@ -1371,6 +1494,7 @@ const firebaseConfig = {
             renderStudentStatus();
             renderDashboard();
             statusPicker.classList.remove('show');
+            if(s === 3) checkCompletionAndCelebrate(assignmentId); // 🎉
         });
     });
 
@@ -1393,6 +1517,28 @@ const firebaseConfig = {
         if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
     });
 
+    // 顯示復原 Toast
+    function showUndoToast() {
+        const toast = document.getElementById('undoToast');
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            lastDeletedItem = null; // 清除暫存
+        }, 5000);
+    }
+
+    // 復原邏輯
+    document.getElementById('btnUndoDelete').addEventListener('click', () => {
+        if(lastDeletedItem) {
+            data.assignments.push(lastDeletedItem);
+            triggerAutoSave();
+            renderDashboard();
+            document.getElementById('undoToast').classList.remove('show');
+            lastDeletedItem = null;
+            alert("資料已復原！");
+        }
+    });
+
     document.getElementById('btnConfirmArchive').addEventListener('click', () => {
         if (!targetAssignmentIdToDelete) return;
         const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
@@ -1406,18 +1552,23 @@ const firebaseConfig = {
         targetAssignmentIdToDelete = null;
     });
 
+    // 🚀 優化：刪除時加入暫存與 Toast
     document.getElementById('btnConfirmDelete').addEventListener('click', () => {
         if (!targetAssignmentIdToDelete) return;
-        data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
-        triggerAutoSave();
-        renderDashboard();
-        updateSaveStatus('success', '已銷毀');
+        
+        const item = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+        if(item) {
+            lastDeletedItem = JSON.parse(JSON.stringify(item)); // 深拷貝
+            data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
+            triggerAutoSave();
+            renderDashboard();
+            showUndoToast(); // 顯示復原按鈕
+        }
         
         document.getElementById('deleteChoiceModal').classList.remove('show');
         targetAssignmentIdToDelete = null;
     });
 
-    // 🌟 新增：危險區域按鈕邏輯
     document.getElementById('btnClearAssignments').addEventListener('click', () => {
         if(confirm("🔥 警告：這將會刪除「所有的」委託任務資料，包含已封存的紀錄！\n\n冒險者名單將會保留。\n\n確定要執行嗎？")) {
             if(confirm("再次確認：資料刪除後無法復原！真的要銷毀嗎？")) {
@@ -1444,13 +1595,11 @@ const firebaseConfig = {
         }
     });
 
-    // Filters
     ['teacherFilter','subjectFilter','dateFilter'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
         currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard();
     }));
     document.getElementById('btnClearFilter').addEventListener('click', () => { currentFilter={teacher:'all',subject:'all',date:''}; document.getElementById('teacherFilter').value='all'; document.getElementById('subjectFilter').value='all'; document.getElementById('dateFilter').value=''; renderDashboard(); });
 
-    // Settings
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
         renderQuestConfig();
@@ -1645,25 +1794,18 @@ const firebaseConfig = {
 
         // CSV BOM
         let csvContent = "\uFEFF";
-        
-        // Headers
         const studentHeaders = data.roster.map(s => `${s.no}.${s.name}`).join(",");
         csvContent += `發布日期,委託內容,公會長,${studentHeaders}\n`;
-
-        // Status Map
         const statusText = ["未交", "已交", "訂正", "完成"];
 
-        // Body
         archives.forEach(a => {
             let row = `${a.date},"${a.title}",${a.teacher}`;
-            
             const indices = a.assignedIndices || 'all';
             const studentStatuses = data.roster.map((s, i) => {
                 if (indices !== 'all' && !indices.includes(i)) return "-";
                 const sCode = (a.statuses || [])[i] || 0;
                 return statusText[sCode] || "未知";
             }).join(",");
-
             row += `,${studentStatuses}`;
             csvContent += row + "\n";
         });
@@ -1759,8 +1901,6 @@ const firebaseConfig = {
     });
 
     // 🚀 優化：新版工具箱邏輯 (Speed Dial + Windows)
-    
-    // 1. 切換選單
     document.getElementById('btnToggleToolbox').addEventListener('click', (e) => {
         e.stopPropagation();
         const menu = document.getElementById('toolboxMenu');
@@ -1770,7 +1910,6 @@ const firebaseConfig = {
         if (isActive) {
             menu.classList.remove('show');
             btn.classList.remove('active');
-            // 同時關閉所有打開的視窗
             document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
         } else {
             menu.classList.add('show');
@@ -1778,15 +1917,11 @@ const firebaseConfig = {
         }
     });
 
-    // 2. 開啟特定視窗功能
     function openToolWindow(windowId) {
-        // 先關閉所有其他視窗
         document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
-        // 開啟目標視窗
         document.getElementById(windowId).classList.add('show');
     }
 
-    // 將 closeToolWindow 掛載到 window 物件以便 HTML onclick 調用
     window.closeToolWindow = function(btn) {
         btn.closest('.tool-window').classList.remove('show');
     };
@@ -1795,7 +1930,6 @@ const firebaseConfig = {
     document.getElementById('btnOpenTimer').addEventListener('click', (e) => { e.stopPropagation(); openToolWindow('panelTimer'); });
     document.getElementById('btnOpenDraw').addEventListener('click', (e) => { e.stopPropagation(); openToolWindow('panelDraw'); });
 
-    // 點擊外部關閉選單 (UX)
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.toolbox-container')) {
             document.getElementById('toolboxMenu').classList.remove('show');
@@ -1824,6 +1958,7 @@ const firebaseConfig = {
             }
             timerSeconds = min * 60;
             document.getElementById('timerInput').value = min;
+            document.getElementById('timerInputSec').value = 0;
             updateTimerDisplay();
         });
     });
@@ -1837,8 +1972,9 @@ const firebaseConfig = {
             btn.classList.remove('warn');
         } else {
             if(timerSeconds === 0) {
-               const inputVal = parseInt(document.getElementById('timerInput').value);
-               if(inputVal && inputVal > 0) timerSeconds = inputVal * 60;
+               const inputVal = parseInt(document.getElementById('timerInput').value) || 0;
+               const inputSec = parseInt(document.getElementById('timerInputSec').value) || 0;
+               if(inputVal > 0 || inputSec > 0) timerSeconds = inputVal * 60 + inputSec;
                else if(timerSeconds === 0) return; 
             }
             btn.innerText = "暫停";
@@ -1853,8 +1989,7 @@ const firebaseConfig = {
                     timerInterval = null;
                     btn.innerText = "開始";
                     btn.classList.remove('warn');
-                    alert("時間到！");
-                    playSuccessSound();
+                    playAlarmSound(); // 🔔 播放優化後的鬧鐘聲
                 }
             }, 1000);
         }
@@ -1868,6 +2003,7 @@ const firebaseConfig = {
         document.getElementById('btnTimerStart').innerText = "開始";
         document.getElementById('btnTimerStart').classList.remove('warn');
         document.getElementById('timerInput').value = '';
+        document.getElementById('timerInputSec').value = '';
     });
 
     // 幸運抽籤邏輯
@@ -1883,28 +2019,29 @@ const firebaseConfig = {
         const interval = setInterval(() => {
             const rand = Math.floor(Math.random() * data.roster.length);
             resDiv.innerText = `${data.roster[rand].no}. ${data.roster[rand].name}`;
+            playTickSound(); // 🔊 轉動音效
             count++;
             if(count >= max) {
                 clearInterval(interval);
                 resDiv.style.color = 'var(--danger)';
                 resDiv.style.transform = 'scale(1.2)';
+                playSuccessSound(); // 🔊 選中音效
                 setTimeout(() => resDiv.style.transform = 'scale(1)', 200);
             } else {
                 resDiv.style.color = 'var(--text-light)';
             }
-        }, 50);
+        }, 80); // 稍微放慢一點點轉動速度
     });
 
     // 🚀 優化：跑馬燈邏輯 (含速度調整)
     const mqSizeInput = document.getElementById('mqSizeInput');
-    const mqSpeedInput = document.getElementById('mqSpeedInput'); // 新增速度滑桿
+    const mqSpeedInput = document.getElementById('mqSpeedInput');
     
     mqSizeInput.addEventListener('input', (e) => {
         const mqText = document.getElementById('marqueeText');
         if(mqText) mqText.style.fontSize = e.target.value + 'px';
     });
 
-    // 速度調整監聽
     mqSpeedInput.addEventListener('input', (e) => {
         updateMarqueeSpeed();
     });
@@ -1914,9 +2051,10 @@ const firebaseConfig = {
         const mqText = document.getElementById('marqueeText');
         if (!text) return;
 
-        const speedFactor = parseFloat(document.getElementById('mqSpeedInput').value); // 1~5
-        const baseDuration = Math.max(10, text.length * 0.8); // 基礎時間
-        const finalDuration = baseDuration / speedFactor; // 速度越快，時間越短
+        const speedFactor = parseFloat(document.getElementById('mqSpeedInput').value); 
+        // 🐢 調整基礎時間，讓慢速更慢
+        const baseDuration = Math.max(20, text.length * 1.5); 
+        const finalDuration = baseDuration / speedFactor; 
         
         mqText.style.animationDuration = finalDuration + 's';
     }
@@ -1935,7 +2073,7 @@ const firebaseConfig = {
         mqText.style.color = color;
         mqText.style.fontSize = size + 'px';
         
-        updateMarqueeSpeed(); // 計算並套用速度
+        updateMarqueeSpeed(); 
         
         mqContainer.style.display = 'block';
     });
