@@ -1384,14 +1384,14 @@ const firebaseConfig = {
         initAttendanceView(); // 重新整理按鈕狀態
     });
 
-    // 🌟 匯出點名報表 (含詳細統計)
+  // 🌟 匯出點名報表 (修正版：遲到早退算入出席)
     document.getElementById('btnExportAttendance').addEventListener('click', () => {
         let csvContent = "\uFEFF";
         const dates = Object.keys(data.attendance).sort();
         if (dates.length === 0) { alert("目前沒有任何點名紀錄！"); return; }
 
-        // 🌟 新增各類統計標題
-        csvContent += "座號,姓名,出席總計,遲到總計,早退總計,病假總計,事假總計,公假總計,缺席總計(含假)," + dates.join(",") + "\n";
+        // 標題列
+        csvContent += "座號,姓名,出席總計(含遲/早),遲到次數,早退次數,病假總計,事假總計,公假總計,缺席總計(含假)," + dates.join(",") + "\n";
         
         // 狀態文字對照
         const statusMap = { 0:"✔️", 1:"遲", 2:"早", 3:"病", 4:"公", 5:"事" };
@@ -1399,7 +1399,7 @@ const firebaseConfig = {
         data.roster.forEach((student, idx) => {
             let row = `${student.no},${student.name}`;
             
-            // 🌟 個人統計歸零
+            // 統計歸零
             let counts = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0 };
             
             const dateStatuses = dates.map(d => {
@@ -1414,11 +1414,14 @@ const firebaseConfig = {
                 return cell;
             });
 
-            // 計算總缺席 (病假+事假+公假) *遲到早退不算缺席
+            // 🌟 修正重點：實際出席 = 準時(0) + 遲到(1) + 早退(2)
+            const realPresentCount = counts[0] + counts[1] + counts[2];
+
+            // 計算總缺席 (病假+事假+公假)
             const totalAbsent = counts[3] + counts[4] + counts[5];
 
-            // 填入統計數據
-            row += `,${counts[0]},${counts[1]},${counts[2]},${counts[3]},${counts[5]},${counts[4]},${totalAbsent},` + dateStatuses.join(",");
+            // 填入修正後的統計數據 (第一欄使用 realPresentCount)
+            row += `,${realPresentCount},${counts[1]},${counts[2]},${counts[3]},${counts[5]},${counts[4]},${totalAbsent},` + dateStatuses.join(",");
             csvContent += row + "\n";
         });
 
@@ -2140,9 +2143,41 @@ const firebaseConfig = {
         alert(`已載入 ${lines.length} 位冒險者，請記得按「儲存變更」！`);
     });
 
+// ============================================================
+    // 🚨 修正：工具箱完整邏輯
+    // ============================================================
+
+    // 1. 修復主按鈕開關 (修正 ID 為 toolboxMenu 並增加按鈕旋轉動畫)
     document.getElementById('btnToggleToolbox').addEventListener('click', (e) => {
-        document.getElementById('toolboxPanel').classList.toggle('show');
+        const menu = document.getElementById('toolboxMenu');
+        const btn = e.currentTarget; // 取得按鈕本身
+        
+        menu.classList.toggle('show'); // 切換選單顯示
+        btn.classList.toggle('active'); // 切換按鈕旋轉狀態
     });
+
+    // 2. 定義開啟工具視窗的函式 (關閉其他，開啟指定)
+    function openToolWindow(panelId) {
+        // 先關閉所有工具視窗
+        document.querySelectorAll('.tool-window').forEach(el => el.classList.remove('show'));
+        // 開啟指定的視窗
+        document.getElementById(panelId).classList.add('show');
+        // 關閉懸浮選單，讓畫面乾淨一點 (可選)
+        document.getElementById('toolboxMenu').classList.remove('show');
+        document.getElementById('btnToggleToolbox').classList.remove('active');
+    }
+
+    // 3. 綁定三個小按鈕的功能
+    document.getElementById('btnOpenMarquee').addEventListener('click', () => openToolWindow('panelMarquee'));
+    document.getElementById('btnOpenTimer').addEventListener('click', () => openToolWindow('panelTimer'));
+    document.getElementById('btnOpenDraw').addEventListener('click', () => openToolWindow('panelDraw'));
+
+    // 4. 解決 HTML onclick="closeToolWindow(this)" 找不到函式與 window 的問題
+    // 因為這裡是 type="module"，必須顯式掛載到 window 物件
+    window.closeToolWindow = (btn) => {
+        const win = btn.closest('.tool-window');
+        if(win) win.classList.remove('show');
+    };
 
     let timerInterval = null;
     let timerSeconds = 0;
