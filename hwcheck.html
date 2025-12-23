@@ -537,6 +537,16 @@
                <p class="muted" style="margin-bottom:8px;">下載所有已被封存的委託任務 (Excel 試算表格式)。</p>
                <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
           </div>
+          
+          <!-- 🌟 新增：危險區域 -->
+          <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
+                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button class="btn ghost warn" id="btnClearAssignments" style="justify-content:center;"><i class="bi bi-fire"></i> 銷毀所有契約 (保留名單)</button>
+                    <button class="btn warn" id="btnResetAll" style="justify-content:center;"><i class="bi bi-radioactive"></i> 另闢新公會 (全部重置)</button>
+                </div>
+          </div>
+
           <div class="modal-footer" style="border-top: 2px dashed var(--tbl-border); padding-top: 16px; margin-top: 20px; justify-content: space-between;">
               <span class="muted" style="align-self: center;">工作辛苦了！</span>
               <button class="btn ghost" id="btnLogout" style="color: var(--danger); border-color: var(--danger);"><i class="bi bi-box-arrow-right"></i> 登出系統</button>
@@ -935,7 +945,11 @@ const firebaseConfig = {
         return assignments.filter(a => {
             if (a.archived) return false;
             const matchTeacher = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
-            const matchSubject = currentFilter.subject === 'all' || a.title.includes(currentFilter.subject);
+            
+            // 🌟 修正篩選邏輯：優先檢查是否有 subject 欄位，若無則檢查標題是否包含
+            const matchSubject = currentFilter.subject === 'all' || 
+                                 (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject));
+            
             const matchDate = !currentFilter.date || a.date === currentFilter.date;
             return matchTeacher && matchSubject && matchDate;
         });
@@ -1247,14 +1261,26 @@ const firebaseConfig = {
         let teacher = document.getElementById('ipTeacherSelect').value;
         if(teacher === 'custom') teacher = document.getElementById('ipTeacherCustom').value.trim();
         const title = document.getElementById('ipTitle').value.trim();
+        // 🌟 修正：擷取選擇的科目
+        const subject = document.getElementById('selSubject').value;
         const date = document.getElementById('ipDate').value;
         if(!teacher || !title || !date) { alert("請填寫完整！"); return; }
         
         if(!data.teachers.includes(teacher)) data.teachers.push(teacher);
         const isAll = newAssignmentAssignedIndices.length === data.roster.length || newAssignmentAssignedIndices.length === 0;
-        const newA = { id: Date.now(), teacher, title, date, assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) };
+        
+        // 🌟 修正：將 subject 存入資料物件
+        const newA = { 
+            id: Date.now(), 
+            teacher, 
+            title, 
+            subject, // 新增此欄位
+            date, 
+            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, 
+            statuses: Array(data.roster.length).fill(0) 
+        };
         data.assignments.push(newA);
-        triggerAutoSave(); // 使用防抖動儲存
+        triggerAutoSave(); 
         
         resetNewAssignmentState();
         renderAll();
@@ -1389,6 +1415,33 @@ const firebaseConfig = {
         
         document.getElementById('deleteChoiceModal').classList.remove('show');
         targetAssignmentIdToDelete = null;
+    });
+
+    // 🌟 新增：危險區域按鈕邏輯
+    document.getElementById('btnClearAssignments').addEventListener('click', () => {
+        if(confirm("🔥 警告：這將會刪除「所有的」委託任務資料，包含已封存的紀錄！\n\n冒險者名單將會保留。\n\n確定要執行嗎？")) {
+            if(confirm("再次確認：資料刪除後無法復原！真的要銷毀嗎？")) {
+                data.assignments = [];
+                triggerAutoSave();
+                renderDashboard();
+                renderStudentStatus();
+                alert("所有契約已化為灰燼！");
+                document.getElementById('adminProfileModal').classList.remove('show');
+            }
+        }
+    });
+
+    document.getElementById('btnResetAll').addEventListener('click', () => {
+        const promptText = "DESTROY";
+        const input = prompt(`☢️ 危險：這將刪除「所有」資料，包含冒險者名單、老師名單、所有任務！\n\n若確定執行，請輸入 "${promptText}"：`);
+        if(input === promptText) {
+            data.roster = [];
+            data.assignments = [];
+            triggerAutoSave();
+            renderAll();
+            alert("公會已重建，一切歸零！");
+            document.getElementById('adminProfileModal').classList.remove('show');
+        }
     });
 
     // Filters
