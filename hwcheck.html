@@ -208,7 +208,8 @@
     .timer-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     #timerDisplay { font-family: monospace; font-size: 24px; font-weight: bold; flex: 1; text-align: center; color: var(--text-main); }
     #luckyDrawResult { font-size: 24px; font-weight: 900; text-align: center; color: var(--danger); min-height: 40px; display: grid; place-items: center; margin-bottom: 8px; border: 2px dashed var(--accent); border-radius: 8px; background: var(--bg); }
-    
+    .tb-control-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+
     /* New Styles for Timer Presets */
     .timer-presets { display: flex; gap: 6px; margin-bottom: 8px; }
     .timer-presets button { flex: 1; padding: 4px 0; justify-content: center; font-size: 13px; }
@@ -247,10 +248,45 @@
         border: 1px dashed var(--tbl-border);
     }
 
-    @media print { .no-print, .toolbox-container { display: none !important; } }
+    /* ============================================================
+       🚨 新增：跑馬燈樣式
+       ============================================================ */
+    .marquee-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.85); /* 半透明深色背景 */
+        overflow: hidden;
+        z-index: 9999;
+        padding: 8px 0;
+        pointer-events: none; /* 讓點擊穿透 */
+        border-bottom: 2px solid var(--primary);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .marquee-content {
+        display: inline-block;
+        white-space: nowrap;
+        font-weight: 900;
+        padding-left: 100%; /* 從螢幕右側外開始 */
+        animation: marquee-anim 20s linear infinite; /* 預設 20s，JS可動態調整 */
+        font-family: "Microsoft JhengHei", monospace;
+        text-shadow: 2px 2px 0px #000;
+    }
+    @keyframes marquee-anim {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+
+    @media print { .no-print, .toolbox-container, .marquee-container { display: none !important; } }
   </style>
 </head>
 <body>
+  
+  <!-- 新增：跑馬燈容器 (預設隱藏) -->
+  <div id="topMarquee" class="marquee-container" style="display:none;">
+      <div id="marqueeText" class="marquee-content"></div>
+  </div>
 
   <div id="loginOverlay">
       <div id="loginBox">
@@ -553,6 +589,22 @@
              <h3><i class="bi bi-clock"></i> 標準時間</h3>
              <div id="tbClock" class="tb-clock">00:00:00</div>
          </div>
+         
+         <!-- 新增：跑馬燈設定 -->
+         <div class="tb-section">
+            <h3><i class="bi bi-broadcast"></i> 公告跑馬燈</h3>
+            <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:8px;">
+            <div class="tb-control-row">
+                <input type="color" id="mqColorInput" value="#FFD700" title="文字顏色" style="width:40px; padding:0; height:36px; cursor:pointer;">
+                <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1" title="文字大小">
+                <span id="mqSizeDisplay" style="font-size:12px; font-weight:bold; width:30px;">24px</span>
+            </div>
+            <div class="actions sm" style="justify-content: flex-end;">
+                <button class="btn sm" id="btnMqShow">播放</button>
+                <button class="btn sm warn" id="btnMqHide">關閉</button>
+            </div>
+         </div>
+
          <div class="tb-section">
              <h3><i class="bi bi-stopwatch"></i> 計時器</h3>
              <div class="timer-presets">
@@ -1684,6 +1736,41 @@ const firebaseConfig = {
                 resDiv.style.color = 'var(--text-light)';
             }
         }, 50);
+    });
+
+    // 🌟 新增：跑馬燈邏輯
+    const mqSizeInput = document.getElementById('mqSizeInput');
+    const mqSizeDisplay = document.getElementById('mqSizeDisplay');
+    
+    mqSizeInput.addEventListener('input', (e) => {
+        mqSizeDisplay.innerText = e.target.value + 'px';
+        const mqText = document.getElementById('marqueeText');
+        if(mqText) mqText.style.fontSize = e.target.value + 'px';
+    });
+    
+    document.getElementById('btnMqShow').addEventListener('click', () => {
+        const text = document.getElementById('mqTextInput').value.trim();
+        const color = document.getElementById('mqColorInput').value;
+        const size = document.getElementById('mqSizeInput').value;
+        
+        if(!text) { alert("請先輸入公告內容！"); return; }
+        
+        const mqContainer = document.getElementById('topMarquee');
+        const mqText = document.getElementById('marqueeText');
+        
+        mqText.innerText = text;
+        mqText.style.color = color;
+        mqText.style.fontSize = size + 'px';
+        
+        // 根據文字長度調整動畫速度，避免短文字飛太快
+        const duration = Math.max(10, text.length * 0.8);
+        mqText.style.animationDuration = duration + 's';
+        
+        mqContainer.style.display = 'block';
+    });
+    
+    document.getElementById('btnMqHide').addEventListener('click', () => {
+        document.getElementById('topMarquee').style.display = 'none';
     });
 
   </script>
