@@ -311,6 +311,9 @@
       <div class="actions">
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> ...</span>
         
+        <!-- 新增：手動重新整理按鈕 -->
+        <button class="btn ghost" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i></button>
+
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
         <button class="btn ghost" id="btnNavRoster"><i class="bi bi-people"></i> 公會名冊</button>
@@ -645,7 +648,7 @@ const firebaseConfig = {
 };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // 🔄 改用 getDoc, 移除 onSnapshot
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let app, db, auth;
@@ -660,7 +663,6 @@ const firebaseConfig = {
 
     let currentUser = null;
     let data = { roster: [], assignments: [], teachers: [], questSettings: {} };
-    let unsubscribe = null; 
     
     const defaultData = {
         roster: [ { no: 1, name: "勇者A" }, { no: 2, name: "法師B" }, { no: 3, name: "弓手C" } ],
@@ -691,7 +693,7 @@ const firebaseConfig = {
         if (user) {
             currentUser = user;
             loginOverlay.style.display = 'none';
-            mainApp.style.display = 'flex'; // Changed to flex for sticky footer layout
+            mainApp.style.display = 'flex';
             mainApp.style.flexDirection = 'column';
             const userName = user.email.split('@')[0];
             document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${userName}`;
@@ -702,24 +704,29 @@ const firebaseConfig = {
         }
     });
 
-    function loadDataFromFirebase() {
-        if (unsubscribe) unsubscribe(); 
-        const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
+    // 🔄 優化讀取邏輯：改為一次性讀取 (getDoc)
+    async function loadDataFromFirebase() {
+        if (!currentUser) return;
+        updateSaveStatus('saving', '讀取中...');
         
-        unsubscribe = onSnapshot(docRef, (docSnap) => {
+        try {
+            const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
+            const docSnap = await getDoc(docRef);
+
             if (docSnap.exists()) {
                 data = docSnap.data();
                 if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
             } else {
+                // 初次使用，建立預設資料
                 data = JSON.parse(JSON.stringify(defaultData));
-                setDoc(docRef, data);
+                await setDoc(docRef, data);
             }
-            onDataLoaded(); 
-            updateSaveStatus('success');
-        }, (error) => {
-            console.error("Sync Error:", error);
-            updateSaveStatus('error', '連線中斷');
-        });
+            onDataLoaded();
+            updateSaveStatus('success', '讀取完成');
+        } catch (error) {
+            console.error("Load Error:", error);
+            updateSaveStatus('error', '讀取失敗');
+        }
     }
 
     const saveStatusIndicator = document.getElementById('saveStatusIndicator');
@@ -738,6 +745,7 @@ const firebaseConfig = {
         }
     }
 
+    // 🔄 防抖動儲存：避免頻繁寫入
     function triggerAutoSave() {
         clearTimeout(saveTimeout);
         updateSaveStatus('pending');
@@ -748,7 +756,7 @@ const firebaseConfig = {
         let html = '';
         if (status === 'pending') html = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
         else if (status === 'saving') html = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
-        else if (status === 'success') html = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> 已同步</span>`;
+        else if (status === 'success') html = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
         else html = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
         saveStatusIndicator.innerHTML = html;
     }
@@ -792,9 +800,8 @@ const firebaseConfig = {
             el.classList.toggle('active', el.dataset.theme === savedColorTheme);
         });
         
-        // 確保初始只顯示 Dashboard
         switchView('view-dashboard');
-        loadDataFromFirebase();
+        loadDataFromFirebase(); // 🔄 初始讀取一次
         
         // Start Clock
         setInterval(() => {
@@ -1158,6 +1165,13 @@ const firebaseConfig = {
         });
     });
 
+    // 🔄 新增：手動重新整理按鈕事件
+    document.getElementById('btnRefreshData').addEventListener('click', () => {
+        if(confirm("確定要重新讀取資料嗎？未儲存的變更將會遺失。")) {
+            loadDataFromFirebase();
+        }
+    });
+
     document.getElementById('tabBtnStudents').addEventListener('click', () => {
         document.getElementById('tabBtnStudents').classList.add('active');
         document.getElementById('tabBtnTeachers').classList.remove('active');
@@ -1194,7 +1208,7 @@ const firebaseConfig = {
         const isAll = newAssignmentAssignedIndices.length === data.roster.length || newAssignmentAssignedIndices.length === 0;
         const newA = { id: Date.now(), teacher, title, date, assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) };
         data.assignments.push(newA);
-        saveDataToFirebase();
+        triggerAutoSave(); // 使用防抖動儲存
         
         resetNewAssignmentState();
         renderAll();
@@ -1288,7 +1302,6 @@ const firebaseConfig = {
         });
     });
 
-    // 🌟 修改：列表點擊事件 (攔截刪除按鈕 -> 開啟選擇視窗)
     let targetAssignmentIdToDelete = null; 
 
     document.getElementById('assignmentList').addEventListener('click', (e) => {
@@ -1308,13 +1321,12 @@ const firebaseConfig = {
         if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
     });
 
-    // 🌟 新增：封存與銷毀邏輯
     document.getElementById('btnConfirmArchive').addEventListener('click', () => {
         if (!targetAssignmentIdToDelete) return;
         const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
         if(a) {
             a.archived = true;
-            saveDataToFirebase();
+            triggerAutoSave();
             renderDashboard();
             updateSaveStatus('success', '已封存');
         }
@@ -1325,7 +1337,7 @@ const firebaseConfig = {
     document.getElementById('btnConfirmDelete').addEventListener('click', () => {
         if (!targetAssignmentIdToDelete) return;
         data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
-        saveDataToFirebase();
+        triggerAutoSave();
         renderDashboard();
         updateSaveStatus('success', '已銷毀');
         
@@ -1353,7 +1365,7 @@ const firebaseConfig = {
     
     document.getElementById('btnSaveQuestSettings').addEventListener('click', () => {
         data.questSettings = JSON.parse(JSON.stringify(tempQuestSettings));
-        saveDataToFirebase();
+        triggerAutoSave();
         updateSubjectDropdown();
         document.getElementById('questSettingsModal').classList.remove('show');
     });
@@ -1439,7 +1451,7 @@ const firebaseConfig = {
             if(no && name) newRoster.push({no, name});
         });
         data.roster = newRoster;
-        saveDataToFirebase();
+        triggerAutoSave();
         renderRosterEditor();
         alert("名單已更新！");
     });
@@ -1448,7 +1460,7 @@ const firebaseConfig = {
         const newTs = [];
         document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) newTs.push(i.value.trim()); });
         data.teachers = [...new Set(newTs)].sort();
-        saveDataToFirebase();
+        triggerAutoSave();
         renderTeacherEditor();
         alert("公會長名單已更新！");
     });
@@ -1457,7 +1469,11 @@ const firebaseConfig = {
         const btn = e.target.closest('.btn-del-teacher');
         if(btn) {
             const t = btn.dataset.name;
-            if(confirm(`刪除 ${t}?`)) { data.teachers = data.teachers.filter(x => x !== t); saveDataToFirebase(); renderTeacherEditor(); }
+            if(confirm(`刪除 ${t}?`)) { 
+                data.teachers = data.teachers.filter(x => x !== t); 
+                triggerAutoSave(); 
+                renderTeacherEditor(); 
+            }
         }
     });
 
@@ -1521,7 +1537,6 @@ const firebaseConfig = {
         adminModal.classList.add('show');
     });
 
-    // 🌟 優化：下載封存紀錄為 CSV (Excel 格式)
     document.getElementById('btnDownloadArchive').addEventListener('click', () => {
         const archives = data.assignments.filter(a => a.archived);
         if(archives.length === 0) {
@@ -1762,7 +1777,6 @@ const firebaseConfig = {
         mqText.style.color = color;
         mqText.style.fontSize = size + 'px';
         
-        // 根據文字長度調整動畫速度，避免短文字飛太快
         const duration = Math.max(10, text.length * 0.8);
         mqText.style.animationDuration = duration + 's';
         
