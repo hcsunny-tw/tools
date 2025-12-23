@@ -378,7 +378,6 @@
         <button class="btn ghost" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i></button>
 
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
-        <button class="btn ghost" id="btnNavAttendance"><i class="bi bi-calendar-check"></i> 每日點名</button> <!-- 新增按鈕 -->
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
         <button class="btn ghost" id="btnNavRoster"><i class="bi bi-people"></i> 公會名冊</button>
         <button class="btn ghost" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i></button>
@@ -613,10 +612,17 @@
               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/再挑戰 > 5)</h3>
               <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
           </div>
-          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border);">
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
                <p class="muted" style="margin-bottom:8px;">下載所有已被封存的委託任務 (Excel 試算表格式)。</p>
                <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
+          </div>
+
+          <!-- 新增：每日點名按鈕 -->
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border);">
+               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📅 每日點名系統</h3>
+               <p class="muted" style="margin-bottom:8px;">進行每日冒險者出缺席點名，或修改歷史紀錄。</p>
+               <button class="btn sm" id="btnAdminAttendance"><i class="bi bi-calendar-check"></i> 開啟點名簿</button>
           </div>
           
           <!-- 危險區域 -->
@@ -801,7 +807,7 @@ const firebaseConfig = {
     }
 
     let currentUser = null;
-    let data = { roster: [], assignments: [], teachers: [], questSettings: {}, attendance: {} }; // 🌟 新增 attendance
+    let data = { roster: [], assignments: [], teachers: [], questSettings: {}, attendance: {} }; 
     let lastDeletedItem = null; 
     
     const defaultData = {
@@ -814,7 +820,7 @@ const firebaseConfig = {
             "生活": ["生活習作", "繪圖日記", "觀察紀錄", "學習單"],
             "英文": ["英文習作", "字母練習", "單字抄寫", "聽力練習"]
         },
-        attendance: {} // 🌟 初始化
+        attendance: {} 
     };
 
     const loginOverlay = document.getElementById('loginOverlay');
@@ -856,14 +862,14 @@ const firebaseConfig = {
             if (docSnap.exists()) {
                 data = docSnap.data();
                 if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
-                if(!data.attendance) data.attendance = {}; // 🌟 防呆
+                if(!data.attendance) data.attendance = {}; // 防呆
             } else {
                 data = JSON.parse(JSON.stringify(defaultData));
                 await setDoc(docRef, data);
             }
             onDataLoaded();
             updateSaveStatus('success', '讀取完成');
-            checkAttendanceReminder(); // 🌟 檢查是否需要提醒點名
+            checkAttendanceReminder();
         } catch (error) {
             console.error("Load Error:", error);
             updateSaveStatus('error', '讀取失敗');
@@ -907,9 +913,9 @@ const firebaseConfig = {
     let newAssignmentAssignedIndices = []; 
     let isBatchMode = false;
     let tempQuestSettings = {};
-    // 🌟 點名暫存
-    let currentAttendanceDate = new Date().toISOString().split('T')[0];
-    let tempAttendanceData = []; // 存當日狀態 [{status:0, note:''}, ...]
+    
+    // 🌟 點名系統變數：避免直接汙染 data.attendance
+    let tempAttendanceData = []; 
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1061,7 +1067,7 @@ const firebaseConfig = {
         });
         
         switchView('view-dashboard');
-        loadDataFromFirebase();
+        loadDataFromFirebase(); // 🔄 初始讀取一次
         
         setInterval(() => {
             const now = new Date();
@@ -1072,20 +1078,19 @@ const firebaseConfig = {
         document.getElementById('attDatePicker').valueAsDate = new Date();
     }
 
-    // 🌟 檢查點名提醒
     function checkAttendanceReminder() {
         const today = new Date().toISOString().split('T')[0];
-        // 如果 data.attendance[today] 不存在，代表還沒點過
         if (!data.attendance[today]) {
             setTimeout(() => {
                 document.getElementById('attendanceReminderModal').classList.add('show');
-            }, 1000); // 稍微延遲讓資料載入
+            }, 1000); 
         }
     }
 
     document.getElementById('btnGoToAttendance').addEventListener('click', () => {
         document.getElementById('attendanceReminderModal').classList.remove('show');
-        switchView('view-attendance');
+        // 切換並載入當日
+        document.getElementById('adminProfileModal').classList.add('show');
     });
 
     function onDataLoaded() {
@@ -1102,7 +1107,7 @@ const firebaseConfig = {
         else if (viewId === 'view-detail') renderDetail(currentAssignmentId);
         else if (viewId === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
         else if (viewId === 'view-student-status') renderStudentStatus();
-        else if (viewId === 'view-attendance') renderAttendance(); // 🌟
+        else if (viewId === 'view-attendance') initAttendanceView(); // 🌟 改用 init
     }
 
     function switchView(targetId) {
@@ -1113,10 +1118,9 @@ const firebaseConfig = {
         if (targetId === 'view-dashboard') renderDashboard(); 
         if (targetId === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
         if (targetId === 'view-student-status') renderStudentStatus();
-        if (targetId === 'view-attendance') renderAttendance(); // 🌟
+        if (targetId === 'view-attendance') initAttendanceView(); // 🌟 改用 init
     }
 
-    // (populateTeacherDropdowns, resetNewAssignmentState, updateSubjectDropdown, filterAssignments... 保持不變)
     function populateTeacherDropdowns() {
         const teachers = data.teachers || [];
         const ipSelect = document.getElementById('ipTeacherSelect');
@@ -1282,20 +1286,27 @@ const firebaseConfig = {
         }
     }
 
-    // 🌟 點名系統邏輯 (Render Attendance)
-    function renderAttendance() {
+    // 🌟 點名系統：載入資料 (只在切換日期時執行)
+    function initAttendanceView() {
         const dateInput = document.getElementById('attDatePicker');
         const selectedDate = dateInput.value;
-        const listDiv = document.getElementById('attendanceList');
+        const btnSave = document.getElementById('btnSaveAttendance');
         
-        // 載入當日資料或初始化
         if (data.attendance[selectedDate]) {
             tempAttendanceData = JSON.parse(JSON.stringify(data.attendance[selectedDate]));
+            btnSave.innerHTML = `<i class="bi bi-arrow-repeat"></i> 更新點名紀錄`; // 若已存在改為更新
         } else {
-            // 預設全體出席 (Status 0)
             tempAttendanceData = data.roster.map(() => ({ status: 0, note: '' }));
+            btnSave.innerHTML = `<i class="bi bi-check-lg"></i> 確認送出點名單`;
         }
+        
+        renderAttendanceUI();
+    }
 
+    // 🌟 點名系統：渲染 UI (不讀取 DB，只根據 tempAttendanceData)
+    function renderAttendanceUI() {
+        const listDiv = document.getElementById('attendanceList');
+        
         // 計算統計
         const stats = [0,0,0,0,0]; // 出席, 遲到, 早退, 病假, 公假
         tempAttendanceData.forEach(d => { if(d.status >=0 && d.status <=4) stats[d.status]++; });
@@ -1305,7 +1316,6 @@ const firebaseConfig = {
         document.getElementById('statSick').innerText = stats[3];
         document.getElementById('statOfficial').innerText = stats[4];
 
-        // 渲染列表
         listDiv.innerHTML = '';
         data.roster.forEach((student, index) => {
             const record = tempAttendanceData[index];
@@ -1333,50 +1343,46 @@ const firebaseConfig = {
         });
     }
 
-    // 🌟 點名互動事件
+    // 🌟 點名互動事件 (只更新 tempAttendanceData 並重繪)
     document.getElementById('attendanceList').addEventListener('click', (e) => {
         if(e.target.classList.contains('att-btn')) {
             const idx = parseInt(e.target.dataset.idx);
             const status = parseInt(e.target.dataset.status);
             
             // 如果是早退，詢問時間
-            let note = '';
-            if (status === 2) { // 早退
+            let note = tempAttendanceData[idx].note; // 保留原備註
+            if (status === 2) { 
                 const time = prompt("請輸入早退時間 (例如 14:00)：", "12:00");
                 if (time) note = `早退 ${time}`;
-                else return; // 取消則不變更
+            } else {
+                note = ''; // 切換到其他狀態清空備註
             }
 
             tempAttendanceData[idx] = { status, note };
-            renderAttendance(); // 重繪
+            renderAttendanceUI(); // ⚡ 只重繪，不重讀
         }
     });
 
-    document.getElementById('attDatePicker').addEventListener('change', renderAttendance);
+    // 日期改變 -> 重新載入資料
+    document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
 
+    // 儲存按鈕
     document.getElementById('btnSaveAttendance').addEventListener('click', () => {
         const date = document.getElementById('attDatePicker').value;
         data.attendance[date] = tempAttendanceData;
         triggerAutoSave();
-        alert("點名紀錄已儲存！");
+        alert(`已儲存 ${date} 的點名紀錄！`);
+        initAttendanceView(); // 重新整理按鈕狀態
     });
 
-    // 🌟 匯出點名報表
     document.getElementById('btnExportAttendance').addEventListener('click', () => {
-        // CSV BOM
         let csvContent = "\uFEFF";
-        
-        // 取得所有日期並排序
         const dates = Object.keys(data.attendance).sort();
         if (dates.length === 0) { alert("目前沒有任何點名紀錄！"); return; }
 
-        // 標題列
         csvContent += "座號,姓名,缺席總計," + dates.join(",") + "\n";
-
-        // 狀態文字對照
         const statusMap = { 0:"✔️", 1:"遲", 2:"早", 3:"病", 4:"公" };
 
-        // 內容列
         data.roster.forEach((student, idx) => {
             let row = `${student.no},${student.name}`;
             let absenceCount = 0;
@@ -1384,10 +1390,7 @@ const firebaseConfig = {
             const dateStatuses = dates.map(d => {
                 const record = data.attendance[d][idx];
                 if (!record) return "-";
-                
-                // 計算缺席 (非 0 皆算異動，可依需求調整)
                 if (record.status !== 0) absenceCount++;
-
                 let cell = statusMap[record.status] || "?";
                 if (record.status === 2 && record.note) cell += `(${record.note})`;
                 return cell;
@@ -1406,6 +1409,12 @@ const firebaseConfig = {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    });
+
+    // 🌟 新增：公會長執務室開啟點名按鈕
+    document.getElementById('btnAdminAttendance').addEventListener('click', () => {
+        document.getElementById('adminProfileModal').classList.remove('show');
+        switchView('view-attendance');
     });
 
     // --- (其他原有程式碼) ---
@@ -1525,19 +1534,17 @@ const firebaseConfig = {
     }
 
     // (其餘 Event Handlers 保持原樣，僅增加 Nav Button Event)
-    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster','btnNavAttendance'].forEach(id => {
+    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster'].forEach(id => {
         document.getElementById(id).addEventListener('click', (e) => {
             const viewMap = {
                 'btnNavDashboard':'view-dashboard', 
                 'btnNavStudentStatus':'view-student-status', 
-                'btnNavRoster':'view-roster',
-                'btnNavAttendance': 'view-attendance' // 🌟 新增
+                'btnNavRoster':'view-roster'
             };
             switchView(viewMap[e.currentTarget.id]);
         });
     });
 
-    // (剩餘所有原本的事件監聽器，如 undo, settings, toolbox 等皆保留)
     document.getElementById('btnRefreshData').addEventListener('click', () => {
         if(confirm("確定要重新讀取資料嗎？未儲存的變更將會遺失。")) {
             loadDataFromFirebase();
@@ -1704,23 +1711,6 @@ const firebaseConfig = {
         });
     });
 
-    document.getElementById('assignmentList').addEventListener('click', (e) => {
-        const btnDel = e.target.closest('.btn-delete');
-        if(btnDel) { 
-            e.stopPropagation(); 
-            const a = data.assignments.find(x => x.id == btnDel.dataset.id);
-            if(!a) return;
-
-            targetAssignmentIdToDelete = a.id;
-            document.getElementById('deleteTargetTitle').innerText = `「${a.date} ${a.title}」`;
-            document.getElementById('deleteChoiceModal').classList.add('show');
-            return; 
-        }
-        
-        const tr = e.target.closest('tr'); 
-        if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
-    });
-
     let undoTimeout = null;
     let deletedAssignmentBackup = null;
 
@@ -1797,13 +1787,11 @@ const firebaseConfig = {
         }
     });
 
-    // Filters
     ['teacherFilter','subjectFilter','dateFilter'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
         currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard();
     }));
     document.getElementById('btnClearFilter').addEventListener('click', () => { currentFilter={teacher:'all',subject:'all',date:''}; document.getElementById('teacherFilter').value='all'; document.getElementById('subjectFilter').value='all'; document.getElementById('dateFilter').value=''; renderDashboard(); });
 
-    // Settings
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
         renderQuestConfig();
