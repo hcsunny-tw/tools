@@ -788,7 +788,34 @@
       </div>
   </div>
 
+
+
+  
   <script type="module">
+
+    // 🇹🇼 專用：取得台北時間的 YYYY-MM-DD 字串
+    function getTaipeiDateString() {
+        const d = new Date();
+        // 強制轉換為台北時間
+        return d.toLocaleDateString('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\//g, '-'); // 將 2023/12/24 轉為 2023-12-24
+    }
+
+    // 🇹🇼 專用：取得台北時間的 HH:mm 字串
+    function getTaipeiTimeString() {
+        const d = new Date();
+        return d.toLocaleTimeString('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
 const firebaseConfig = {
   apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
   authDomain: "hwcheck-8888.firebaseapp.com",
@@ -1062,7 +1089,7 @@ const firebaseConfig = {
     let statusPickerTarget = { index: null, assignmentId: null, source: null };
     const customTooltip = document.getElementById('customTooltip'); 
 
-    function initApp() {
+function initApp() {
         const savedTheme = localStorage.getItem('homeworkSystemTheme') || 'light';
         const savedColorTheme = localStorage.getItem('homeworkSystemColorTheme') || 'guild';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1074,15 +1101,19 @@ const firebaseConfig = {
         });
         
         switchView('view-dashboard');
-        loadDataFromFirebase(); // 🔄 初始讀取一次
+        loadDataFromFirebase();
         
+        // 🕒 修正：時鐘改用台北時區
         setInterval(() => {
-            const now = new Date();
-            document.getElementById('tbClock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
+            const nowTime = new Date().toLocaleTimeString('zh-TW', { 
+                timeZone: 'Asia/Taipei', 
+                hour12: false 
+            });
+            document.getElementById('tbClock').innerText = nowTime;
         }, 1000);
         
-        // Init Attendance Date Picker
-        document.getElementById('attDatePicker').valueAsDate = new Date();
+        // 📅 修正：點名日期預設為台北時間
+        document.getElementById('attDatePicker').value = getTaipeiDateString();
     }
 
     function checkAttendanceReminder() {
@@ -1143,12 +1174,14 @@ const firebaseConfig = {
         }
     }
     
-    function resetNewAssignmentState() {
+        function resetNewAssignmentState() {
         document.getElementById('ipTitle').value = '';
         document.getElementById('selSubject').value = '';
         document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用任務...</option>';
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('ipDate').value = today;
+        
+        // 📅 修正：發布日期預設為台北時間
+        document.getElementById('ipDate').value = getTaipeiDateString();
+        
         newAssignmentAssignedIndices = [];
         document.getElementById('assignStatusText').innerText = "全體冒險者";
         
@@ -1361,7 +1394,9 @@ const firebaseConfig = {
             // 如果是早退，詢問時間
             let note = tempAttendanceData[idx].note; // 保留原備註
             if (status === 2) { 
-                const time = prompt("請輸入早退時間 (例如 14:00)：", "12:00");
+                // 🕒 優化：預設時間顯示當下台北時間
+                const defaultTime = getTaipeiTimeString();
+                const time = prompt("請輸入早退時間 (例如 14:00)：", defaultTime);
                 if (time) note = `早退 ${time}`;
             } else {
                 note = ''; // 切換到其他狀態清空備註
