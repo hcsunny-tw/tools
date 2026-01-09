@@ -389,6 +389,80 @@
     flex: none;
   }
 }
+    /* ============================================================
+   🚨 新增：左側清單與右側詳情專用樣式
+   ============================================================ */
+.side-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - 250px); /* 讓清單可以捲動 */
+    overflow-y: auto;
+}
+
+.side-item {
+    background: var(--card);
+    border: 2px solid var(--tbl-border);
+    border-radius: 6px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.side-item:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.side-item.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--text-main);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+}
+
+.side-item.active .muted {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.side-item-title {
+    font-weight: 900;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.side-item-meta {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* 讓右側詳情區塊預設隱藏，有選中時才顯示 */
+#dashDetailPanel {
+    display: none; 
+    background: var(--card);
+    border: 2px solid var(--tbl-border);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 400px;
+}
+#dashDetailPanel.show {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+/* 右側空狀態 */
+#dashEmptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    color: var(--muted);
+    border: 2px dashed var(--tbl-border);
+    border-radius: 8px;
+}
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
   </style>
 </head>
@@ -447,106 +521,69 @@
       </div>
     </header>
 
-    <!-- 委託看板 View -->
-   <section id="view-dashboard" class="view show">
+<section id="view-dashboard" class="view show">
   <div class="dashboard-layout">
     
     <aside class="dash-sidebar">
       
-      <div class="card" style="margin-bottom:0;">
-        <h2><i class="bi bi-compass"></i> 公會羅盤</h2>
-        <div style="text-align:center; padding:10px 0;">
-           <div style="font-size:32px; font-weight:900; color:var(--primary);" id="dashTotalCount">0</div>
-           <div class="muted">目前委託總數</div>
+      <button class="btn" style="width:100%; margin-bottom:12px; justify-content:center;" onclick="document.getElementById('newQuestPanel').classList.toggle('show')">
+          <i class="bi bi-plus-circle-dotted"></i> 發布新委託
+      </button>
+
+      <div id="newQuestPanel" class="card" style="display:none; border:2px dashed var(--primary);">
+        <h4 style="margin:0 0 8px 0; font-size:14px; color:var(--primary);">填寫委託單</h4>
+        <div class="field">
+            <select id="ipTeacherSelect" style="padding:6px;"></select>
+            <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
         </div>
-        <button class="btn ghost sm" style="width:100%" onclick="document.getElementById('view-dashboard').scrollIntoView()">
-            <i class="bi bi-arrow-up-circle"></i> 回到頂部
-        </button>
+        <div class="field" style="margin-top:4px;">
+            <input id="ipDate" type="date" style="padding:6px;">
+        </div>
+        <div class="field" style="margin-top:4px;">
+             <select id="selSubject" style="padding:6px; margin-bottom:4px;"><option value="">📂 科目...</option></select>
+             <select id="selPresetTask" style="padding:6px; margin-bottom:4px;"><option value="">📜 常用...</option></select>
+             <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px;" />
+        </div>
+        <div class="field" style="margin-top:4px;">
+             <button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button>
+        </div>
+        <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
       </div>
 
-      <div class="card" style="margin-bottom:0;">
-        <h2><i class="bi bi-funnel-fill"></i> 任務過濾</h2>
-        
-        <div class="filter-group">
-            <h4><i class="bi bi-person-badge"></i> 發布導師</h4>
-            <select id="teacherFilter" style="width:100%"></select>
-        </div>
-
-        <div class="filter-group">
-            <h4><i class="bi bi-journal-bookmark"></i> 科目分類</h4>
-            <select id="subjectFilter" style="width:100%"><option value="all">📚 所有科目</option></select>
-        </div>
-
-        <div class="filter-group">
-            <h4><i class="bi bi-calendar-event"></i> 發布日期</h4>
-            <input type="date" id="dateFilter" style="width:100%">
-        </div>
-
-        <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;">
-            <i class="bi bi-x-lg"></i> 清除所有篩選
-        </button>
+      <div class="filter-group">
+        <select id="teacherFilter" style="width:100%; margin-bottom:4px;"></select>
+        <select id="subjectFilter" style="width:100%; margin-bottom:4px;"><option value="all">📚 所有科目</option></select>
+        <input type="date" id="dateFilter" style="width:100%">
       </div>
 
+      <div id="sideAssignmentList" class="side-list-container">
+          </div>
     </aside>
 
     <main class="dash-main">
       
-      <div class="card">
-        <h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2>
-        <div class="row">
-          <div class="field sm-4">
-            <label>發布人 (公會長)</label>
-            <select id="ipTeacherSelect"></select>
-            <input id="ipTeacherCustom" type="text" placeholder="請輸入姓名" style="display: none; margin-top: 8px;">
-          </div>
-          
-          <div class="field sm-5">
-            <label>委託內容</label>
-            <div style="display:flex; gap:8px; margin-bottom:4px; align-items: center;">
-                <select id="selSubject" style="width:40%; padding:6px; font-size:12px;">
-                    <option value="">📂 科目...</option>
-                </select>
-                <button id="btnOpenQuestSettings" class="btn sm ghost" style="padding: 4px 8px;" title="編輯任務"><i class="bi bi-gear-fill"></i></button>
-                <select id="selPresetTask" style="width:50%; padding:6px; font-size:12px; flex-grow: 1;">
-                    <option value="">📜 常用任務...</option>
-                </select>
-            </div>
-            <div style="position: relative;">
-                <input id="ipTitle" type="text" placeholder="手動輸入..." />
-                <button id="btnToggleNumpad" class="btn sm ghost" style="position: absolute; right: 4px; top: 4px; padding: 4px 8px;" title="數字鍵"><i class="bi bi-grid-3x3"></i></button>
-                <div id="numpadContainer" class="numpad-container"></div>
-            </div>
-          </div>
-
-          <div class="field sm-3"><label>發布日期</label><input id="ipDate" type="date" /></div>
-        </div>
-        
-        <div class="field" style="margin-top: 8px;">
-            <label>指定冒險者</label>
-            <button class="btn ghost" id="btnOpenAssignModal" style="justify-content: flex-start; text-align: left; width: 100%;">
-                <i class="bi bi-people-fill"></i>
-                <span id="assignStatusText">全體冒險者</span>
-            </button>
-        </div>
-
-        <div class="actions">
-            <button class="btn" id="btnCreate"><i class="bi bi-quill-pen"></i> 發布委託</button>
-            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份</button>
-            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原</label>
-            <input id="fileImport" type="file" accept="application/json" hidden />
-        </div>
+      <div id="dashEmptyState">
+          <i class="bi bi-arrow-left-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+          <p style="font-weight:bold;">請從左側選擇一張委託</p>
+          <p style="font-size:12px;">點擊「發布新委託」可建立新任務</p>
       </div>
 
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <h2><i class="bi bi-list-check"></i> 委託清單</h2>
+      <div id="dashDetailPanel">
+         <div class="assignment-bar" style="border-bottom: 2px solid var(--tbl-border); padding-bottom:12px; margin-bottom:12px;">
+            <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary);"></div>
+            <div class="actions" style="margin-top:8px; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button class="btn sm ghost" id="btnMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
+                <button class="btn sm ghost" id="btnMarkAllOrange"><i class="bi bi-exclamation-circle-fill"></i> 全員再戰</button>
+                <div class="legend" style="font-size:12px;">
+                    <span><span class="dot s0"></span>未接</span>
+                    <span><span class="dot s1"></span>已報</span>
+                    <span><span class="dot s2"></span>再戰</span>
+                    <span><span class="dot s3"></span>成功</span>
+                </div>
+                <button class="btn sm warn ghost" id="btnDeleteCurrent" style="margin-left:auto;"><i class="bi bi-trash3"></i> 刪除</button>
             </div>
-        <div class="table-wrap">
-          <table id="assignmentTable">
-            <thead><tr><th data-sort="date">日期 <i class="bi"></i></th><th data-sort="title">內容 <i class="bi"></i></th><th data-sort="teacher">公會長 <i class="bi"></i></th><th>回報</th><th>討伐</th><th></th></tr></thead>
-            <tbody id="assignmentList"></tbody>
-          </table>
         </div>
+        <div id="dashGridContainer" class="grid"></div>
       </div>
 
     </main>
@@ -1316,97 +1353,158 @@ function initApp() {
         });
     }
 
+// 🎨 渲染主看板 (生成左側清單)
     function renderDashboard() {
-        const list = document.getElementById('assignmentList');
+        const listContainer = document.getElementById('sideAssignmentList');
+        const emptyState = document.getElementById('dashEmptyState');
+        const detailPanel = document.getElementById('dashDetailPanel');
 
-        // --- 🆕 新增這一行來更新左側統計 ---
+        // 1. 取得並排序資料
         let assignmentsToRender = filterAssignments([...data.assignments]);
-        // 更新左側數字
-        const countEl = document.getElementById('dashTotalCount');
-        if(countEl) countEl.innerText = assignmentsToRender.length;
-        // ------------------------------------
         assignmentsToRender.sort((a, b) => {
-            const aVal = a[sortState.key]; const bVal = b[sortState.key];
-            if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+            // 固定按日期降序排列 (最新的在上面)
+            if (a.date < b.date) return 1;
+            if (a.date > b.date) return -1;
             return 0;
         });
 
-        document.querySelectorAll('#assignmentTable thead th[data-sort]').forEach(th => {
-            const icon = th.querySelector('i');
-            th.style.color = 'var(--text-main)'; icon.style.opacity = '0.3';
-            if (th.dataset.sort === sortState.key) {
-                icon.className = sortState.direction === 'asc' ? 'bi bi-sort-up' : 'bi bi-sort-down';
-                th.style.color = 'var(--primary)'; icon.style.opacity = '1';
-            } else { icon.className = 'bi bi-arrow-down-up'; }
-        });
+        // 2. 清空清單
+        listContainer.innerHTML = '';
 
-        list.innerHTML = '';
+        // 3. 如果沒有資料
         if (assignmentsToRender.length === 0) {
-            list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--muted);">目前沒有委託紀錄。</td></tr>';
+            listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">沒有符合的委託</div>';
+            emptyState.style.display = 'flex';
+            detailPanel.classList.remove('show');
             return;
         }
 
+        // 4. 生成左側卡片
         assignmentsToRender.forEach(a => {
+            const el = document.createElement('div');
+            el.className = 'side-item';
+            if (currentAssignmentId === a.id) el.classList.add('active'); // 保持選中狀態
+            
+            // 計算進度
             const indices = a.assignedIndices || 'all';
             const total = indices === 'all' ? data.roster.length : indices.length;
-            const statuses = a.statuses || [];
-            const submitted = statuses.filter((s, i) => s >= 1 && (indices === 'all' || indices.includes(i))).length;
-            const completed = statuses.filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
-            const progress = total > 0 ? (completed / total) * 100 : 0;
-            
-            const pending = [];
-            const redo = [];
-            data.roster.forEach((s, i) => {
-                if ((indices === 'all' || indices.includes(i))) {
-                    if (statuses[i] === 0) pending.push(s.no);
-                    if (statuses[i] === 2) redo.push(s.no);
-                }
-            });
-            
-            let tooltip = '';
-            if (pending.length > 0) tooltip += `回：${pending.join(', ')}`;
-            if (redo.length > 0) {
-                if(tooltip) tooltip += '<br>';
-                tooltip += `重：${redo.join(', ')}`;
-            }
-            if(!tooltip) tooltip = '🎉 全員完成';
+            const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            const tr = document.createElement('tr');
-            tr.dataset.id = a.id;
-            tr.innerHTML = `
-                <td>${a.date}</td>
-                <td>${a.title}</td>
-                <td>${a.teacher}</td>
-                <td class="has-tooltip" data-tooltip="${tooltip}" style="cursor:help;">${submitted}/${total}</td>
-                <td>
-                    <div class="has-tooltip" data-tooltip="${tooltip}" style="display:flex; align-items:center; gap:8px;">
-                        <progress class="progress-success" value="${progress}" max="100"></progress>
-                        <span>${completed}/${total}</span>
+            el.innerHTML = `
+                <div class="side-item-title">${a.title}</div>
+                <div class="side-item-meta class="muted">
+                    <span>${a.date}</span>
+                    <span>${a.teacher}</span>
+                </div>
+                <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
+                    <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
+                        <div style="width:${progress}%; height:100%; background:currentColor;"></div>
                     </div>
-                </td>
-                <td><button class="btn chest sm btn-delete" data-id="${a.id}"><i class="bi bi-box-seam-fill"></i></button></td>
+                    <span>${progress}%</span>
+                </div>
             `;
-            list.appendChild(tr);
+            
+            // 點擊事件：切換右側內容
+            el.addEventListener('click', () => selectAssignment(a.id));
+            
+            listContainer.appendChild(el);
         });
+
+        // 如果目前有選中的 ID，重新渲染右側 (確保資料同步)
+        if (currentAssignmentId) {
+             renderDashboardDetail(currentAssignmentId);
+        } else {
+             // 如果沒有選中，顯示空狀態
+             emptyState.style.display = 'flex';
+             detailPanel.classList.remove('show');
+        }
     }
 
-    function renderDetail(id) {
-        const a = data.assignments.find(x => x.id == id);
-        if (!a) { switchView('view-dashboard'); return; }
+    // 🎯 選擇委託 (切換右側詳情)
+    function selectAssignment(id) {
         currentAssignmentId = id;
-        document.getElementById('detailTitle').innerHTML = `<i class="bi bi-scroll-fill"></i> ${a.title} <span class="badge">${a.date}</span> <span class="badge">${a.teacher}</span>`;
-        const grid = document.getElementById('gridContainer');
+        renderDashboard(); // 重繪左側 (更新 active class)
+        renderDashboardDetail(id); // 顯示右側
+    }
+
+    // 📝 渲染右側詳情 (取代原本的 renderDetail)
+    function renderDashboardDetail(id) {
+        const a = data.assignments.find(x => x.id == id);
+        if (!a) return;
+
+        // 切換顯示狀態
+        document.getElementById('dashEmptyState').style.display = 'none';
+        const panel = document.getElementById('dashDetailPanel');
+        panel.classList.add('show');
+
+        // 填寫標題
+        document.getElementById('dashDetailTitle').innerHTML = 
+            `<span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> ${a.title}`;
+
+        // 填寫格子
+        const grid = document.getElementById('dashGridContainer');
         grid.innerHTML = '';
         const indices = a.assignedIndices || 'all';
+        
         data.roster.forEach((s, i) => {
             const isAssigned = indices === 'all' || indices.includes(i);
             const status = (a.statuses || [])[i] || 0;
             const div = document.createElement('div');
             div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
-            div.innerHTML = `<div class="seat s${status}" data-index="${i}">${s.no}</div><div class="seatName"><span class="seatNo">${s.no}.</span> ${s.name}</div>`;
+            
+            // 注意：這裡直接綁定 click 事件，不再用全域監聽，避免衝突
+            div.innerHTML = `<div class="seat s${status}">${s.no}</div><div class="seatName">${s.name}</div>`;
+            
+            // 格子點擊邏輯
+            if(isAssigned) {
+                const seatBtn = div.querySelector('.seat');
+                seatBtn.onclick = () => toggleStatus(id, i);
+            }
+            
             grid.appendChild(div);
         });
+        
+        // 綁定刪除按鈕
+        const btnDel = document.getElementById('btnDeleteCurrent');
+        btnDel.onclick = () => {
+            targetAssignmentIdToDelete = id;
+            document.getElementById('deleteTargetTitle').innerText = a.title;
+            document.getElementById('deleteChoiceModal').classList.add('show');
+        };
+    }
+
+    // 🔄 切換狀態小函式 (獨立出來比較乾淨)
+    function toggleStatus(assignmentId, studentIndex) {
+        const a = data.assignments.find(x => x.id == assignmentId);
+        if(!a) return;
+        
+        let s = (a.statuses || [])[studentIndex] || 0;
+        s = (s + 1) % 4;
+        if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+        a.statuses[studentIndex] = s;
+        
+        if(s === 3) playSuccessSound(); // 播放音效
+        
+        // 檢查是否全部完成
+        const indices = a.assignedIndices || 'all';
+        let allCompleted = true;
+        for(let i=0; i<data.roster.length; i++) {
+             if(indices === 'all' || indices.includes(i)) {
+                 if(a.statuses[i] !== 3) allCompleted = false;
+             }
+        }
+        if(allCompleted) confetti();
+
+        triggerAutoSave();
+        renderDashboardDetail(assignmentId); // 只更新右側
+        
+        // 稍微延遲更新左側進度條，避免頻繁閃爍
+        setTimeout(() => {
+             // 找到左側對應的項目更新進度條即可，但為了簡單，我們這裡不特別優化 DOM，直接保留現狀
+             // 若要完美，可以只更新 DOM，不過這裡重新 renderDashboard 代價不大
+             renderDashboard();
+        }, 500);
     }
 
     function checkCompletionAndCelebrate(assignmentId) {
