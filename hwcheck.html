@@ -489,7 +489,35 @@
     transition: 0.2s;
 }
 .filter-tag:hover { border-color: var(--primary); color: var(--primary); }
-    
+    /* 🔧 優化：緊湊型篩選器面板 */
+.filter-panel {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--tbl-border);
+    border-top: none;
+    padding: 10px;
+    border-radius: 0 0 6px 6px;
+    margin-bottom: 12px;
+    animation: slideDown 0.2s ease-out;
+}
+.filter-panel.show { display: block; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 調整篩選按鈕樣式 */
+#btnToggleFilter {
+    justify-content: space-between;
+    border-radius: 6px;
+    border: 1px solid var(--tbl-border);
+}
+#btnToggleFilter.active {
+    background: var(--card);
+    border-radius: 6px 6px 0 0;
+    border-bottom-color: transparent;
+}
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
   </style>
 </head>
@@ -580,25 +608,24 @@
         <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
       </div>
 
-      <div class="card" style="margin-bottom:0;">
-        <h2><i class="bi bi-funnel-fill"></i> 任務過濾</h2>
-        
-        <div style="margin-bottom: 12px;">
-            <label style="font-size:12px; color:var(--muted);">只看這位導師：</label>
-            <select id="teacherFilter" style="width:100%; margin-top:4px;"></select>
-        </div>
+      <button id="btnToggleFilter" class="btn ghost" style="width:100%; margin-bottom:0;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
+          <span><i class="bi bi-funnel"></i> 篩選條件</span>
+          <i class="bi bi-chevron-down" style="font-size:12px;"></i>
+      </button>
 
-        <div style="margin-bottom: 12px;">
-            <label style="font-size:12px; color:var(--muted);">只看這個科目：</label>
-            <select id="subjectFilter" style="width:100%; margin-top:4px;"><option value="all">📚 所有科目</option></select>
-        </div>
-
-        <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;">
-            <i class="bi bi-x-lg"></i> 重置所有篩選
-        </button>
+      <div id="filterPanel" class="filter-panel">
+          <div style="margin-bottom: 8px;">
+              <select id="teacherFilter" style="width:100%; padding:6px;"><option value="all">所有導師</option></select>
+          </div>
+          <div style="margin-bottom: 8px;">
+              <select id="subjectFilter" style="width:100%; padding:6px;"><option value="all">所有科目</option></select>
+          </div>
+          <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;">
+              <i class="bi bi-arrow-counterclockwise"></i> 重置
+          </button>
       </div>
 
-      <div id="sideAssignmentList" class="side-list-container"></div>
+      <div id="sideAssignmentList" class="side-list-container" style="margin-top: 12px;"></div>
     </aside>
 
     <main class="dash-main">
@@ -1398,14 +1425,12 @@ function filterAssignments(assignments) {
         });
     }
 
-// 🎨 渲染主看板 (生成左側清單)
+// 🎨 渲染主看板
     function renderDashboard() {
         const listContainer = document.getElementById('sideAssignmentList');
         const emptyState = document.getElementById('dashEmptyState');
         const detailPanel = document.getElementById('dashDetailPanel');
 
-        // 1. 取得並排序資料
-        // 🚨 修正：只宣告一次！之前這裡重複宣告導致崩潰
         let assignmentsToRender = filterAssignments([...data.assignments]);
         
         // 更新左側數字
@@ -1418,10 +1443,8 @@ function filterAssignments(assignments) {
             return 0;
         });
 
-        // 2. 清空清單
         listContainer.innerHTML = '';
 
-        // 3. 如果沒有資料
         if (assignmentsToRender.length === 0) {
             listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">沒有符合的委託</div>';
             emptyState.style.display = 'flex';
@@ -1429,7 +1452,6 @@ function filterAssignments(assignments) {
             return;
         }
 
-        // 4. 生成左側卡片
         assignmentsToRender.forEach(a => {
             const el = document.createElement('div');
             el.className = 'side-item';
@@ -1441,7 +1463,6 @@ function filterAssignments(assignments) {
             const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
             const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            // 為了讓 UX 更好，根據進度顯示不同顏色
             let progressColor = 'var(--primary)';
             if(progress === 100) progressColor = 'var(--success)';
 
@@ -1455,7 +1476,7 @@ function filterAssignments(assignments) {
                     <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
                         <div style="width:${progress}%; height:100%; background:${progressColor}; transition: width 0.5s;"></div>
                     </div>
-                    <span>${progress}%</span>
+                    <span style="min-width: 40px; text-align: right;">${completed}/${total}</span>
                 </div>
             `;
             
@@ -2113,17 +2134,23 @@ function filterAssignments(assignments) {
         }
     });
 
-    ['teacherFilter','subjectFilter','dateFilter'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
-        currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard();
-    }));
+// 🚨 修正：移除 dateFilter，只保留存在的 ID，防止 JS 崩潰
+    ['teacherFilter','subjectFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener('change', (e) => {
+                currentFilter[id.replace('Filter','')] = e.target.value; 
+                renderDashboard();
+            });
+        }
+    });
+
     document.getElementById('btnClearFilter').addEventListener('click', () => { 
         currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
         document.getElementById('teacherFilter').value = 'all'; 
         document.getElementById('subjectFilter').value = 'all'; 
-        // 移除 dateFilter 的相關設定
         renderDashboard(); 
     });
-
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
         renderQuestConfig();
