@@ -334,61 +334,7 @@
     .att-stat-item { display: flex; flex-direction: column; align-items: center; }
     .att-stat-val { font-size: 20px; font-weight: 900; }
     .att-stat-label { font-size: 12px; color: var(--muted); }
-/* ============================================================
-   🚨 新增：看板雙欄佈局 (左側快捷欄 + 右側內容)
-   ============================================================ */
-.dashboard-layout {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start; /* 讓兩邊高度獨立 */
-}
 
-/* 左側邊欄 */
-.dash-sidebar {
-  flex: 0 0 240px; /* 固定寬度 */
-  position: sticky;
-  top: 16px; /* 捲動時會固定在上方 */
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* 右側主內容 */
-.dash-main {
-  flex: 1; /* 佔滿剩餘空間 */
-  min-width: 0; /* 防止表格撐破版面 */
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* 快捷篩選區塊樣式 */
-.filter-group {
-  background: var(--bg);
-  border: 1px solid var(--tbl-border);
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-.filter-group h4 {
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  color: var(--primary);
-  border-bottom: 1px dashed var(--tbl-border);
-  padding-bottom: 4px;
-}
-
-/* 手機版響應式：小螢幕變回上下排列 */
-@media (max-width: 768px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-  .dash-sidebar {
-    width: 100%;
-    position: static; /* 取消固定 */
-    flex: none;
-  }
-}
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
   </style>
 </head>
@@ -448,49 +394,8 @@
     </header>
 
     <!-- 委託看板 View -->
-   <section id="view-dashboard" class="view show">
-  <div class="dashboard-layout">
-    
-    <aside class="dash-sidebar">
-      
-      <div class="card" style="margin-bottom:0;">
-        <h2><i class="bi bi-compass"></i> 公會羅盤</h2>
-        <div style="text-align:center; padding:10px 0;">
-           <div style="font-size:32px; font-weight:900; color:var(--primary);" id="dashTotalCount">0</div>
-           <div class="muted">目前委託總數</div>
-        </div>
-        <button class="btn ghost sm" style="width:100%" onclick="document.getElementById('view-dashboard').scrollIntoView()">
-            <i class="bi bi-arrow-up-circle"></i> 回到頂部
-        </button>
-      </div>
-
-      <div class="card" style="margin-bottom:0;">
-        <h2><i class="bi bi-funnel-fill"></i> 任務過濾</h2>
-        
-        <div class="filter-group">
-            <h4><i class="bi bi-person-badge"></i> 發布導師</h4>
-            <select id="teacherFilter" style="width:100%"></select>
-        </div>
-
-        <div class="filter-group">
-            <h4><i class="bi bi-journal-bookmark"></i> 科目分類</h4>
-            <select id="subjectFilter" style="width:100%"><option value="all">📚 所有科目</option></select>
-        </div>
-
-        <div class="filter-group">
-            <h4><i class="bi bi-calendar-event"></i> 發布日期</h4>
-            <input type="date" id="dateFilter" style="width:100%">
-        </div>
-
-        <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;">
-            <i class="bi bi-x-lg"></i> 清除所有篩選
-        </button>
-      </div>
-
-    </aside>
-
-    <main class="dash-main">
-      
+    <section id="view-dashboard" class="view show">
+      <!-- (原有的委託看板內容保持不變) -->
       <div class="card">
         <h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2>
         <div class="row">
@@ -501,7 +406,7 @@
           </div>
           
           <div class="field sm-5">
-            <label>委託內容</label>
+            <label>委託內容 (作業名稱)</label>
             <div style="display:flex; gap:8px; margin-bottom:4px; align-items: center;">
                 <select id="selSubject" style="width:40%; padding:6px; font-size:12px;">
                     <option value="">📂 科目...</option>
@@ -512,15 +417,14 @@
                 </select>
             </div>
             <div style="position: relative;">
-                <input id="ipTitle" type="text" placeholder="手動輸入..." />
-                <button id="btnToggleNumpad" class="btn sm ghost" style="position: absolute; right: 4px; top: 4px; padding: 4px 8px;" title="數字鍵"><i class="bi bi-grid-3x3"></i></button>
+                <input id="ipTitle" type="text" placeholder="或是手動輸入..." />
+                <button id="btnToggleNumpad" class="btn sm ghost" style="position: absolute; right: 4px; top: 4px; padding: 4px 8px;" title="開啟數字鍵盤"><i class="bi bi-grid-3x3"></i></button>
                 <div id="numpadContainer" class="numpad-container"></div>
             </div>
           </div>
 
           <div class="field sm-3"><label>發布日期</label><input id="ipDate" type="date" /></div>
         </div>
-        
         <div class="field" style="margin-top: 8px;">
             <label>指定冒險者</label>
             <button class="btn ghost" id="btnOpenAssignModal" style="justify-content: flex-start; text-align: left; width: 100%;">
@@ -528,30 +432,31 @@
                 <span id="assignStatusText">全體冒險者</span>
             </button>
         </div>
-
         <div class="actions">
             <button class="btn" id="btnCreate"><i class="bi bi-quill-pen"></i> 發布委託</button>
-            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份</button>
-            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原</label>
+            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份資料 (JSON)</button>
+            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原資料</label>
             <input id="fileImport" type="file" accept="application/json" hidden />
         </div>
       </div>
-
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap: wrap; gap: 8px;">
             <h2><i class="bi bi-list-check"></i> 委託清單</h2>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <div class="field" style="max-width:140px; margin: 0;"><select id="teacherFilter"></select></div>
+                <div class="field" style="max-width:140px; margin: 0;"><select id="subjectFilter"><option value="all">📚 所有科目</option></select></div>
+                <div class="field" style="max-width:140px; margin: 0;"><input type="date" id="dateFilter"></div>
+                <button id="btnClearFilter" class="btn sm ghost" title="清除篩選"><i class="bi bi-x-lg"></i></button>
             </div>
+        </div>
         <div class="table-wrap">
           <table id="assignmentTable">
-            <thead><tr><th data-sort="date">日期 <i class="bi"></i></th><th data-sort="title">內容 <i class="bi"></i></th><th data-sort="teacher">公會長 <i class="bi"></i></th><th>回報</th><th>討伐</th><th></th></tr></thead>
+            <thead><tr><th data-sort="date">發布日期 <i class="bi"></i></th><th data-sort="title">委託內容 <i class="bi"></i></th><th data-sort="teacher">公會長 <i class="bi"></i></th><th>回報進度</th><th>討伐進度</th><th></th></tr></thead>
             <tbody id="assignmentList"></tbody>
           </table>
         </div>
       </div>
-
-    </main>
-  </div>
-</section>
+    </section>
 
     <!-- 🌟 新增：點名系統 View -->
     <section id="view-attendance" class="view">
@@ -1319,12 +1224,7 @@ function initApp() {
     function renderDashboard() {
         const list = document.getElementById('assignmentList');
         let assignmentsToRender = filterAssignments([...data.assignments]);
-        // --- 🆕 新增這一行來更新左側統計 ---
-        let assignmentsToRender = filterAssignments([...data.assignments]);
-        // 更新左側數字
-        const countEl = document.getElementById('dashTotalCount');
-        if(countEl) countEl.innerText = assignmentsToRender.length;
-        // ------------------------------------
+        
         assignmentsToRender.sort((a, b) => {
             const aVal = a[sortState.key]; const bVal = b[sortState.key];
             if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
