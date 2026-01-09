@@ -463,6 +463,33 @@
     border: 2px dashed var(--tbl-border);
     border-radius: 8px;
 }
+
+    /* ============================================================
+   🚨 修正與優化：面板顯示與篩選器
+   ============================================================ */
+/* 讓新委託面板被 .show 觸發時能顯示出來 */
+#newQuestPanel.show {
+    display: block !important;
+    animation: fadeIn 0.3s;
+}
+
+/* 優化篩選器標籤，讓它看起來像好按的按鈕 */
+.filter-tag {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    background: var(--card); 
+    border: 1px solid var(--tbl-border);
+    padding: 8px; 
+    border-radius: 6px; 
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.filter-tag:hover { border-color: var(--primary); color: var(--primary); }
+    
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
   </style>
 </head>
@@ -524,22 +551,25 @@
 <section id="view-dashboard" class="view show">
   <div class="dashboard-layout">
     
-    <aside class="dash-sidebar">
+<aside class="dash-sidebar">
       
       <button class="btn" style="width:100%; margin-bottom:12px; justify-content:center;" onclick="document.getElementById('newQuestPanel').classList.toggle('show')">
           <i class="bi bi-plus-circle-dotted"></i> 發布新委託
       </button>
 
-      <div id="newQuestPanel" class="card" style="display:none; border:2px dashed var(--primary);">
-        <h4 style="margin:0 0 8px 0; font-size:14px; color:var(--primary);">填寫委託單</h4>
+      <div id="newQuestPanel" class="card" style="display:none; border:2px dashed var(--primary); padding:10px;">
+        <h4 style="margin:0 0 8px 0; font-size:14px; color:var(--primary); border-bottom:1px dashed #ccc; padding-bottom:4px;">填寫委託單</h4>
         <div class="field">
+            <label style="font-size:12px;">發布導師</label>
             <select id="ipTeacherSelect" style="padding:6px;"></select>
             <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
         </div>
         <div class="field" style="margin-top:4px;">
+            <label style="font-size:12px;">日期</label>
             <input id="ipDate" type="date" style="padding:6px;">
         </div>
         <div class="field" style="margin-top:4px;">
+             <label style="font-size:12px;">內容</label>
              <select id="selSubject" style="padding:6px; margin-bottom:4px;"><option value="">📂 科目...</option></select>
              <select id="selPresetTask" style="padding:6px; margin-bottom:4px;"><option value="">📜 常用...</option></select>
              <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px;" />
@@ -550,14 +580,25 @@
         <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
       </div>
 
-      <div class="filter-group">
-        <select id="teacherFilter" style="width:100%; margin-bottom:4px;"></select>
-        <select id="subjectFilter" style="width:100%; margin-bottom:4px;"><option value="all">📚 所有科目</option></select>
-        <input type="date" id="dateFilter" style="width:100%">
+      <div class="card" style="margin-bottom:0;">
+        <h2><i class="bi bi-funnel-fill"></i> 任務過濾</h2>
+        
+        <div style="margin-bottom: 12px;">
+            <label style="font-size:12px; color:var(--muted);">只看這位導師：</label>
+            <select id="teacherFilter" style="width:100%; margin-top:4px;"></select>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="font-size:12px; color:var(--muted);">只看這個科目：</label>
+            <select id="subjectFilter" style="width:100%; margin-top:4px;"><option value="all">📚 所有科目</option></select>
+        </div>
+
+        <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;">
+            <i class="bi bi-x-lg"></i> 重置所有篩選
+        </button>
       </div>
 
-      <div id="sideAssignmentList" class="side-list-container">
-          </div>
+      <div id="sideAssignmentList" class="side-list-container"></div>
     </aside>
 
     <main class="dash-main">
@@ -1017,7 +1058,7 @@ const firebaseConfig = {
         }
     });
 
-    async function loadDataFromFirebase() {
+async function loadDataFromFirebase() {
         if (!currentUser) return;
         updateSaveStatus('saving', '讀取中...');
         
@@ -1028,17 +1069,21 @@ const firebaseConfig = {
             if (docSnap.exists()) {
                 data = docSnap.data();
                 if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
-                if(!data.attendance) data.attendance = {}; // 防呆
+                if(!data.attendance) data.attendance = {};
             } else {
                 data = JSON.parse(JSON.stringify(defaultData));
                 await setDoc(docRef, data);
             }
-            onDataLoaded();
+            onDataLoaded(); // 成功時執行
             updateSaveStatus('success', '讀取完成');
             checkAttendanceReminder();
         } catch (error) {
             console.error("Load Error:", error);
-            updateSaveStatus('error', '讀取失敗');
+            // 🚨 修正重點：失敗時也要執行初始化，這樣按鈕才會有反應！
+            console.log("切換至離線/本地模式");
+            if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData)); // 若無資料則載入預設
+            onDataLoaded(); // 強制執行初始化
+            updateSaveStatus('error', '連線失敗(離線模式)');
         }
     }
 
@@ -1342,14 +1387,14 @@ function initApp() {
         }
     }
 
-    function filterAssignments(assignments) {
+function filterAssignments(assignments) {
         return assignments.filter(a => {
             if (a.archived) return false;
             const matchTeacher = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
             const matchSubject = currentFilter.subject === 'all' || 
                                  (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject));
-            const matchDate = !currentFilter.date || a.date === currentFilter.date;
-            return matchTeacher && matchSubject && matchDate;
+            // 🚨 修正：移除 matchDate 邏輯
+            return matchTeacher && matchSubject;
         });
     }
 
@@ -1360,9 +1405,14 @@ function initApp() {
         const detailPanel = document.getElementById('dashDetailPanel');
 
         // 1. 取得並排序資料
+        // 🚨 修正：只宣告一次！之前這裡重複宣告導致崩潰
         let assignmentsToRender = filterAssignments([...data.assignments]);
+        
+        // 更新左側數字
+        const countEl = document.getElementById('dashTotalCount');
+        if(countEl) countEl.innerText = assignmentsToRender.length;
+
         assignmentsToRender.sort((a, b) => {
-            // 固定按日期降序排列 (最新的在上面)
             if (a.date < b.date) return 1;
             if (a.date > b.date) return -1;
             return 0;
@@ -1383,7 +1433,7 @@ function initApp() {
         assignmentsToRender.forEach(a => {
             const el = document.createElement('div');
             el.className = 'side-item';
-            if (currentAssignmentId === a.id) el.classList.add('active'); // 保持選中狀態
+            if (currentAssignmentId === a.id) el.classList.add('active'); 
             
             // 計算進度
             const indices = a.assignedIndices || 'all';
@@ -1391,36 +1441,35 @@ function initApp() {
             const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
             const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
+            // 為了讓 UX 更好，根據進度顯示不同顏色
+            let progressColor = 'var(--primary)';
+            if(progress === 100) progressColor = 'var(--success)';
+
             el.innerHTML = `
                 <div class="side-item-title">${a.title}</div>
-                <div class="side-item-meta class="muted">
+                <div class="side-item-meta muted">
                     <span>${a.date}</span>
                     <span>${a.teacher}</span>
                 </div>
                 <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
                     <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
-                        <div style="width:${progress}%; height:100%; background:currentColor;"></div>
+                        <div style="width:${progress}%; height:100%; background:${progressColor}; transition: width 0.5s;"></div>
                     </div>
                     <span>${progress}%</span>
                 </div>
             `;
             
-            // 點擊事件：切換右側內容
             el.addEventListener('click', () => selectAssignment(a.id));
-            
             listContainer.appendChild(el);
         });
 
-        // 如果目前有選中的 ID，重新渲染右側 (確保資料同步)
         if (currentAssignmentId) {
              renderDashboardDetail(currentAssignmentId);
         } else {
-             // 如果沒有選中，顯示空狀態
              emptyState.style.display = 'flex';
              detailPanel.classList.remove('show');
         }
     }
-
     // 🎯 選擇委託 (切換右側詳情)
     function selectAssignment(id) {
         currentAssignmentId = id;
@@ -2067,7 +2116,13 @@ function initApp() {
     ['teacherFilter','subjectFilter','dateFilter'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
         currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard();
     }));
-    document.getElementById('btnClearFilter').addEventListener('click', () => { currentFilter={teacher:'all',subject:'all',date:''}; document.getElementById('teacherFilter').value='all'; document.getElementById('subjectFilter').value='all'; document.getElementById('dateFilter').value=''; renderDashboard(); });
+    document.getElementById('btnClearFilter').addEventListener('click', () => { 
+        currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
+        document.getElementById('teacherFilter').value = 'all'; 
+        document.getElementById('subjectFilter').value = 'all'; 
+        // 移除 dateFilter 的相關設定
+        renderDashboard(); 
+    });
 
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
