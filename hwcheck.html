@@ -2015,10 +2015,10 @@ function filterAssignments(assignments) {
     });
 
 // ============================================================
-    // ✂️ 請從這裡開始取代 (包含這行與下面所有程式碼)
+    // ✂️ 請從這裡開始貼上，取代原本最後面的程式碼
     // ============================================================
 
-    // 1. 狀態選單點擊事件
+    // 1. 狀態選單 (小視窗) 點擊事件
     document.querySelectorAll('.status-option-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -2049,96 +2049,97 @@ function filterAssignments(assignments) {
 
     let targetAssignmentIdToDelete = null; 
 
-    // ⚠️ 這裡已經移除了舊版 assignmentList 的錯誤程式碼，確保按鈕功能正常
-
-    // 2. 列表點擊 (委託看板的清單與表格)
-    // 防止舊代碼殘留，只監聽現在存在的 sideAssignmentList
-    const sideListEl = document.getElementById('sideAssignmentList');
-    if(sideListEl) {
-        sideListEl.addEventListener('click', (e) => {
-            // 這裡不需要做什麼，因為每個 item 都有自己的 click listener
+    // 2. 封存與刪除按鈕
+    const btnArchive = document.getElementById('btnConfirmArchive');
+    if(btnArchive) {
+        btnArchive.addEventListener('click', () => {
+            if (!targetAssignmentIdToDelete) return;
+            const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+            if(a) {
+                a.archived = true;
+                triggerAutoSave();
+                renderDashboard();
+                updateSaveStatus('success', '已封存');
+            }
+            document.getElementById('deleteChoiceModal').classList.remove('show');
+            targetAssignmentIdToDelete = null;
         });
     }
 
-    // 3. 封存與刪除按鈕
-    document.getElementById('btnConfirmArchive').addEventListener('click', () => {
-        if (!targetAssignmentIdToDelete) return;
-        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
-        if(a) {
-            a.archived = true;
-            triggerAutoSave();
-            renderDashboard();
-            updateSaveStatus('success', '已封存');
-        }
-        document.getElementById('deleteChoiceModal').classList.remove('show');
-        targetAssignmentIdToDelete = null;
-    });
-
     let undoTimeout = null;
     let deletedAssignmentBackup = null;
-
-    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
-        if (!targetAssignmentIdToDelete) return;
-        
-        const item = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
-        if(item) {
-            deletedAssignmentBackup = JSON.parse(JSON.stringify(item));
-            data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
-            triggerAutoSave();
-            renderDashboard();
-            showToast("契約已銷毀！", "復原 (Undo)", () => {
-                if (deletedAssignmentBackup) {
-                    data.assignments.push(deletedAssignmentBackup);
-                    data.assignments.sort((a,b) => b.id - a.id);
-                    renderDashboard();
-                    clearTimeout(undoTimeout);
-                    undoTimeout = null;
-                    deletedAssignmentBackup = null;
-                    alert("已成功復原！");
-                }
-            });
-        }
-        
-        document.getElementById('deleteChoiceModal').classList.remove('show');
-        targetAssignmentIdToDelete = null;
-
-        if(undoTimeout) clearTimeout(undoTimeout);
-        undoTimeout = setTimeout(() => {
-            saveDataToFirebase();
-            updateSaveStatus('success', '已銷毀');
-            deletedAssignmentBackup = null; 
-        }, 5000);
-    });
-
-    // 4. 危險操作區
-    document.getElementById('btnClearAssignments').addEventListener('click', () => {
-        if(confirm("🔥 警告：這將會刪除「所有的」委託任務資料，包含已封存的紀錄！\n\n冒險者名單將會保留。\n\n確定要執行嗎？")) {
-            if(confirm("再次確認：資料刪除後無法復原！真的要銷毀嗎？")) {
-                data.assignments = [];
+    
+    const btnDelete = document.getElementById('btnConfirmDelete');
+    if(btnDelete) {
+        btnDelete.addEventListener('click', () => {
+            if (!targetAssignmentIdToDelete) return;
+            
+            const item = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+            if(item) {
+                deletedAssignmentBackup = JSON.parse(JSON.stringify(item));
+                data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
                 triggerAutoSave();
                 renderDashboard();
-                renderStudentStatus();
-                alert("所有契約已化為灰燼！");
+                showToast("契約已銷毀！", "復原 (Undo)", () => {
+                    if (deletedAssignmentBackup) {
+                        data.assignments.push(deletedAssignmentBackup);
+                        data.assignments.sort((a,b) => b.id - a.id);
+                        renderDashboard();
+                        clearTimeout(undoTimeout);
+                        undoTimeout = null;
+                        deletedAssignmentBackup = null;
+                        alert("已成功復原！");
+                    }
+                });
+            }
+            
+            document.getElementById('deleteChoiceModal').classList.remove('show');
+            targetAssignmentIdToDelete = null;
+
+            if(undoTimeout) clearTimeout(undoTimeout);
+            undoTimeout = setTimeout(() => {
+                saveDataToFirebase();
+                updateSaveStatus('success', '已銷毀');
+                deletedAssignmentBackup = null; 
+            }, 5000);
+        });
+    }
+
+    // 3. 危險操作區 (清空資料)
+    const btnClear = document.getElementById('btnClearAssignments');
+    if(btnClear) {
+        btnClear.addEventListener('click', () => {
+            if(confirm("🔥 警告：這將會刪除「所有的」委託任務資料，包含已封存的紀錄！\n\n冒險者名單將會保留。\n\n確定要執行嗎？")) {
+                if(confirm("再次確認：資料刪除後無法復原！真的要銷毀嗎？")) {
+                    data.assignments = [];
+                    triggerAutoSave();
+                    renderDashboard();
+                    renderStudentStatus();
+                    alert("所有契約已化為灰燼！");
+                    document.getElementById('adminProfileModal').classList.remove('show');
+                }
+            }
+        });
+    }
+
+    const btnReset = document.getElementById('btnResetAll');
+    if(btnReset) {
+        btnReset.addEventListener('click', () => {
+            const promptText = "DESTROY";
+            const input = prompt(`☢️ 危險：這將刪除「所有」資料，包含冒險者名單、老師名單、所有任務！\n\n若確定執行，請輸入 "${promptText}"：`);
+            if(input === promptText) {
+                data.roster = [];
+                data.assignments = [];
+                data.attendance = {}; 
+                triggerAutoSave();
+                renderAll();
+                alert("公會已重建，一切歸零！");
                 document.getElementById('adminProfileModal').classList.remove('show');
             }
-        }
-    });
+        });
+    }
 
-    document.getElementById('btnResetAll').addEventListener('click', () => {
-        const promptText = "DESTROY";
-        const input = prompt(`☢️ 危險：這將刪除「所有」資料，包含冒險者名單、老師名單、所有任務！\n\n若確定執行，請輸入 "${promptText}"：`);
-        if(input === promptText) {
-            data.roster = [];
-            data.assignments = [];
-            data.attendance = {}; 
-            triggerAutoSave();
-            renderAll();
-            alert("公會已重建，一切歸零！");
-            document.getElementById('adminProfileModal').classList.remove('show');
-        }
-    });
-
-    // 5. 篩選器 (含防呆)
+    // 4. 篩選器 (含防呆機制)
     ['teacherFilter','subjectFilter'].forEach(id => {
         const el = document.getElementById(id);
         if(el) {
@@ -2154,15 +2155,18 @@ function filterAssignments(assignments) {
         }
     });
 
-    document.getElementById('btnClearFilter').addEventListener('click', () => { 
-        currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
-        document.getElementById('teacherFilter').value = 'all'; 
-        document.getElementById('subjectFilter').value = 'all'; 
-        renderDashboard(); 
-        document.getElementById('filterPanel').classList.remove('show');
-    });
+    const btnClearFilter = document.getElementById('btnClearFilter');
+    if(btnClearFilter) {
+        btnClearFilter.addEventListener('click', () => { 
+            currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
+            document.getElementById('teacherFilter').value = 'all'; 
+            document.getElementById('subjectFilter').value = 'all'; 
+            renderDashboard(); 
+            document.getElementById('filterPanel').classList.remove('show');
+        });
+    }
 
-    // 6. 任務設定
+    // 5. 任務設定與外觀設定
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
         renderQuestConfig();
@@ -2181,7 +2185,6 @@ function filterAssignments(assignments) {
         document.getElementById('questSettingsModal').classList.remove('show');
     });
 
-    // 7. 外觀設定
     document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
         const btn = e.target.closest('.theme-option');
         if(btn) { 
@@ -2199,7 +2202,7 @@ function filterAssignments(assignments) {
         localStorage.setItem('homeworkSystemTheme', t);
     });
 
-    // 8. 數字鍵盤 (防呆)
+    // 6. 數字鍵盤
     const numpadContainer = document.getElementById('numpadContainer');
     const btnToggleNumpad = document.getElementById('btnToggleNumpad');
     
@@ -2245,7 +2248,7 @@ function filterAssignments(assignments) {
         });
     }
 
-    // 9. 冒險者名單編輯
+    // 7. 冒險者名單編輯
     document.getElementById('btnAddStudentRow').addEventListener('click', () => {
         const listDiv = document.getElementById('rosterEditor');
         const count = listDiv.querySelectorAll('.roster-item').length + 1;
@@ -2290,7 +2293,7 @@ function filterAssignments(assignments) {
         }
     });
 
-    // 10. Tooltips
+    // 8. Tooltips
     document.body.addEventListener('mouseover', (e) => {
         const t = e.target.closest('.has-tooltip');
         if(t && t.dataset.tooltip) { customTooltip.innerHTML = t.dataset.tooltip; customTooltip.classList.add('show'); }
@@ -2300,63 +2303,72 @@ function filterAssignments(assignments) {
     });
     document.body.addEventListener('mouseout', () => customTooltip.classList.remove('show'));
     
-    // 11. 指派學生 Modal
-    document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
-        const list = document.getElementById('assignStudentListContainer');
-        list.innerHTML = '';
-        data.roster.forEach((s, i) => {
-            const checked = newAssignmentAssignedIndices.length === 0 || newAssignmentAssignedIndices.includes(i);
-            const label = document.createElement('label'); label.className = 'assign-student-item';
-            label.innerHTML = `<input type="checkbox" data-idx="${i}" ${checked?'checked':''}> <span>${s.no}. ${s.name}</span>`;
-            list.appendChild(label);
+    // 9. [修復] 指派學生 Modal (填寫委託單的指定對象)
+    const btnOpenAssign = document.getElementById('btnOpenAssignModal');
+    if(btnOpenAssign) {
+        btnOpenAssign.addEventListener('click', () => {
+            const list = document.getElementById('assignStudentListContainer');
+            list.innerHTML = '';
+            data.roster.forEach((s, i) => {
+                const checked = newAssignmentAssignedIndices.length === 0 || newAssignmentAssignedIndices.includes(i);
+                const label = document.createElement('label'); label.className = 'assign-student-item';
+                label.innerHTML = `<input type="checkbox" data-idx="${i}" ${checked?'checked':''}> <span>${s.no}. ${s.name}</span>`;
+                list.appendChild(label);
+            });
+            document.getElementById('assignStudentModal').classList.add('show');
         });
-        document.getElementById('assignStudentModal').classList.add('show');
-    });
-    document.getElementById('btnConfirmAssign').addEventListener('click', () => {
-        const checked = document.querySelectorAll('#assignStudentListContainer input:checked');
-        newAssignmentAssignedIndices = [];
-        checked.forEach(c => newAssignmentAssignedIndices.push(parseInt(c.dataset.idx)));
-        document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "全體冒險者" : `已選 ${newAssignmentAssignedIndices.length} 位`;
-        document.getElementById('assignStudentModal').classList.remove('show');
-    });
+    }
+
+    const btnConfirmAssign = document.getElementById('btnConfirmAssign');
+    if(btnConfirmAssign) {
+        btnConfirmAssign.addEventListener('click', () => {
+            const checked = document.querySelectorAll('#assignStudentListContainer input:checked');
+            newAssignmentAssignedIndices = [];
+            checked.forEach(c => newAssignmentAssignedIndices.push(parseInt(c.dataset.idx)));
+            document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "全體冒險者" : `已選 ${newAssignmentAssignedIndices.length} 位`;
+            document.getElementById('assignStudentModal').classList.remove('show');
+        });
+    }
+    
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = false));
 
-    // 12. 🌟 公會長執務室按鈕 (修復重點)
-    document.getElementById('userEmailDisplay').addEventListener('click', () => {
-        const adminModal = document.getElementById('adminProfileModal');
-        const debtList = document.getElementById('adminDebtList');
-        debtList.innerHTML = '';
+    // 10. [修復] 公會長執務室 (右上角帳號按鈕)
+    const btnUserEmail = document.getElementById('userEmailDisplay');
+    if(btnUserEmail) {
+        btnUserEmail.addEventListener('click', () => {
+            const adminModal = document.getElementById('adminProfileModal');
+            const debtList = document.getElementById('adminDebtList');
+            debtList.innerHTML = '';
 
-        const debtStudents = [];
-        data.roster.forEach((student, idx) => {
-            let count = 0;
-            data.assignments.forEach(a => {
-                if(a.archived) return; 
-                const assigned = a.assignedIndices === 'all' || a.assignedIndices.includes(idx);
-                // 增加 statuses 防呆檢查
-                const statuses = a.statuses || [];
-                const s = statuses[idx] || 0;
-                if (assigned && (s === 0 || s === 2)) count++;
+            const debtStudents = [];
+            data.roster.forEach((student, idx) => {
+                let count = 0;
+                data.assignments.forEach(a => {
+                    if(a.archived) return; 
+                    const assigned = a.assignedIndices === 'all' || a.assignedIndices.includes(idx);
+                    const s = (a.statuses||[])[idx] || 0;
+                    if (assigned && (s === 0 || s === 2)) count++;
+                });
+                if (count >= 5) debtStudents.push({ ...student, count });
             });
-            if (count >= 5) debtStudents.push({ ...student, count });
+
+            if (debtStudents.length > 0) {
+                debtStudents.forEach(s => {
+                    const tag = document.createElement('span');
+                    tag.style.cssText = "background:#fee2e2; color:#b91c1c; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:14px; border:1px solid #fca5a5;";
+                    tag.innerHTML = `${s.name} <small>(${s.count})</small>`;
+                    debtList.appendChild(tag);
+                });
+            } else {
+                debtList.innerHTML = '<p style="color:var(--success);width:100%;">目前無人欠款超過 5 項！</p>';
+            }
+            
+            adminModal.classList.add('show');
         });
+    }
 
-        if (debtStudents.length > 0) {
-            debtStudents.forEach(s => {
-                const tag = document.createElement('span');
-                tag.style.cssText = "background:#fee2e2; color:#b91c1c; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:14px; border:1px solid #fca5a5;";
-                tag.innerHTML = `${s.name} <small>(${s.count})</small>`;
-                debtList.appendChild(tag);
-            });
-        } else {
-            debtList.innerHTML = '<p style="color:var(--success);width:100%;">目前無人欠款超過 5 項！</p>';
-        }
-        
-        adminModal.classList.add('show');
-    });
-
-    // 13. 下載封存
+    // 11. 下載封存
     document.getElementById('btnDownloadArchive').addEventListener('click', () => {
         const archives = data.assignments.filter(a => a.archived);
         if(archives.length === 0) {
@@ -2392,11 +2404,14 @@ function filterAssignments(assignments) {
         URL.revokeObjectURL(url);
     });
 
-    // 14. 批量模式與列印
-    document.getElementById('btnToggleBatchMode').addEventListener('click', () => {
-        isBatchMode = !isBatchMode;
-        renderStudentStatus();
-    });
+    // 12. [修復] 批量模式與列印
+    const btnToggleBatch = document.getElementById('btnToggleBatchMode');
+    if(btnToggleBatch) {
+        btnToggleBatch.addEventListener('click', () => {
+            isBatchMode = !isBatchMode;
+            renderStudentStatus();
+        });
+    }
 
     function printContent(contentHTML) {
         const printWindow = window.open('', '', 'width=800,height=600');
@@ -2472,7 +2487,7 @@ function filterAssignments(assignments) {
         alert(`已載入 ${lines.length} 位冒險者，請記得按「儲存變更」！`);
     });
 
-    // 15. 工具箱邏輯
+    // 13. 工具箱邏輯
     document.getElementById('btnToggleToolbox').addEventListener('click', (e) => {
         const menu = document.getElementById('toolboxMenu');
         const btn = e.currentTarget; 
@@ -2594,14 +2609,18 @@ function filterAssignments(assignments) {
     const mqSizeInput = document.getElementById('mqSizeInput');
     const mqSpeedInput = document.getElementById('mqSpeedInput'); 
     
-    mqSizeInput.addEventListener('input', (e) => {
-        const mqText = document.getElementById('marqueeText');
-        if(mqText) mqText.style.fontSize = e.target.value + 'px';
-    });
+    if(mqSizeInput) {
+        mqSizeInput.addEventListener('input', (e) => {
+            const mqText = document.getElementById('marqueeText');
+            if(mqText) mqText.style.fontSize = e.target.value + 'px';
+        });
+    }
 
-    mqSpeedInput.addEventListener('input', (e) => {
-        updateMarqueeSpeed();
-    });
+    if(mqSpeedInput) {
+        mqSpeedInput.addEventListener('input', (e) => {
+            updateMarqueeSpeed();
+        });
+    }
 
     function updateMarqueeSpeed() {
         const text = document.getElementById('mqTextInput').value.trim();
