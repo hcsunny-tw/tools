@@ -2041,22 +2041,6 @@ function filterAssignments(assignments) {
 
     let targetAssignmentIdToDelete = null; 
 
-    document.getElementById('assignmentList').addEventListener('click', (e) => {
-        const btnDel = e.target.closest('.btn-delete');
-        if(btnDel) { 
-            e.stopPropagation(); 
-            const a = data.assignments.find(x => x.id == btnDel.dataset.id);
-            if(!a) return;
-
-            targetAssignmentIdToDelete = a.id;
-            document.getElementById('deleteTargetTitle').innerText = `「${a.date} ${a.title}」`;
-            document.getElementById('deleteChoiceModal').classList.add('show');
-            return; 
-        }
-        
-        const tr = e.target.closest('tr'); 
-        if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
-    });
 
     document.getElementById('btnConfirmArchive').addEventListener('click', () => {
         if (!targetAssignmentIdToDelete) return;
@@ -2134,16 +2118,32 @@ function filterAssignments(assignments) {
         }
     });
 
-// 🚨 修正：移除 dateFilter，只保留存在的 ID，防止 JS 崩潰
+// 🔧 優化：篩選器邏輯 (選擇後自動收起面板)
     ['teacherFilter','subjectFilter'].forEach(id => {
         const el = document.getElementById(id);
         if(el) {
             el.addEventListener('change', (e) => {
+                // 1. 更新篩選條件
                 currentFilter[id.replace('Filter','')] = e.target.value; 
                 renderDashboard();
+
+                // 2. ✨ 優化：選擇後自動收起面板 (UX 改善)
+                document.getElementById('filterPanel').classList.remove('show');
+                document.getElementById('btnToggleFilter').classList.remove('active');
             });
         }
     });
+
+    // 重置按鈕
+    document.getElementById('btnClearFilter').addEventListener('click', () => { 
+        currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
+        document.getElementById('teacherFilter').value = 'all'; 
+        document.getElementById('subjectFilter').value = 'all'; 
+        renderDashboard();
+        // 重置後也自動收起
+        document.getElementById('filterPanel').classList.remove('show');
+        document.getElementById('btnToggleFilter').classList.remove('active');
+    });;
 
     document.getElementById('btnClearFilter').addEventListener('click', () => { 
         currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
