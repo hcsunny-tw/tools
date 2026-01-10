@@ -2014,34 +2014,53 @@ function filterAssignments(assignments) {
         }
     });
 
+// ============================================================
+    // ✂️ 請從這裡開始取代 (包含這行與下面所有程式碼)
+    // ============================================================
+
+    // 1. 狀態選單點擊事件
     document.querySelectorAll('.status-option-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const s = parseInt(btn.dataset.status);
             const { index, assignmentId } = statusPickerTarget;
             const a = data.assignments.find(i => i.id == assignmentId);
-            a.statuses[index] = s;
-            if(s === 3) playSuccessSound();
-            
-            const indices = a.assignedIndices || 'all';
-            let allCompleted = true;
-            for(let i=0; i<data.roster.length; i++) {
-                if(indices === 'all' || indices.includes(i)) {
-                    if (a.statuses[i] !== 3) allCompleted = false;
+            if(a) {
+                a.statuses[index] = s;
+                if(s === 3) playSuccessSound();
+                
+                // 檢查是否全體完成
+                const indices = a.assignedIndices || 'all';
+                let allCompleted = true;
+                for(let i=0; i<data.roster.length; i++) {
+                    if(indices === 'all' || indices.includes(i)) {
+                        if ((a.statuses[i]||0) !== 3) allCompleted = false;
+                    }
                 }
-            }
-            if (allCompleted) confetti();
+                if (allCompleted) confetti();
 
-            triggerAutoSave();
-            renderStudentStatus();
-            renderDashboard();
+                triggerAutoSave();
+                renderStudentStatus();
+                renderDashboard();
+            }
             statusPicker.classList.remove('show');
         });
     });
 
     let targetAssignmentIdToDelete = null; 
 
+    // ⚠️ 這裡已經移除了舊版 assignmentList 的錯誤程式碼，確保按鈕功能正常
 
+    // 2. 列表點擊 (委託看板的清單與表格)
+    // 防止舊代碼殘留，只監聽現在存在的 sideAssignmentList
+    const sideListEl = document.getElementById('sideAssignmentList');
+    if(sideListEl) {
+        sideListEl.addEventListener('click', (e) => {
+            // 這裡不需要做什麼，因為每個 item 都有自己的 click listener
+        });
+    }
+
+    // 3. 封存與刪除按鈕
     document.getElementById('btnConfirmArchive').addEventListener('click', () => {
         if (!targetAssignmentIdToDelete) return;
         const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
@@ -2091,6 +2110,7 @@ function filterAssignments(assignments) {
         }, 5000);
     });
 
+    // 4. 危險操作區
     document.getElementById('btnClearAssignments').addEventListener('click', () => {
         if(confirm("🔥 警告：這將會刪除「所有的」委託任務資料，包含已封存的紀錄！\n\n冒險者名單將會保留。\n\n確定要執行嗎？")) {
             if(confirm("再次確認：資料刪除後無法復原！真的要銷毀嗎？")) {
@@ -2110,7 +2130,7 @@ function filterAssignments(assignments) {
         if(input === promptText) {
             data.roster = [];
             data.assignments = [];
-            data.attendance = {}; // 🌟
+            data.attendance = {}; 
             triggerAutoSave();
             renderAll();
             alert("公會已重建，一切歸零！");
@@ -2118,39 +2138,31 @@ function filterAssignments(assignments) {
         }
     });
 
-// 🔧 優化：篩選器邏輯 (選擇後自動收起面板)
+    // 5. 篩選器 (含防呆)
     ['teacherFilter','subjectFilter'].forEach(id => {
         const el = document.getElementById(id);
         if(el) {
             el.addEventListener('change', (e) => {
-                // 1. 更新篩選條件
                 currentFilter[id.replace('Filter','')] = e.target.value; 
                 renderDashboard();
-
-                // 2. ✨ 優化：選擇後自動收起面板 (UX 改善)
-                document.getElementById('filterPanel').classList.remove('show');
-                document.getElementById('btnToggleFilter').classList.remove('active');
+                // 優化：選擇後自動收起
+                const p = document.getElementById('filterPanel');
+                if(p) p.classList.remove('show');
+                const b = document.getElementById('btnToggleFilter');
+                if(b) b.classList.remove('active');
             });
         }
     });
-
-    // 重置按鈕
-    document.getElementById('btnClearFilter').addEventListener('click', () => { 
-        currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
-        document.getElementById('teacherFilter').value = 'all'; 
-        document.getElementById('subjectFilter').value = 'all'; 
-        renderDashboard();
-        // 重置後也自動收起
-        document.getElementById('filterPanel').classList.remove('show');
-        document.getElementById('btnToggleFilter').classList.remove('active');
-    });;
 
     document.getElementById('btnClearFilter').addEventListener('click', () => { 
         currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
         document.getElementById('teacherFilter').value = 'all'; 
         document.getElementById('subjectFilter').value = 'all'; 
         renderDashboard(); 
+        document.getElementById('filterPanel').classList.remove('show');
     });
+
+    // 6. 任務設定
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
         renderQuestConfig();
@@ -2169,13 +2181,13 @@ function filterAssignments(assignments) {
         document.getElementById('questSettingsModal').classList.remove('show');
     });
 
+    // 7. 外觀設定
     document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
         const btn = e.target.closest('.theme-option');
         if(btn) { 
             const t = btn.dataset.theme; 
             document.documentElement.setAttribute('data-color-theme', t); 
             localStorage.setItem('homeworkSystemColorTheme', t);
-            
             document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
         }
@@ -2187,6 +2199,7 @@ function filterAssignments(assignments) {
         localStorage.setItem('homeworkSystemTheme', t);
     });
 
+    // 8. 數字鍵盤 (防呆)
     const numpadContainer = document.getElementById('numpadContainer');
     const btnToggleNumpad = document.getElementById('btnToggleNumpad');
     
@@ -2232,6 +2245,7 @@ function filterAssignments(assignments) {
         });
     }
 
+    // 9. 冒險者名單編輯
     document.getElementById('btnAddStudentRow').addEventListener('click', () => {
         const listDiv = document.getElementById('rosterEditor');
         const count = listDiv.querySelectorAll('.roster-item').length + 1;
@@ -2276,6 +2290,7 @@ function filterAssignments(assignments) {
         }
     });
 
+    // 10. Tooltips
     document.body.addEventListener('mouseover', (e) => {
         const t = e.target.closest('.has-tooltip');
         if(t && t.dataset.tooltip) { customTooltip.innerHTML = t.dataset.tooltip; customTooltip.classList.add('show'); }
@@ -2285,6 +2300,7 @@ function filterAssignments(assignments) {
     });
     document.body.addEventListener('mouseout', () => customTooltip.classList.remove('show'));
     
+    // 11. 指派學生 Modal
     document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
         const list = document.getElementById('assignStudentListContainer');
         list.innerHTML = '';
@@ -2306,6 +2322,7 @@ function filterAssignments(assignments) {
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = false));
 
+    // 12. 🌟 公會長執務室按鈕 (修復重點)
     document.getElementById('userEmailDisplay').addEventListener('click', () => {
         const adminModal = document.getElementById('adminProfileModal');
         const debtList = document.getElementById('adminDebtList');
@@ -2317,7 +2334,10 @@ function filterAssignments(assignments) {
             data.assignments.forEach(a => {
                 if(a.archived) return; 
                 const assigned = a.assignedIndices === 'all' || a.assignedIndices.includes(idx);
-                if (assigned && (a.statuses[idx] === 0 || a.statuses[idx] === 2)) count++;
+                // 增加 statuses 防呆檢查
+                const statuses = a.statuses || [];
+                const s = statuses[idx] || 0;
+                if (assigned && (s === 0 || s === 2)) count++;
             });
             if (count >= 5) debtStudents.push({ ...student, count });
         });
@@ -2336,6 +2356,7 @@ function filterAssignments(assignments) {
         adminModal.classList.add('show');
     });
 
+    // 13. 下載封存
     document.getElementById('btnDownloadArchive').addEventListener('click', () => {
         const archives = data.assignments.filter(a => a.archived);
         if(archives.length === 0) {
@@ -2343,27 +2364,19 @@ function filterAssignments(assignments) {
             return;
         }
 
-        // CSV BOM
         let csvContent = "\uFEFF";
-        
-        // Headers
         const studentHeaders = data.roster.map(s => `${s.no}.${s.name}`).join(",");
         csvContent += `發布日期,委託內容,公會長,${studentHeaders}\n`;
-
-        // Status Map
         const statusText = ["未交", "已交", "訂正", "完成"];
 
-        // Body
         archives.forEach(a => {
             let row = `${a.date},"${a.title}",${a.teacher}`;
-            
             const indices = a.assignedIndices || 'all';
             const studentStatuses = data.roster.map((s, i) => {
                 if (indices !== 'all' && !indices.includes(i)) return "-";
                 const sCode = (a.statuses || [])[i] || 0;
                 return statusText[sCode] || "未知";
             }).join(",");
-
             row += `,${studentStatuses}`;
             csvContent += row + "\n";
         });
@@ -2379,6 +2392,7 @@ function filterAssignments(assignments) {
         URL.revokeObjectURL(url);
     });
 
+    // 14. 批量模式與列印
     document.getElementById('btnToggleBatchMode').addEventListener('click', () => {
         isBatchMode = !isBatchMode;
         renderStudentStatus();
@@ -2458,37 +2472,25 @@ function filterAssignments(assignments) {
         alert(`已載入 ${lines.length} 位冒險者，請記得按「儲存變更」！`);
     });
 
-// ============================================================
-    // 🚨 修正：工具箱完整邏輯
-    // ============================================================
-
-    // 1. 修復主按鈕開關 (修正 ID 為 toolboxMenu 並增加按鈕旋轉動畫)
+    // 15. 工具箱邏輯
     document.getElementById('btnToggleToolbox').addEventListener('click', (e) => {
         const menu = document.getElementById('toolboxMenu');
-        const btn = e.currentTarget; // 取得按鈕本身
-        
-        menu.classList.toggle('show'); // 切換選單顯示
-        btn.classList.toggle('active'); // 切換按鈕旋轉狀態
+        const btn = e.currentTarget; 
+        menu.classList.toggle('show'); 
+        btn.classList.toggle('active');
     });
 
-    // 2. 定義開啟工具視窗的函式 (關閉其他，開啟指定)
     function openToolWindow(panelId) {
-        // 先關閉所有工具視窗
         document.querySelectorAll('.tool-window').forEach(el => el.classList.remove('show'));
-        // 開啟指定的視窗
         document.getElementById(panelId).classList.add('show');
-        // 關閉懸浮選單，讓畫面乾淨一點 (可選)
         document.getElementById('toolboxMenu').classList.remove('show');
         document.getElementById('btnToggleToolbox').classList.remove('active');
     }
 
-    // 3. 綁定三個小按鈕的功能
     document.getElementById('btnOpenMarquee').addEventListener('click', () => openToolWindow('panelMarquee'));
     document.getElementById('btnOpenTimer').addEventListener('click', () => openToolWindow('panelTimer'));
     document.getElementById('btnOpenDraw').addEventListener('click', () => openToolWindow('panelDraw'));
 
-    // 4. 解決 HTML onclick="closeToolWindow(this)" 找不到函式與 window 的問題
-    // 因為這裡是 type="module"，必須顯式掛載到 window 物件
     window.closeToolWindow = (btn) => {
         const win = btn.closest('.tool-window');
         if(win) win.classList.remove('show');
@@ -2546,7 +2548,7 @@ function filterAssignments(assignments) {
                     btn.innerText = "開始";
                     btn.classList.remove('warn');
                     alert("時間到！");
-                    playAlarmSound(); // 🎵 播放新的好聽音效
+                    playAlarmSound();
                 }
             }, 1000);
         }
@@ -2575,13 +2577,13 @@ function filterAssignments(assignments) {
         const interval = setInterval(() => {
             const rand = Math.floor(Math.random() * data.roster.length);
             resDiv.innerText = `${data.roster[rand].no}. ${data.roster[rand].name}`;
-            playTickSound(); // 🎵 播放轉動音效
+            playTickSound();
             count++;
             if(count >= max) {
                 clearInterval(interval);
                 resDiv.style.color = 'var(--danger)';
                 resDiv.style.transform = 'scale(1.2)';
-                playSuccessSound(); // 🎵 結束時播放成功音效
+                playSuccessSound(); 
                 setTimeout(() => resDiv.style.transform = 'scale(1)', 200);
             } else {
                 resDiv.style.color = 'var(--text-light)';
@@ -2589,7 +2591,6 @@ function filterAssignments(assignments) {
         }, 50);
     });
 
-    // 🚀 優化：跑馬燈邏輯 (含速度調整)
     const mqSizeInput = document.getElementById('mqSizeInput');
     const mqSpeedInput = document.getElementById('mqSpeedInput'); 
     
@@ -2636,7 +2637,6 @@ function filterAssignments(assignments) {
     document.getElementById('btnMqHide').addEventListener('click', () => {
         document.getElementById('topMarquee').style.display = 'none';
     });
-
   </script>
 
 </body>
