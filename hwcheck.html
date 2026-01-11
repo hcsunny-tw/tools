@@ -92,7 +92,7 @@
     .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
     .custom-tooltip.show { display: block; animation: fadeIn .1s ease-out; }
 
-    /* 2. 懸浮詳情視窗樣式 */
+    /* 2. 懸浮詳情視窗樣式 (優化：大字體) */
     .assignment-tooltip {
         position: fixed;
         background: var(--card);
@@ -104,17 +104,17 @@
         display: none;
         pointer-events: none;
         min-width: 180px;
-        max-width: 250px;
+        max-width: 300px;
         animation: fadeIn 0.15s ease-out;
     }
-    .assignment-tooltip h4 { margin: 0 0 8px; font-size: 14px; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
-    .assignment-tooltip ul { padding: 0; margin: 0; list-style: none; font-size: 12px; }
-    .assignment-tooltip li { margin-bottom: 2px; }
+    .assignment-tooltip h4 { margin: 0 0 8px; font-size: 18px; font-weight: 900; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
+    .assignment-tooltip ul { padding: 0; margin: 0; list-style: none; font-size: 16px; font-weight: bold; line-height: 1.5; }
+    .assignment-tooltip li { margin-bottom: 4px; word-wrap: break-word; }
     .assignment-tooltip .t-miss { color: var(--muted); }
-    .assignment-tooltip .t-redo { color: var(--accent); font-weight: bold; }
+    .assignment-tooltip .t-redo { color: var(--accent); }
 
-    /* 3. 虛擬小鍵盤樣式 */
-    .virtual-keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; background: var(--tbl-alt); padding: 6px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
+    /* 3. 虛擬小鍵盤樣式 (預設隱藏) */
+    .virtual-keypad { display: none; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; background: var(--tbl-alt); padding: 6px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
     .vk-btn { background: var(--card); border: 1px solid var(--tbl-border); border-radius: 4px; padding: 6px 2px; font-size: 12px; font-weight: bold; cursor: pointer; color: var(--text-main); text-align: center; transition: all .1s; }
     .vk-btn:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
     .vk-btn:active { transform: translateY(1px); }
@@ -360,13 +360,22 @@
             <label style="font-size:12px;">日期</label>
             <input id="ipDate" type="date" style="padding:6px;">
         </div>
+        
+        <!-- 優化後的內容輸入區塊 -->
         <div class="field" style="margin-top:4px;">
              <label style="font-size:12px;">內容</label>
-             <select id="selSubject" style="padding:6px; margin-bottom:4px;"><option value="">📂 科目...</option></select>
-             <select id="selPresetTask" style="padding:6px; margin-bottom:4px;"><option value="">📜 常用...</option></select>
-             <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px;" />
+             <div style="display:flex; gap:4px; margin-bottom:4px;">
+                 <select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select>
+                 <select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select>
+                 <button class="btn ghost sm" id="btnOpenQuestSettings" title="設定常用任務" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
+             </div>
              
-             <!-- 虛擬小鍵盤 -->
+             <div style="display:flex; gap:4px;">
+                 <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
+                 <button class="btn sm ghost" id="btnToggleKeypad" title="開啟小鍵盤" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
+             </div>
+             
+             <!-- 虛擬小鍵盤 (預設隱藏) -->
              <div class="virtual-keypad" id="virtualKeypad">
                  <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
                  <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
@@ -377,12 +386,12 @@
                  <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">_</div>
              </div>
         </div>
+        
         <div class="field" style="margin-top:4px;">
              <button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button>
              <div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted);">全體冒險者</div>
         </div>
         <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
-        <button class="btn ghost sm" id="btnOpenQuestSettings" style="margin-top:4px; width:100%; justify-content:center;">設定常用任務...</button>
       </div>
 
       <button id="btnToggleFilter" class="btn ghost" style="width:100%; margin-bottom:0;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
@@ -496,6 +505,7 @@
               <h2 id="studentStatusHeaderTitle"><i class="bi bi-clipboard2-check"></i> 冒險者待辦清單</h2>
               <div class="actions">
                   <button class="btn sm secondary" id="btnToggleBatchMode"><i class="bi bi-check-square"></i> 批量匯出卷軸</button>
+                  <button class="btn sm" id="btnBatchSelectAll" style="display:none;"><i class="bi bi-check-all"></i> 全選</button>
                   <button class="btn sm" id="btnBatchExport" style="display:none;"><i class="bi bi-printer"></i> 匯出選取項目</button>
               </div>
           </div>
@@ -974,7 +984,7 @@
     function resetNewAssignmentState() {
         document.getElementById('ipTitle').value = '';
         document.getElementById('selSubject').value = '';
-        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用任務...</option>';
+        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
         document.getElementById('ipDate').value = getTaipeiDateString();
         newAssignmentAssignedIndices = [];
         document.getElementById('assignStatusText').innerText = "全體冒險者";
@@ -991,7 +1001,7 @@
         if(db && sel && fil) Object.keys(db).forEach(s => { sel.add(new Option(s, s)); fil.add(new Option(s, s)); });
     }
 
-    // Dashboard with Tooltip Logic
+    // Dashboard with Tooltip Logic (優化：只顯示座號，不顯示姓名)
     const toolTipEl = document.getElementById('assignmentTooltip');
     function showAssignmentTooltip(e, a) {
         if (!a) return;
@@ -1002,8 +1012,8 @@
         data.roster.forEach((s, i) => {
             if (indices === 'all' || indices.includes(i)) {
                 const status = (a.statuses || [])[i] || 0;
-                if (status === 0) missing.push(s.name);
-                if (status === 2) redo.push(s.name);
+                if (status === 0) missing.push(s.no);
+                if (status === 2) redo.push(s.no);
             }
         });
 
@@ -1225,15 +1235,19 @@
         const con = document.getElementById('studentStatusContainer');
         const title = document.getElementById('studentStatusHeaderTitle');
         const btn = document.getElementById('btnToggleBatchMode');
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
         
         con.innerHTML = '';
         if(isBatchMode) { 
             con.classList.add('batch-mode'); btn.classList.add('warn'); btn.innerHTML = `<i class="bi bi-x-square"></i> 取消批量`;
             document.getElementById('btnBatchExport').style.display='inline-flex';
+            if(btnSelectAll) btnSelectAll.style.display='inline-flex'; // 顯示全選按鈕
             title.innerHTML = `<i class="bi bi-check2-square"></i> 勾選匯出對象`;
         } else { 
             con.classList.remove('batch-mode'); btn.classList.remove('warn'); btn.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
-            document.getElementById('btnBatchExport').style.display='none'; title.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者待辦清單`;
+            document.getElementById('btnBatchExport').style.display='none'; 
+            if(btnSelectAll) btnSelectAll.style.display='none'; // 隱藏全選按鈕
+            title.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者待辦清單`;
         }
 
         const pending = [];
@@ -1265,6 +1279,19 @@
         });
         con.appendChild(grid);
     }
+    
+    // 批量全選功能
+    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.batch-export-checkbox');
+        const allChecked = Array.from(checkboxes).every(c => c.checked);
+        checkboxes.forEach(c => c.checked = !allChecked);
+    });
+    
+    // 開啟/隱藏小鍵盤
+    document.getElementById('btnToggleKeypad').addEventListener('click', () => {
+        const kp = document.getElementById('virtualKeypad');
+        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
+    });
     
     // Status Picker Logic
     let pickerTarget = null;
