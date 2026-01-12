@@ -50,12 +50,7 @@
     html[data-color-theme='green'][data-theme='dark'] { --primary: #66bb6a; --bg: #1b5e20; --card: #2e7d32; --text-main: #e8f5e9; --tbl-head: #1b5e20; --tbl-alt: #14421b; --tbl-hover: #388e3c; --tbl-border: #4caf50; }
 
     *{ box-sizing:border-box; }
-    html, body{ 
-        height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
-        transition: background-color .3s, color .3s; 
-        background: var(--bg); color: var(--text-main);
-        zoom: 1.25; /* 🔥 優化：調整為 125% */
-    }
+    html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
@@ -135,21 +130,14 @@
     .quest-tag i:hover { opacity: 1; color: var(--danger); }
     .quest-add-row { display: flex; gap: 6px; margin-top: 10px; }
 
-    /* 5. 戰況儀表板 (新功能) - 🔥 優化：加大數字 */
+    /* 5. 戰況儀表板 (新功能) */
     .status-overview { display: flex; gap: 12px; margin-bottom: 16px; }
     .overview-card { flex: 1; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
     .overview-card.success { border-color: var(--success); background: #f0fdf4; }
     .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
     .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
     .overview-nums { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
-    .num-badge { 
-        width: 42px; height: 42px; /* 加大尺寸 */
-        border-radius: 50%; display: grid; place-items: center; 
-        font-weight: bold; 
-        font-size: 22px; /* 加大字體 */
-        border: 2px solid rgba(255,255,255,0.5); 
-        box-shadow: 1px 1px 3px rgba(0,0,0,0.1); 
-    }
+    .num-badge { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: bold; font-size: 13px; border: 2px solid rgba(255,255,255,0.5); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
     .overview-card.success .num-badge { background: var(--success); color: #fff; }
     .overview-card.danger .num-badge { background: var(--danger); color: #fff; }
     .overview-card.success .overview-header { color: var(--success); }
@@ -804,8 +792,7 @@
 
     const loginOverlay = document.getElementById('loginOverlay');
     const mainApp = document.getElementById('mainApp');
-    const APP_SCALE = 1.25; // 修正縮放常數為 1.25
-
+    
     document.getElementById('btnLogin').addEventListener('click', () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider).catch(error => alert("登入失敗：" + error.message));
@@ -1028,7 +1015,7 @@
         if(db && sel && fil) Object.keys(db).forEach(s => { sel.add(new Option(s, s)); fil.add(new Option(s, s)); });
     }
 
-    // Dashboard with Tooltip Logic (優化：只顯示座號，不顯示姓名，並配合縮放修正座標)
+    // Dashboard with Tooltip Logic (優化：只顯示座號，不顯示姓名)
     const toolTipEl = document.getElementById('assignmentTooltip');
     function showAssignmentTooltip(e, a) {
         if (!a) return;
@@ -1057,21 +1044,13 @@
     }
 
     function moveAssignmentTooltip(e) {
-        // 修正座標以配合 zoom: 1.25
-        const x = (e.clientX + 15) / APP_SCALE;
-        const y = (e.clientY + 15) / APP_SCALE;
+        toolTipEl.style.top = (e.clientY + 15) + 'px';
+        toolTipEl.style.left = (e.clientX + 15) + 'px';
         
-        toolTipEl.style.top = y + 'px';
-        toolTipEl.style.left = x + 'px';
-        
+        // 邊界檢查
         const rect = toolTipEl.getBoundingClientRect();
-        // 簡單邊界檢查 (使用邏輯寬度檢查)
-        if((x * APP_SCALE + rect.width) > window.innerWidth) {
-             toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
-        }
-        if((y * APP_SCALE + rect.height) > window.innerHeight) {
-             toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
-        }
+        if(rect.right > window.innerWidth) toolTipEl.style.left = (e.clientX - rect.width - 10) + 'px';
+        if(rect.bottom > window.innerHeight) toolTipEl.style.top = (e.clientY - rect.height - 10) + 'px';
     }
 
     function hideAssignmentTooltip() {
@@ -1338,7 +1317,7 @@
                 if(a.archived) return;
                 const indices = a.assignedIndices || 'all';
                 if ((indices === 'all' || indices.includes(idx))) {
-                    const st = (a.statuses || [])[i] || 0;
+                    const st = (a.statuses || [])[idx] || 0;
                     if (st === 0 || st === 2) tasks.push({ id: a.id, title: a.title, status: st });
                 }
             });
@@ -1381,7 +1360,7 @@
         kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
     });
     
-    // Status Picker Logic (配合縮放修正座標)
+    // Status Picker Logic
     let pickerTarget = null;
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
@@ -1394,9 +1373,8 @@
             pickerTarget = { idx: sidx, aid: aid };
             const picker = document.getElementById('statusPicker');
             const rect = li.getBoundingClientRect();
-            // 修正座標以配合 zoom: 1.25
-            picker.style.top = ((rect.top + window.scrollY) / APP_SCALE) + 'px';
-            picker.style.left = ((rect.right + window.scrollX - 160) / APP_SCALE) + 'px';
+            picker.style.top = (rect.top + window.scrollY) + 'px';
+            picker.style.left = (rect.right + window.scrollX - 160) + 'px';
             picker.classList.add('show');
             const close = (evt) => { if(!picker.contains(evt.target)) { picker.classList.remove('show'); document.removeEventListener('click', close); }};
             setTimeout(()=>document.addEventListener('click', close), 100);
