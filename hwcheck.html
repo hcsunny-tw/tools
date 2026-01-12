@@ -54,7 +54,7 @@
         height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
         transition: background-color .3s, color .3s; 
         background: var(--bg); color: var(--text-main);
-        zoom: 1.25; /* 🔥 優化：調整為 125% */
+        zoom: 1.25; 
     }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
@@ -204,8 +204,12 @@
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
-    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
-    .p-gray{ background:#e2e8f0; color:#475569; } .p-orange{ background:#fff7ed; color:#9a3412; }
+    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; color: #fff; }
+    /* 🔥 修復：狀態 pill 顏色 */
+    .p-gray { background: #9ca3af; } /* 0: 未回報 */
+    .p-yellow { background: #ca8a04; } /* 1: 已回報 */
+    .p-orange { background: #ea580c; } /* 2: 再挑戰 */
+    .p-green { background: #166534; } /* 3: 成功 */
 
     .assign-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px; max-height: 400px; overflow-y: auto; }
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
@@ -226,6 +230,7 @@
     
     .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; position: relative; }
     .fab-btn:hover { transform: scale(1.15); color: #fff; background: var(--primary); }
+    .fab-btn.huge { width: 70px; height: 70px; font-size: 32px; border-width: 3px; background: var(--accent); color: #fff; border-color: #fff; }
     
     /* 工具視窗 */
     .tool-window { position: fixed; bottom: 100px; right: 90px; width: 300px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5005; }
@@ -278,16 +283,35 @@
     .att-stat-val { font-size: 20px; font-weight: 900; }
     .att-stat-label { font-size: 12px; color: var(--muted); }
 
-    /* 看板佈局 */
-    .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; }
-    .dash-sidebar { flex: 0 0 240px; position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; }
-    .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    /* 🔥 優化：看板佈局 & 左側列表高度鎖定 */
+    .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; height: calc(100vh - 80px); overflow: hidden; }
+    .dash-sidebar { 
+        flex: 0 0 240px; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+        height: 100%; /* 填滿 dashboard-layout 高度 */
+        overflow: hidden; /* 防止 sidebar 整體捲動 */
+    }
+    .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto; }
     .filter-panel { display: none; background: var(--card); border: 1px solid var(--tbl-border); border-top: none; padding: 10px; border-radius: 0 0 6px 6px; margin-bottom: 12px; animation: slideDown 0.2s ease-out; }
     .filter-panel.show { display: block; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    @media (max-width: 768px) { .dashboard-layout { flex-direction: column; } .dash-sidebar { width: 100%; position: static; flex: none; } }
+    @media (max-width: 768px) { .dashboard-layout { flex-direction: column; height: auto; } .dash-sidebar { width: 100%; position: static; flex: none; height: auto; } }
 
-    .side-list-container { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 250px); overflow-y: auto; }
+    /* 🔥 優化：列表容器自動填滿剩餘空間並產生捲動 */
+    .side-list-container { 
+        flex: 1; 
+        overflow-y: auto; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        min-height: 0; /* 關鍵：讓 flex item 可以小於內容高度 */
+        padding-right: 4px; /* 避免捲軸蓋住內容 */
+        border-top: 1px dashed var(--tbl-border);
+        padding-top: 8px;
+    }
+    
     .side-item { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; }
     .side-item:hover { border-color: var(--primary); transform: translateX(4px); }
     .side-item.active { background: var(--primary); color: #fff; border-color: var(--text-main); box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
@@ -296,7 +320,7 @@
     .side-item-meta { font-size: 12px; display: flex; justify-content: space-between; }
     #dashDetailPanel { display: none; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 16px; min-height: 400px; }
     #dashDetailPanel.show { display: block; animation: fadeIn 0.3s; }
-    #newQuestPanel.show { display: block !important; animation: fadeIn 0.3s; }
+    /* 移除舊的 newQuestPanel 相關 CSS */
     #dashEmptyState { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--muted); border: 2px dashed var(--tbl-border); border-radius: 8px; }
 
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
@@ -371,60 +395,13 @@
 <section id="view-dashboard" class="view show">
   <div class="dashboard-layout">
     <aside class="dash-sidebar">
-      <button class="btn" style="width:100%; margin-bottom:12px; justify-content:center;" onclick="document.getElementById('newQuestPanel').classList.toggle('show')">
-          <i class="bi bi-plus-circle-dotted"></i> 發布新委託
-      </button>
-
-      <div id="newQuestPanel" class="card" style="display:none; border:2px dashed var(--primary); padding:10px;">
-        <h4 style="margin:0 0 8px 0; font-size:14px; color:var(--primary); border-bottom:1px dashed #ccc; padding-bottom:4px;">填寫委託單</h4>
-        <div class="field">
-            <label style="font-size:12px;">發布導師</label>
-            <select id="ipTeacherSelect" style="padding:6px;"></select>
-            <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
-        </div>
-        <div class="field" style="margin-top:4px;">
-            <label style="font-size:12px;">日期</label>
-            <input id="ipDate" type="date" style="padding:6px;">
-        </div>
-        
-        <!-- 優化後的內容輸入區塊 -->
-        <div class="field" style="margin-top:4px;">
-             <label style="font-size:12px;">內容</label>
-             <div style="display:flex; gap:4px; margin-bottom:4px;">
-                 <select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select>
-                 <select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select>
-                 <button class="btn ghost sm" id="btnOpenQuestSettings" title="設定常用任務" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
-             </div>
-             
-             <div style="display:flex; gap:4px;">
-                 <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
-                 <button class="btn sm ghost" id="btnToggleKeypad" title="開啟小鍵盤" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
-             </div>
-             
-             <!-- 虛擬小鍵盤 (預設隱藏) -->
-             <div class="virtual-keypad" id="virtualKeypad">
-                 <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
-                 <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
-                 <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
-                 <div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="~">~</div>
-                 <div class="vk-btn" data-val="L.">L</div><div class="vk-btn" data-val="P.">P</div><div class="vk-btn" data-val="U.">U</div>
-                 <div class="vk-btn" data-val="CH.">CH</div><div class="vk-btn" data-val="習作">習</div><div class="vk-btn" data-val="考卷">卷</div>
-                 <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">_</div>
-             </div>
-        </div>
-        
-        <div class="field" style="margin-top:4px;">
-             <button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button>
-             <div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted);">全體冒險者</div>
-        </div>
-        <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
-      </div>
-
+      <!-- 篩選器按鈕 -->
       <button id="btnToggleFilter" class="btn ghost" style="width:100%; margin-bottom:0;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
           <span><i class="bi bi-funnel"></i> 篩選條件</span>
           <i class="bi bi-chevron-down" style="font-size:12px;"></i>
       </button>
 
+      <!-- 篩選面板 -->
       <div id="filterPanel" class="filter-panel">
           <div style="margin-bottom: 8px;">
               <select id="teacherFilter" style="width:100%; padding:6px;"><option value="all">所有導師</option></select>
@@ -437,14 +414,15 @@
           </button>
       </div>
 
-      <div id="sideAssignmentList" class="side-list-container" style="margin-top: 12px;"></div>
+      <!-- 左側列表容器 (自動填滿剩餘高度) -->
+      <div id="sideAssignmentList" class="side-list-container"></div>
     </aside>
 
     <main class="dash-main">
       <div id="dashEmptyState">
           <i class="bi bi-arrow-left-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
           <p style="font-weight:bold;">請從左側選擇一張委託</p>
-          <p style="font-size:12px;">點擊「發布新委託」可建立新任務</p>
+          <p style="font-size:12px;">或點擊右下角「＋」發布新任務</p>
       </div>
 
       <div id="dashDetailPanel">
@@ -686,70 +664,8 @@
 
   <!-- 工具箱結構 -->
   <div class="toolbox-container">
-      
-      <!-- 1. 跑馬燈視窗 -->
-      <div id="panelMarquee" class="tool-window">
-          <div class="tool-header">
-              <span><i class="bi bi-broadcast"></i> 公告跑馬燈</span>
-              <button class="tool-close">&times;</button>
-          </div>
-          <div class="tool-body">
-              <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
-              <div class="tb-control-row" style="display:flex;gap:8px;">
-                  <label style="font-size:12px;">顏色</label>
-                  <input type="color" id="mqColorInput" value="#FFD700" style="width:40px;height:36px;padding:0;">
-                  <label style="font-size:12px; margin-left:8px;">大小</label>
-                  <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1">
-              </div>
-              <div class="tb-control-row" style="display:flex;gap:8px;">
-                  <label style="font-size:12px;">速度</label>
-                  <input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快">
-              </div>
-              <div class="actions sm" style="justify-content: flex-end;">
-                  <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
-                  <button class="btn sm warn" id="btnMqHide">關閉</button>
-              </div>
-          </div>
-      </div>
-
-      <!-- 2. 計時器視窗 -->
-      <div id="panelTimer" class="tool-window">
-          <div class="tool-header">
-              <span><i class="bi bi-stopwatch"></i> 計時器 & 時鐘</span>
-              <button class="tool-close">&times;</button>
-          </div>
-          <div class="tool-body">
-               <div id="tbClock" class="tb-clock" style="margin-bottom:8px;">00:00:00</div>
-               <div class="timer-presets" style="display:flex;gap:6px;">
-                  <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1;">1分</button>
-                  <button class="btn sm ghost btn-timer-preset" data-min="3" style="flex:1;">3分</button>
-                  <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1;">5分</button>
-                  <button class="btn sm ghost btn-timer-preset" data-min="10" style="flex:1;">10分</button>
-               </div>
-               <div class="timer-controls">
-                   <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
-                   <span style="font-weight:bold">:</span>
-                   <input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;">
-                   <div id="timerDisplay">00:00</div>
-               </div>
-               <div class="actions sm" style="justify-content: flex-end;">
-                   <button class="btn sm" id="btnTimerStart">開始</button>
-                   <button class="btn sm warn" id="btnTimerReset">重置</button>
-               </div>
-          </div>
-      </div>
-
-      <!-- 3. 幸運抽籤視窗 -->
-      <div id="panelDraw" class="tool-window">
-          <div class="tool-header">
-              <span><i class="bi bi-gift"></i> 幸運抽籤</span>
-              <button class="tool-close">&times;</button>
-          </div>
-          <div class="tool-body">
-              <div id="luckyDrawResult">???</div>
-              <button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
-          </div>
-      </div>
+      <!-- 🔥 優化：發布新委託獨立按鈕 -->
+      <button class="fab-btn huge" id="btnOpenNewQuestWindow" title="發布新委託"><i class="bi bi-plus-lg"></i></button>
 
       <!-- 懸浮選單 -->
       <div class="toolbox-menu" id="toolboxMenu">
@@ -761,6 +677,118 @@
       <!-- 主開關按鈕 -->
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱">
           <i class="bi bi-box-seam-fill"></i>
+      </div>
+  </div>
+  
+  <!-- 🔥 優化：發布新委託彈出視窗 (類似工具箱) -->
+  <div id="panelNewQuest" class="tool-window" style="width: 350px; bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); height: auto; max-height: 80vh; overflow-y: auto;">
+      <div class="tool-header">
+          <span><i class="bi bi-plus-circle-dotted"></i> 發布新委託</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+          <div class="field">
+              <label style="font-size:12px;">發布導師</label>
+              <select id="ipTeacherSelect" style="padding:6px;"></select>
+              <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+              <label style="font-size:12px;">日期</label>
+              <input id="ipDate" type="date" style="padding:6px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+               <label style="font-size:12px;">內容</label>
+               <div style="display:flex; gap:4px; margin-bottom:4px;">
+                   <select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select>
+                   <select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select>
+                   <button class="btn ghost sm" id="btnOpenQuestSettings" title="設定常用任務" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
+               </div>
+               
+               <div style="display:flex; gap:4px;">
+                   <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
+                   <button class="btn sm ghost" id="btnToggleKeypad" title="開啟小鍵盤" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
+               </div>
+               
+               <div class="virtual-keypad" id="virtualKeypad">
+                   <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
+                   <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
+                   <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
+                   <div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="~">~</div>
+                   <div class="vk-btn" data-val="L.">L</div><div class="vk-btn" data-val="P.">P</div><div class="vk-btn" data-val="U.">U</div>
+                   <div class="vk-btn" data-val="CH.">CH</div><div class="vk-btn" data-val="習作">習</div><div class="vk-btn" data-val="考卷">卷</div>
+                   <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">_</div>
+               </div>
+          </div>
+          
+          <div class="field" style="margin-top:4px;">
+               <button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button>
+               <div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted);">全體冒險者</div>
+          </div>
+          <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
+      </div>
+  </div>
+      
+  <!-- 1. 跑馬燈視窗 -->
+  <div id="panelMarquee" class="tool-window">
+      <div class="tool-header">
+          <span><i class="bi bi-broadcast"></i> 公告跑馬燈</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+          <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
+          <div class="tb-control-row" style="display:flex;gap:8px;">
+              <label style="font-size:12px;">顏色</label>
+              <input type="color" id="mqColorInput" value="#FFD700" style="width:40px;height:36px;padding:0;">
+              <label style="font-size:12px; margin-left:8px;">大小</label>
+              <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1">
+          </div>
+          <div class="tb-control-row" style="display:flex;gap:8px;">
+              <label style="font-size:12px;">速度</label>
+              <input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快">
+          </div>
+          <div class="actions sm" style="justify-content: flex-end;">
+              <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
+              <button class="btn sm warn" id="btnMqHide">關閉</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- 2. 計時器視窗 -->
+  <div id="panelTimer" class="tool-window">
+      <div class="tool-header">
+          <span><i class="bi bi-stopwatch"></i> 計時器 & 時鐘</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+           <div id="tbClock" class="tb-clock" style="margin-bottom:8px;">00:00:00</div>
+           <div class="timer-presets" style="display:flex;gap:6px;">
+              <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1;">1分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="3" style="flex:1;">3分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1;">5分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="10" style="flex:1;">10分</button>
+           </div>
+           <div class="timer-controls">
+               <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
+               <span style="font-weight:bold">:</span>
+               <input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;">
+               <div id="timerDisplay">00:00</div>
+           </div>
+           <div class="actions sm" style="justify-content: flex-end;">
+               <button class="btn sm" id="btnTimerStart">開始</button>
+               <button class="btn sm warn" id="btnTimerReset">重置</button>
+           </div>
+      </div>
+  </div>
+
+  <!-- 3. 幸運抽籤視窗 -->
+  <div id="panelDraw" class="tool-window">
+      <div class="tool-header">
+          <span><i class="bi bi-gift"></i> 幸運抽籤</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+          <div id="luckyDrawResult">???</div>
+          <button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
       </div>
   </div>
 
@@ -1345,7 +1373,13 @@
                 const indices = a.assignedIndices || 'all';
                 if ((indices === 'all' || indices.includes(idx))) {
                     const st = (a.statuses || [])[idx] || 0;
-                    if (st === 0 || st === 2) tasks.push({ id: a.id, title: a.title, status: st });
+                    // 🔥 修復：不管狀態是什麼都列出，以便修改 (之前是 if st===0 || st===2)
+                    // 但這裡我們要列出所有相關任務，這樣才能看到「已完成」的任務並反悔
+                    // 不過原需求是「冒險者待辦清單」，通常只列未完成。
+                    // 但使用者說「未回報點選後可以切換...點過一次不能再點」，這暗示他們希望列表能持續操作
+                    // 所以這裡改為：只列出「未回報 (0)」和「再挑戰 (2)」以及「已回報 (1)」，因為已回報可能要改成再挑戰
+                    // 討伐成功 (3) 通常就從待辦清單消失了。
+                    if (st !== 3) tasks.push({ id: a.id, title: a.title, status: st });
                 }
             });
             if (tasks.length > 0) pending.push({ idx, tasks });
@@ -1366,7 +1400,13 @@
             const div = document.createElement('div'); div.className = 'card';
             let html = `<div class="student-card-header"><h2>${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} ${s.no}. ${s.name}</h2><button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button></div><ul class="student-status-list">`;
             item.tasks.forEach(t => {
-                html += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${t.status===0?'p-gray':'p-orange'}">${t.status===0?'未回報':'再挑戰'}</span></li>`;
+                // 🔥 修復：根據狀態顯示不同顏色的 pill
+                let pillClass = 'p-gray';
+                let statusText = '未回報';
+                if(t.status === 1) { pillClass = 'p-yellow'; statusText = '已回報'; }
+                else if(t.status === 2) { pillClass = 'p-orange'; statusText = '再挑戰'; }
+                
+                html += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${pillClass}">${statusText}</span></li>`;
             });
             div.innerHTML = html + '</ul>';
             grid.appendChild(div);
@@ -1396,19 +1436,17 @@
         const aid = li.dataset.aid; const sidx = parseInt(li.dataset.sidx);
         const a = data.assignments.find(i => i.id == aid);
         
-        if((a.statuses[sidx] || 0) === 0) {
-            pickerTarget = { idx: sidx, aid: aid };
-            const picker = document.getElementById('statusPicker');
-            const rect = li.getBoundingClientRect();
-            // 修正座標以配合 zoom: 1.25
-            picker.style.top = ((rect.top + window.scrollY) / APP_SCALE) + 'px';
-            picker.style.left = ((rect.right + window.scrollX - 160) / APP_SCALE) + 'px';
-            picker.classList.add('show');
-            const close = (evt) => { if(!picker.contains(evt.target)) { picker.classList.remove('show'); document.removeEventListener('click', close); }};
-            setTimeout(()=>document.addEventListener('click', close), 100);
-        } else {
-            if(confirm("標記為完成？")) { a.statuses[sidx] = 3; playSuccessSound(); triggerAutoSave(); renderStudentStatus(); }
-        }
+        // 🔥 修復：允許點擊任何狀態 (0, 1, 2) 的任務來開啟選單，不只限制 0
+        // 如果狀態是 3 (成功)，通常不會出現在此列表，但如果出現了也可改
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        const rect = li.getBoundingClientRect();
+        // 修正座標以配合 zoom: 1.25
+        picker.style.top = ((rect.top + window.scrollY) / APP_SCALE) + 'px';
+        picker.style.left = ((rect.right + window.scrollX - 160) / APP_SCALE) + 'px';
+        picker.classList.add('show');
+        const close = (evt) => { if(!picker.contains(evt.target)) { picker.classList.remove('show'); document.removeEventListener('click', close); }};
+        setTimeout(()=>document.addEventListener('click', close), 100);
     });
 
     document.querySelectorAll('.status-option-btn').forEach(btn => {
@@ -1487,6 +1525,8 @@
             assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) 
         });
         triggerAutoSave(); resetNewAssignmentState(); renderAll();
+        // 成功後關閉彈窗
+        document.getElementById('panelNewQuest').classList.remove('show');
     });
 
     document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("全員已報？")) updateAllStatus(1); });
@@ -1755,6 +1795,12 @@
     document.getElementById('btnToggleToolbox').addEventListener('click', function() {
         document.getElementById('toolboxMenu').classList.toggle('show');
         this.classList.toggle('active');
+    });
+    
+    // 🔥 優化：發布新委託開關
+    document.getElementById('btnOpenNewQuestWindow').addEventListener('click', () => {
+        resetNewAssignmentState();
+        openTool('panelNewQuest');
     });
 
     // 2. 開啟各個小視窗
