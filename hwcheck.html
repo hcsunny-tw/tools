@@ -130,6 +130,20 @@
     .quest-tag i:hover { opacity: 1; color: var(--danger); }
     .quest-add-row { display: flex; gap: 6px; margin-top: 10px; }
 
+    /* 5. 戰況儀表板 (新功能) */
+    .status-overview { display: flex; gap: 12px; margin-bottom: 16px; }
+    .overview-card { flex: 1; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .overview-card.success { border-color: var(--success); background: #f0fdf4; }
+    .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
+    .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+    .overview-nums { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
+    .num-badge { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: bold; font-size: 13px; border: 2px solid rgba(255,255,255,0.5); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+    .overview-card.success .num-badge { background: var(--success); color: #fff; }
+    .overview-card.danger .num-badge { background: var(--danger); color: #fff; }
+    .overview-card.success .overview-header { color: var(--success); }
+    .overview-card.danger .overview-header { color: var(--danger); }
+    .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
+
     #statusPicker { display: none; position: absolute; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 10000; width: 160px; flex-direction: column; gap: 8px; }
     #statusPicker.show { display: flex; }
     .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
@@ -1230,7 +1244,7 @@
         const a = document.createElement("a"); a.href=url; a.download="點名報表.csv"; a.click();
     });
 
-    // 狀態管理頁面
+    // 狀態管理頁面 (優化：加入儀表板)
     function renderStudentStatus() {
         const con = document.getElementById('studentStatusContainer');
         const title = document.getElementById('studentStatusHeaderTitle');
@@ -1238,15 +1252,62 @@
         const btnSelectAll = document.getElementById('btnBatchSelectAll');
         
         con.innerHTML = '';
+        
+        // 1. 計算儀表板數據
+        const activeAssigns = data.assignments.filter(a => !a.archived);
+        const clearedStudents = [];
+        const helpStudents = [];
+        
+        data.roster.forEach((s, i) => {
+            let hasPending = false;
+            // 檢查該學生在所有 active assignment 中的狀態
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) {
+                        hasPending = true;
+                        break;
+                    }
+                }
+            }
+            if (hasPending) helpStudents.push(s.no);
+            else clearedStudents.push(s.no);
+        });
+
+        // 2. 繪製儀表板 HTML
+        if (!isBatchMode) { // 批量模式下隱藏儀表板以節省空間
+            const overview = document.createElement('div');
+            overview.className = 'status-overview';
+            overview.innerHTML = `
+                <div class="overview-card success">
+                    <div class="overview-icon-bg"><i class="bi bi-trophy"></i></div>
+                    <div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
+                    <div class="overview-nums">
+                        ${clearedStudents.length > 0 ? clearedStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">無人達成</span>'}
+                    </div>
+                </div>
+                <div class="overview-card danger">
+                    <div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div>
+                    <div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (${helpStudents.length})</div>
+                    <div class="overview-nums">
+                        ${helpStudents.length > 0 ? helpStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">全員健康</span>'}
+                    </div>
+                </div>
+            `;
+            con.appendChild(overview);
+        }
+
+        // 3. 繪製列表
         if(isBatchMode) { 
             con.classList.add('batch-mode'); btn.classList.add('warn'); btn.innerHTML = `<i class="bi bi-x-square"></i> 取消批量`;
             document.getElementById('btnBatchExport').style.display='inline-flex';
-            if(btnSelectAll) btnSelectAll.style.display='inline-flex'; // 顯示全選按鈕
+            if(btnSelectAll) btnSelectAll.style.display='inline-flex'; 
             title.innerHTML = `<i class="bi bi-check2-square"></i> 勾選匯出對象`;
         } else { 
             con.classList.remove('batch-mode'); btn.classList.remove('warn'); btn.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
             document.getElementById('btnBatchExport').style.display='none'; 
-            if(btnSelectAll) btnSelectAll.style.display='none'; // 隱藏全選按鈕
+            if(btnSelectAll) btnSelectAll.style.display='none'; 
             title.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者待辦清單`;
         }
 
@@ -1264,7 +1325,14 @@
             if (tasks.length > 0) pending.push({ idx, tasks });
         });
 
-        if (pending.length === 0) { con.innerHTML = `<div style="text-align:center;font-size:20px;margin-top:40px;">🎉 全員討伐成功！ 🎉</div>`; return; }
+        if (pending.length === 0) { 
+            const happyDiv = document.createElement('div');
+            happyDiv.style.textAlign = 'center';
+            happyDiv.style.marginTop = '20px';
+            happyDiv.innerHTML = `<div style="font-size:40px;">🎉</div><div style="font-size:20px;font-weight:bold;">全員討伐成功！</div>`;
+            con.appendChild(happyDiv);
+            return; 
+        }
 
         const grid = document.createElement('div'); grid.className = 'student-status-grid';
         pending.forEach(item => {
@@ -1699,7 +1767,7 @@
     document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
     document.getElementById('mqSizeInput').addEventListener('input', (e) => document.getElementById('marqueeText').style.fontSize = e.target.value+'px');
 
-    // 5. 計時器邏輯
+    // 5. 計時器邏輯 (優化：不擋音效)
     let timerInt = null;
     let timerSec = 0;
     function updateTimer() {
@@ -1725,7 +1793,13 @@
                 e.target.innerText="暫停";
                 timerInt = setInterval(() => {
                     if(timerSec>0) { timerSec--; updateTimer(); }
-                    else { clearInterval(timerInt); timerInt=null; e.target.innerText="開始"; playAlarmSound(); alert("時間到!"); }
+                    else { 
+                        clearInterval(timerInt); 
+                        timerInt=null; 
+                        e.target.innerText="開始"; 
+                        playAlarmSound(); 
+                        showToast("⏰ 時間到！任務結束！", "確認"); // 使用 Toast 取代 Alert
+                    }
                 }, 1000);
             }
         }
