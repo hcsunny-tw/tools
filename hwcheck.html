@@ -54,7 +54,7 @@
         height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
         transition: background-color .3s, color .3s; 
         background: var(--bg); color: var(--text-main);
-        zoom: 1.25; 
+        /* 🔥 已還原縮放比例至 100% */
     }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
@@ -206,39 +206,38 @@
 
     .student-status-list { list-style: none; padding: 0; }
     .student-status-list li { 
-    padding: 8px; 
-    border-bottom: 1px dashed var(--tbl-border); 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; /* 垂直置中 */
-    cursor: pointer; 
-    transition: background 0.2s;
+        padding: 8px; 
+        border-bottom: 1px dashed var(--tbl-border); 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        cursor: pointer; 
+        transition: background 0.2s;
     }
-    /* 修改這段 CSS */
-
-.student-status-list li:hover {
-    background: var(--tbl-hover); /* 增加懸停回饋 */
-}
+    .student-status-list li:hover {
+        background: var(--tbl-hover); 
+    }
+    
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
+    
     .pill { 
-    display: inline-flex; 
-    gap: 6px; 
-    align-items: center; 
-    padding: 6px 12px; 
-    border-radius: 20px; /* 圓角更明顯 */
-    font-weight: 800; 
-    color: #fff; 
-    white-space: nowrap; /* 防止文字換行 */
-    font-size: 14px;
-    box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    transition: transform 0.1s;
+        display: inline-flex; 
+        gap: 6px; 
+        align-items: center; 
+        padding: 6px 12px; 
+        border-radius: 20px; 
+        font-weight: 800; 
+        color: #fff; 
+        white-space: nowrap; 
+        font-size: 14px;
+        box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        transition: transform 0.1s;
     }
-    .pill:active {
-    transform: scale(0.95);
-    }
+    .pill:active { transform: scale(0.95); }
+    
     .p-gray { background: #e5e7eb; color: #374151; } /* 0: 未回報 (柔灰) */
     .p-yellow { background: #fef9c3; color: #854d0e; } /* 1: 已回報 (柔黃) */
     .p-orange { background: #ffedd5; color: #9a3412; } /* 2: 再挑戰 (柔橘) */
@@ -334,6 +333,88 @@
     #dashDetailPanel.show { display: block; animation: fadeIn 0.3s; }
     /* 移除舊的 newQuestPanel 相關 CSS */
     #dashEmptyState { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--muted); border: 2px dashed var(--tbl-border); border-radius: 8px; }
+
+    /* 📝 點名簿專用樣式 (修復跑版) */
+    .att-card {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px dashed var(--tbl-border);
+        gap: 10px;
+        background: var(--card);
+        margin-bottom: 6px;
+        border-radius: 6px;
+    }
+    .att-no {
+        font-weight: 900;
+        width: 40px;
+        text-align: center;
+        font-size: 18px;
+        color: var(--primary);
+    }
+    .att-name {
+        flex: 1;
+        font-weight: bold;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+    }
+    .att-note {
+        font-size: 12px;
+        color: var(--danger);
+        background: #fee2e2;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        border: 1px solid #fecaca;
+    }
+    .att-status-group {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    .att-btn {
+        border: 1px solid var(--tbl-border);
+        background: var(--bg);
+        color: var(--muted);
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .att-btn:hover {
+        background: var(--tbl-hover);
+    }
+    .att-btn.active {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+        transform: scale(1.05);
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    /* 統計條樣式 */
+    .att-stats-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        background: var(--tbl-alt);
+        padding: 10px;
+        border-radius: 8px;
+        overflow-x: auto;
+        border: 1px solid var(--tbl-border);
+    }
+    .att-stat-item {
+        flex: 1;
+        text-align: center;
+        min-width: 60px;
+        border-right: 1px solid var(--tbl-border);
+    }
+    .att-stat-item:last-child { border-right: none; }
+    .att-stat-val { font-size: 20px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
 
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
   </style>
@@ -847,7 +928,7 @@
 
     const loginOverlay = document.getElementById('loginOverlay');
     const mainApp = document.getElementById('mainApp');
-    const APP_SCALE = 1.25; // 修正縮放常數為 1.25
+    const APP_SCALE = 1; // 🔥 修正縮放常數為 1
 
     document.getElementById('btnLogin').addEventListener('click', () => {
         const provider = new GoogleAuthProvider();
@@ -1465,17 +1546,82 @@
         kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
     });
     
+    // ----------------------------------------------------
+    // 🔥 核心修復：狀態點擊邏輯 (橘色直接變更 / 其他跳選單)
+    // ----------------------------------------------------
+    let pickerTarget = null; // 儲存當前操作的目標
 
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        // 忽略列印按鈕和核取方塊
+        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        
+        const li = e.target.closest('li');
+        if(!li) return;
+
+        const aid = li.dataset.aid;
+        const sidx = parseInt(li.dataset.sidx);
+        const assignment = data.assignments.find(i => i.id == aid);
+        if (!assignment) return;
+        
+        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+
+        // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
+                updateStatus(aid, sidx, 3);
+            }
+            return;
+        }
+
+        // 🟡 邏輯 B：開啟選單 (跟隨滑鼠位置)
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        
+        // 1. 取得滑鼠點擊座標 (e.clientX, e.clientY)
+        // 🔥 重點：一定要除以 APP_SCALE (1)，否則因為網頁有縮放，選單會偏離滑鼠
+        let mouseX = e.clientX / APP_SCALE;
+        let mouseY = e.clientY / APP_SCALE;
+        
+        // 2. 稍微往右下偏移一點點 (+10)，避免滑鼠直接遮住選單的第一個選項
+        picker.style.top = (mouseY + 10) + 'px';
+        picker.style.left = (mouseX + 10) + 'px';
+        
+        picker.classList.add('show');
+
+        // 點擊空白處關閉選單
+        const close = (evt) => { 
+            if(!picker.contains(evt.target)) { 
+                picker.classList.remove('show'); 
+                document.removeEventListener('click', close); 
+            }
+        };
+        setTimeout(() => document.addEventListener('click', close), 100);
+    });
+
+    // 輔助函式：統一更新狀態並存檔
+    function updateStatus(aid, sidx, newStatus) {
+        const a = data.assignments.find(i => i.id == aid);
+        if(a) {
+            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+            a.statuses[sidx] = newStatus;
+            
+            if(newStatus === 3) {
+                playSuccessSound();
+                // 可選：如果要放煙火 confetti(); 
+            }
+            
+            triggerAutoSave(); 
+            renderStudentStatus(); // 重新渲染列表
+            renderDashboard();     // 同步更新看板
+        }
+    }
+
+    // 選單按鈕點擊事件 (保持原樣，但改呼叫 updateStatus)
     document.querySelectorAll('.status-option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if(!pickerTarget) return;
-            const a = data.assignments.find(i => i.id == pickerTarget.aid);
-            if(a) {
-                const s = parseInt(btn.dataset.status);
-                a.statuses[pickerTarget.idx] = s;
-                if(s===3) playSuccessSound();
-                triggerAutoSave(); renderStudentStatus(); renderDashboard();
-            }
+            const s = parseInt(btn.dataset.status);
+            updateStatus(pickerTarget.aid, pickerTarget.idx, s);
             document.getElementById('statusPicker').classList.remove('show');
         });
     });
@@ -1792,93 +1938,7 @@
         w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
         w.document.close();
     });
-// ----------------------------------------------------
-    // 🔥 核心修復：狀態點擊邏輯 (橘色直接變更 / 其他跳選單)
-    // ----------------------------------------------------
-    let pickerTarget = null; // 儲存當前操作的目標
-
-    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        // 忽略列印按鈕和核取方塊
-        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
-        
-        const li = e.target.closest('li');
-        if(!li) return;
-
-        const aid = li.dataset.aid;
-        const sidx = parseInt(li.dataset.sidx);
-        // 從資料中獲取最新狀態 (比 DOM 屬性準確)
-        const assignment = data.assignments.find(i => i.id == aid);
-        if (!assignment) return;
-        
-        const currentStatus = (assignment.statuses || [])[sidx] || 0;
-
-        // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
-        if (currentStatus === 2) {
-            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
-                updateStatus(aid, sidx, 3); // 直接設為 3 (綠色)
-            }
-            return; // 結束，不開啟選單
-        }
-
-        // 🟡 邏輯 B：如果是「未回報(0)」或「已回報(1)」，開啟選單 (Picker)
-        pickerTarget = { idx: sidx, aid: aid };
-        const picker = document.getElementById('statusPicker');
-        
-        // 🔥 座標修正：因為你的 body 有 zoom: 1.25，所以座標要除以 APP_SCALE
-        // 這裡的 APP_SCALE 必須對應你上面定義的 1.25
-        const rect = li.querySelector('.pill').getBoundingClientRect(); // 讓選單出現在「膠囊」旁邊，而不是整行旁邊
-        
-        let topPos = (rect.bottom + 5) / APP_SCALE;
-        let leftPos = rect.left / APP_SCALE;
-
-        // 邊界檢查 (防止選單超出下方螢幕)
-        if (topPos + 150 > window.innerHeight / APP_SCALE) {
-             topPos = (rect.top - 150) / APP_SCALE; // 改顯示在上方
-        }
-
-        picker.style.top = topPos + 'px';
-        picker.style.left = leftPos + 'px';
-        picker.classList.add('show');
-
-        // 點擊空白處關閉選單
-        const close = (evt) => { 
-            if(!picker.contains(evt.target)) { 
-                picker.classList.remove('show'); 
-                document.removeEventListener('click', close); 
-            }
-        };
-        // 延遲註冊，避免立刻觸發關閉
-        setTimeout(() => document.addEventListener('click', close), 100);
-    });
-
-    // 輔助函式：統一更新狀態並存檔
-    function updateStatus(aid, sidx, newStatus) {
-        const a = data.assignments.find(i => i.id == aid);
-        if(a) {
-            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
-            a.statuses[sidx] = newStatus;
-            
-            if(newStatus === 3) {
-                playSuccessSound();
-                // 可選：如果要放煙火 confetti(); 
-            }
-            
-            triggerAutoSave(); 
-            renderStudentStatus(); // 重新渲染列表
-            renderDashboard();     // 同步更新看板
-        }
-    }
-
-    // 選單按鈕點擊事件 (保持原樣，但改呼叫 updateStatus)
-    document.querySelectorAll('.status-option-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if(!pickerTarget) return;
-            const s = parseInt(btn.dataset.status);
-            updateStatus(pickerTarget.aid, pickerTarget.idx, s);
-            document.getElementById('statusPicker').classList.remove('show');
-        });
-    });
-
+    
     // ==========================================
     // 🛠️ 修復後的工具箱與全域事件邏輯 (Fixes)
     // ==========================================
