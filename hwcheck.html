@@ -1806,7 +1806,6 @@
 
         const aid = li.dataset.aid;
         const sidx = parseInt(li.dataset.sidx);
-        // 從資料中獲取最新狀態 (比 DOM 屬性準確)
         const assignment = data.assignments.find(i => i.id == aid);
         if (!assignment) return;
         
@@ -1815,39 +1814,59 @@
         // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
         if (currentStatus === 2) {
             if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
-                updateStatus(aid, sidx, 3); // 直接設為 3 (綠色)
+                updateStatus(aid, sidx, 3);
             }
-            return; // 結束，不開啟選單
+            return;
         }
 
-        // 🟡 邏輯 B：如果是「未回報(0)」或「已回報(1)」，開啟選單 (Picker)
+        // 🟡 邏輯 B：開啟選單 (Picker) - 包含防跑版計算
         pickerTarget = { idx: sidx, aid: aid };
         const picker = document.getElementById('statusPicker');
         
-        // 🔥 座標修正：因為你的 body 有 zoom: 1.25，所以座標要除以 APP_SCALE
-        // 這裡的 APP_SCALE 必須對應你上面定義的 1.25
-        const rect = li.querySelector('.pill').getBoundingClientRect(); // 讓選單出現在「膠囊」旁邊，而不是整行旁邊
+        // 1. 先偷偷顯示但不給看 (為了計算選單實際的寬高)
+        picker.style.display = 'flex';
+        picker.style.visibility = 'hidden';
         
+        // 2. 取得按鈕 (Pill) 與 選單 (Picker) 的尺寸
+        const rect = li.querySelector('.pill').getBoundingClientRect();
+        const pickerW = picker.offsetWidth; // 選單寬度
+        const pickerH = picker.offsetHeight; // 選單高度
+        
+        // 3. 計算基準座標 (預設：顯示在按鈕左下方)
+        // 注意：APP_SCALE 是你的全域變數 1.25
         let topPos = (rect.bottom + 5) / APP_SCALE;
         let leftPos = rect.left / APP_SCALE;
-
-        // 邊界檢查 (防止選單超出下方螢幕)
-        if (topPos + 150 > window.innerHeight / APP_SCALE) {
-             topPos = (rect.top - 150) / APP_SCALE; // 改顯示在上方
+        
+        // 4. 🚧 自動防撞機制 (邊界檢查)
+        
+        // [檢查右邊]：如果 (左座標 + 選單寬) 超過 (視窗寬度)，改為「靠右對齊」
+        const winW = window.innerWidth / APP_SCALE;
+        if (leftPos + pickerW > winW) {
+            leftPos = (rect.right / APP_SCALE) - pickerW; 
+        }
+        
+        // [檢查下面]：如果 (上座標 + 選單高) 超過 (視窗高度)，改為「往上彈」
+        const winH = window.innerHeight / APP_SCALE;
+        if (topPos + pickerH > winH) {
+            topPos = (rect.top / APP_SCALE) - pickerH - 5;
         }
 
+        // 5. 套用最終座標並顯示
         picker.style.top = topPos + 'px';
         picker.style.left = leftPos + 'px';
+        picker.style.visibility = 'visible'; // 解除隱藏
         picker.classList.add('show');
 
         // 點擊空白處關閉選單
         const close = (evt) => { 
             if(!picker.contains(evt.target)) { 
                 picker.classList.remove('show'); 
+                // 關閉時重置 style 避免干擾下次計算
+                picker.style.display = ''; 
+                picker.style.visibility = '';
                 document.removeEventListener('click', close); 
             }
         };
-        // 延遲註冊，避免立刻觸發關閉
         setTimeout(() => document.addEventListener('click', close), 100);
     });
 
