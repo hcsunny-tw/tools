@@ -1179,7 +1179,7 @@
             renderAll();
         }
     }
-
+// ==========H==C==S==U==N==N==Y==and==G==E==M==I==N==I=================
     function populateTeacherDropdowns() {
         const ts = data.teachers || [];
         const sel = document.getElementById('ipTeacherSelect');
@@ -1385,7 +1385,7 @@
         renderDashboardDetail(aid);
         setTimeout(renderDashboard, 500);
     }
-
+// ==========H==C==S==U==N==N==Y==and==G==E==M==I==N==I=================
     // 點名
     function initAttendanceView() {
         const date = document.getElementById('attDatePicker').value;
@@ -1605,9 +1605,63 @@
         const kp = document.getElementById('virtualKeypad');
         kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
     });
-    
 
 // ============================================================
+    // 🖱️ 遺失補完：冒險者狀態點擊邏輯 (狀態切換 / 選單)
+    // ============================================================
+    let pickerTarget = null; // ★ 補回這個變數宣告，修復報錯
+
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        // 1. 如果點到「列印按鈕」或「批量勾選」，就忽略 (交給下面的監聽器處理)
+        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        
+        // 2. 抓取點擊的項目 (li)
+        const li = e.target.closest('li');
+        if(!li) return;
+
+        // 3. 取得資料
+        const aid = li.dataset.aid;
+        const sidx = parseInt(li.dataset.sidx);
+        const assignment = data.assignments.find(i => i.id == aid);
+        if (!assignment) return;
+        
+        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+
+        // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
+                updateStatus(aid, sidx, 3);
+            }
+            return;
+        }
+
+        // 🟡 邏輯 B：開啟選單 (跟隨滑鼠位置)
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        
+        // 修正座標 (APP_SCALE 為 1，直接抓滑鼠座標即可)
+        let mouseX = e.clientX;
+        let mouseY = e.clientY;
+        
+        // 稍微往右下偏移，避免遮擋
+        picker.style.top = (mouseY + 10) + 'px';
+        picker.style.left = (mouseX + 10) + 'px';
+        
+        picker.classList.add('show');
+
+        // 點擊空白處關閉選單
+        const close = (evt) => { 
+            if(!picker.contains(evt.target)) { 
+                picker.classList.remove('show'); 
+                document.removeEventListener('click', close); 
+            }
+        };
+        setTimeout(() => document.addEventListener('click', close), 100);
+    });
+
+    // (下方緊接著您原本的「單人卷軸列印」程式碼...)
+
+// ==========H==C==S==U==N==N==Y==and==G==E==M==I==N==I=================
     // 🖨️ 優化版：單人卷軸列印 (資料驅動 + 美化排版)
     // ============================================================
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
@@ -1848,7 +1902,7 @@
         document.documentElement.style.setProperty('--seat', `${e.target.value}px`);
         document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`);
     });
-
+    // ==========H==C==S==U==N==N==Y==and==G==E==M==I==N==I=================
     // 執務室與公會長邏輯
     const userBadge = document.getElementById('userEmailDisplay');
     if(userBadge) {
@@ -2018,7 +2072,7 @@
             d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"></div>`;
         });
     }
-
+// =========彭彭老師的心血結晶=================
     document.getElementById('btnApplyTeachers').addEventListener('click', () => {
         const ts = [];
         document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) ts.push(i.value.trim()); });
@@ -2235,7 +2289,7 @@
     // ==========================================
     // 🛠️ 修復後的工具箱與全域事件邏輯 (Fixes)
     // ==========================================
-    
+   // =========彭彭老師的心血結晶================= 
     // 1. 工具箱開關
     document.getElementById('btnToggleToolbox').addEventListener('click', function() {
         document.getElementById('toolboxMenu').classList.toggle('show');
