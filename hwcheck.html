@@ -1877,11 +1877,12 @@
         w.document.close();
     });
 // ----------------------------------------------------
-    // 🔥 核心修復：狀態點擊邏輯 (橘色直接變更 / 其他跳選單)
+// ----------------------------------------------------
+    // 🔥 核心修復：狀態點擊邏輯 (跟隨滑鼠位置)
     // ----------------------------------------------------
     let pickerTarget = null; // 儲存當前操作的目標
 
-document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         // 忽略列印按鈕和核取方塊
         if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
         
@@ -1928,6 +1929,7 @@ document.getElementById('studentStatusContainer').addEventListener('click', (e) 
         setTimeout(() => document.addEventListener('click', close), 100);
     });
 
+    
     // 輔助函式：統一更新狀態並存檔
     function updateStatus(aid, sidx, newStatus) {
         const a = data.assignments.find(i => i.id == aid);
