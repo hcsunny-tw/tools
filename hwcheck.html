@@ -1611,19 +1611,137 @@
     // ----------------------------------------------------
     let pickerTarget = null; // 儲存當前操作的目標
 
+// ============================================================
+    // 🖨️ 優化版：單人卷軸列印 (資料驅動 + 美化排版)
+    // ============================================================
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        // 忽略列印按鈕和核取方塊
-        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
-        
-        const li = e.target.closest('li');
-        if(!li) return;
+        const btn = e.target.closest('.btn-print-single');
+        if (!btn) return; // 如果不是點擊列印按鈕就忽略
+        e.stopPropagation(); // 阻止事件冒泡，避免觸發狀態選單
 
-        const aid = li.dataset.aid;
-        const sidx = parseInt(li.dataset.sidx);
-        const assignment = data.assignments.find(i => i.id == aid);
-        if (!assignment) return;
-        
-        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+        const sidx = parseInt(btn.dataset.sidx);
+        const student = data.roster[sidx];
+        const printDate = new Date().toLocaleDateString('zh-TW');
+
+        // 1. 從資料庫撈取該學生的任務
+        const studentTasks = (data.assignments || []).filter(a => {
+            if (a.archived) return false;
+            const indices = a.assignedIndices || 'all';
+            return (indices === 'all' || indices.includes(sidx));
+        }).map(a => {
+            const status = (a.statuses || [])[sidx] || 0;
+            return { title: a.title, status: status };
+        });
+
+        // 2. 過濾掉「討伐成功(3)」的任務 (只列印待辦事項)
+        const pendingTasks = studentTasks.filter(t => t.status !== 3);
+
+        // 3. 排序：再挑戰(2) > 未回報(0) > 已回報(1)
+        pendingTasks.sort((a, b) => {
+            const weight = { 2: 0, 0: 1, 1: 2 }; // 權重越小排越前
+            return weight[a.status] - weight[b.status];
+        });
+
+        // 4. 生成 HTML
+        const listHtml = pendingTasks.length > 0 ? pendingTasks.map(t => {
+            let statusText = '';
+            let rowStyle = '';
+            
+            if(t.status === 0) statusText = '未回報';
+            else if(t.status === 1) statusText = '已回報';
+            else if(t.status === 2) { statusText = '再挑戰'; rowStyle = 'color: #c62828;'; } // 再挑戰用紅色標示
+
+            return `
+                <li class="print-task-item" style="${rowStyle}">
+                    <span class="print-checkbox">☐</span>
+                    <span class="print-task-name">${t.title}</span>
+                    <span class="print-task-status">(${statusText})</span>
+                </li>`;
+        }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888; padding: 20px;">🎉 太棒了！目前沒有待辦任務！</li>';
+
+        // 5. 開啟美化後的列印視窗
+        const w = window.open('', '', 'width=900,height=800');
+        w.document.write(`
+            <html>
+            <head>
+                <title>${student.name} - 任務卷軸</title>
+                <style>
+                    body { font-family: "Microsoft JhengHei", sans-serif; padding: 40px; background: #fff; display:flex; justify-content:center;}
+                    .print-card {
+                        border: 3px solid #5D4037; /* 深咖啡色邊框 */
+                        border-radius: 12px;
+                        padding: 20px;
+                        width: 100%;
+                        max-width: 600px; /* 單張寬度限制，模仿卷軸 */
+                        display: flex;
+                        flex-direction: column;
+                        box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
+                    }
+                    .print-header {
+                        border-bottom: 2px dashed #8B4513;
+                        padding-bottom: 10px;
+                        margin-bottom: 10px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: baseline;
+                    }
+                    .print-name { font-size: 28px; font-weight: 900; color: #3E2723; }
+                    .print-title { font-size: 16px; font-weight: bold; color: #666; }
+                    
+                    .print-list { list-style: none; padding: 0; margin: 0; flex: 1; }
+                    .print-task-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 10px 0;
+                        border-bottom: 1px dotted #ccc;
+                        font-size: 18px; /* 字體加大方便閱讀 */
+                    }
+                    .print-checkbox { font-size: 22px; font-weight: bold; line-height: 1; }
+                    .print-task-name { font-weight: bold; flex: 1; }
+                    .print-task-status { font-size: 14px; color: #888; font-weight: normal; }
+                    
+                    .print-footer {
+                        margin-top: 20px;
+                        padding-top: 15px;
+                        border-top: 2px solid #eee;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: 14px;
+                    }
+                    .print-sign { font-weight: 900; color: #000; font-size: 16px; }
+                    
+                    /* 列印專用設定 */
+                    @media print {
+                        body { padding: 0; margin: 0; display:block;}
+                        .print-card { border-width: 2px; box-shadow:none; max-width: none; width: 100%; border-radius: 0; }
+                        @page { margin: 1.5cm; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="print-card">
+                    <div class="print-header">
+                        <div class="print-name">${student.no}. ${student.name}</div>
+                        <div class="print-title">冒險者任務卷軸</div>
+                    </div>
+                    <ul class="print-list">
+                        ${listHtml}
+                    </ul>
+                    <div class="print-footer">
+                        <div class="print-date">📅 列印日期：${printDate}</div>
+                        <div class="print-sign">家長簽名：________________</div>
+                    </div>
+                </div>
+                <script>
+                    window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };
+                <\/script>
+            </body>
+            </html>
+        `);
+        w.document.close();
+    });
 
         // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
         if (currentStatus === 2) {
