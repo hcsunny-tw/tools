@@ -54,7 +54,7 @@
         height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
         transition: background-color .3s, color .3s; 
         background: var(--bg); color: var(--text-main);
-        zoom: 1.25; /* 🔥 優化：調整為 125% */
+        zoom: 1.25; 
     }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
@@ -76,6 +76,7 @@
     .btn{ border:2px solid var(--text-light); border-radius:6px; padding:8px 16px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#fff; font-size:14px; }
     .btn.ghost{ background:var(--card); color:var(--text-light); border:2px dashed var(--tbl-border); }
     .btn.sm{ font-size:12px; padding:4px 10px; }
+    .btn.icon-only { padding: 4px 8px; font-size: 14px; }
     .btn.chest { background: #DAA520; border-color: #B8860B; color: #fff; }
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
@@ -156,9 +157,14 @@
     .overview-card.danger .overview-header { color: var(--danger); }
     .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
 
-    #statusPicker { display: none; position: absolute; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 10000; width: 160px; flex-direction: column; gap: 8px; }
+    /* 🔥 修復：狀態選單 (使用 fixed 避免跑版，移除 scale 計算) */
+    #statusPicker { display: none; position: fixed; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 20000; width: 160px; flex-direction: column; gap: 8px; }
     #statusPicker.show { display: flex; }
     .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
+    /* 🔥 修復：狀態選單按鈕顏色 */
+    .status-option-btn.sp-1 { background: #fef9c3; color: #854d0e; border-color: #facc15; } /* 已回報 (黃) */
+    .status-option-btn.sp-2 { background: #ffedd5; color: #9a3412; border-color: #fb923c; } /* 再挑戰 (橘) */
+    .status-option-btn.sp-3 { background: #dcfce7; color: #166534; border-color: #4ade80; } /* 成功 (綠) */
 
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
@@ -199,14 +205,45 @@
     .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
 
     .student-status-list { list-style: none; padding: 0; }
-    .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
+    .student-status-list li { 
+    padding: 8px; 
+    border-bottom: 1px dashed var(--tbl-border); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; /* 垂直置中 */
+    cursor: pointer; 
+    transition: background 0.2s;
+    }
+    /* 修改這段 CSS */
+
+.student-status-list li:hover {
+    background: var(--tbl-hover); /* 增加懸停回饋 */
+}
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
-    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
-    .p-gray{ background:#e2e8f0; color:#475569; } .p-orange{ background:#fff7ed; color:#9a3412; }
-
+    .pill { 
+    display: inline-flex; 
+    gap: 6px; 
+    align-items: center; 
+    padding: 6px 12px; 
+    border-radius: 20px; /* 圓角更明顯 */
+    font-weight: 800; 
+    color: #fff; 
+    white-space: nowrap; /* 防止文字換行 */
+    font-size: 14px;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+    }
+    .pill:active {
+    transform: scale(0.95);
+    }
+    .p-gray { background: #e5e7eb; color: #374151; } /* 0: 未回報 (柔灰) */
+    .p-yellow { background: #fef9c3; color: #854d0e; } /* 1: 已回報 (柔黃) */
+    .p-orange { background: #ffedd5; color: #9a3412; } /* 2: 再挑戰 (柔橘) */
+    .p-green { background: #dcfce7; color: #166534; } /* 3: 成功 (柔綠) */
+    
     .assign-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px; max-height: 400px; overflow-y: auto; }
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
     .assign-student-item:hover { background: var(--tbl-hover); }
@@ -257,27 +294,6 @@
     .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .toast-msg { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 16px; animation: slideUpFade 0.3s ease-out; font-weight: bold; min-width: 300px; justify-content: space-between; }
     @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* 點名系統樣式 */
-    .att-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px dashed var(--tbl-border); background: var(--bg); border-radius: 6px; margin-bottom: 6px; transition: background .2s; }
-    .att-card:hover { background: var(--tbl-hover); }
-    .att-no { width: 32px; height: 32px; display: grid; place-items: center; background: var(--card); border-radius: 50%; font-weight: bold; font-size: 14px; border: 2px solid var(--tbl-border); }
-    .att-name { flex: 1; font-weight: bold; font-size: 16px; }
-    .att-status-group { display: flex; gap: 4px; }
-    .att-btn { border: 2px solid transparent; border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: bold; cursor: pointer; opacity: 0.6; transition: all .2s; background: var(--card); color: var(--text-light); }
-    .att-btn:hover { opacity: 0.9; transform: scale(1.05); }
-    .att-btn.active { opacity: 1; transform: scale(1.1); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-    .att-btn[data-status="0"].active { background: #dcfce7; color: #166534; border-color: #166534; } 
-    .att-btn[data-status="1"].active { background: #fef9c3; color: #854d0e; border-color: #854d0e; } 
-    .att-btn[data-status="2"].active { background: #dbeafe; color: #1e40af; border-color: #1e40af; } 
-    .att-btn[data-status="3"].active { background: #fee2e2; color: #b91c1c; border-color: #b91c1c; } 
-    .att-btn[data-status="4"].active { background: #f3e8ff; color: #6b21a8; border-color: #6b21a8; } 
-    .att-btn[data-status="5"].active { background: #f3f4f6; color: #4b5563; border-color: #4b5563; } 
-    .att-note { font-size: 12px; color: var(--primary); margin-left: 8px; font-weight: normal; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px; display: inline-block; }
-    .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); flex-wrap: wrap; justify-content: space-around; }
-    .att-stat-item { display: flex; flex-direction: column; align-items: center; }
-    .att-stat-val { font-size: 20px; font-weight: 900; }
-    .att-stat-label { font-size: 12px; color: var(--muted); }
 
     /* 🔥 優化：看板佈局 & 左側列表高度鎖定 */
     .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; height: calc(100vh - 80px); overflow: hidden; }
@@ -391,11 +407,15 @@
 <section id="view-dashboard" class="view show">
   <div class="dashboard-layout">
     <aside class="dash-sidebar">
-      <!-- 篩選器按鈕 -->
-      <button id="btnToggleFilter" class="btn ghost" style="width:100%; margin-bottom:0;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
-          <span><i class="bi bi-funnel"></i> 篩選條件</span>
-          <i class="bi bi-chevron-down" style="font-size:12px;"></i>
-      </button>
+      <!-- 🔥 優化：側欄標頭 (篩選 + 新增任務) -->
+      <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
+          <button id="btnToggleFilter" class="btn ghost sm" style="flex: 1;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
+              <i class="bi bi-funnel"></i> 篩選條件
+          </button>
+          <button id="btnOpenNewQuestWindowSidebar" class="btn sm" style="flex: 0 0 auto;" title="發布新委託">
+              <i class="bi bi-plus-lg"></i> 新增任務
+          </button>
+      </div>
 
       <!-- 篩選面板 -->
       <div id="filterPanel" class="filter-panel">
@@ -418,12 +438,14 @@
       <div id="dashEmptyState">
           <i class="bi bi-arrow-left-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
           <p style="font-weight:bold;">請從左側選擇一張委託</p>
-          <p style="font-size:12px;">或點擊右下角「＋」發布新任務</p>
+          <p style="font-size:12px;">或點擊左上角「新增任務」發布</p>
       </div>
 
       <div id="dashDetailPanel">
          <div class="assignment-bar" style="border-bottom: 2px solid var(--tbl-border); padding-bottom:12px; margin-bottom:12px;">
-            <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary);"></div>
+            <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:8px;">
+                <!-- 標題會動態插入 -->
+            </div>
             <div class="actions" style="margin-top:8px; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <button class="btn sm ghost" id="btnMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
                 <button class="btn sm ghost" id="btnMarkAllOrange"><i class="bi bi-exclamation-circle-fill"></i> 全員再戰</button>
@@ -660,9 +682,6 @@
 
   <!-- 工具箱結構 -->
   <div class="toolbox-container">
-      <!-- 🔥 優化：發布新委託獨立按鈕 -->
-      <button class="fab-btn huge" id="btnOpenNewQuestWindow" title="發布新委託"><i class="bi bi-plus-lg"></i></button>
-
       <!-- 懸浮選單 -->
       <div class="toolbox-menu" id="toolboxMenu">
           <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
@@ -1156,12 +1175,31 @@
         else { empty.style.display = 'flex'; detail.classList.remove('show'); }
     }
 
+    // 🔥 新增：編輯標題功能
+    window.editAssignmentTitle = function(id) {
+        const a = data.assignments.find(x => x.id == id);
+        if(!a) return;
+        const newTitle = prompt("請輸入新的委託內容：", a.title);
+        if(newTitle && newTitle.trim() !== "") {
+            a.title = newTitle.trim();
+            triggerAutoSave();
+            renderDashboardDetail(id); // 重新渲染標題
+            renderDashboard(); // 重新渲染列表以更新側邊欄標題
+        }
+    };
+
     function renderDashboardDetail(id) {
         const a = data.assignments.find(x => x.id == id);
         if (!a) return;
         document.getElementById('dashEmptyState').style.display = 'none';
         document.getElementById('dashDetailPanel').classList.add('show');
-        document.getElementById('dashDetailTitle').innerHTML = `<span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> ${a.title}`;
+        
+        // 🔥 新增：標題旁的編輯按鈕
+        document.getElementById('dashDetailTitle').innerHTML = `
+            <span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> 
+            ${a.title}
+            <button class="btn sm ghost icon-only" title="編輯名稱" onclick="editAssignmentTitle(${a.id})" style="border:none; color:var(--muted);"><i class="bi bi-pencil-fill"></i></button>
+        `;
 
         const grid = document.getElementById('dashGridContainer');
         grid.innerHTML = '';
@@ -1369,7 +1407,13 @@
                 const indices = a.assignedIndices || 'all';
                 if ((indices === 'all' || indices.includes(idx))) {
                     const st = (a.statuses || [])[idx] || 0;
-                    if (st === 0 || st === 2) tasks.push({ id: a.id, title: a.title, status: st });
+                    // 🔥 修復：不管狀態是什麼都列出，以便修改 (之前是 if st===0 || st===2)
+                    // 但這裡我們要列出所有相關任務，這樣才能看到「已完成」的任務並反悔
+                    // 不過原需求是「冒險者待辦清單」，通常只列未完成。
+                    // 但使用者說「未回報點選後可以切換...點過一次不能再點」，這暗示他們希望列表能持續操作
+                    // 所以這裡改為：只列出「未回報 (0)」和「再挑戰 (2)」以及「已回報 (1)」，因為已回報可能要改成再挑戰
+                    // 討伐成功 (3) 通常就從待辦清單消失了。
+                    if (st !== 3) tasks.push({ id: a.id, title: a.title, status: st });
                 }
             });
             if (tasks.length > 0) pending.push({ idx, tasks });
@@ -1390,7 +1434,17 @@
             const div = document.createElement('div'); div.className = 'card';
             let html = `<div class="student-card-header"><h2>${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} ${s.no}. ${s.name}</h2><button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button></div><ul class="student-status-list">`;
             item.tasks.forEach(t => {
-                html += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${t.status===0?'p-gray':'p-orange'}">${t.status===0?'未回報':'再挑戰'}</span></li>`;
+                // 設定顏色與文字
+                let pillClass = 'p-gray';
+                let statusText = '未回報';
+                if(t.status === 1) { pillClass = 'p-yellow'; statusText = '已回報'; }
+                else if(t.status === 2) { pillClass = 'p-orange'; statusText = '再挑戰'; }
+                
+                // 注意：這裡在 li 上面加了 data-status，方便點擊時判斷
+                html += `<li data-aid="${t.id}" data-sidx="${item.idx}" data-status="${t.status}">
+                            <span style="flex:1;">${t.title}</span> 
+                            <span class="pill ${pillClass}">${statusText}</span>
+                         </li>`;
             });
             div.innerHTML = html + '</ul>';
             grid.appendChild(div);
@@ -1411,29 +1465,6 @@
         kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
     });
     
-    // Status Picker Logic (配合縮放修正座標)
-    let pickerTarget = null;
-    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
-        const li = e.target.closest('li');
-        if(!li) return;
-        const aid = li.dataset.aid; const sidx = parseInt(li.dataset.sidx);
-        const a = data.assignments.find(i => i.id == aid);
-        
-        if((a.statuses[sidx] || 0) === 0) {
-            pickerTarget = { idx: sidx, aid: aid };
-            const picker = document.getElementById('statusPicker');
-            const rect = li.getBoundingClientRect();
-            // 修正座標以配合 zoom: 1.25
-            picker.style.top = ((rect.top + window.scrollY) / APP_SCALE) + 'px';
-            picker.style.left = ((rect.right + window.scrollX - 160) / APP_SCALE) + 'px';
-            picker.classList.add('show');
-            const close = (evt) => { if(!picker.contains(evt.target)) { picker.classList.remove('show'); document.removeEventListener('click', close); }};
-            setTimeout(()=>document.addEventListener('click', close), 100);
-        } else {
-            if(confirm("標記為完成？")) { a.statuses[sidx] = 3; playSuccessSound(); triggerAutoSave(); renderStudentStatus(); }
-        }
-    });
 
     document.querySelectorAll('.status-option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1761,16 +1792,91 @@
         w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
         w.document.close();
     });
+// ----------------------------------------------------
+    // 🔥 核心修復：狀態點擊邏輯 (橘色直接變更 / 其他跳選單)
+    // ----------------------------------------------------
+    let pickerTarget = null; // 儲存當前操作的目標
+
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-print-single');
-        if(btn) {
-            e.stopPropagation();
-            const card = btn.closest('.card');
-            const html = `<div style="border:1px solid #000;padding:10px;"><h3>${card.querySelector('h2').innerText}</h3>${card.querySelector('ul').outerHTML}</div>`;
-            const w = window.open('','','width=800,height=600');
-            w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
-            w.document.close();
+        // 忽略列印按鈕和核取方塊
+        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        
+        const li = e.target.closest('li');
+        if(!li) return;
+
+        const aid = li.dataset.aid;
+        const sidx = parseInt(li.dataset.sidx);
+        // 從資料中獲取最新狀態 (比 DOM 屬性準確)
+        const assignment = data.assignments.find(i => i.id == aid);
+        if (!assignment) return;
+        
+        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+
+        // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
+                updateStatus(aid, sidx, 3); // 直接設為 3 (綠色)
+            }
+            return; // 結束，不開啟選單
         }
+
+        // 🟡 邏輯 B：如果是「未回報(0)」或「已回報(1)」，開啟選單 (Picker)
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        
+        // 🔥 座標修正：因為你的 body 有 zoom: 1.25，所以座標要除以 APP_SCALE
+        // 這裡的 APP_SCALE 必須對應你上面定義的 1.25
+        const rect = li.querySelector('.pill').getBoundingClientRect(); // 讓選單出現在「膠囊」旁邊，而不是整行旁邊
+        
+        let topPos = (rect.bottom + 5) / APP_SCALE;
+        let leftPos = rect.left / APP_SCALE;
+
+        // 邊界檢查 (防止選單超出下方螢幕)
+        if (topPos + 150 > window.innerHeight / APP_SCALE) {
+             topPos = (rect.top - 150) / APP_SCALE; // 改顯示在上方
+        }
+
+        picker.style.top = topPos + 'px';
+        picker.style.left = leftPos + 'px';
+        picker.classList.add('show');
+
+        // 點擊空白處關閉選單
+        const close = (evt) => { 
+            if(!picker.contains(evt.target)) { 
+                picker.classList.remove('show'); 
+                document.removeEventListener('click', close); 
+            }
+        };
+        // 延遲註冊，避免立刻觸發關閉
+        setTimeout(() => document.addEventListener('click', close), 100);
+    });
+
+    // 輔助函式：統一更新狀態並存檔
+    function updateStatus(aid, sidx, newStatus) {
+        const a = data.assignments.find(i => i.id == aid);
+        if(a) {
+            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+            a.statuses[sidx] = newStatus;
+            
+            if(newStatus === 3) {
+                playSuccessSound();
+                // 可選：如果要放煙火 confetti(); 
+            }
+            
+            triggerAutoSave(); 
+            renderStudentStatus(); // 重新渲染列表
+            renderDashboard();     // 同步更新看板
+        }
+    }
+
+    // 選單按鈕點擊事件 (保持原樣，但改呼叫 updateStatus)
+    document.querySelectorAll('.status-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if(!pickerTarget) return;
+            const s = parseInt(btn.dataset.status);
+            updateStatus(pickerTarget.aid, pickerTarget.idx, s);
+            document.getElementById('statusPicker').classList.remove('show');
+        });
     });
 
     // ==========================================
@@ -1784,7 +1890,7 @@
     });
     
     // 🔥 優化：發布新委託開關
-    document.getElementById('btnOpenNewQuestWindow').addEventListener('click', () => {
+    document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => {
         resetNewAssignmentState();
         openTool('panelNewQuest');
     });
