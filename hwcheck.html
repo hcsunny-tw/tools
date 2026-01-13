@@ -1606,10 +1606,6 @@
         kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
     });
     
-    // ----------------------------------------------------
-    // 🔥 核心修復：狀態點擊邏輯 (橘色直接變更 / 其他跳選單)
-    // ----------------------------------------------------
-    let pickerTarget = null; // 儲存當前操作的目標
 
 // ============================================================
     // 🖨️ 優化版：單人卷軸列印 (資料驅動 + 美化排版)
@@ -1649,7 +1645,7 @@
             
             if(t.status === 0) statusText = '未回報';
             else if(t.status === 1) statusText = '已回報';
-            else if(t.status === 2) { statusText = '再挑戰'; rowStyle = 'color: #c62828;'; } // 再挑戰用紅色標示
+            else if(t.status === 2) { statusText = '再挑戰'; rowStyle = 'color: #c62828; font-weight:bold;'; } 
 
             return `
                 <li class="print-task-item" style="${rowStyle}">
