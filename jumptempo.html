@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國小數學跳跳 Tempo</title>
+    <title>跳跳 Tempo</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 React 和 ReactDOM -->
@@ -245,7 +245,7 @@
             };
 
             const handleResetDefaults = () => {
-                if(window.confirm("確定要重置回預設的 20 題數學題嗎？目前的自訂題目將會消失。")) {
+                if(window.confirm("確定要重置回預設的題目嗎？目前的自訂題目將會消失。")) {
                     setQuestions(DEFAULT_QUESTIONS);
                     setGameTime(DEFAULT_GAME_TIME);
                 }
@@ -365,7 +365,7 @@
                         <span className="bg-slate-800 text-white px-3 py-0.5 rounded-full text-lg font-bold">
                             Q{currentQIndex + 1}/{questions.length}
                         </span>
-                        <span className="text-slate-600 font-bold text-lg hidden sm:inline">數學跳跳 Tempo</span>
+                        <span className="text-slate-600 font-bold text-lg hidden sm:inline">跳跳 Tempo</span>
                         </div>
                     )}
                     
@@ -638,7 +638,7 @@
                     <div className="z-10 text-center space-y-12 animate-in fade-in zoom-in duration-700">
                         <div>
                         <h1 className="text-8xl md:text-9xl font-black text-slate-800 tracking-tighter mb-4">
-                            數學<span className="text-blue-600">跳跳</span>
+                            <span className="text-blue-600">跳跳</span>
                         </h1>
                         <h2 className="text-4xl md:text-6xl font-bold text-slate-600 tracking-widest uppercase">
                             Tempo Game
