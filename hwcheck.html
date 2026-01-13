@@ -336,6 +336,90 @@
     #dashEmptyState { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--muted); border: 2px dashed var(--tbl-border); border-radius: 8px; }
 
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
+
+    /* ============================================================
+       📝 點名簿專用樣式 (修復跑版)
+       ============================================================ */
+    .att-card {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px dashed var(--tbl-border);
+        gap: 10px;
+        background: var(--card);
+        margin-bottom: 6px;
+        border-radius: 6px;
+    }
+    .att-no {
+        font-weight: 900;
+        width: 40px;
+        text-align: center;
+        font-size: 18px;
+        color: var(--primary);
+    }
+    .att-name {
+        flex: 1;
+        font-weight: bold;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+    }
+    .att-note {
+        font-size: 12px;
+        color: var(--danger);
+        background: #fee2e2;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        border: 1px solid #fecaca;
+    }
+    .att-status-group {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    .att-btn {
+        border: 1px solid var(--tbl-border);
+        background: var(--bg);
+        color: var(--muted);
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .att-btn:hover {
+        background: var(--tbl-hover);
+    }
+    .att-btn.active {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+        transform: scale(1.05);
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    /* 統計條樣式 */
+    .att-stats-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        background: var(--tbl-alt);
+        padding: 10px;
+        border-radius: 8px;
+        overflow-x: auto;
+        border: 1px solid var(--tbl-border);
+    }
+    .att-stat-item {
+        flex: 1;
+        text-align: center;
+        min-width: 60px;
+        border-right: 1px solid var(--tbl-border);
+    }
+    .att-stat-item:last-child { border-right: none; }
+    .att-stat-val { font-size: 20px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
   </style>
   
   <!-- 全域錯誤攔截 (Debug Mode) -->
