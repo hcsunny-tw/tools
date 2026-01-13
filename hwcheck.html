@@ -3,21 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 🛡️</title>
+  <title>🛡️ 冒險者公會 (PRO版) 🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     /* ============================================================
-       🚨 核心視圖控制
+       🚨 核心視圖控制 & 變數
        ============================================================ */
     .view { display: none !important; } 
     .view.show { display: block !important; animation: fadeIn .3s ease; }
     @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
 
-    /* ============================================================
-       🎨 變數與主題
-       ============================================================ */
     :root, html[data-color-theme='guild'] {
       --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
       --bg: #F4E4BC; --card: #FDF5E6; 
@@ -39,27 +36,26 @@
 
     html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
 
-    /* 2. 主題：聖誕 */
     html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --progress-bar: #00e676; --seat: 56px; --seat-font: 16px; }
     html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3C!-- 雪人 --%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
     html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
     html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
 
-    /* 3. 主題：藍 & 橘 */
     html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #3b82f6; }
     html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #f97316; }
+    html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --ring: rgba(46, 125, 50, 0.3); --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #4caf50; }
     
     html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
     html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
-
-    /* 4. 新增主題：護眼綠 */
-    html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --ring: rgba(46, 125, 50, 0.3); --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #4caf50; }
     html[data-color-theme='green'][data-theme='dark'] { --primary: #66bb6a; --bg: #1b5e20; --card: #2e7d32; --text-main: #e8f5e9; --tbl-head: #1b5e20; --tbl-alt: #14421b; --tbl-hover: #388e3c; --tbl-border: #4caf50; }
 
-
-    /* 通用 */
     *{ box-sizing:border-box; }
-    html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
+    html, body{ 
+        height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
+        transition: background-color .3s, color .3s; 
+        background: var(--bg); color: var(--text-main);
+        zoom: 1.25; /* 🔥 優化：調整為 125% */
+    }
     .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
     .brand{ display:flex; align-items:center; gap:12px; }
@@ -69,9 +65,7 @@
     
     .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
     .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
-    .row{ display:grid; gap:12px; grid-template-columns:repeat(12, 1fr); }
-    .field{ grid-column:span 12; display:flex; flex-direction:column; gap:4px; }
-    @media (min-width:720px){ .sm-6{ grid-column:span 6; } .sm-5{ grid-column:span 5; } .sm-4{ grid-column:span 4; } .sm-3{ grid-column:span 3; } .sm-2{ grid-column:span 2; } }
+    .field{ display:flex; flex-direction:column; gap:4px; }
     
     label{ font-weight:800; font-size:13px; color: var(--text-light); }
     input:not([type="checkbox"]), select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
@@ -90,44 +84,81 @@
     .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
     .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
     
-    .table-wrap{ overflow:auto; border-radius:6px; border:2px solid var(--tbl-border); background:var(--card); }
-    table{ width:100%; border-collapse:collapse; font-size:14px; }
-    thead th{ position:sticky; top:0; background:var(--tbl-head); text-align:left; padding:10px; border-bottom:2px solid var(--tbl-border); white-space:nowrap; cursor:pointer; }
-    tbody td{ padding:10px; border-bottom:1px solid var(--tbl-border); }
-    tbody tr:hover{ background:var(--tbl-hover); }
-    
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(calc(var(--seat) + 70px), 1fr)); background:var(--bg); border:2px solid var(--tbl-border); border-radius:var(--radius); padding:10px; }
     .seatItem{ display:flex; align-items:center; gap:8px; }
     .seatItem.not-assigned { opacity: 0.35; filter: grayscale(80%); pointer-events: none; }
     .seat{ width:var(--seat); height:var(--seat); border-radius:12px; display:grid; place-items:center; font-weight:900; font-size:var(--seat-font); border:2px solid #5D4037; cursor:pointer; box-shadow:var(--shadow); transition:transform .06s; }
     .seat:active{ transform:scale(.95); }
     html[data-theme='dark'] .seat { border-color: var(--tbl-border); }
-    .s0{ background:#d6d3d1; color:#44403c; } 
-    .s1{ background:#fef9c3; color:#713f12; } 
-    .s2{ background:#fdba74; color:#9a3412; } 
-    .s3{ background:#86efac; color:#14532d; } 
+    .s0{ background:#d6d3d1; color:#44403c; } .s1{ background:#fef9c3; color:#713f12; } 
+    .s2{ background:#fdba74; color:#9a3412; } .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-    progress { -webkit-appearance: none; width: 100%; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); border: 1px solid var(--text-light); }
-    progress::-webkit-progress-value { background-color: var(--progress-bar); }
-    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
-    .p-gray{ background:#e2e8f0; color:#475569; } .p-yellow{ background:#fefce8; color:#854d0e; }
-    .p-orange{ background:#fff7ed; color:#9a3412; } .p-green{ background:#f0fdf4; color:#166534; }
 
     .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
     .custom-tooltip.show { display: block; animation: fadeIn .1s ease-out; }
 
+    /* 2. 懸浮詳情視窗樣式 (優化：大字體) */
+    .assignment-tooltip {
+        position: fixed;
+        background: var(--card);
+        border: 2px solid var(--primary);
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        z-index: 9999;
+        display: none;
+        pointer-events: none;
+        min-width: 180px;
+        max-width: 300px;
+        animation: fadeIn 0.15s ease-out;
+    }
+    .assignment-tooltip h4 { margin: 0 0 8px; font-size: 18px; font-weight: 900; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
+    .assignment-tooltip ul { padding: 0; margin: 0; list-style: none; font-size: 16px; font-weight: bold; line-height: 1.5; }
+    .assignment-tooltip li { margin-bottom: 4px; word-wrap: break-word; }
+    .assignment-tooltip .t-miss { color: var(--muted); }
+    .assignment-tooltip .t-redo { color: var(--accent); }
+
+    /* 3. 虛擬小鍵盤樣式 (預設隱藏) */
+    .virtual-keypad { display: none; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; background: var(--tbl-alt); padding: 6px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
+    .vk-btn { background: var(--card); border: 1px solid var(--tbl-border); border-radius: 4px; padding: 6px 2px; font-size: 12px; font-weight: bold; cursor: pointer; color: var(--text-main); text-align: center; transition: all .1s; }
+    .vk-btn:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
+    .vk-btn:active { transform: translateY(1px); }
+    .vk-btn.wide { grid-column: span 2; }
+
+    /* 4. 任務設定 UI 優化 */
+    .quest-config-card { background: var(--card); border: 1px solid var(--tbl-border); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+    .quest-config-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--tbl-head); padding-bottom: 8px; margin-bottom: 8px; }
+    .quest-config-title { font-weight: 900; font-size: 16px; color: var(--primary); }
+    .quest-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .quest-tag { background: var(--tbl-alt); padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; }
+    .quest-tag i { cursor: pointer; opacity: 0.6; transition: opacity .2s; }
+    .quest-tag i:hover { opacity: 1; color: var(--danger); }
+    .quest-add-row { display: flex; gap: 6px; margin-top: 10px; }
+
+    /* 5. 戰況儀表板 (新功能) - 🔥 優化：加大數字 */
+    .status-overview { display: flex; gap: 12px; margin-bottom: 16px; }
+    .overview-card { flex: 1; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .overview-card.success { border-color: var(--success); background: #f0fdf4; }
+    .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
+    .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+    .overview-nums { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
+    .num-badge { 
+        width: 42px; height: 42px; /* 加大尺寸 */
+        border-radius: 50%; display: grid; place-items: center; 
+        font-weight: bold; 
+        font-size: 22px; /* 加大字體 */
+        border: 2px solid rgba(255,255,255,0.5); 
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.1); 
+    }
+    .overview-card.success .num-badge { background: var(--success); color: #fff; }
+    .overview-card.danger .num-badge { background: var(--danger); color: #fff; }
+    .overview-card.success .overview-header { color: var(--success); }
+    .overview-card.danger .overview-header { color: var(--danger); }
+    .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
+
     #statusPicker { display: none; position: absolute; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 10000; width: 160px; flex-direction: column; gap: 8px; }
     #statusPicker.show { display: flex; }
     .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
-    .sp-1 { background: #fef9c3; color: #713f12; } .sp-2 { background: #fdba74; color: #9a3412; } .sp-3 { background: #86efac; color: #14532d; }
-
-    .numpad-container { display: none; position: absolute; top: 100%; right: 0; width: 300px; z-index: 100; background: var(--card); border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; padding-top: 36px; margin-top: 8px; }
-    .numpad-container.show { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .numpad-close { position: absolute; top: 2px; right: 4px; background: none; border: none; color: var(--danger); font-size: 24px; cursor: pointer; transition: transform 0.2s; }
-    .numpad-close:hover { transform: scale(1.2); }
-    .num-key { padding: 12px 0; font-size: 20px; font-weight: bold; background: var(--bg); border: 1px solid var(--tbl-border); cursor: pointer; border-radius: 6px; color: var(--text-main); font-family: monospace; }
-    .num-key.action-key { background: var(--tbl-head); color: var(--primary); }
 
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
@@ -135,7 +166,6 @@
     .modal-overlay.show { display: flex; }
     .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
     .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
     .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
 
@@ -143,7 +173,6 @@
     .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
     .theme-option:hover { transform: scale(1.1); }
     .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
-    /* Colors */
     .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
     .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
     .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
@@ -157,17 +186,6 @@
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(22px); }
-
-    .accordion-item { border: 1px solid var(--tbl-border); border-radius: 6px; margin-bottom: 8px; overflow: hidden; background: var(--bg); }
-    .accordion-header { padding: 12px; background: var(--tbl-head); font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background .2s; }
-    .accordion-header:hover { background: var(--tbl-hover); }
-    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: var(--card); }
-    .accordion-item.active .accordion-body { max-height: 500px; overflow-y: auto; border-top: 1px solid var(--tbl-border); }
-    .accordion-item.active .accordion-header { color: var(--primary); }
-    .task-list { padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .task-tag { display: inline-flex; align-items: center; background: var(--bg); border: 1px solid var(--tbl-border); padding: 6px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; }
-    .task-tag i { margin-left: 6px; cursor: pointer; color: var(--danger); opacity: 0.6; }
-    .task-tag i:hover { opacity: 1; }
 
     .roster-tabs { display: flex; gap: 4px; margin-bottom: 0; }
     .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 800; cursor: pointer; color: var(--text-light); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; transition: all .2s; }
@@ -184,133 +202,63 @@
     .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .student-card-header h2 { margin: 0; font-size: 18px; font-weight: bold;}
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
+    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; }
+    .p-gray{ background:#e2e8f0; color:#475569; } .p-orange{ background:#fff7ed; color:#9a3412; }
 
     .assign-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px; max-height: 400px; overflow-y: auto; }
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
     .assign-student-item:hover { background: var(--tbl-hover); }
 
-    /* New Footer Style */
     .app-footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px dashed var(--tbl-border); width: 100%; }
 
     /* ============================================================
-       🚨 優化：新版工具箱樣式 (懸浮選單 + 獨立視窗)
+       🚨 優化：新版工具箱樣式 (Debug Fix: 改用絕對定位避免被遮擋)
        ============================================================ */
     .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
-    
-    /* 主開關按鈕 */
-    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5002; }
+    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s; z-index: 5002; }
     .toolbox-toggle:hover { transform: scale(1.1); }
     .toolbox-toggle.active { transform: rotate(45deg); background: var(--danger); border-color: #ffcccc; }
 
-    /* 懸浮選單 (Speed Dial) */
-    .toolbox-menu { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 5px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+    .toolbox-menu { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 5px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s; pointer-events: none; }
     .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
     
     .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; position: relative; }
-    .fab-btn:hover { transform: scale(1.15); color: #fff; background: var(--primary); border-color: #fff; }
-    .fab-btn::after { content: attr(title); position: absolute; right: 60px; background: var(--text-main); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; font-weight: bold; }
-    .fab-btn:hover::after { opacity: 1; }
-
-    /* 獨立工具視窗 (Pop-up Panels) */
-    .tool-window { position: absolute; bottom: 85px; right: 80px; width: 300px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5001; }
+    .fab-btn:hover { transform: scale(1.15); color: #fff; background: var(--primary); }
+    .fab-btn.huge { width: 70px; height: 70px; font-size: 32px; border-width: 3px; background: var(--accent); color: #fff; border-color: #fff; }
+    
+    /* 工具視窗 */
+    .tool-window { position: fixed; bottom: 100px; right: 90px; width: 300px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5005; }
     .tool-window.show { display: flex; }
     @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     
     .tool-header { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; }
+    .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; padding: 0 5px; }
     .tool-close:hover { opacity: 1; transform: scale(1.2); }
     .tool-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 
-    .tb-clock { font-family: monospace; font-size: 32px; font-weight: bold; text-align: center; color: var(--primary); letter-spacing: 2px; text-shadow: 1px 1px 0px var(--tbl-head); }
+    .tb-clock { font-family: monospace; font-size: 32px; font-weight: bold; text-align: center; color: var(--primary); letter-spacing: 2px; }
     .timer-controls { display: flex; gap: 8px; align-items: center; }
     #timerDisplay { font-family: monospace; font-size: 28px; font-weight: bold; flex: 1; text-align: center; color: var(--text-main); }
     #luckyDrawResult { font-size: 24px; font-weight: 900; text-align: center; color: var(--danger); min-height: 60px; display: grid; place-items: center; margin-bottom: 4px; border: 2px dashed var(--accent); border-radius: 8px; background: var(--bg); }
     
-    .tb-control-row { display: flex; gap: 8px; align-items: center; }
-    .timer-presets { display: flex; gap: 6px; }
-    .timer-presets button { flex: 1; padding: 6px 0; justify-content: center; font-size: 13px; }
+    .delete-choice-card { text-align: center; display: flex; flex-direction: column; gap: 16px; }
+    .delete-choice-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-archive { background: #607d8b; border-color: #455a64; color: #fff; }
+    .btn-destroy { background: #c62828; border-color: #b71c1c; color: #fff; }
+    .delete-desc { font-size: 14px; color: var(--muted); line-height: 1.5; background: var(--bg); padding: 10px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
 
-    /* ============================================================
-       🚨 新增：刪除選項模態視窗專用樣式
-       ============================================================ */
-    .delete-choice-card {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    .delete-choice-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-    .btn-archive {
-        background: #607d8b; /* 灰藍色代表封存/倉庫 */
-        border-color: #455a64;
-        color: #fff;
-    }
-    .btn-destroy {
-        background: #c62828; /* 深紅色代表銷毀 */
-        border-color: #b71c1c;
-        color: #fff;
-    }
-    .delete-desc {
-        font-size: 14px;
-        color: var(--muted);
-        line-height: 1.5;
-        background: var(--bg);
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px dashed var(--tbl-border);
-    }
+    .marquee-container { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.85); overflow: hidden; z-index: 9999; padding: 8px 0; pointer-events: none; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .marquee-content { display: inline-block; white-space: nowrap; font-weight: 900; padding-left: 100%; animation: marquee-anim linear infinite; font-family: "Microsoft JhengHei", monospace; text-shadow: 2px 2px 0px #000; }
+    @keyframes marquee-anim { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-    /* ============================================================
-       🚨 新增：跑馬燈樣式
-       ============================================================ */
-    .marquee-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.85); /* 半透明深色背景 */
-        overflow: hidden;
-        z-index: 9999;
-        padding: 8px 0;
-        pointer-events: none; /* 讓點擊穿透 */
-        border-bottom: 2px solid var(--primary);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-    .marquee-content {
-        display: inline-block;
-        white-space: nowrap;
-        font-weight: 900;
-        padding-left: 100%; /* 從螢幕右側外開始 */
-        animation: marquee-anim linear infinite; /* JS 控制 duration */
-        font-family: "Microsoft JhengHei", monospace;
-        text-shadow: 2px 2px 0px #000;
-    }
-    @keyframes marquee-anim {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-100%); }
-    }
-
-    /* ============================================================
-       🚨 新增：Toast 與 Canvas
-       ============================================================ */
     #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
-    
     .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .toast-msg { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 16px; animation: slideUpFade 0.3s ease-out; font-weight: bold; min-width: 300px; justify-content: space-between; }
-    .toast-msg button { background: transparent; border: 1px solid #aaa; color: #fff; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-    .toast-msg button:hover { background: #fff; color: #333; }
     @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ============================================================
-       🚨 新增：點名系統專用樣式
-       ============================================================ */
+    /* 點名系統樣式 */
     .att-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px dashed var(--tbl-border); background: var(--bg); border-radius: 6px; margin-bottom: 6px; transition: background .2s; }
     .att-card:hover { background: var(--tbl-hover); }
     .att-no { width: 32px; height: 32px; display: grid; place-items: center; background: var(--card); border-radius: 50%; font-weight: bold; font-size: 14px; border: 2px solid var(--tbl-border); }
@@ -319,24 +267,72 @@
     .att-btn { border: 2px solid transparent; border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: bold; cursor: pointer; opacity: 0.6; transition: all .2s; background: var(--card); color: var(--text-light); }
     .att-btn:hover { opacity: 0.9; transform: scale(1.05); }
     .att-btn.active { opacity: 1; transform: scale(1.1); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-    
-    /* 狀態顏色定義 */
-    .att-btn[data-status="0"].active { background: #dcfce7; color: #166534; border-color: #166534; } /* 出席 */
-    .att-btn[data-status="1"].active { background: #fef9c3; color: #854d0e; border-color: #854d0e; } /* 遲到 */
-    .att-btn[data-status="2"].active { background: #dbeafe; color: #1e40af; border-color: #1e40af; } /* 早退 */
-    .att-btn[data-status="3"].active { background: #fee2e2; color: #b91c1c; border-color: #b91c1c; } /* 病假 */
-    .att-btn[data-status="4"].active { background: #f3e8ff; color: #6b21a8; border-color: #6b21a8; } /* 公假 */
-    /* 🌟 新增：事假樣式 */
-    .att-btn[data-status="5"].active { background: #f3f4f6; color: #4b5563; border-color: #4b5563; } /* 事假 (灰色) */
-
+    .att-btn[data-status="0"].active { background: #dcfce7; color: #166534; border-color: #166534; } 
+    .att-btn[data-status="1"].active { background: #fef9c3; color: #854d0e; border-color: #854d0e; } 
+    .att-btn[data-status="2"].active { background: #dbeafe; color: #1e40af; border-color: #1e40af; } 
+    .att-btn[data-status="3"].active { background: #fee2e2; color: #b91c1c; border-color: #b91c1c; } 
+    .att-btn[data-status="4"].active { background: #f3e8ff; color: #6b21a8; border-color: #6b21a8; } 
+    .att-btn[data-status="5"].active { background: #f3f4f6; color: #4b5563; border-color: #4b5563; } 
     .att-note { font-size: 12px; color: var(--primary); margin-left: 8px; font-weight: normal; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px; display: inline-block; }
     .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); flex-wrap: wrap; justify-content: space-around; }
     .att-stat-item { display: flex; flex-direction: column; align-items: center; }
     .att-stat-val { font-size: 20px; font-weight: 900; }
     .att-stat-label { font-size: 12px; color: var(--muted); }
 
+    /* 🔥 優化：看板佈局 & 左側列表高度鎖定 */
+    .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; height: calc(100vh - 80px); overflow: hidden; }
+    .dash-sidebar { 
+        flex: 0 0 240px; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+        height: 100%; /* 填滿 dashboard-layout 高度 */
+        overflow: hidden; /* 防止 sidebar 整體捲動 */
+    }
+    .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto; }
+    .filter-panel { display: none; background: var(--card); border: 1px solid var(--tbl-border); border-top: none; padding: 10px; border-radius: 0 0 6px 6px; margin-bottom: 12px; animation: slideDown 0.2s ease-out; }
+    .filter-panel.show { display: block; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 768px) { .dashboard-layout { flex-direction: column; height: auto; } .dash-sidebar { width: 100%; position: static; flex: none; height: auto; } }
+
+    /* 🔥 優化：列表容器自動填滿剩餘空間並產生捲動 */
+    .side-list-container { 
+        flex: 1; 
+        overflow-y: auto; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        min-height: 0; /* 關鍵：讓 flex item 可以小於內容高度 */
+        padding-right: 4px; /* 避免捲軸蓋住內容 */
+        border-top: 1px dashed var(--tbl-border);
+        padding-top: 8px;
+    }
+    
+    .side-item { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .side-item:hover { border-color: var(--primary); transform: translateX(4px); }
+    .side-item.active { background: var(--primary); color: #fff; border-color: var(--text-main); box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+    .side-item.active .muted { color: rgba(255,255,255,0.8) !important; }
+    .side-item-title { font-weight: 900; font-size: 15px; margin-bottom: 4px; }
+    .side-item-meta { font-size: 12px; display: flex; justify-content: space-between; }
+    #dashDetailPanel { display: none; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 16px; min-height: 400px; }
+    #dashDetailPanel.show { display: block; animation: fadeIn 0.3s; }
+    /* 移除舊的 newQuestPanel 相關 CSS */
+    #dashEmptyState { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--muted); border: 2px dashed var(--tbl-border); border-radius: 8px; }
+
     @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
   </style>
+  
+  <!-- 全域錯誤攔截 (Debug Mode) -->
+  <script>
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      if(msg.toLowerCase().indexOf("script error") > -1) { alert('Script Error: Check Browser Console'); }
+      else { alert('⚠️ 系統錯誤 (System Error):\n' + msg + '\nLine: ' + lineNo); }
+      return false;
+    };
+    window.onunhandledrejection = function (event) {
+      alert("⚠️ 連線或非同步錯誤 (Async Error):\n" + event.reason);
+    };
+  </script>
 </head>
 <body>
   
@@ -346,8 +342,10 @@
 
   <canvas id="confettiCanvas"></canvas>
   <div id="toastContainer" class="toast-container"></div>
+  
+  <!-- 任務詳情浮動視窗 (Tooltip) -->
+  <div id="assignmentTooltip" class="assignment-tooltip"></div>
 
-  <!-- 新增：每日點名提醒 Modal -->
   <div id="attendanceReminderModal" class="modal-overlay">
       <div class="modal-content" style="text-align: center; border: 4px double var(--danger);">
           <div class="modal-header" style="border-bottom: none; justify-content: center;">
@@ -381,11 +379,8 @@
       </div>
       <div class="actions">
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> ...</span>
-        
         <button class="btn ghost" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i></button>
-
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
-        <!-- 移除主畫面點名按鈕 -->
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
         <button class="btn ghost" id="btnNavRoster"><i class="bi bi-people"></i> 公會名冊</button>
         <button class="btn ghost" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i></button>
@@ -393,72 +388,63 @@
       </div>
     </header>
 
-    <!-- 委託看板 View -->
-    <section id="view-dashboard" class="view show">
-      <!-- (原有的委託看板內容保持不變) -->
-      <div class="card">
-        <h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2>
-        <div class="row">
-          <div class="field sm-4">
-            <label>發布人 (公會長)</label>
-            <select id="ipTeacherSelect"></select>
-            <input id="ipTeacherCustom" type="text" placeholder="請輸入姓名" style="display: none; margin-top: 8px;">
-          </div>
-          
-          <div class="field sm-5">
-            <label>委託內容 (作業名稱)</label>
-            <div style="display:flex; gap:8px; margin-bottom:4px; align-items: center;">
-                <select id="selSubject" style="width:40%; padding:6px; font-size:12px;">
-                    <option value="">📂 科目...</option>
-                </select>
-                <button id="btnOpenQuestSettings" class="btn sm ghost" style="padding: 4px 8px;" title="編輯任務"><i class="bi bi-gear-fill"></i></button>
-                <select id="selPresetTask" style="width:50%; padding:6px; font-size:12px; flex-grow: 1;">
-                    <option value="">📜 常用任務...</option>
-                </select>
-            </div>
-            <div style="position: relative;">
-                <input id="ipTitle" type="text" placeholder="或是手動輸入..." />
-                <button id="btnToggleNumpad" class="btn sm ghost" style="position: absolute; right: 4px; top: 4px; padding: 4px 8px;" title="開啟數字鍵盤"><i class="bi bi-grid-3x3"></i></button>
-                <div id="numpadContainer" class="numpad-container"></div>
-            </div>
-          </div>
+<section id="view-dashboard" class="view show">
+  <div class="dashboard-layout">
+    <aside class="dash-sidebar">
+      <!-- 篩選器按鈕 -->
+      <button id="btnToggleFilter" class="btn ghost" style="width:100%; margin-bottom:0;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
+          <span><i class="bi bi-funnel"></i> 篩選條件</span>
+          <i class="bi bi-chevron-down" style="font-size:12px;"></i>
+      </button>
 
-          <div class="field sm-3"><label>發布日期</label><input id="ipDate" type="date" /></div>
-        </div>
-        <div class="field" style="margin-top: 8px;">
-            <label>指定冒險者</label>
-            <button class="btn ghost" id="btnOpenAssignModal" style="justify-content: flex-start; text-align: left; width: 100%;">
-                <i class="bi bi-people-fill"></i>
-                <span id="assignStatusText">全體冒險者</span>
-            </button>
-        </div>
-        <div class="actions">
-            <button class="btn" id="btnCreate"><i class="bi bi-quill-pen"></i> 發布委託</button>
-            <button class="btn ghost" id="btnExport"><i class="bi bi-download"></i> 備份資料 (JSON)</button>
-            <label class="btn ghost" for="fileImport" style="cursor:pointer;"><i class="bi bi-upload"></i> 還原資料</label>
-            <input id="fileImport" type="file" accept="application/json" hidden />
-        </div>
+      <!-- 篩選面板 -->
+      <div id="filterPanel" class="filter-panel">
+          <div style="margin-bottom: 8px;">
+              <select id="teacherFilter" style="width:100%; padding:6px;"><option value="all">所有導師</option></select>
+          </div>
+          <div style="margin-bottom: 8px;">
+              <select id="subjectFilter" style="width:100%; padding:6px;"><option value="all">所有科目</option></select>
+          </div>
+          <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;">
+              <i class="bi bi-arrow-counterclockwise"></i> 重置
+          </button>
       </div>
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap: wrap; gap: 8px;">
-            <h2><i class="bi bi-list-check"></i> 委託清單</h2>
-            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                <div class="field" style="max-width:140px; margin: 0;"><select id="teacherFilter"></select></div>
-                <div class="field" style="max-width:140px; margin: 0;"><select id="subjectFilter"><option value="all">📚 所有科目</option></select></div>
-                <div class="field" style="max-width:140px; margin: 0;"><input type="date" id="dateFilter"></div>
-                <button id="btnClearFilter" class="btn sm ghost" title="清除篩選"><i class="bi bi-x-lg"></i></button>
+
+      <!-- 左側列表容器 (自動填滿剩餘高度) -->
+      <div id="sideAssignmentList" class="side-list-container"></div>
+    </aside>
+
+    <main class="dash-main">
+      <div id="dashEmptyState">
+          <i class="bi bi-arrow-left-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+          <p style="font-weight:bold;">請從左側選擇一張委託</p>
+          <p style="font-size:12px;">或點擊右下角「＋」發布新任務</p>
+      </div>
+
+      <div id="dashDetailPanel">
+         <div class="assignment-bar" style="border-bottom: 2px solid var(--tbl-border); padding-bottom:12px; margin-bottom:12px;">
+            <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary);"></div>
+            <div class="actions" style="margin-top:8px; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button class="btn sm ghost" id="btnMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
+                <button class="btn sm ghost" id="btnMarkAllOrange"><i class="bi bi-exclamation-circle-fill"></i> 全員再戰</button>
+                <div class="legend" style="font-size:12px;">
+                    <span><span class="dot s0"></span>未接</span>
+                    <span><span class="dot s1"></span>已報</span>
+                    <span><span class="dot s2"></span>再戰</span>
+                    <span><span class="dot s3"></span>成功</span>
+                </div>
+                <button class="btn sm warn ghost" id="btnDeleteCurrent" style="margin-left:auto;"><i class="bi bi-trash3"></i> 刪除</button>
             </div>
         </div>
-        <div class="table-wrap">
-          <table id="assignmentTable">
-            <thead><tr><th data-sort="date">發布日期 <i class="bi"></i></th><th data-sort="title">委託內容 <i class="bi"></i></th><th data-sort="teacher">公會長 <i class="bi"></i></th><th>回報進度</th><th>討伐進度</th><th></th></tr></thead>
-            <tbody id="assignmentList"></tbody>
-          </table>
+        <div class="field" style="margin-bottom: 8px;">
+            <input type="range" id="rangeSize" min="40" max="100" value="56" style="padding: 0;">
         </div>
+        <div id="dashGridContainer" class="grid"></div>
       </div>
-    </section>
+    </main>
+  </div>
+</section>
 
-    <!-- 🌟 新增：點名系統 View -->
     <section id="view-attendance" class="view">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
@@ -469,13 +455,11 @@
                 </div>
             </div>
             
-            <!-- 統計儀表板 -->
             <div class="att-stats-bar">
                 <div class="att-stat-item"><div class="att-stat-val" style="color:var(--success)" id="statPresent">0</div><div class="att-stat-label">出席</div></div>
                 <div class="att-stat-item"><div class="att-stat-val" style="color:#854d0e" id="statLate">0</div><div class="att-stat-label">遲到</div></div>
                 <div class="att-stat-item"><div class="att-stat-val" style="color:#1e40af" id="statEarly">0</div><div class="att-stat-label">早退</div></div>
                 <div class="att-stat-item"><div class="att-stat-val" style="color:var(--danger)" id="statSick">0</div><div class="att-stat-label">病假</div></div>
-                <!-- 🌟 新增：事假統計 -->
                 <div class="att-stat-item"><div class="att-stat-val" style="color:#4b5563" id="statPersonal">0</div><div class="att-stat-label">事假</div></div>
                 <div class="att-stat-item"><div class="att-stat-val" style="color:#6b21a8" id="statOfficial">0</div><div class="att-stat-label">公假</div></div>
             </div>
@@ -485,31 +469,6 @@
                 <button class="btn" id="btnSaveAttendance"><i class="bi bi-check-lg"></i> 確認送出點名單</button>
             </div>
         </div>
-    </section>
-    
-    <!-- (其他 View 保持不變) -->
-    <section id="view-detail" class="view">
-      <!-- ... -->
-      <div class="card">
-        <div class="assignment-bar">
-            <div class="title" id="detailTitle"></div>
-            <div class="actions" style="align-items: center; gap: 20px; flex-wrap: wrap;">
-                <button class="btn ghost" id="btnMarkAllYellow" style="background-color: #fef9c3; color: #713f12; border-color: #713f12;"><i class="bi bi-check-circle-fill"></i> 全員已回報</button>
-                <button class="btn ghost" id="btnMarkAllOrange" style="background-color: #fdba74; color: #9a3412; border-color: #9a3412;"><i class="bi bi-exclamation-circle-fill"></i> 全員再挑戰</button>
-                <div class="field" style="min-width: 150px; margin-bottom: 0;">
-                    <label for="rangeSize" style="margin-bottom: 4px;">地圖縮放</label>
-                    <input type="range" id="rangeSize" min="40" max="100" value="56" style="padding: 0;">
-                </div>
-                <div class="legend">
-                    <div><span class="dot s0"></span>未接取</div>
-                    <div><span class="dot s1"></span>已回報</div>
-                    <div><span class="dot s2"></span>再挑戰</div>
-                    <div><span class="dot s3"></span>討伐成功</div>
-                </div>
-            </div>
-        </div>
-        <div id="gridContainer" class="grid"></div>
-      </div>
     </section>
 
     <section id="view-roster" class="view">
@@ -541,12 +500,12 @@
     </section>
 
     <section id="view-student-status" class="view">
-      <!-- ... (內容保持不變) ... -->
       <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
               <h2 id="studentStatusHeaderTitle"><i class="bi bi-clipboard2-check"></i> 冒險者待辦清單</h2>
               <div class="actions">
                   <button class="btn sm secondary" id="btnToggleBatchMode"><i class="bi bi-check-square"></i> 批量匯出卷軸</button>
+                  <button class="btn sm" id="btnBatchSelectAll" style="display:none;"><i class="bi bi-check-all"></i> 全選</button>
                   <button class="btn sm" id="btnBatchExport" style="display:none;"><i class="bi bi-printer"></i> 匯出選取項目</button>
               </div>
           </div>
@@ -554,13 +513,9 @@
       </div>
     </section>
 
-    <footer class="app-footer">
-        Created by HCSunny & Abby
-    </footer>
-
+    <footer class="app-footer">Created by HCSunny & Abby</footer>
   </div>
 
-  <!-- 設定 Modal -->
   <div id="settingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
@@ -590,7 +545,6 @@
     </div>
   </div>
   
-  <!-- 任務設定 Modal -->
   <div id="questSettingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
         <div class="modal-header">
@@ -611,13 +565,11 @@
     </div>
   </div>
   
-  <!-- 公會長執務室 Modal -->
   <div id="adminProfileModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 600px;">
           <div class="modal-header">
               <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
               <div style="display: flex; align-items: center; gap: 8px;">
-                <!-- 🌟 點名按鈕移動至此 -->
                 <button class="btn sm" id="btnAdminAttendance" title="點名簿"><i class="bi bi-book"></i> 點名簿</button>
                 <button class="modal-close-btn">&times;</button>
               </div>
@@ -632,7 +584,6 @@
                <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
           </div>
           
-          <!-- 危險區域 -->
           <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
                 <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -666,7 +617,6 @@
       </div>
   </div>
 
-  <!-- 刪除/封存選擇視窗 -->
   <div id="deleteChoiceModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 450px;">
           <div class="modal-header">
@@ -710,70 +660,8 @@
 
   <!-- 工具箱結構 -->
   <div class="toolbox-container">
-      
-      <!-- 1. 跑馬燈視窗 -->
-      <div id="panelMarquee" class="tool-window">
-          <div class="tool-header">
-              <span><i class="bi bi-broadcast"></i> 公告跑馬燈</span>
-              <button class="tool-close" onclick="closeToolWindow(this)">&times;</button>
-          </div>
-          <div class="tool-body">
-              <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
-              <div class="tb-control-row">
-                  <label style="font-size:12px;">顏色</label>
-                  <input type="color" id="mqColorInput" value="#FFD700" style="width:40px;height:36px;padding:0;">
-                  <label style="font-size:12px; margin-left:8px;">大小</label>
-                  <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1">
-              </div>
-              <div class="tb-control-row">
-                  <label style="font-size:12px;">速度</label>
-                  <input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快">
-              </div>
-              <div class="actions sm" style="justify-content: flex-end;">
-                  <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
-                  <button class="btn sm warn" id="btnMqHide">關閉</button>
-              </div>
-          </div>
-      </div>
-
-      <!-- 2. 計時器視窗 -->
-      <div id="panelTimer" class="tool-window">
-          <div class="tool-header">
-              <span><i class="bi bi-stopwatch"></i> 計時器 & 時鐘</span>
-              <button class="tool-close" onclick="closeToolWindow(this)">&times;</button>
-          </div>
-          <div class="tool-body">
-               <div id="tbClock" class="tb-clock" style="margin-bottom:8px;">00:00:00</div>
-               <div class="timer-presets">
-                  <button class="btn sm ghost btn-timer-preset" data-min="1">1分</button>
-                  <button class="btn sm ghost btn-timer-preset" data-min="3">3分</button>
-                  <button class="btn sm ghost btn-timer-preset" data-min="5">5分</button>
-                  <button class="btn sm ghost btn-timer-preset" data-min="10">10分</button>
-               </div>
-               <div class="timer-controls">
-                   <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
-                   <span style="font-weight:bold">:</span>
-                   <input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;">
-                   <div id="timerDisplay">00:00</div>
-               </div>
-               <div class="actions sm" style="justify-content: flex-end;">
-                   <button class="btn sm" id="btnTimerStart">開始</button>
-                   <button class="btn sm warn" id="btnTimerReset">重置</button>
-               </div>
-          </div>
-      </div>
-
-      <!-- 3. 幸運抽籤視窗 -->
-      <div id="panelDraw" class="tool-window">
-          <div class="tool-header">
-              <span><i class="bi bi-gift"></i> 幸運抽籤</span>
-              <button class="tool-close" onclick="closeToolWindow(this)">&times;</button>
-          </div>
-          <div class="tool-body">
-              <div id="luckyDrawResult">???</div>
-              <button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
-          </div>
-      </div>
+      <!-- 🔥 優化：發布新委託獨立按鈕 -->
+      <button class="fab-btn huge" id="btnOpenNewQuestWindow" title="發布新委託"><i class="bi bi-plus-lg"></i></button>
 
       <!-- 懸浮選單 -->
       <div class="toolbox-menu" id="toolboxMenu">
@@ -787,44 +675,136 @@
           <i class="bi bi-box-seam-fill"></i>
       </div>
   </div>
-
-
-
   
+  <!-- 🔥 優化：發布新委託彈出視窗 (類似工具箱) -->
+  <div id="panelNewQuest" class="tool-window" style="width: 350px; bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); height: auto; max-height: 80vh; overflow-y: auto;">
+      <div class="tool-header">
+          <span><i class="bi bi-plus-circle-dotted"></i> 發布新委託</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+          <div class="field">
+              <label style="font-size:12px;">發布導師</label>
+              <select id="ipTeacherSelect" style="padding:6px;"></select>
+              <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+              <label style="font-size:12px;">日期</label>
+              <input id="ipDate" type="date" style="padding:6px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+               <label style="font-size:12px;">內容</label>
+               <div style="display:flex; gap:4px; margin-bottom:4px;">
+                   <select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select>
+                   <select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select>
+                   <button class="btn ghost sm" id="btnOpenQuestSettings" title="設定常用任務" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
+               </div>
+               
+               <div style="display:flex; gap:4px;">
+                   <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
+                   <button class="btn sm ghost" id="btnToggleKeypad" title="開啟小鍵盤" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
+               </div>
+               
+               <div class="virtual-keypad" id="virtualKeypad">
+                   <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
+                   <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
+                   <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
+                   <div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="~">~</div>
+                   <div class="vk-btn" data-val="L.">L</div><div class="vk-btn" data-val="P.">P</div><div class="vk-btn" data-val="U.">U</div>
+                   <div class="vk-btn" data-val="CH.">CH</div><div class="vk-btn" data-val="習作">習</div><div class="vk-btn" data-val="考卷">卷</div>
+                   <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">_</div>
+               </div>
+          </div>
+          
+          <div class="field" style="margin-top:4px;">
+               <button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button>
+               <div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted);">全體冒險者</div>
+          </div>
+          <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
+      </div>
+  </div>
+      
+  <!-- 1. 跑馬燈視窗 -->
+  <div id="panelMarquee" class="tool-window">
+      <div class="tool-header">
+          <span><i class="bi bi-broadcast"></i> 公告跑馬燈</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+          <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
+          <div class="tb-control-row" style="display:flex;gap:8px;">
+              <label style="font-size:12px;">顏色</label>
+              <input type="color" id="mqColorInput" value="#FFD700" style="width:40px;height:36px;padding:0;">
+              <label style="font-size:12px; margin-left:8px;">大小</label>
+              <input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1">
+          </div>
+          <div class="tb-control-row" style="display:flex;gap:8px;">
+              <label style="font-size:12px;">速度</label>
+              <input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快">
+          </div>
+          <div class="actions sm" style="justify-content: flex-end;">
+              <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
+              <button class="btn sm warn" id="btnMqHide">關閉</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- 2. 計時器視窗 -->
+  <div id="panelTimer" class="tool-window">
+      <div class="tool-header">
+          <span><i class="bi bi-stopwatch"></i> 計時器 & 時鐘</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+           <div id="tbClock" class="tb-clock" style="margin-bottom:8px;">00:00:00</div>
+           <div class="timer-presets" style="display:flex;gap:6px;">
+              <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1;">1分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="3" style="flex:1;">3分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1;">5分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="10" style="flex:1;">10分</button>
+           </div>
+           <div class="timer-controls">
+               <input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;">
+               <span style="font-weight:bold">:</span>
+               <input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;">
+               <div id="timerDisplay">00:00</div>
+           </div>
+           <div class="actions sm" style="justify-content: flex-end;">
+               <button class="btn sm" id="btnTimerStart">開始</button>
+               <button class="btn sm warn" id="btnTimerReset">重置</button>
+           </div>
+      </div>
+  </div>
+
+  <!-- 3. 幸運抽籤視窗 -->
+  <div id="panelDraw" class="tool-window">
+      <div class="tool-header">
+          <span><i class="bi bi-gift"></i> 幸運抽籤</span>
+          <button class="tool-close">&times;</button>
+      </div>
+      <div class="tool-body">
+          <div id="luckyDrawResult">???</div>
+          <button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button>
+      </div>
+  </div>
+
   <script type="module">
-
-    // 🇹🇼 專用：取得台北時間的 YYYY-MM-DD 字串
     function getTaipeiDateString() {
-        const d = new Date();
-        // 強制轉換為台北時間
-        return d.toLocaleDateString('zh-TW', {
-            timeZone: 'Asia/Taipei',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        }).replace(/\//g, '-'); // 將 2023/12/24 轉為 2023-12-24
+        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
     }
-
-    // 🇹🇼 專用：取得台北時間的 HH:mm 字串
     function getTaipeiTimeString() {
-        const d = new Date();
-        return d.toLocaleTimeString('zh-TW', {
-            timeZone: 'Asia/Taipei',
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' });
     }
     
-const firebaseConfig = {
-  apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
-  authDomain: "hwcheck-8888.firebaseapp.com",
-  projectId: "hwcheck-8888",
-  storageBucket: "hwcheck-8888.firebasestorage.app",
-  messagingSenderId: "661808262560",
-  appId: "1:661808262560:web:413e036d53b19ea3c108c5",
-  measurementId: "G-FR4LMZ630Q"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
+      authDomain: "hwcheck-8888.firebaseapp.com",
+      projectId: "hwcheck-8888",
+      storageBucket: "hwcheck-8888.firebasestorage.app",
+      messagingSenderId: "661808262560",
+      appId: "1:661808262560:web:413e036d53b19ea3c108c5",
+      measurementId: "G-FR4LMZ630Q"
+    };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
@@ -835,33 +815,22 @@ const firebaseConfig = {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
-    } catch (e) {
-        console.error("Firebase Init Error", e);
-        alert("Firebase 設定錯誤，請檢查 Config。");
-    }
+    } catch (e) { console.error(e); alert("Firebase 設定錯誤"); }
 
     let currentUser = null;
     let data = { roster: [], assignments: [], teachers: [], questSettings: {}, attendance: {} }; 
-    let lastDeletedItem = null; 
-    
     const defaultData = {
         roster: [ { no: 1, name: "勇者A" }, { no: 2, name: "法師B" }, { no: 3, name: "弓手C" } ],
-        assignments: [],
-        teachers: ["公會長"],
-        questSettings: {
-            "國語": ["國語習作", "國語作業簿", "圈詞", "生字簿", "閱讀測驗", "國語考卷"],
-            "數學": ["數學習作", "數學作業簿", "數學考卷訂正", "數課練習題", "計算練習"],
-            "生活": ["生活習作", "繪圖日記", "觀察紀錄", "學習單"],
-            "英文": ["英文習作", "字母練習", "單字抄寫", "聽力練習"]
-        },
+        assignments: [], teachers: ["公會長"],
+        questSettings: { "國語": ["國語習作", "國語考卷"], "數學": ["數學習作", "數學考卷"] },
         attendance: {} 
     };
 
     const loginOverlay = document.getElementById('loginOverlay');
     const mainApp = document.getElementById('mainApp');
-    const btnLogin = document.getElementById('btnLogin');
-    
-    btnLogin.addEventListener('click', () => {
+    const APP_SCALE = 1.25; // 修正縮放常數為 1.25
+
+    document.getElementById('btnLogin').addEventListener('click', () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider).catch(error => alert("登入失敗：" + error.message));
     });
@@ -876,8 +845,8 @@ const firebaseConfig = {
             loginOverlay.style.display = 'none';
             mainApp.style.display = 'flex';
             mainApp.style.flexDirection = 'column';
-            const userName = user.email.split('@')[0];
-            document.getElementById('userEmailDisplay').innerHTML = `<i class="bi bi-person-circle"></i> ${userName}`;
+            const emailDisp = document.getElementById('userEmailDisplay');
+            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> ${user.email.split('@')[0]}`;
             initApp();
         } else {
             loginOverlay.style.display = 'flex';
@@ -888,15 +857,15 @@ const firebaseConfig = {
     async function loadDataFromFirebase() {
         if (!currentUser) return;
         updateSaveStatus('saving', '讀取中...');
-        
         try {
             const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
             const docSnap = await getDoc(docRef);
-
             if (docSnap.exists()) {
                 data = docSnap.data();
                 if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
-                if(!data.attendance) data.attendance = {}; // 防呆
+                if(!data.attendance) data.attendance = {};
+                // 🔥 Critical Fix: Ensure assignments array exists
+                if(!data.assignments) data.assignments = [];
             } else {
                 data = JSON.parse(JSON.stringify(defaultData));
                 await setDoc(docRef, data);
@@ -905,229 +874,124 @@ const firebaseConfig = {
             updateSaveStatus('success', '讀取完成');
             checkAttendanceReminder();
         } catch (error) {
-            console.error("Load Error:", error);
-            updateSaveStatus('error', '讀取失敗');
+            console.log("切換至離線模式");
+            if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData));
+            onDataLoaded();
+            updateSaveStatus('error', '連線失敗(離線模式)');
         }
     }
 
-    const saveStatusIndicator = document.getElementById('saveStatusIndicator');
     let saveTimeout = null;
-
-    async function saveDataToFirebase() {
-        if (!currentUser) return;
-        updateSaveStatus('saving');
-        try {
-            const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
-            await setDoc(docRef, data);
-            updateSaveStatus('success');
-        } catch (e) {
-            console.error("Save Error:", e);
-            updateSaveStatus('error', '儲存失敗');
-        }
-    }
-
     function triggerAutoSave() {
         clearTimeout(saveTimeout);
         updateSaveStatus('pending');
-        saveTimeout = setTimeout(saveDataToFirebase, 1500); 
+        saveTimeout = setTimeout(async () => {
+            if (!currentUser) return;
+            try {
+                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data);
+                updateSaveStatus('success');
+            } catch (e) { updateSaveStatus('error', '儲存失敗'); }
+        }, 1500); 
     }
 
     function updateSaveStatus(status, message = '') {
-        let html = '';
-        if (status === 'pending') html = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
-        else if (status === 'saving') html = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
-        else if (status === 'success') html = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
-        else html = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
-        saveStatusIndicator.innerHTML = html;
+        const indicator = document.getElementById('saveStatusIndicator');
+        if(!indicator) return;
+        if (status === 'pending') indicator.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
+        else if (status === 'saving') indicator.innerHTML = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
+        else if (status === 'success') indicator.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
+        else indicator.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
     }
 
     let currentAssignmentId = null;
-    let sortState = { key: 'date', direction: 'desc' };
-    let currentFilter = { teacher: 'all', subject: 'all', date: '' }; 
+    let currentFilter = { teacher: 'all', subject: 'all' }; 
     let newAssignmentAssignedIndices = []; 
     let isBatchMode = false;
     let tempQuestSettings = {};
-    
-    // 🌟 點名系統變數：避免直接汙染 data.attendance
     let tempAttendanceData = []; 
+    let targetAssignmentIdToDelete = null; 
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function resumeAudio() { if (audioCtx.state === 'suspended') audioCtx.resume(); }
 
     function playSuccessSound() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.5);
+        resumeAudio();
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + 0.5);
     }
 
     function playAlarmSound() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        resumeAudio();
         const now = audioCtx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 523.25];
-        notes.forEach((freq, i) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, now + i * 0.4);
-            gain.gain.setValueAtTime(0.2, now + i * 0.4);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.4 + 0.3);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(now + i * 0.4);
-            osc.stop(now + i * 0.4 + 0.4);
+        [523, 659, 783, 1046, 783, 659, 523].forEach((f, i) => {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.frequency.setValueAtTime(f, now + i * 0.4);
+            g.gain.setValueAtTime(0.2, now + i * 0.4); g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.4 + 0.3);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(now + i * 0.4); o.stop(now + i * 0.4 + 0.4);
         });
-        
-        setTimeout(() => {
-             notes.forEach((freq, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.4);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.4);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.4 + 0.3);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(audioCtx.currentTime + i * 0.4);
-                osc.stop(audioCtx.currentTime + i * 0.4 + 0.4);
-            });
-        }, 3000);
-    }
-
-    function playTickSound() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.05);
     }
 
     function confetti() {
-        const canvas = document.getElementById('confettiCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        const pieces = [];
-        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
-        
-        for (let i = 0; i < 300; i++) {
-            pieces.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height - canvas.height,
-                w: Math.random() * 10 + 5,
-                h: Math.random() * 10 + 5,
-                c: colors[Math.floor(Math.random() * colors.length)],
-                v: Math.random() * 5 + 2,
-                r: Math.random() * 360
-            });
-        }
-        
+        const c = document.getElementById('confettiCanvas'); 
+        if(!c) return;
+        const ctx = c.getContext('2d');
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        const pieces = Array.from({length:300}).map(()=>({
+            x: Math.random()*c.width, y: Math.random()*c.height-c.height, w: Math.random()*10+5, h: Math.random()*10+5, 
+            c: `hsl(${Math.random()*360}, 100%, 50%)`, v: Math.random()*5+2, r: Math.random()*360
+        }));
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0,0,c.width,c.height);
             let active = false;
-            pieces.forEach(p => {
-                p.y += p.v;
-                p.r += p.v;
-                if (p.y < canvas.height) active = true;
-                
-                ctx.save();
-                ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
-                ctx.rotate(p.r * Math.PI / 180);
-                ctx.fillStyle = p.c;
-                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-                ctx.restore();
+            pieces.forEach(p=>{
+                p.y+=p.v; p.r+=p.v; if(p.y<c.height) active=true;
+                ctx.save(); ctx.translate(p.x+p.w/2,p.y+p.h/2); ctx.rotate(p.r*Math.PI/180);
+                ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
             });
-            if (active) requestAnimationFrame(draw);
-            else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(active) requestAnimationFrame(draw); else ctx.clearRect(0,0,c.width,c.height);
         }
         draw();
     }
 
-    function showToast(message, actionText, actionCallback) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = 'toast-msg';
-        
-        let html = `<span>${message}</span>`;
-        if (actionText && actionCallback) {
-            html += `<button id="toastActionBtn">${actionText}</button>`;
-        }
-        toast.innerHTML = html;
-        container.appendChild(toast);
-        
-        let timeout;
-        
-        if (actionText && actionCallback) {
-            const btn = toast.querySelector('#toastActionBtn');
-            btn.addEventListener('click', () => {
-                actionCallback();
-                clearTimeout(timeout);
-                toast.remove();
-            });
-            timeout = setTimeout(() => { toast.remove(); }, 5500); 
-        } else {
-            timeout = setTimeout(() => { toast.remove(); }, 3000);
-        }
+    function showToast(msg, actText, actCb) {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div'); t.className = 'toast-msg';
+        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button>${actText}</button>` : '');
+        c.appendChild(t);
+        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
+        setTimeout(()=>t.remove(), 3000);
     }
 
-    const views = document.querySelectorAll('.view');
-    const statusPicker = document.getElementById('statusPicker');
-    let statusPickerTarget = { index: null, assignmentId: null, source: null };
-    const customTooltip = document.getElementById('customTooltip'); 
-
-function initApp() {
-        const savedTheme = localStorage.getItem('homeworkSystemTheme') || 'light';
-        const savedColorTheme = localStorage.getItem('homeworkSystemColorTheme') || 'guild';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.documentElement.setAttribute('data-color-theme', savedColorTheme);
-        document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
-        
-        document.querySelectorAll('.theme-option').forEach(el => {
-            el.classList.toggle('active', el.dataset.theme === savedColorTheme);
-        });
+    function initApp() {
+        const theme = localStorage.getItem('hwTheme') || 'light';
+        const color = localStorage.getItem('hwColor') || 'guild';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-color-theme', color);
+        document.getElementById('darkModeToggle').checked = theme === 'dark';
+        document.querySelectorAll('.theme-option').forEach(el => el.classList.toggle('active', el.dataset.theme === color));
         
         switchView('view-dashboard');
         loadDataFromFirebase();
         
-        // 🕒 修正：時鐘改用台北時區
         setInterval(() => {
-            const nowTime = new Date().toLocaleTimeString('zh-TW', { 
-                timeZone: 'Asia/Taipei', 
-                hour12: false 
-            });
-            document.getElementById('tbClock').innerText = nowTime;
+             const clk = document.getElementById('tbClock');
+             if(clk) clk.innerText = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
         }, 1000);
-        
-        // 📅 修正：點名日期預設為台北時間
         document.getElementById('attDatePicker').value = getTaipeiDateString();
     }
 
     function checkAttendanceReminder() {
         const today = new Date().toISOString().split('T')[0];
-        if (!data.attendance[today]) {
-            setTimeout(() => {
-                document.getElementById('attendanceReminderModal').classList.add('show');
-            }, 1000); 
-        }
+        if (data.attendance && !data.attendance[today]) setTimeout(() => document.getElementById('attendanceReminderModal').classList.add('show'), 1000);
     }
-
+    
     document.getElementById('btnGoToAttendance').addEventListener('click', () => {
         document.getElementById('attendanceReminderModal').classList.remove('show');
-        // 切換並載入當日
         document.getElementById('adminProfileModal').classList.add('show');
     });
 
@@ -1139,567 +1003,192 @@ function initApp() {
     }
 
     function renderAll() {
-        const currentView = document.querySelector('.view.show');
-        const viewId = currentView ? currentView.id : 'view-dashboard';
-        if (viewId === 'view-dashboard') renderDashboard();
-        else if (viewId === 'view-detail') renderDetail(currentAssignmentId);
-        else if (viewId === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
-        else if (viewId === 'view-student-status') renderStudentStatus();
-        else if (viewId === 'view-attendance') initAttendanceView(); // 🌟 改用 init
+        const v = document.querySelector('.view.show');
+        if(!v) return;
+        if (v.id === 'view-dashboard') renderDashboard();
+        else if (v.id === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
+        else if (v.id === 'view-student-status') renderStudentStatus();
+        else if (v.id === 'view-attendance') initAttendanceView();
     }
 
-    function switchView(targetId) {
-        views.forEach(view => {
-             if(view.id === targetId) view.classList.add('show');
-             else view.classList.remove('show');
-        });
-        if (targetId === 'view-dashboard') renderDashboard(); 
-        if (targetId === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
-        if (targetId === 'view-student-status') renderStudentStatus();
-        if (targetId === 'view-attendance') initAttendanceView(); // 🌟 改用 init
+    function switchView(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+        const target = document.getElementById(id);
+        if(target) {
+            target.classList.add('show');
+            renderAll();
+        }
     }
 
     function populateTeacherDropdowns() {
-        const teachers = data.teachers || [];
-        const ipSelect = document.getElementById('ipTeacherSelect');
-        const filter = document.getElementById('teacherFilter');
-        ipSelect.innerHTML = teachers.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>';
-        filter.innerHTML = '<option value="all">所有公會長</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
-        filter.value = currentFilter.teacher;
-
-        if(ipSelect.value === 'custom') {
-            document.getElementById('ipTeacherCustom').style.display = 'block';
-        } else {
-            document.getElementById('ipTeacherCustom').style.display = 'none';
+        const ts = data.teachers || [];
+        const sel = document.getElementById('ipTeacherSelect');
+        const fil = document.getElementById('teacherFilter');
+        if(sel) {
+            sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>';
+            document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none';
+        }
+        if(fil) {
+            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join('');
+            fil.value = currentFilter.teacher;
         }
     }
     
-        function resetNewAssignmentState() {
+    function resetNewAssignmentState() {
         document.getElementById('ipTitle').value = '';
         document.getElementById('selSubject').value = '';
-        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用任務...</option>';
-        
-        // 📅 修正：發布日期預設為台北時間
+        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
         document.getElementById('ipDate').value = getTaipeiDateString();
-        
         newAssignmentAssignedIndices = [];
         document.getElementById('assignStatusText').innerText = "全體冒險者";
-        
-        const ipSelect = document.getElementById('ipTeacherSelect');
-        if(data.teachers && data.teachers.length > 0) {
-            ipSelect.value = data.teachers[0];
-            document.getElementById('ipTeacherCustom').style.display = 'none';
-        } else {
-            ipSelect.value = 'custom';
-            document.getElementById('ipTeacherCustom').style.display = 'block';
-        }
+        const sel = document.getElementById('ipTeacherSelect');
+        if(sel && data.teachers && data.teachers.length > 0) { sel.value = data.teachers[0]; document.getElementById('ipTeacherCustom').style.display = 'none'; }
     }
 
     function updateSubjectDropdown() {
         const db = data.questSettings || defaultData.questSettings;
-        const selSubject = document.getElementById('selSubject');
-        const subjectFilter = document.getElementById('subjectFilter');
+        const sel = document.getElementById('selSubject');
+        const fil = document.getElementById('subjectFilter');
+        if(sel) sel.innerHTML = '<option value="">📂 科目...</option>';
+        if(fil) fil.innerHTML = '<option value="all">📚 所有科目</option>';
+        if(db && sel && fil) Object.keys(db).forEach(s => { sel.add(new Option(s, s)); fil.add(new Option(s, s)); });
+    }
 
-        selSubject.innerHTML = '<option value="">📂 科目...</option>';
-        subjectFilter.innerHTML = '<option value="all">📚 所有科目</option>';
-        if(db) {
-            Object.keys(db).forEach(s => {
-                selSubject.add(new Option(s, s));
-                subjectFilter.add(new Option(s, s));
-            });
+    // Dashboard with Tooltip Logic (優化：只顯示座號，不顯示姓名，並配合縮放修正座標)
+    const toolTipEl = document.getElementById('assignmentTooltip');
+    function showAssignmentTooltip(e, a) {
+        if (!a) return;
+        const indices = a.assignedIndices || 'all';
+        const missing = [];
+        const redo = [];
+        
+        data.roster.forEach((s, i) => {
+            if (indices === 'all' || indices.includes(i)) {
+                const status = (a.statuses || [])[i] || 0;
+                if (status === 0) missing.push(s.no);
+                if (status === 2) redo.push(s.no);
+            }
+        });
+
+        if (missing.length === 0 && redo.length === 0) return;
+
+        let html = `<h4>${a.title}</h4><ul>`;
+        if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
+        if (missing.length) html += `<li class="t-miss">未回報：${missing.join(', ')}</li>`;
+        html += `</ul>`;
+        
+        toolTipEl.innerHTML = html;
+        toolTipEl.style.display = 'block';
+        moveAssignmentTooltip(e);
+    }
+
+    function moveAssignmentTooltip(e) {
+        // 修正座標以配合 zoom: 1.25
+        const x = (e.clientX + 15) / APP_SCALE;
+        const y = (e.clientY + 15) / APP_SCALE;
+        
+        toolTipEl.style.top = y + 'px';
+        toolTipEl.style.left = x + 'px';
+        
+        const rect = toolTipEl.getBoundingClientRect();
+        // 簡單邊界檢查 (使用邏輯寬度檢查)
+        if((x * APP_SCALE + rect.width) > window.innerWidth) {
+             toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
+        }
+        if((y * APP_SCALE + rect.height) > window.innerHeight) {
+             toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
         }
     }
 
-    function filterAssignments(assignments) {
-        return assignments.filter(a => {
-            if (a.archived) return false;
-            const matchTeacher = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
-            const matchSubject = currentFilter.subject === 'all' || 
-                                 (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject));
-            const matchDate = !currentFilter.date || a.date === currentFilter.date;
-            return matchTeacher && matchSubject && matchDate;
-        });
+    function hideAssignmentTooltip() {
+        toolTipEl.style.display = 'none';
     }
 
     function renderDashboard() {
-        const list = document.getElementById('assignmentList');
-        let assignmentsToRender = filterAssignments([...data.assignments]);
+        const list = document.getElementById('sideAssignmentList');
+        const empty = document.getElementById('dashEmptyState');
+        const detail = document.getElementById('dashDetailPanel');
         
-        assignmentsToRender.sort((a, b) => {
-            const aVal = a[sortState.key]; const bVal = b[sortState.key];
-            if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
+        if(!list) return;
 
-        document.querySelectorAll('#assignmentTable thead th[data-sort]').forEach(th => {
-            const icon = th.querySelector('i');
-            th.style.color = 'var(--text-main)'; icon.style.opacity = '0.3';
-            if (th.dataset.sort === sortState.key) {
-                icon.className = sortState.direction === 'asc' ? 'bi bi-sort-up' : 'bi bi-sort-down';
-                th.style.color = 'var(--primary)'; icon.style.opacity = '1';
-            } else { icon.className = 'bi bi-arrow-down-up'; }
-        });
+        let assignments = (data.assignments || []).filter(a => {
+            if (a.archived) return false;
+            return (currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher) &&
+                   (currentFilter.subject === 'all' || (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject)));
+        }).sort((a,b) => a.date < b.date ? 1 : -1);
 
         list.innerHTML = '';
-        if (assignmentsToRender.length === 0) {
-            list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--muted);">目前沒有委託紀錄。</td></tr>';
+        if (assignments.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">沒有符合的委託</div>';
+            empty.style.display = 'flex'; detail.classList.remove('show');
             return;
         }
 
-        assignmentsToRender.forEach(a => {
+        assignments.forEach(a => {
+            const el = document.createElement('div');
+            el.className = 'side-item' + (currentAssignmentId === a.id ? ' active' : '');
             const indices = a.assignedIndices || 'all';
             const total = indices === 'all' ? data.roster.length : indices.length;
-            const statuses = a.statuses || [];
-            const submitted = statuses.filter((s, i) => s >= 1 && (indices === 'all' || indices.includes(i))).length;
-            const completed = statuses.filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
-            const progress = total > 0 ? (completed / total) * 100 : 0;
-            
-            const pending = [];
-            const redo = [];
-            data.roster.forEach((s, i) => {
-                if ((indices === 'all' || indices.includes(i))) {
-                    if (statuses[i] === 0) pending.push(s.no);
-                    if (statuses[i] === 2) redo.push(s.no);
-                }
-            });
-            
-            let tooltip = '';
-            if (pending.length > 0) tooltip += `回：${pending.join(', ')}`;
-            if (redo.length > 0) {
-                if(tooltip) tooltip += '<br>';
-                tooltip += `重：${redo.join(', ')}`;
-            }
-            if(!tooltip) tooltip = '🎉 全員完成';
+            const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
 
-            const tr = document.createElement('tr');
-            tr.dataset.id = a.id;
-            tr.innerHTML = `
-                <td>${a.date}</td>
-                <td>${a.title}</td>
-                <td>${a.teacher}</td>
-                <td class="has-tooltip" data-tooltip="${tooltip}" style="cursor:help;">${submitted}/${total}</td>
-                <td>
-                    <div class="has-tooltip" data-tooltip="${tooltip}" style="display:flex; align-items:center; gap:8px;">
-                        <progress class="progress-success" value="${progress}" max="100"></progress>
-                        <span>${completed}/${total}</span>
+            el.innerHTML = `
+                <div class="side-item-title">${a.title}</div>
+                <div class="side-item-meta muted"><span>${a.date}</span><span>${a.teacher}</span></div>
+                <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
+                    <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
+                        <div style="width:${progress}%; height:100%; background:${color}; transition: width 0.5s;"></div>
                     </div>
-                </td>
-                <td><button class="btn chest sm btn-delete" data-id="${a.id}"><i class="bi bi-box-seam-fill"></i></button></td>
+                    <span>${completed}/${total}</span>
+                </div>
             `;
-            list.appendChild(tr);
+            el.addEventListener('click', () => { currentAssignmentId = a.id; renderDashboard(); renderDashboardDetail(a.id); });
+            // Add tooltip listeners
+            el.addEventListener('mouseenter', (e) => showAssignmentTooltip(e, a));
+            el.addEventListener('mousemove', moveAssignmentTooltip);
+            el.addEventListener('mouseleave', hideAssignmentTooltip);
+            
+            list.appendChild(el);
         });
+
+        if (currentAssignmentId && assignments.find(x=>x.id==currentAssignmentId)) renderDashboardDetail(currentAssignmentId);
+        else { empty.style.display = 'flex'; detail.classList.remove('show'); }
     }
 
-    function renderDetail(id) {
+    function renderDashboardDetail(id) {
         const a = data.assignments.find(x => x.id == id);
-        if (!a) { switchView('view-dashboard'); return; }
-        currentAssignmentId = id;
-        document.getElementById('detailTitle').innerHTML = `<i class="bi bi-scroll-fill"></i> ${a.title} <span class="badge">${a.date}</span> <span class="badge">${a.teacher}</span>`;
-        const grid = document.getElementById('gridContainer');
+        if (!a) return;
+        document.getElementById('dashEmptyState').style.display = 'none';
+        document.getElementById('dashDetailPanel').classList.add('show');
+        document.getElementById('dashDetailTitle').innerHTML = `<span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> ${a.title}`;
+
+        const grid = document.getElementById('dashGridContainer');
         grid.innerHTML = '';
         const indices = a.assignedIndices || 'all';
+        
         data.roster.forEach((s, i) => {
             const isAssigned = indices === 'all' || indices.includes(i);
             const status = (a.statuses || [])[i] || 0;
             const div = document.createElement('div');
             div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
-            div.innerHTML = `<div class="seat s${status}" data-index="${i}">${s.no}</div><div class="seatName"><span class="seatNo">${s.no}.</span> ${s.name}</div>`;
+            div.innerHTML = `<div class="seat s${status}">${s.no}</div><div class="seatName">${s.name}</div>`;
+            if(isAssigned) {
+                div.querySelector('.seat').onclick = () => toggleStatus(id, i);
+            }
             grid.appendChild(div);
         });
-    }
 
-    function checkCompletionAndCelebrate(assignmentId) {
-        const a = data.assignments.find(i => i.id == assignmentId);
-        if(!a) return;
-        const indices = a.assignedIndices || 'all';
-        const total = indices === 'all' ? data.roster.length : indices.length;
-        const completed = a.statuses.filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
-        
-        if (total > 0 && completed === total) {
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-            playAlarmSound(); 
-        }
-    }
-
-    // 🌟 點名系統：載入資料 (只在切換日期時執行)
-    function initAttendanceView() {
-        const dateInput = document.getElementById('attDatePicker');
-        const selectedDate = dateInput.value;
-        const btnSave = document.getElementById('btnSaveAttendance');
-        
-        if (data.attendance[selectedDate]) {
-            tempAttendanceData = JSON.parse(JSON.stringify(data.attendance[selectedDate]));
-            btnSave.innerHTML = `<i class="bi bi-arrow-repeat"></i> 更新點名紀錄`; // 若已存在改為更新
-        } else {
-            tempAttendanceData = data.roster.map(() => ({ status: 0, note: '' }));
-            btnSave.innerHTML = `<i class="bi bi-check-lg"></i> 確認送出點名單`;
-        }
-        
-        renderAttendanceUI();
-    }
-
-    // 🌟 點名系統：渲染 UI (不讀取 DB，只根據 tempAttendanceData)
-    function renderAttendanceUI() {
-        const listDiv = document.getElementById('attendanceList');
-        
-        // 🌟 更新統計：0:出席, 1:遲到, 2:早退, 3:病假, 4:公假, 5:事假
-        const stats = [0,0,0,0,0,0]; 
-        tempAttendanceData.forEach(d => { if(d.status >=0 && d.status <=5) stats[d.status]++; });
-        document.getElementById('statPresent').innerText = stats[0];
-        document.getElementById('statLate').innerText = stats[1];
-        document.getElementById('statEarly').innerText = stats[2];
-        document.getElementById('statSick').innerText = stats[3];
-        document.getElementById('statOfficial').innerText = stats[4];
-        document.getElementById('statPersonal').innerText = stats[5]; // 🌟
-
-        listDiv.innerHTML = '';
-        data.roster.forEach((student, index) => {
-            const record = tempAttendanceData[index];
-            const div = document.createElement('div');
-            div.className = 'att-card';
-            
-            let btnsHtml = '';
-            // 🌟 新增事假按鈕
-            const statuses = [
-                {id:0, label:'出席'}, {id:1, label:'遲到'}, {id:2, label:'早退'}, {id:3, label:'病假'}, {id:5, label:'事假'}, {id:4, label:'公假'}
-            ];
-            
-            statuses.forEach(s => {
-                const isActive = record.status === s.id ? 'active' : '';
-                btnsHtml += `<button class="att-btn ${isActive}" data-status="${s.id}" data-idx="${index}">${s.label}</button>`;
-            });
-
-            const noteHtml = record.note ? `<span class="att-note">${record.note}</span>` : '';
-
-            div.innerHTML = `
-                <div class="att-no">${student.no}</div>
-                <div class="att-name">${student.name} ${noteHtml}</div>
-                <div class="att-status-group" style="flex-wrap:wrap;">${btnsHtml}</div>
-            `;
-            listDiv.appendChild(div);
-        });
-    }
-
-    // 🌟 點名互動事件 (只更新 tempAttendanceData 並重繪)
-    document.getElementById('attendanceList').addEventListener('click', (e) => {
-        if(e.target.classList.contains('att-btn')) {
-            const idx = parseInt(e.target.dataset.idx);
-            const status = parseInt(e.target.dataset.status);
-            
-            // 如果是早退，詢問時間
-            let note = tempAttendanceData[idx].note; // 保留原備註
-            if (status === 2) { 
-                // 🕒 優化：預設時間顯示當下台北時間
-                const defaultTime = getTaipeiTimeString();
-                const time = prompt("請輸入早退時間 (例如 14:00)：", defaultTime);
-                if (time) note = `早退 ${time}`;
-            } else {
-                note = ''; // 切換到其他狀態清空備註
-            }
-
-            tempAttendanceData[idx] = { status, note };
-            renderAttendanceUI(); // ⚡ 只重繪，不重讀
-        }
-    });
-
-    // 日期改變 -> 重新載入資料
-    document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
-
-    // 儲存按鈕
-    document.getElementById('btnSaveAttendance').addEventListener('click', () => {
-        const date = document.getElementById('attDatePicker').value;
-        data.attendance[date] = tempAttendanceData;
-        triggerAutoSave();
-        alert(`已儲存 ${date} 的點名紀錄！`);
-        initAttendanceView(); // 重新整理按鈕狀態
-    });
-
-  // 🌟 匯出點名報表 (修正版：遲到早退算入出席)
-    document.getElementById('btnExportAttendance').addEventListener('click', () => {
-        let csvContent = "\uFEFF";
-        const dates = Object.keys(data.attendance).sort();
-        if (dates.length === 0) { alert("目前沒有任何點名紀錄！"); return; }
-
-        // 標題列
-        csvContent += "座號,姓名,出席總計(含遲/早),遲到次數,早退次數,病假總計,事假總計,公假總計,缺席總計(含假)," + dates.join(",") + "\n";
-        
-        // 狀態文字對照
-        const statusMap = { 0:"✔️", 1:"遲", 2:"早", 3:"病", 4:"公", 5:"事" };
-
-        data.roster.forEach((student, idx) => {
-            let row = `${student.no},${student.name}`;
-            
-            // 統計歸零
-            let counts = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0 };
-            
-            const dateStatuses = dates.map(d => {
-                const record = data.attendance[d][idx];
-                if (!record) return "-";
-                
-                // 累計各狀態
-                if (counts[record.status] !== undefined) counts[record.status]++;
-                
-                let cell = statusMap[record.status] || "?";
-                if (record.status === 2 && record.note) cell += `(${record.note})`;
-                return cell;
-            });
-
-            // 🌟 修正重點：實際出席 = 準時(0) + 遲到(1) + 早退(2)
-            const realPresentCount = counts[0] + counts[1] + counts[2];
-
-            // 計算總缺席 (病假+事假+公假)
-            const totalAbsent = counts[3] + counts[4] + counts[5];
-
-            // 填入修正後的統計數據 (第一欄使用 realPresentCount)
-            row += `,${realPresentCount},${counts[1]},${counts[2]},${counts[3]},${counts[5]},${counts[4]},${totalAbsent},` + dateStatuses.join(",");
-            csvContent += row + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `公會點名報表_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    });
-
-    // 🌟 新增：公會長執務室開啟點名按鈕
-    document.getElementById('btnAdminAttendance').addEventListener('click', () => {
-        document.getElementById('adminProfileModal').classList.remove('show');
-        switchView('view-attendance');
-    });
-
-    // --- (其他原有程式碼) ---
-    function renderStudentStatus() {
-        const container = document.getElementById('studentStatusContainer');
-        const headerTitle = document.getElementById('studentStatusHeaderTitle');
-        const btnToggle = document.getElementById('btnToggleBatchMode');
-        
-        container.innerHTML = '';
-        if(isBatchMode) { 
-            container.classList.add('batch-mode'); 
-            btnToggle.classList.add('warn'); 
-            btnToggle.innerHTML = `<i class="bi bi-x-square"></i> 取消批量模式`;
-            document.getElementById('btnBatchExport').style.display='inline-flex';
-            headerTitle.innerHTML = `<i class="bi bi-check2-square"></i> 請勾選要匯出的對象`;
-        } else { 
-            container.classList.remove('batch-mode'); 
-            btnToggle.classList.remove('warn'); 
-            btnToggle.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
-            document.getElementById('btnBatchExport').style.display='none'; 
-            headerTitle.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者待辦清單`;
-        }
-
-        if (data.roster.length === 0) { container.innerHTML = '<p>無冒險者資料。</p>'; return; }
-
-        const pendingList = [], healingList = [], allClearList = [];
-        data.roster.forEach((s, idx) => {
-            let pCount = 0, tasks = [];
-            data.assignments.forEach(a => {
-                if(a.archived) return;
-                const indices = a.assignedIndices || 'all';
-                if ((indices === 'all' || indices.includes(idx))) {
-                    const status = (a.statuses || [])[idx] || 0;
-                    if (status === 0 || status === 2) {
-                        pCount++;
-                        tasks.push({ id: a.id, title: a.title, status: status });
-                    }
-                }
-            });
-            if (pCount > 0) pendingList.push({ idx, tasks });
-            else allClearList.push(s); 
-            if (pCount >= 5) healingList.push(s);
-        });
-
-        const summaryDiv = document.createElement('div');
-        summaryDiv.style.display='flex'; summaryDiv.style.gap='12px'; summaryDiv.style.flexWrap='wrap'; summaryDiv.style.marginBottom='20px';
-        
-        const successCard = document.createElement('div');
-        successCard.className = 'card'; successCard.style.flex='1'; successCard.style.backgroundColor='#f0fdf4'; successCard.style.border='2px dashed var(--success)';
-        let successHTML = `<h2 style="color:var(--success);"><i class="bi bi-trophy-fill"></i> 討伐成就</h2>`;
-        if (allClearList.length > 0) {
-            successHTML += `<div style="display:flex;gap:8px;flex-wrap:wrap;">` + allClearList.map(s => `<div class="seat s3" style="width:40px;height:40px;font-size:14px;cursor:help;" title="${s.name}">${s.no}</div>`).join('') + `</div>`;
-        } else { successHTML += `<p style="color:var(--muted);font-weight:bold;">目前無人達成全清空...</p>`; }
-        successCard.innerHTML = successHTML;
-        summaryDiv.appendChild(successCard);
-
-        const healCard = document.createElement('div');
-        healCard.className = 'card'; healCard.style.flex='1'; healCard.style.backgroundColor='#fff0f0'; healCard.style.border='2px dashed var(--danger)';
-        let healHTML = `<h2 style="color:var(--danger);"><i class="bi bi-heart-pulse"></i> 需補血成員</h2>`;
-        if (healingList.length > 0) {
-            healHTML += `<div style="display:flex;gap:8px;flex-wrap:wrap;">` + healingList.map(s => `<div class="seat" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5;width:40px;height:40px;font-size:14px;cursor:help;" title="${s.name}">${s.no}</div>`).join('') + `</div>`;
-        } else { healHTML += `<p style="color:var(--success);font-weight:bold;">目前沒有成員需要急救！</p>`; }
-        healCard.innerHTML = healHTML;
-        summaryDiv.appendChild(healCard);
-        
-        container.appendChild(summaryDiv);
-
-        if (pendingList.length > 0) {
-            const grid = document.createElement('div'); grid.className = 'student-status-grid';
-            pendingList.forEach(item => {
-                const s = data.roster[item.idx];
-                const card = document.createElement('div'); card.className = 'card';
-                let listHTML = `<ul class="student-status-list">`;
-                item.tasks.forEach(t => {
-                    const stText = t.status === 0 ? '未回報' : '再挑戰';
-                    const stClass = t.status === 0 ? 'p-gray' : 'p-orange';
-                    listHTML += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${stClass}">${stText}</span></li>`;
-                });
-                listHTML += `</ul>`;
-                const checkboxHTML = isBatchMode 
-                    ? `<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}"> ` 
-                    : '';
-                
-                card.innerHTML = `<div class="student-card-header">
-                    <h2>
-                        ${checkboxHTML}
-                        <i class="bi bi-person"></i> <span style="color:var(--danger);">${s.no}.</span> ${s.name}
-                    </h2>
-                    <button class="btn sm ghost btn-print-single" data-sidx="${item.idx}" title="匯出此紀錄"><i class="bi bi-printer"></i></button>
-                </div>${listHTML}`;
-                grid.appendChild(card);
-            });
-            container.appendChild(grid);
-        } else {
-            container.innerHTML += `<div style="text-align:center;font-size:20px;margin-top:40px;">🎉 傳說誕生！全體冒險者都討伐成功了！ 🎉</div>`;
-        }
-    }
-
-    function renderRosterEditor() {
-        const div = document.getElementById('rosterEditor');
-        div.innerHTML = '';
-        data.roster.forEach(s => {
-            const item = document.createElement('div'); item.className = 'roster-item';
-            item.innerHTML = `<input type="number" value="${s.no}" class="roster-no-input" style="width:60px;"><input type="text" value="${s.name}" class="roster-name-input" style="flex:1;">`;
-            div.appendChild(item);
-        });
-    }
-    
-    function renderTeacherEditor() {
-        const div = document.getElementById('teacherEditor');
-        div.innerHTML = '';
-        data.teachers.forEach(t => {
-            const item = document.createElement('div'); item.className = 'teacher-item';
-            item.innerHTML = `<input type="text" value="${t}" class="teacher-name-input" style="flex:1;"><button class="btn warn sm btn-del-teacher" data-name="${t}"><i class="bi bi-trash3"></i></button>`;
-            div.appendChild(item);
-        });
-    }
-
-    // (其餘 Event Handlers 保持原樣，僅增加 Nav Button Event)
-    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster'].forEach(id => {
-        document.getElementById(id).addEventListener('click', (e) => {
-            const viewMap = {
-                'btnNavDashboard':'view-dashboard', 
-                'btnNavStudentStatus':'view-student-status', 
-                'btnNavRoster':'view-roster'
-            };
-            switchView(viewMap[e.currentTarget.id]);
-        });
-    });
-
-    document.getElementById('btnRefreshData').addEventListener('click', () => {
-        if(confirm("確定要重新讀取資料嗎？未儲存的變更將會遺失。")) {
-            loadDataFromFirebase();
-        }
-    });
-
-    document.getElementById('tabBtnStudents').addEventListener('click', () => {
-        document.getElementById('tabBtnStudents').classList.add('active');
-        document.getElementById('tabBtnTeachers').classList.remove('active');
-        document.getElementById('roster-content-students').classList.add('show');
-        document.getElementById('roster-content-teachers').classList.remove('show');
-    });
-    
-    document.getElementById('tabBtnTeachers').addEventListener('click', () => {
-        document.getElementById('tabBtnTeachers').classList.add('active');
-        document.getElementById('tabBtnStudents').classList.remove('active');
-        document.getElementById('roster-content-teachers').classList.add('show');
-        document.getElementById('roster-content-students').classList.remove('show');
-    });
-
-    document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
-    document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
-
-    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => { document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none'; });
-    document.getElementById('selSubject').addEventListener('change', (e) => {
-        const selTask = document.getElementById('selPresetTask'); selTask.innerHTML = '<option value="">📜 常用任務...</option>';
-        const db = data.questSettings || defaultData.questSettings;
-        if(e.target.value && db[e.target.value]) db[e.target.value].forEach(t => selTask.add(new Option(t, t)));
-    });
-    document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
-
-    document.getElementById('btnCreate').addEventListener('click', () => {
-        let teacher = document.getElementById('ipTeacherSelect').value;
-        if(teacher === 'custom') teacher = document.getElementById('ipTeacherCustom').value.trim();
-        const title = document.getElementById('ipTitle').value.trim();
-        const subject = document.getElementById('selSubject').value;
-        const date = document.getElementById('ipDate').value;
-        if(!teacher || !title || !date) { alert("請填寫完整！"); return; }
-        
-        if(!data.teachers.includes(teacher)) data.teachers.push(teacher);
-        const isAll = newAssignmentAssignedIndices.length === data.roster.length || newAssignmentAssignedIndices.length === 0;
-        
-        const newA = { 
-            id: Date.now(), 
-            teacher, 
-            title, 
-            subject,
-            date, 
-            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, 
-            statuses: Array(data.roster.length).fill(0) 
+        document.getElementById('btnDeleteCurrent').onclick = () => {
+            targetAssignmentIdToDelete = id;
+            document.getElementById('deleteTargetTitle').innerText = a.title;
+            document.getElementById('deleteChoiceModal').classList.add('show');
         };
-        data.assignments.push(newA);
-        triggerAutoSave(); 
-        
-        resetNewAssignmentState();
-        renderAll();
-    });
+    }
 
-    document.getElementById('btnMarkAllYellow').addEventListener('click', () => {
-        const a = data.assignments.find(i => i.id == currentAssignmentId);
-        if(!a) return;
-        if(confirm("確定全體標記為已回報？")) {
-            const indices = a.assignedIndices || 'all';
-            for(let i=0; i<data.roster.length; i++) {
-                if(indices === 'all' || indices.includes(i)) a.statuses[i] = 1;
-            }
-            triggerAutoSave();
-            renderDetail(currentAssignmentId);
-        }
-    });
-
-    document.getElementById('btnMarkAllOrange').addEventListener('click', () => {
-        const a = data.assignments.find(i => i.id == currentAssignmentId);
-        if(!a) return;
-        if(confirm("確定全體標記為再挑戰？")) {
-            const indices = a.assignedIndices || 'all';
-            for(let i=0; i<data.roster.length; i++) {
-                if(indices === 'all' || indices.includes(i)) a.statuses[i] = 2;
-            }
-            triggerAutoSave();
-            renderDetail(currentAssignmentId);
-        }
-    });
-    
-    document.getElementById('rangeSize').addEventListener('input', (e) => {
-        const sz = e.target.value;
-        document.documentElement.style.setProperty('--seat', `${sz}px`);
-        document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(sz * 0.3))}px`);
-    });
-
-    document.getElementById('gridContainer').addEventListener('click', (e) => {
-        const seat = e.target.closest('.seat');
-        if(!seat) return;
-        const idx = parseInt(seat.dataset.index);
-        const a = data.assignments.find(i => i.id == currentAssignmentId);
+    function toggleStatus(aid, idx) {
+        resumeAudio();
+        const a = data.assignments.find(x => x.id == aid);
         if(!a) return;
         let s = (a.statuses || [])[idx] || 0;
         s = (s + 1) % 4;
@@ -1710,654 +1199,689 @@ function initApp() {
         const indices = a.assignedIndices || 'all';
         let allCompleted = true;
         for(let i=0; i<data.roster.length; i++) {
-            if(indices === 'all' || indices.includes(i)) {
-                if (a.statuses[i] !== 3) allCompleted = false;
-            }
+             if(indices === 'all' || indices.includes(i)) { if(a.statuses[i] !== 3) allCompleted = false; }
         }
-        if (allCompleted) confetti();
-
+        if(allCompleted) confetti();
         triggerAutoSave();
-        renderDetail(currentAssignmentId);
-        renderDashboard();
+        renderDashboardDetail(aid);
+        setTimeout(renderDashboard, 500);
+    }
+
+    // 點名
+    function initAttendanceView() {
+        const date = document.getElementById('attDatePicker').value;
+        const btn = document.getElementById('btnSaveAttendance');
+        if (data.attendance[date]) {
+            tempAttendanceData = JSON.parse(JSON.stringify(data.attendance[date]));
+            btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 更新點名紀錄`;
+        } else {
+            tempAttendanceData = data.roster.map(() => ({ status: 0, note: '' }));
+            btn.innerHTML = `<i class="bi bi-check-lg"></i> 確認送出點名單`;
+        }
+        renderAttendanceUI();
+    }
+
+    function renderAttendanceUI() {
+        const list = document.getElementById('attendanceList');
+        const stats = [0,0,0,0,0,0];
+        tempAttendanceData.forEach(d => { if(d.status >=0 && d.status <=5) stats[d.status]++; });
+        document.getElementById('statPresent').innerText = stats[0];
+        document.getElementById('statLate').innerText = stats[1];
+        document.getElementById('statEarly').innerText = stats[2];
+        document.getElementById('statSick').innerText = stats[3];
+        document.getElementById('statOfficial').innerText = stats[4];
+        document.getElementById('statPersonal').innerText = stats[5];
+
+        list.innerHTML = '';
+        data.roster.forEach((s, i) => {
+            const r = tempAttendanceData[i];
+            const div = document.createElement('div');
+            div.className = 'att-card';
+            let btns = '';
+            [{id:0,l:'出席'},{id:1,l:'遲到'},{id:2,l:'早退'},{id:3,l:'病假'},{id:5,l:'事假'},{id:4,l:'公假'}].forEach(o => {
+                btns += `<button class="att-btn ${r.status===o.id?'active':''}" data-status="${o.id}" data-idx="${i}">${o.l}</button>`;
+            });
+            div.innerHTML = `<div class="att-no">${s.no}</div><div class="att-name">${s.name} ${r.note?`<span class="att-note">${r.note}</span>`:''}</div><div class="att-status-group" style="flex-wrap:wrap;">${btns}</div>`;
+            list.appendChild(div);
+        });
+    }
+
+    document.getElementById('attendanceList').addEventListener('click', (e) => {
+        if(e.target.classList.contains('att-btn')) {
+            const idx = parseInt(e.target.dataset.idx);
+            const status = parseInt(e.target.dataset.status);
+            let note = tempAttendanceData[idx].note;
+            if (status === 2) { 
+                const time = prompt("早退時間 (例 14:00)：", getTaipeiTimeString());
+                if (time) note = `早退 ${time}`;
+            } else note = '';
+            tempAttendanceData[idx] = { status, note };
+            renderAttendanceUI();
+        }
+    });
+    
+    document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
+    document.getElementById('btnSaveAttendance').addEventListener('click', () => {
+        data.attendance[document.getElementById('attDatePicker').value] = tempAttendanceData;
+        triggerAutoSave();
+        alert("點名紀錄已儲存！");
+        initAttendanceView();
     });
 
+    document.getElementById('btnExportAttendance').addEventListener('click', () => {
+        let csv = "\uFEFF座號,姓名,出席總計,遲到,早退,病假,事假,公假,缺席總計,";
+        const dates = Object.keys(data.attendance).sort();
+        if(!dates.length) { alert("無紀錄"); return; }
+        csv += dates.join(",") + "\n";
+        data.roster.forEach((s, idx) => {
+            let row = `${s.no},${s.name}`;
+            let c = {0:0,1:0,2:0,3:0,4:0,5:0};
+            const ds = dates.map(d => {
+                const r = data.attendance[d][idx];
+                if(!r) return "-";
+                if(c[r.status]!==undefined) c[r.status]++;
+                let t = {0:"✔",1:"遲",2:"早",3:"病",4:"公",5:"事"}[r.status] || "?";
+                if(r.status===2 && r.note) t+=`(${r.note})`;
+                return t;
+            });
+            row += `,${c[0]+c[1]+c[2]},${c[1]},${c[2]},${c[3]},${c[5]},${c[4]},${c[3]+c[4]+c[5]},` + ds.join(",");
+            csv += row + "\n";
+        });
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+        const a = document.createElement("a"); a.href=url; a.download="點名報表.csv"; a.click();
+    });
+
+    // 狀態管理頁面 (優化：加入儀表板)
+    function renderStudentStatus() {
+        const con = document.getElementById('studentStatusContainer');
+        const title = document.getElementById('studentStatusHeaderTitle');
+        const btn = document.getElementById('btnToggleBatchMode');
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
+        
+        con.innerHTML = '';
+        
+        // 1. 計算儀表板數據
+        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        const clearedStudents = [];
+        const helpStudents = []; // Count >= 5
+        
+        data.roster.forEach((s, i) => {
+            let pendingCount = 0;
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) {
+                        pendingCount++;
+                    }
+                }
+            }
+            
+            if (pendingCount === 0) clearedStudents.push(s.no);
+            if (pendingCount >= 5) helpStudents.push(s.no);
+        });
+        
+        // 數字排序
+        clearedStudents.sort((a,b)=>a-b);
+        helpStudents.sort((a,b)=>a-b);
+
+        // 2. 繪製儀表板 HTML
+        if (!isBatchMode) { // 批量模式下隱藏儀表板以節省空間
+            const overview = document.createElement('div');
+            overview.className = 'status-overview';
+            overview.innerHTML = `
+                <div class="overview-card success">
+                    <div class="overview-icon-bg"><i class="bi bi-trophy"></i></div>
+                    <div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
+                    <div class="overview-nums">
+                        ${clearedStudents.length > 0 ? clearedStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">💪 尚無人達成</span>'}
+                    </div>
+                </div>
+                <div class="overview-card danger">
+                    <div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div>
+                    <div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (欠款≥5)</div>
+                    <div class="overview-nums">
+                        ${helpStudents.length > 0 ? helpStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">✅ 全員健康</span>'}
+                    </div>
+                </div>
+            `;
+            con.appendChild(overview);
+        }
+
+        // 3. 繪製列表
+        if(isBatchMode) { 
+            con.classList.add('batch-mode'); btn.classList.add('warn'); btn.innerHTML = `<i class="bi bi-x-square"></i> 取消批量`;
+            document.getElementById('btnBatchExport').style.display='inline-flex';
+            if(btnSelectAll) btnSelectAll.style.display='inline-flex'; 
+            title.innerHTML = `<i class="bi bi-check2-square"></i> 勾選匯出對象`;
+        } else { 
+            con.classList.remove('batch-mode'); btn.classList.remove('warn'); btn.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
+            document.getElementById('btnBatchExport').style.display='none'; 
+            if(btnSelectAll) btnSelectAll.style.display='none'; 
+            title.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者待辦清單`;
+        }
+
+        const pending = [];
+        data.roster.forEach((s, idx) => {
+            let tasks = [];
+            (data.assignments || []).forEach(a => {
+                if(a.archived) return;
+                const indices = a.assignedIndices || 'all';
+                if ((indices === 'all' || indices.includes(idx))) {
+                    const st = (a.statuses || [])[idx] || 0;
+                    if (st === 0 || st === 2) tasks.push({ id: a.id, title: a.title, status: st });
+                }
+            });
+            if (tasks.length > 0) pending.push({ idx, tasks });
+        });
+
+        if (pending.length === 0) { 
+            const happyDiv = document.createElement('div');
+            happyDiv.style.textAlign = 'center';
+            happyDiv.style.marginTop = '20px';
+            happyDiv.innerHTML = `<div style="font-size:40px;">🎉</div><div style="font-size:20px;font-weight:bold;">全員討伐成功！</div>`;
+            con.appendChild(happyDiv);
+            return; 
+        }
+
+        const grid = document.createElement('div'); grid.className = 'student-status-grid';
+        pending.forEach(item => {
+            const s = data.roster[item.idx];
+            const div = document.createElement('div'); div.className = 'card';
+            let html = `<div class="student-card-header"><h2>${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} ${s.no}. ${s.name}</h2><button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button></div><ul class="student-status-list">`;
+            item.tasks.forEach(t => {
+                html += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${t.status===0?'p-gray':'p-orange'}">${t.status===0?'未回報':'再挑戰'}</span></li>`;
+            });
+            div.innerHTML = html + '</ul>';
+            grid.appendChild(div);
+        });
+        con.appendChild(grid);
+    }
+    
+    // 批量全選功能
+    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.batch-export-checkbox');
+        const allChecked = Array.from(checkboxes).every(c => c.checked);
+        checkboxes.forEach(c => c.checked = !allChecked);
+    });
+    
+    // 開啟/隱藏小鍵盤
+    document.getElementById('btnToggleKeypad').addEventListener('click', () => {
+        const kp = document.getElementById('virtualKeypad');
+        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
+    });
+    
+    // Status Picker Logic (配合縮放修正座標)
+    let pickerTarget = null;
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
         const li = e.target.closest('li');
         if(!li) return;
-        
-        const aid = li.dataset.aid;
-        const sidx = parseInt(li.dataset.sidx);
+        const aid = li.dataset.aid; const sidx = parseInt(li.dataset.sidx);
         const a = data.assignments.find(i => i.id == aid);
-        const currentStatus = (a.statuses[sidx] || 0);
-
-        if(currentStatus === 0) {
-            statusPickerTarget = { index: sidx, assignmentId: aid, source: 'list' };
-            document.querySelectorAll('.status-option-btn').forEach(btn => btn.style.display = 'flex');
+        
+        if((a.statuses[sidx] || 0) === 0) {
+            pickerTarget = { idx: sidx, aid: aid };
+            const picker = document.getElementById('statusPicker');
             const rect = li.getBoundingClientRect();
-            statusPicker.style.top = (rect.top + window.scrollY) + 'px';
-            statusPicker.style.left = (rect.right + window.scrollX - 160) + 'px';
-            statusPicker.classList.add('show');
-            
-            const closePicker = (evt) => { if(!statusPicker.contains(evt.target) && !li.contains(evt.target)) { statusPicker.classList.remove('show'); document.removeEventListener('click', closePicker); } };
-            setTimeout(() => document.addEventListener('click', closePicker), 50);
+            // 修正座標以配合 zoom: 1.25
+            picker.style.top = ((rect.top + window.scrollY) / APP_SCALE) + 'px';
+            picker.style.left = ((rect.right + window.scrollX - 160) / APP_SCALE) + 'px';
+            picker.classList.add('show');
+            const close = (evt) => { if(!picker.contains(evt.target)) { picker.classList.remove('show'); document.removeEventListener('click', close); }};
+            setTimeout(()=>document.addEventListener('click', close), 100);
         } else {
-            if(confirm("標記為討伐成功？")) { a.statuses[sidx] = 3; playSuccessSound(); triggerAutoSave(); renderStudentStatus(); renderDashboard(); }
+            if(confirm("標記為完成？")) { a.statuses[sidx] = 3; playSuccessSound(); triggerAutoSave(); renderStudentStatus(); }
         }
     });
 
     document.querySelectorAll('.status-option-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const s = parseInt(btn.dataset.status);
-            const { index, assignmentId } = statusPickerTarget;
-            const a = data.assignments.find(i => i.id == assignmentId);
-            a.statuses[index] = s;
-            if(s === 3) playSuccessSound();
-            
-            const indices = a.assignedIndices || 'all';
-            let allCompleted = true;
-            for(let i=0; i<data.roster.length; i++) {
-                if(indices === 'all' || indices.includes(i)) {
-                    if (a.statuses[i] !== 3) allCompleted = false;
-                }
+        btn.addEventListener('click', () => {
+            if(!pickerTarget) return;
+            const a = data.assignments.find(i => i.id == pickerTarget.aid);
+            if(a) {
+                const s = parseInt(btn.dataset.status);
+                a.statuses[pickerTarget.idx] = s;
+                if(s===3) playSuccessSound();
+                triggerAutoSave(); renderStudentStatus(); renderDashboard();
             }
-            if (allCompleted) confetti();
-
-            triggerAutoSave();
-            renderStudentStatus();
-            renderDashboard();
-            statusPicker.classList.remove('show');
+            document.getElementById('statusPicker').classList.remove('show');
         });
     });
 
-    let targetAssignmentIdToDelete = null; 
-
-    document.getElementById('assignmentList').addEventListener('click', (e) => {
-        const btnDel = e.target.closest('.btn-delete');
-        if(btnDel) { 
-            e.stopPropagation(); 
-            const a = data.assignments.find(x => x.id == btnDel.dataset.id);
-            if(!a) return;
-
-            targetAssignmentIdToDelete = a.id;
-            document.getElementById('deleteTargetTitle').innerText = `「${a.date} ${a.title}」`;
-            document.getElementById('deleteChoiceModal').classList.add('show');
-            return; 
-        }
-        
-        const tr = e.target.closest('tr'); 
-        if(tr) { switchView('view-detail'); renderDetail(tr.dataset.id); }
-    });
-
+    // 刪除/封存
     document.getElementById('btnConfirmArchive').addEventListener('click', () => {
-        if (!targetAssignmentIdToDelete) return;
         const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
-        if(a) {
-            a.archived = true;
-            triggerAutoSave();
-            renderDashboard();
-            updateSaveStatus('success', '已封存');
-        }
+        if(a) { a.archived = true; triggerAutoSave(); renderDashboard(); }
         document.getElementById('deleteChoiceModal').classList.remove('show');
-        targetAssignmentIdToDelete = null;
     });
-
-    let undoTimeout = null;
-    let deletedAssignmentBackup = null;
 
     document.getElementById('btnConfirmDelete').addEventListener('click', () => {
-        if (!targetAssignmentIdToDelete) return;
-        
-        const item = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
-        if(item) {
-            deletedAssignmentBackup = JSON.parse(JSON.stringify(item));
+        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+        if(a) {
+            const backup = JSON.stringify(a);
             data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
-            triggerAutoSave();
-            renderDashboard();
-            showToast("契約已銷毀！", "復原 (Undo)", () => {
-                if (deletedAssignmentBackup) {
-                    data.assignments.push(deletedAssignmentBackup);
-                    data.assignments.sort((a,b) => b.id - a.id);
-                    renderDashboard();
-                    clearTimeout(undoTimeout);
-                    undoTimeout = null;
-                    deletedAssignmentBackup = null;
-                    alert("已成功復原！");
-                }
+            triggerAutoSave(); renderDashboard();
+            showToast("已刪除", "復原", () => {
+                data.assignments.push(JSON.parse(backup));
+                triggerAutoSave(); renderDashboard();
             });
         }
-        
         document.getElementById('deleteChoiceModal').classList.remove('show');
-        targetAssignmentIdToDelete = null;
-
-        if(undoTimeout) clearTimeout(undoTimeout);
-        undoTimeout = setTimeout(() => {
-            saveDataToFirebase();
-            updateSaveStatus('success', '已銷毀');
-            deletedAssignmentBackup = null; 
-        }, 5000);
     });
 
-    document.getElementById('btnClearAssignments').addEventListener('click', () => {
-        if(confirm("🔥 警告：這將會刪除「所有的」委託任務資料，包含已封存的紀錄！\n\n冒險者名單將會保留。\n\n確定要執行嗎？")) {
-            if(confirm("再次確認：資料刪除後無法復原！真的要銷毀嗎？")) {
-                data.assignments = [];
-                triggerAutoSave();
-                renderDashboard();
-                renderStudentStatus();
-                alert("所有契約已化為灰燼！");
-                document.getElementById('adminProfileModal').classList.remove('show');
-            }
+    // 事件監聽與 UI 切換
+    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster'].forEach(id => {
+        document.getElementById(id).addEventListener('click', (e) => {
+            const map = {'btnNavDashboard':'view-dashboard','btnNavStudentStatus':'view-student-status','btnNavRoster':'view-roster'};
+            switchView(map[e.currentTarget.id]);
+        });
+    });
+
+    document.getElementById('tabBtnStudents').addEventListener('click', () => {
+        document.getElementById('tabBtnStudents').classList.add('active'); document.getElementById('tabBtnTeachers').classList.remove('active');
+        document.getElementById('roster-content-students').classList.add('show'); document.getElementById('roster-content-teachers').classList.remove('show');
+    });
+    document.getElementById('tabBtnTeachers').addEventListener('click', () => {
+        document.getElementById('tabBtnTeachers').classList.add('active'); document.getElementById('tabBtnStudents').classList.remove('active');
+        document.getElementById('roster-content-teachers').classList.add('show'); document.getElementById('roster-content-students').classList.remove('show');
+    });
+
+    document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
+    document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
+    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none');
+    
+    document.getElementById('selSubject').addEventListener('change', (e) => {
+        const sel = document.getElementById('selPresetTask'); sel.innerHTML = '<option value="">📜 常用任務...</option>';
+        if(e.target.value && data.questSettings[e.target.value]) data.questSettings[e.target.value].forEach(t => sel.add(new Option(t, t)));
+    });
+    document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+        let t = document.getElementById('ipTeacherSelect').value;
+        if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
+        const title = document.getElementById('ipTitle').value.trim();
+        const sub = document.getElementById('selSubject').value;
+        const d = document.getElementById('ipDate').value;
+        if(!t || !title || !d) { alert("請填寫完整"); return; }
+        if(!data.teachers.includes(t)) data.teachers.push(t);
+        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
+        data.assignments.push({ 
+            id: Date.now(), teacher: t, title, subject: sub, date: d, 
+            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) 
+        });
+        triggerAutoSave(); resetNewAssignmentState(); renderAll();
+        // 成功後關閉彈窗
+        document.getElementById('panelNewQuest').classList.remove('show');
+    });
+
+    document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("全員已報？")) updateAllStatus(1); });
+    document.getElementById('btnMarkAllOrange').addEventListener('click', () => { if(confirm("全員再戰？")) updateAllStatus(2); });
+    function updateAllStatus(s) {
+        const a = data.assignments.find(x => x.id == currentAssignmentId);
+        if(a) { 
+            const idxs = a.assignedIndices || 'all';
+            data.roster.forEach((_, i) => { if(idxs === 'all' || idxs.includes(i)) a.statuses[i] = s; });
+            triggerAutoSave(); renderDashboardDetail(currentAssignmentId);
         }
-    });
-
-    document.getElementById('btnResetAll').addEventListener('click', () => {
-        const promptText = "DESTROY";
-        const input = prompt(`☢️ 危險：這將刪除「所有」資料，包含冒險者名單、老師名單、所有任務！\n\n若確定執行，請輸入 "${promptText}"：`);
-        if(input === promptText) {
-            data.roster = [];
-            data.assignments = [];
-            data.attendance = {}; // 🌟
-            triggerAutoSave();
-            renderAll();
-            alert("公會已重建，一切歸零！");
-            document.getElementById('adminProfileModal').classList.remove('show');
-        }
-    });
-
-    ['teacherFilter','subjectFilter','dateFilter'].forEach(id => document.getElementById(id).addEventListener('change', (e) => {
-        currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard();
-    }));
-    document.getElementById('btnClearFilter').addEventListener('click', () => { currentFilter={teacher:'all',subject:'all',date:''}; document.getElementById('teacherFilter').value='all'; document.getElementById('subjectFilter').value='all'; document.getElementById('dateFilter').value=''; renderDashboard(); });
-
-    document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
-        tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings || defaultData.questSettings));
-        renderQuestConfig();
-        document.getElementById('questSettingsModal').classList.add('show');
-    });
+    }
     
-    document.getElementById('btnAddSubject').addEventListener('click', () => {
-        const val = document.getElementById('ipNewSubject').value.trim();
-        if(val) { if(!tempQuestSettings[val]) tempQuestSettings[val] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); }
-    });
-    
-    document.getElementById('btnSaveQuestSettings').addEventListener('click', () => {
-        data.questSettings = JSON.parse(JSON.stringify(tempQuestSettings));
-        triggerAutoSave();
-        updateSubjectDropdown();
-        document.getElementById('questSettingsModal').classList.remove('show');
+    document.getElementById('rangeSize').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--seat', `${e.target.value}px`);
+        document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`);
     });
 
-    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
-        const btn = e.target.closest('.theme-option');
-        if(btn) { 
-            const t = btn.dataset.theme; 
-            document.documentElement.setAttribute('data-color-theme', t); 
-            localStorage.setItem('homeworkSystemColorTheme', t);
-            
-            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-        }
-    });
-    
-    document.getElementById('darkModeToggle').addEventListener('change', (e) => {
-        const t = e.target.checked ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('homeworkSystemTheme', t);
-    });
-
-    const numpadContainer = document.getElementById('numpadContainer');
-    const btnToggleNumpad = document.getElementById('btnToggleNumpad');
-    
-    if (numpadContainer && btnToggleNumpad) {
-        const numKeys = ['1','2','3','BS','4','5','6','-','7','8','9','.','L','P','0','CLR'];
-        numKeys.forEach(k => {
-            const b = document.createElement('button');
-            b.className = `num-key ${['L','P','BS','CLR','-'].includes(k)?'action-key':''}`;
-            b.textContent = k==='BS'?'⌫':k;
-            b.type = "button";
-            b.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const ip = document.getElementById('ipTitle');
-                if (ip) {
-                    if(k==='BS') ip.value = ip.value.slice(0,-1);
-                    else if(k==='CLR') ip.value = '';
-                    else ip.value += k;
-                    ip.focus();
-                }
+    // 執務室與公會長邏輯
+    const userBadge = document.getElementById('userEmailDisplay');
+    if(userBadge) {
+        userBadge.addEventListener('click', () => {
+            const list = document.getElementById('adminDebtList');
+            list.innerHTML = '';
+            const debts = [];
+            data.roster.forEach((s, idx) => {
+                let c = 0;
+                data.assignments.forEach(a => { if(!a.archived) { const st = (a.statuses||[])[idx]||0; if(st===0||st===2) c++; } });
+                if(c>=5) debts.push({name: s.name, c});
             });
-            numpadContainer.appendChild(b);
-        });
-
-        const closeNum = document.createElement('button');
-        closeNum.className = 'numpad-close';
-        closeNum.innerHTML = '&times;';
-        closeNum.type = "button";
-        closeNum.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            numpadContainer.classList.remove('show'); 
-        });
-        numpadContainer.appendChild(closeNum);
-        
-        btnToggleNumpad.addEventListener('click', (e) => {
-            e.stopPropagation();
-            numpadContainer.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!numpadContainer.contains(e.target) && e.target !== btnToggleNumpad) {
-                numpadContainer.classList.remove('show');
-            }
+            if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${d.name} (${d.c})</span>`);
+            else list.innerHTML = '<p style="color:var(--success)">目前無人欠款！</p>';
+            document.getElementById('adminProfileModal').classList.add('show');
         });
     }
 
-    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
-        const listDiv = document.getElementById('rosterEditor');
-        const count = listDiv.querySelectorAll('.roster-item').length + 1;
-        const item = document.createElement('div'); item.className = 'roster-item';
-        item.innerHTML = `<input type="number" value="${count}" class="roster-no-input" style="width:60px;"><input type="text" value="" placeholder="新冒險者" class="roster-name-input" style="flex:1;">`;
-        listDiv.appendChild(item);
-        listDiv.scrollTop = listDiv.scrollHeight;
+    document.getElementById('btnAdminAttendance').addEventListener('click', () => {
+        document.getElementById('adminProfileModal').classList.remove('show');
+        switchView('view-attendance');
     });
 
-    document.getElementById('btnApplyRoster').addEventListener('click', () => {
-        if(!confirm("確定修改名單？")) return;
-        const newRoster = [];
-        document.getElementById('rosterEditor').querySelectorAll('.roster-item').forEach(div => {
-            const no = parseInt(div.querySelector('.roster-no-input').value);
-            const name = div.querySelector('.roster-name-input').value.trim();
-            if(no && name) newRoster.push({no, name});
+    document.getElementById('btnDownloadArchive').addEventListener('click', () => {
+        const arcs = data.assignments.filter(a => a.archived);
+        if(!arcs.length) { alert("無封存資料"); return; }
+        let csv = "\uFEFF發布日期,內容,導師," + data.roster.map(s => s.name).join(",") + "\n";
+        arcs.forEach(a => {
+            const st = a.statuses || [];
+            csv += `${a.date},"${a.title}",${a.teacher},` + data.roster.map((_, i) => ["未","交","改","完"][st[i]||0]).join(",") + "\n";
         });
-        data.roster = newRoster;
-        triggerAutoSave();
-        renderRosterEditor();
-        alert("名單已更新！");
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+        const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
     });
-    
-    document.getElementById('btnApplyTeachers').addEventListener('click', () => {
-        const newTs = [];
-        document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) newTs.push(i.value.trim()); });
-        data.teachers = [...new Set(newTs)].sort();
-        triggerAutoSave();
-        renderTeacherEditor();
-        alert("公會長名單已更新！");
+
+    document.getElementById('btnClearAssignments').addEventListener('click', () => {
+        if(confirm("警告：這將刪除所有任務！")) { data.assignments = []; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); }
     });
-    
-    document.getElementById('teacherEditor').addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-del-teacher');
-        if(btn) {
-            const t = btn.dataset.name;
-            if(confirm(`刪除 ${t}?`)) { 
-                data.teachers = data.teachers.filter(x => x !== t); 
-                triggerAutoSave(); 
-                renderTeacherEditor(); 
-            }
+    document.getElementById('btnResetAll').addEventListener('click', () => {
+        if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { 
+            data.roster = []; data.assignments = []; data.attendance = {}; 
+            triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
         }
     });
 
-    document.body.addEventListener('mouseover', (e) => {
-        const t = e.target.closest('.has-tooltip');
-        if(t && t.dataset.tooltip) { customTooltip.innerHTML = t.dataset.tooltip; customTooltip.classList.add('show'); }
+    // 篩選器
+    ['teacherFilter','subjectFilter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            currentFilter[id.replace('Filter','')] = e.target.value;
+            renderDashboard();
+            document.getElementById('filterPanel').classList.remove('show');
+            document.getElementById('btnToggleFilter').classList.remove('active');
+        });
     });
-    document.body.addEventListener('mousemove', (e) => {
-        if(customTooltip.classList.contains('show')) { customTooltip.style.left = (e.clientX + 15) + 'px'; customTooltip.style.top = (e.clientY + 15) + 'px'; }
+    document.getElementById('btnClearFilter').addEventListener('click', () => {
+        currentFilter = { teacher: 'all', subject: 'all' };
+        document.getElementById('teacherFilter').value = 'all'; document.getElementById('subjectFilter').value = 'all';
+        renderDashboard(); document.getElementById('filterPanel').classList.remove('show');
     });
-    document.body.addEventListener('mouseout', () => customTooltip.classList.remove('show'));
+
+    // 設定
+    document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
+        tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings));
+        renderQuestConfig();
+        document.getElementById('questSettingsModal').classList.add('show');
+    });
+    function renderQuestConfig() {
+        const list = document.getElementById('questConfigList'); list.innerHTML = '';
+        Object.keys(tempQuestSettings).forEach(sub => {
+            const div = document.createElement('div'); div.className = 'quest-config-card';
+            div.innerHTML = `
+                <div class="quest-config-header">
+                    <span class="quest-config-title">${sub}</span>
+                    <button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除科目</button>
+                </div>
+                <div class="quest-tags">
+                    ${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}
+                </div>
+                <div class="quest-add-row">
+                    <input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;">
+                    <button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    // Quest Config Event Delegation (Fix for inline handlers)
+    const qList = document.getElementById('questConfigList');
+    qList.addEventListener('click', (e) => {
+        if(e.target.closest('.btn-del-subj')) {
+            const s = e.target.closest('.btn-del-subj').dataset.sub;
+            if(confirm(`確定要移除【${s}】科目與其所有任務嗎？`)) { delete tempQuestSettings[s]; renderQuestConfig(); }
+        } else if(e.target.closest('.btn-del-task')) {
+            const t = e.target.closest('.btn-del-task');
+            const s = t.dataset.sub; const i = parseInt(t.dataset.idx);
+            tempQuestSettings[s].splice(i, 1); renderQuestConfig();
+        } else if(e.target.closest('.btn-add-task')) {
+            const s = e.target.closest('.btn-add-task').dataset.sub;
+            const ip = document.getElementById(`newT_${s}`);
+            if(ip.value.trim()) { tempQuestSettings[s].push(ip.value.trim()); renderQuestConfig(); }
+        }
+    });
+
+    document.getElementById('btnAddSubject').addEventListener('click', () => {
+        const v = document.getElementById('ipNewSubject').value.trim();
+        if(v && !tempQuestSettings[v]) { tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); }
+    });
+    document.getElementById('btnSaveQuestSettings').addEventListener('click', () => {
+        data.questSettings = tempQuestSettings; triggerAutoSave(); updateSubjectDropdown();
+        document.getElementById('questSettingsModal').classList.remove('show');
+    });
     
+    // 虛擬鍵盤邏輯
+    document.getElementById('virtualKeypad').addEventListener('click', (e) => {
+        if(e.target.classList.contains('vk-btn')) {
+            const val = e.target.dataset.val;
+            const ip = document.getElementById('ipTitle');
+            if (val === 'backspace') {
+                ip.value = ip.value.slice(0, -1);
+            } else if (val === 'clear') {
+                ip.value = '';
+            } else if (val === 'space') {
+                ip.value += ' ';
+            } else {
+                ip.value += val;
+            }
+            ip.focus();
+        }
+    });
+
+    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
+        if(e.target.classList.contains('theme-option')) {
+            const t = e.target.dataset.theme;
+            document.documentElement.setAttribute('data-color-theme', t);
+            localStorage.setItem('hwColor', t);
+            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+            e.target.classList.add('active');
+        }
+    });
+    document.getElementById('darkModeToggle').addEventListener('change', (e) => {
+        const t = e.target.checked ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('hwTheme', t);
+    });
+
+    // 名冊編輯
+    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
+        const div = document.getElementById('rosterEditor');
+        const c = div.querySelectorAll('.roster-item').length + 1;
+        const d = document.createElement('div'); d.className = 'roster-item';
+        d.innerHTML = `<input type="number" value="${c}" class="roster-no-input"><input class="roster-name-input">`;
+        div.appendChild(d);
+    });
+    document.getElementById('btnApplyRoster').addEventListener('click', () => {
+        const r = [];
+        document.querySelectorAll('.roster-item').forEach(d => {
+            const no = parseInt(d.querySelector('.roster-no-input').value);
+            const name = d.querySelector('.roster-name-input').value.trim();
+            if(no && name) r.push({no, name});
+        });
+        data.roster = r; triggerAutoSave(); renderRosterEditor(); alert("已更新");
+    });
+    function renderRosterEditor() {
+        const d = document.getElementById('rosterEditor'); d.innerHTML = '';
+        data.roster.forEach(s => {
+            d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"></div>`;
+        });
+    }
+
+    document.getElementById('btnApplyTeachers').addEventListener('click', () => {
+        const ts = [];
+        document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) ts.push(i.value.trim()); });
+        data.teachers = [...new Set(ts)]; triggerAutoSave(); renderTeacherEditor(); alert("已更新");
+    });
+    function renderTeacherEditor() {
+        const d = document.getElementById('teacherEditor'); d.innerHTML = '';
+        data.teachers.forEach(t => {
+            const div = document.createElement('div'); div.className = 'teacher-item';
+            div.innerHTML = `<input value="${t}" class="teacher-name-input"><button class="btn warn sm btn-del-t">刪</button>`;
+            div.querySelector('.btn-del-t').onclick = () => { if(confirm("刪除?")) { data.teachers = data.teachers.filter(x=>x!==t); triggerAutoSave(); renderTeacherEditor(); }};
+            d.appendChild(div);
+        });
+    }
+    
+    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
+        const txt = document.getElementById('taRosterPaste').value.trim();
+        if(!txt) return;
+        const d = document.getElementById('rosterEditor');
+        let c = d.querySelectorAll('.roster-item').length + 1;
+        txt.split(/\r?\n/).forEach(n => {
+            if(n.trim()){ d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; }
+        });
+        document.getElementById('taRosterPaste').value = '';
+    });
+
+    // 指派對象 Modal
     document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
-        const list = document.getElementById('assignStudentListContainer');
-        list.innerHTML = '';
+        const c = document.getElementById('assignStudentListContainer'); c.innerHTML = '';
         data.roster.forEach((s, i) => {
-            const checked = newAssignmentAssignedIndices.length === 0 || newAssignmentAssignedIndices.includes(i);
-            const label = document.createElement('label'); label.className = 'assign-student-item';
-            label.innerHTML = `<input type="checkbox" data-idx="${i}" ${checked?'checked':''}> <span>${s.no}. ${s.name}</span>`;
-            list.appendChild(label);
+            const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i);
+            const l = document.createElement('label'); l.className = 'assign-student-item';
+            l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`;
+            c.appendChild(l);
         });
         document.getElementById('assignStudentModal').classList.add('show');
     });
     document.getElementById('btnConfirmAssign').addEventListener('click', () => {
-        const checked = document.querySelectorAll('#assignStudentListContainer input:checked');
-        newAssignmentAssignedIndices = [];
-        checked.forEach(c => newAssignmentAssignedIndices.push(parseInt(c.dataset.idx)));
+        const chks = document.querySelectorAll('#assignStudentListContainer input:checked');
+        newAssignmentAssignedIndices = Array.from(chks).map(c => parseInt(c.dataset.idx));
         document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "全體冒險者" : `已選 ${newAssignmentAssignedIndices.length} 位`;
         document.getElementById('assignStudentModal').classList.remove('show');
     });
-    document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = true));
-    document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked = false));
+    document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
+    document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
 
-    document.getElementById('userEmailDisplay').addEventListener('click', () => {
-        const adminModal = document.getElementById('adminProfileModal');
-        const debtList = document.getElementById('adminDebtList');
-        debtList.innerHTML = '';
-
-        const debtStudents = [];
-        data.roster.forEach((student, idx) => {
-            let count = 0;
-            data.assignments.forEach(a => {
-                if(a.archived) return; 
-                const assigned = a.assignedIndices === 'all' || a.assignedIndices.includes(idx);
-                if (assigned && (a.statuses[idx] === 0 || a.statuses[idx] === 2)) count++;
-            });
-            if (count >= 5) debtStudents.push({ ...student, count });
-        });
-
-        if (debtStudents.length > 0) {
-            debtStudents.forEach(s => {
-                const tag = document.createElement('span');
-                tag.style.cssText = "background:#fee2e2; color:#b91c1c; padding:6px 12px; border-radius:20px; font-weight:bold; font-size:14px; border:1px solid #fca5a5;";
-                tag.innerHTML = `${s.name} <small>(${s.count})</small>`;
-                debtList.appendChild(tag);
-            });
-        } else {
-            debtList.innerHTML = '<p style="color:var(--success);width:100%;">目前無人欠款超過 5 項！</p>';
-        }
-        
-        adminModal.classList.add('show');
-    });
-
-    document.getElementById('btnDownloadArchive').addEventListener('click', () => {
-        const archives = data.assignments.filter(a => a.archived);
-        if(archives.length === 0) {
-            alert("倉庫裡空空如也，沒有任何封存紀錄！");
-            return;
-        }
-
-        // CSV BOM
-        let csvContent = "\uFEFF";
-        
-        // Headers
-        const studentHeaders = data.roster.map(s => `${s.no}.${s.name}`).join(",");
-        csvContent += `發布日期,委託內容,公會長,${studentHeaders}\n`;
-
-        // Status Map
-        const statusText = ["未交", "已交", "訂正", "完成"];
-
-        // Body
-        archives.forEach(a => {
-            let row = `${a.date},"${a.title}",${a.teacher}`;
-            
-            const indices = a.assignedIndices || 'all';
-            const studentStatuses = data.roster.map((s, i) => {
-                if (indices !== 'all' && !indices.includes(i)) return "-";
-                const sCode = (a.statuses || [])[i] || 0;
-                return statusText[sCode] || "未知";
-            }).join(",");
-
-            row += `,${studentStatuses}`;
-            csvContent += row + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `公會封存紀錄_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    });
-
-    document.getElementById('btnToggleBatchMode').addEventListener('click', () => {
-        isBatchMode = !isBatchMode;
-        renderStudentStatus();
-    });
-
-    function printContent(contentHTML) {
-        const printWindow = window.open('', '', 'width=800,height=600');
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>冒險者任務卷軸</title>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-                <style>
-                    body { font-family: "Microsoft JhengHei", monospace; padding: 20px; }
-                    .print-card { border: 2px solid #333; padding: 15px; margin-bottom: 20px; page-break-inside: avoid; border-radius: 8px; }
-                    .print-header { font-size: 18px; font-weight: bold; border-bottom: 1px dashed #999; padding-bottom: 8px; margin-bottom: 8px; }
-                    ul { padding-left: 20px; margin: 0; }
-                    li { margin-bottom: 4px; }
-                    .pill { padding: 2px 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 12px; margin-left: 5px; font-weight: bold; }
-                    .p-gray { background: #eee; color: #555; }
-                    .p-orange { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
-                </style>
-            </head>
-            <body>
-                <h1 style="text-align:center; margin-bottom: 20px;">🛡️ 冒險者任務卷軸</h1>
-                ${contentHTML}
-                <script>
-                    window.onload = function() { window.print(); window.close(); }
-                <\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-    }
-
+    // 批量處理
+    document.getElementById('btnToggleBatchMode').addEventListener('click', () => { isBatchMode = !isBatchMode; renderStudentStatus(); });
     document.getElementById('btnBatchExport').addEventListener('click', () => {
-         const checkboxes = document.querySelectorAll('.batch-export-checkbox:checked');
-         if(checkboxes.length === 0) { alert("請先勾選冒險者！"); return; }
-         
-         let printHTML = '';
-         checkboxes.forEach(cb => {
-             const sidx = cb.dataset.sidx;
-             const card = cb.closest('.card');
-             if(card) {
-                 const name = card.querySelector('.student-card-header').innerText.trim();
-                 const list = card.querySelector('ul').outerHTML;
-                 printHTML += `<div class="print-card"><div class="print-header">${name}</div>${list}</div>`;
-             }
-         });
-         printContent(printHTML);
+        const chks = document.querySelectorAll('.batch-export-checkbox:checked');
+        if(!chks.length) { alert("未勾選"); return; }
+        let html = '';
+        chks.forEach(c => {
+            const card = c.closest('.card');
+            if(card) html += `<div style="border:1px solid #000;padding:10px;margin-bottom:10px;"><h3>${card.querySelector('h2').innerText}</h3>${card.querySelector('ul').outerHTML}</div>`;
+        });
+        const w = window.open('','','width=800,height=600');
+        w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+        w.document.close();
     });
-
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-print-single');
         if(btn) {
             e.stopPropagation();
             const card = btn.closest('.card');
-            const name = card.querySelector('.student-card-header').innerText.trim();
-            const list = card.querySelector('ul').outerHTML;
-            printContent(`<div class="print-card"><div class="print-header">${name}</div>${list}</div>`);
+            const html = `<div style="border:1px solid #000;padding:10px;"><h3>${card.querySelector('h2').innerText}</h3>${card.querySelector('ul').outerHTML}</div>`;
+            const w = window.open('','','width=800,height=600');
+            w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+            w.document.close();
         }
     });
 
-    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
-        const txt = document.getElementById('taRosterPaste').value.trim();
-        if(!txt) return;
-        const lines = txt.split(/\r?\n/).filter(x => x.trim());
-        const listDiv = document.getElementById('rosterEditor');
-        let count = listDiv.querySelectorAll('.roster-item').length + 1;
-        lines.forEach(name => {
-            const item = document.createElement('div'); item.className = 'roster-item';
-            item.innerHTML = `<input type="number" value="${count}" class="roster-no-input" style="width:60px;"><input type="text" value="${name.trim()}" class="roster-name-input" style="flex:1;">`;
-            listDiv.appendChild(item);
-            count++;
-        });
-        document.getElementById('taRosterPaste').value = '';
-        alert(`已載入 ${lines.length} 位冒險者，請記得按「儲存變更」！`);
+    // ==========================================
+    // 🛠️ 修復後的工具箱與全域事件邏輯 (Fixes)
+    // ==========================================
+    
+    // 1. 工具箱開關
+    document.getElementById('btnToggleToolbox').addEventListener('click', function() {
+        document.getElementById('toolboxMenu').classList.toggle('show');
+        this.classList.toggle('active');
+    });
+    
+    // 🔥 優化：發布新委託開關
+    document.getElementById('btnOpenNewQuestWindow').addEventListener('click', () => {
+        resetNewAssignmentState();
+        openTool('panelNewQuest');
     });
 
-// ============================================================
-    // 🚨 修正：工具箱完整邏輯
-    // ============================================================
-
-    // 1. 修復主按鈕開關 (修正 ID 為 toolboxMenu 並增加按鈕旋轉動畫)
-    document.getElementById('btnToggleToolbox').addEventListener('click', (e) => {
-        const menu = document.getElementById('toolboxMenu');
-        const btn = e.currentTarget; // 取得按鈕本身
-        
-        menu.classList.toggle('show'); // 切換選單顯示
-        btn.classList.toggle('active'); // 切換按鈕旋轉狀態
-    });
-
-    // 2. 定義開啟工具視窗的函式 (關閉其他，開啟指定)
-    function openToolWindow(panelId) {
-        // 先關閉所有工具視窗
-        document.querySelectorAll('.tool-window').forEach(el => el.classList.remove('show'));
-        // 開啟指定的視窗
-        document.getElementById(panelId).classList.add('show');
-        // 關閉懸浮選單，讓畫面乾淨一點 (可選)
+    // 2. 開啟各個小視窗
+    function openTool(id) {
+        document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
+        const win = document.getElementById(id);
+        if(win) win.classList.add('show');
         document.getElementById('toolboxMenu').classList.remove('show');
         document.getElementById('btnToggleToolbox').classList.remove('active');
     }
+    document.getElementById('btnOpenMarquee').addEventListener('click', () => openTool('panelMarquee'));
+    document.getElementById('btnOpenTimer').addEventListener('click', () => openTool('panelTimer'));
+    document.getElementById('btnOpenDraw').addEventListener('click', () => openTool('panelDraw'));
 
-    // 3. 綁定三個小按鈕的功能
-    document.getElementById('btnOpenMarquee').addEventListener('click', () => openToolWindow('panelMarquee'));
-    document.getElementById('btnOpenTimer').addEventListener('click', () => openToolWindow('panelTimer'));
-    document.getElementById('btnOpenDraw').addEventListener('click', () => openToolWindow('panelDraw'));
-
-    // 4. 解決 HTML onclick="closeToolWindow(this)" 找不到函式與 window 的問題
-    // 因為這裡是 type="module"，必須顯式掛載到 window 物件
-    window.closeToolWindow = (btn) => {
-        const win = btn.closest('.tool-window');
-        if(win) win.classList.remove('show');
-    };
-
-    let timerInterval = null;
-    let timerSeconds = 0;
-    
-    function updateTimerDisplay() {
-        const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-        const s = (timerSeconds % 60).toString().padStart(2, '0');
-        document.getElementById('timerDisplay').innerText = `${m}:${s}`;
-    }
-
-    document.querySelectorAll('.btn-timer-preset').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const min = parseInt(e.target.dataset.min);
-            if(timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                document.getElementById('btnTimerStart').innerText = "開始";
-                document.getElementById('btnTimerStart').classList.remove('warn');
-            }
-            timerSeconds = min * 60;
-            document.getElementById('timerInput').value = min;
-            document.getElementById('timerInputSec').value = 0;
-            updateTimerDisplay();
-        });
-    });
-
-    document.getElementById('btnTimerStart').addEventListener('click', (e) => {
-        const btn = e.target;
-        if(timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            btn.innerText = "繼續";
-            btn.classList.remove('warn');
-        } else {
-            if(timerSeconds === 0) {
-               const inputVal = parseInt(document.getElementById('timerInput').value) || 0;
-               const inputSec = parseInt(document.getElementById('timerInputSec').value) || 0;
-               if(inputVal > 0 || inputSec > 0) timerSeconds = inputVal * 60 + inputSec;
-               else if(timerSeconds === 0) return; 
-            }
-            btn.innerText = "暫停";
-            btn.classList.add('warn');
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                if(timerSeconds > 0) {
-                    timerSeconds--;
-                    updateTimerDisplay();
-                } else {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    btn.innerText = "開始";
-                    btn.classList.remove('warn');
-                    alert("時間到！");
-                    playAlarmSound(); // 🎵 播放新的好聽音效
-                }
-            }, 1000);
+    // 3. 全域關閉按鈕 (事件委派)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.tool-close')) {
+            const win = e.target.closest('.tool-window');
+            if (win) win.classList.remove('show');
         }
     });
 
-    document.getElementById('btnTimerReset').addEventListener('click', () => {
-        if(timerInterval) clearInterval(timerInterval);
-        timerInterval = null;
-        timerSeconds = 0;
-        updateTimerDisplay();
-        document.getElementById('btnTimerStart').innerText = "開始";
-        document.getElementById('btnTimerStart').classList.remove('warn');
-        document.getElementById('timerInput').value = '';
-        document.getElementById('timerInputSec').value = '';
-    });
-
-    document.getElementById('btnLuckyDraw').addEventListener('click', () => {
-        const resDiv = document.getElementById('luckyDrawResult');
-        if(!data.roster || data.roster.length === 0) {
-            resDiv.innerText = "無人可抽";
-            return;
-        }
+    // 4. 跑馬燈邏輯
+    document.getElementById('btnMqShow').addEventListener('click', () => {
+        const txt = document.getElementById('mqTextInput').value;
+        const col = document.getElementById('mqColorInput').value;
+        const sz = document.getElementById('mqSizeInput').value;
+        const spd = document.getElementById('mqSpeedInput').value;
         
-        let count = 0;
-        const max = 20;
-        const interval = setInterval(() => {
-            const rand = Math.floor(Math.random() * data.roster.length);
-            resDiv.innerText = `${data.roster[rand].no}. ${data.roster[rand].name}`;
-            playTickSound(); // 🎵 播放轉動音效
-            count++;
-            if(count >= max) {
-                clearInterval(interval);
-                resDiv.style.color = 'var(--danger)';
-                resDiv.style.transform = 'scale(1.2)';
-                playSuccessSound(); // 🎵 結束時播放成功音效
-                setTimeout(() => resDiv.style.transform = 'scale(1)', 200);
-            } else {
-                resDiv.style.color = 'var(--text-light)';
+        if(!txt) return;
+        const el = document.getElementById('marqueeText');
+        el.innerText = txt; el.style.color = col; el.style.fontSize = sz + 'px';
+        el.style.animationDuration = (Math.max(10, txt.length*0.8) / spd) + 's';
+        document.getElementById('topMarquee').style.display = 'block';
+    });
+    document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
+    document.getElementById('mqSizeInput').addEventListener('input', (e) => document.getElementById('marqueeText').style.fontSize = e.target.value+'px');
+
+    // 5. 計時器邏輯
+    let timerInt = null;
+    let timerSec = 0;
+    function updateTimer() {
+        document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`;
+    }
+    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => {
+        clearInterval(timerInt); timerInt = null;
+        timerSec = e.target.dataset.min * 60;
+        document.getElementById('timerInput').value = e.target.dataset.min;
+        document.getElementById('btnTimerStart').innerText = "開始";
+        updateTimer();
+    }));
+    document.getElementById('btnTimerStart').addEventListener('click', (e) => {
+        resumeAudio();
+        if(timerInt) { clearInterval(timerInt); timerInt=null; e.target.innerText="繼續"; }
+        else {
+            if(timerSec === 0) {
+                const m = parseInt(document.getElementById('timerInput').value)||0;
+                const s = parseInt(document.getElementById('timerInputSec').value)||0;
+                timerSec = m*60+s;
             }
+            if(timerSec>0) {
+                e.target.innerText="暫停";
+                timerInt = setInterval(() => {
+                    if(timerSec>0) { timerSec--; updateTimer(); }
+                    else { 
+                        clearInterval(timerInt); 
+                        timerInt=null; 
+                        e.target.innerText="開始"; 
+                        playAlarmSound(); 
+                        showToast("⏰ 時間到！任務結束！", "確認"); 
+                    }
+                }, 1000);
+            }
+        }
+    });
+    document.getElementById('btnTimerReset').addEventListener('click', () => {
+        clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer();
+        document.getElementById('btnTimerStart').innerText="開始";
+        document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value='';
+    });
+
+    // 6. 抽籤邏輯
+    document.getElementById('btnLuckyDraw').addEventListener('click', () => {
+        resumeAudio();
+        const res = document.getElementById('luckyDrawResult');
+        if(!data.roster.length) { res.innerText="無人"; return; }
+        let c = 0;
+        const t = setInterval(() => {
+            res.innerText = data.roster[Math.floor(Math.random()*data.roster.length)].name;
+            c++;
+            if(c>20) { clearInterval(t); res.style.color='var(--danger)'; playSuccessSound(); }
+            else res.style.color='var(--text-main)';
         }, 50);
     });
 
-    // 🚀 優化：跑馬燈邏輯 (含速度調整)
-    const mqSizeInput = document.getElementById('mqSizeInput');
-    const mqSpeedInput = document.getElementById('mqSpeedInput'); 
-    
-    mqSizeInput.addEventListener('input', (e) => {
-        const mqText = document.getElementById('marqueeText');
-        if(mqText) mqText.style.fontSize = e.target.value + 'px';
-    });
-
-    mqSpeedInput.addEventListener('input', (e) => {
-        updateMarqueeSpeed();
-    });
-
-    function updateMarqueeSpeed() {
-        const text = document.getElementById('mqTextInput').value.trim();
-        const mqText = document.getElementById('marqueeText');
-        if (!text) return;
-
-        const speedFactor = parseFloat(document.getElementById('mqSpeedInput').value); 
-        const baseDuration = Math.max(10, text.length * 0.8); 
-        const finalDuration = baseDuration / speedFactor; 
-        
-        mqText.style.animationDuration = finalDuration + 's';
-    }
-    
-    document.getElementById('btnMqShow').addEventListener('click', () => {
-        const text = document.getElementById('mqTextInput').value.trim();
-        const color = document.getElementById('mqColorInput').value;
-        const size = document.getElementById('mqSizeInput').value;
-        
-        if(!text) { alert("請先輸入公告內容！"); return; }
-        
-        const mqContainer = document.getElementById('topMarquee');
-        const mqText = document.getElementById('marqueeText');
-        
-        mqText.innerText = text;
-        mqText.style.color = color;
-        mqText.style.fontSize = size + 'px';
-        
-        updateMarqueeSpeed(); 
-        
-        mqContainer.style.display = 'block';
-    });
-    
-    document.getElementById('btnMqHide').addEventListener('click', () => {
-        document.getElementById('topMarquee').style.display = 'none';
-    });
-
   </script>
-
 </body>
 </html>
