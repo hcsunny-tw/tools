@@ -1797,7 +1797,7 @@
     // ----------------------------------------------------
     let pickerTarget = null; // 儲存當前操作的目標
 
-    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         // 忽略列印按鈕和核取方塊
         if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
         
@@ -1819,51 +1819,25 @@
             return;
         }
 
-        // 🟡 邏輯 B：開啟選單 (Picker) - 包含防跑版計算
+        // 🟡 邏輯 B：開啟選單 (跟隨滑鼠位置)
         pickerTarget = { idx: sidx, aid: aid };
         const picker = document.getElementById('statusPicker');
         
-        // 1. 先偷偷顯示但不給看 (為了計算選單實際的寬高)
-        picker.style.display = 'flex';
-        picker.style.visibility = 'hidden';
+        // 1. 取得滑鼠點擊座標 (e.clientX, e.clientY)
+        // 🔥 重點：一定要除以 APP_SCALE (1.25)，否則因為網頁有縮放，選單會偏離滑鼠
+        let mouseX = e.clientX / APP_SCALE;
+        let mouseY = e.clientY / APP_SCALE;
         
-        // 2. 取得按鈕 (Pill) 與 選單 (Picker) 的尺寸
-        const rect = li.querySelector('.pill').getBoundingClientRect();
-        const pickerW = picker.offsetWidth; // 選單寬度
-        const pickerH = picker.offsetHeight; // 選單高度
+        // 2. 稍微往右下偏移一點點 (+10)，避免滑鼠直接遮住選單的第一個選項
+        picker.style.top = (mouseY + 10) + 'px';
+        picker.style.left = (mouseX + 10) + 'px';
         
-        // 3. 計算基準座標 (預設：顯示在按鈕左下方)
-        // 注意：APP_SCALE 是你的全域變數 1.25
-        let topPos = (rect.bottom + 5) / APP_SCALE;
-        let leftPos = rect.left / APP_SCALE;
-        
-        // 4. 🚧 自動防撞機制 (邊界檢查)
-        
-        // [檢查右邊]：如果 (左座標 + 選單寬) 超過 (視窗寬度)，改為「靠右對齊」
-        const winW = window.innerWidth / APP_SCALE;
-        if (leftPos + pickerW > winW) {
-            leftPos = (rect.right / APP_SCALE) - pickerW; 
-        }
-        
-        // [檢查下面]：如果 (上座標 + 選單高) 超過 (視窗高度)，改為「往上彈」
-        const winH = window.innerHeight / APP_SCALE;
-        if (topPos + pickerH > winH) {
-            topPos = (rect.top / APP_SCALE) - pickerH - 5;
-        }
-
-        // 5. 套用最終座標並顯示
-        picker.style.top = topPos + 'px';
-        picker.style.left = leftPos + 'px';
-        picker.style.visibility = 'visible'; // 解除隱藏
         picker.classList.add('show');
 
         // 點擊空白處關閉選單
         const close = (evt) => { 
             if(!picker.contains(evt.target)) { 
                 picker.classList.remove('show'); 
-                // 關閉時重置 style 避免干擾下次計算
-                picker.style.display = ''; 
-                picker.style.visibility = '';
                 document.removeEventListener('click', close); 
             }
         };
