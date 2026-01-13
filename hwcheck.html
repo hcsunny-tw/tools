@@ -205,18 +205,45 @@
     .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
 
     .student-status-list { list-style: none; padding: 0; }
-    .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; cursor: pointer; }
+    .student-status-list li { 
+    padding: 8px; 
+    border-bottom: 1px dashed var(--tbl-border); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; /* 垂直置中 */
+    cursor: pointer; 
+    transition: background 0.2s;
+    }
+    /* 修改這段 CSS */
+
+.student-status-list li:hover {
+    background: var(--tbl-hover); /* 增加懸停回饋 */
+}
     .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
     .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
-    .pill{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:4px; font-weight:800; color: #fff; }
-    /* 🔥 修復：狀態 pill 顏色 (回歸柔和) */
+    .pill { 
+    display: inline-flex; 
+    gap: 6px; 
+    align-items: center; 
+    padding: 6px 12px; 
+    border-radius: 20px; /* 圓角更明顯 */
+    font-weight: 800; 
+    color: #fff; 
+    white-space: nowrap; /* 防止文字換行 */
+    font-size: 14px;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+    }
+    .pill:active {
+    transform: scale(0.95);
+    }
     .p-gray { background: #e5e7eb; color: #374151; } /* 0: 未回報 (柔灰) */
     .p-yellow { background: #fef9c3; color: #854d0e; } /* 1: 已回報 (柔黃) */
     .p-orange { background: #ffedd5; color: #9a3412; } /* 2: 再挑戰 (柔橘) */
     .p-green { background: #dcfce7; color: #166534; } /* 3: 成功 (柔綠) */
-
+    
     .assign-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px; max-height: 400px; overflow-y: auto; }
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
     .assign-student-item:hover { background: var(--tbl-hover); }
@@ -1407,13 +1434,17 @@
             const div = document.createElement('div'); div.className = 'card';
             let html = `<div class="student-card-header"><h2>${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} ${s.no}. ${s.name}</h2><button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button></div><ul class="student-status-list">`;
             item.tasks.forEach(t => {
-                // 🔥 修復：根據狀態顯示不同顏色的 pill (柔和版)
+                // 設定顏色與文字
                 let pillClass = 'p-gray';
                 let statusText = '未回報';
                 if(t.status === 1) { pillClass = 'p-yellow'; statusText = '已回報'; }
                 else if(t.status === 2) { pillClass = 'p-orange'; statusText = '再挑戰'; }
                 
-                html += `<li data-aid="${t.id}" data-sidx="${item.idx}">${t.title} <span class="pill ${pillClass}">${statusText}</span></li>`;
+                // 注意：這裡在 li 上面加了 data-status，方便點擊時判斷
+                html += `<li data-aid="${t.id}" data-sidx="${item.idx}" data-status="${t.status}">
+                            <span style="flex:1;">${t.title}</span> 
+                            <span class="pill ${pillClass}">${statusText}</span>
+                         </li>`;
             });
             div.innerHTML = html + '</ul>';
             grid.appendChild(div);
@@ -1782,16 +1813,91 @@
         w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
         w.document.close();
     });
+// ----------------------------------------------------
+    // 🔥 核心修復：狀態點擊邏輯 (橘色直接變更 / 其他跳選單)
+    // ----------------------------------------------------
+    let pickerTarget = null; // 儲存當前操作的目標
+
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-print-single');
-        if(btn) {
-            e.stopPropagation();
-            const card = btn.closest('.card');
-            const html = `<div style="border:1px solid #000;padding:10px;"><h3>${card.querySelector('h2').innerText}</h3>${card.querySelector('ul').outerHTML}</div>`;
-            const w = window.open('','','width=800,height=600');
-            w.document.write(`<html><head><title>列印</title><style>li{list-style:none;border-bottom:1px dashed #ccc;padding:4px;}</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
-            w.document.close();
+        // 忽略列印按鈕和核取方塊
+        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        
+        const li = e.target.closest('li');
+        if(!li) return;
+
+        const aid = li.dataset.aid;
+        const sidx = parseInt(li.dataset.sidx);
+        // 從資料中獲取最新狀態 (比 DOM 屬性準確)
+        const assignment = data.assignments.find(i => i.id == aid);
+        if (!assignment) return;
+        
+        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+
+        // 🟢 邏輯 A：如果是「再挑戰 (橘色 2)」，直接詢問是否成功
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
+                updateStatus(aid, sidx, 3); // 直接設為 3 (綠色)
+            }
+            return; // 結束，不開啟選單
         }
+
+        // 🟡 邏輯 B：如果是「未回報(0)」或「已回報(1)」，開啟選單 (Picker)
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        
+        // 🔥 座標修正：因為你的 body 有 zoom: 1.25，所以座標要除以 APP_SCALE
+        // 這裡的 APP_SCALE 必須對應你上面定義的 1.25
+        const rect = li.querySelector('.pill').getBoundingClientRect(); // 讓選單出現在「膠囊」旁邊，而不是整行旁邊
+        
+        let topPos = (rect.bottom + 5) / APP_SCALE;
+        let leftPos = rect.left / APP_SCALE;
+
+        // 邊界檢查 (防止選單超出下方螢幕)
+        if (topPos + 150 > window.innerHeight / APP_SCALE) {
+             topPos = (rect.top - 150) / APP_SCALE; // 改顯示在上方
+        }
+
+        picker.style.top = topPos + 'px';
+        picker.style.left = leftPos + 'px';
+        picker.classList.add('show');
+
+        // 點擊空白處關閉選單
+        const close = (evt) => { 
+            if(!picker.contains(evt.target)) { 
+                picker.classList.remove('show'); 
+                document.removeEventListener('click', close); 
+            }
+        };
+        // 延遲註冊，避免立刻觸發關閉
+        setTimeout(() => document.addEventListener('click', close), 100);
+    });
+
+    // 輔助函式：統一更新狀態並存檔
+    function updateStatus(aid, sidx, newStatus) {
+        const a = data.assignments.find(i => i.id == aid);
+        if(a) {
+            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+            a.statuses[sidx] = newStatus;
+            
+            if(newStatus === 3) {
+                playSuccessSound();
+                // 可選：如果要放煙火 confetti(); 
+            }
+            
+            triggerAutoSave(); 
+            renderStudentStatus(); // 重新渲染列表
+            renderDashboard();     // 同步更新看板
+        }
+    }
+
+    // 選單按鈕點擊事件 (保持原樣，但改呼叫 updateStatus)
+    document.querySelectorAll('.status-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if(!pickerTarget) return;
+            const s = parseInt(btn.dataset.status);
+            updateStatus(pickerTarget.aid, pickerTarget.idx, s);
+            document.getElementById('statusPicker').classList.remove('show');
+        });
     });
 
     // ==========================================
