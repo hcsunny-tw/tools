@@ -746,7 +746,17 @@
                <p class="muted" style="margin-bottom:8px;">下載所有已被封存的委託任務 (Excel 試算表格式)。</p>
                <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
           </div>
-          
+
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">💾 公會資料庫備份與還原</h3>
+               <p class="muted" style="margin-bottom:8px;">將目前的任務、名冊與設定完整下載為 JSON 檔案，或從備份檔還原。</p>
+               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                   <button class="btn sm secondary" id="btnExportJSON"><i class="bi bi-cloud-arrow-down-fill"></i> 匯出備份 (JSON)</button>
+                   <button class="btn sm ghost" id="btnImportJSONTrigger"><i class="bi bi-cloud-arrow-up-fill"></i> 還原備份</button>
+                   <input type="file" id="ipImportJSON" accept=".json" style="display: none;">
+               </div>
+          </div>
+        
           <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
                 <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -1969,6 +1979,70 @@
             data.roster = []; data.assignments = []; data.attendance = {}; 
             triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
         }
+    });
+
+    // ==========================================
+    // 💾 全機 JSON 備份與還原系統
+    // ==========================================
+    
+    // 1. 匯出 JSON 備份
+    document.getElementById('btnExportJSON').addEventListener('click', () => {
+        const dataStr = JSON.stringify(data, null, 2); // 將物件轉為格式化的 JSON 字串
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        
+        // 檔名加上今天的日期，例如：guild_backup_20260224.json
+        const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        a.download = `guild_backup_${dateStr}.json`;
+        
+        a.click();
+        URL.revokeObjectURL(url); // 釋放記憶體
+        showToast("✅ 公會資料已成功匯出備份！", "確認");
+    });
+
+    // 2. 觸發隱藏的檔案選擇器
+    document.getElementById('btnImportJSONTrigger').addEventListener('click', () => {
+        document.getElementById('ipImportJSON').click();
+    });
+
+    // 3. 處理讀取與還原邏輯
+    document.getElementById('ipImportJSON').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                // 簡單防呆：檢查讀取的檔案是不是物件格式
+                if (!importedData || typeof importedData !== 'object') throw new Error("無效的檔案格式");
+                
+                // 為了安全，確保必要的屬性存在，避免舊版備份檔缺少某些結構導致壞軌
+                if (!importedData.roster) importedData.roster = [];
+                if (!importedData.assignments) importedData.assignments = [];
+                if (!importedData.teachers) importedData.teachers = [];
+                if (!importedData.questSettings) importedData.questSettings = {};
+                if (!importedData.attendance) importedData.attendance = {};
+
+                if (confirm("⚠️ 警告：還原備份將會【完全覆蓋】目前系統內的所有資料！\n\n確定要繼續還原嗎？")) {
+                    data = importedData; // 覆蓋全域資料
+                    triggerAutoSave();   // 觸發 Firebase 存檔同步
+                    renderAll();         // 重新渲染畫面
+                    
+                    document.getElementById('adminProfileModal').classList.remove('show');
+                    showToast("✨ 備份資料已成功還原！", "確認");
+                }
+            } catch (error) {
+                alert("❌ 讀取備份失敗，檔案可能已損毀或格式錯誤。\n詳細錯誤：" + error.message);
+            } finally {
+                // 清空 input 的值，這樣如果使用者下次選同一個檔案，才會再次觸發 change 事件
+                e.target.value = ''; 
+            }
+        };
+        reader.readAsText(file);
     });
 
     // 篩選器
