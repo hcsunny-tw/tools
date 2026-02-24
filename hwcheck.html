@@ -690,10 +690,14 @@
             <div class="actions" style="margin-top:16px; justify-content:space-between; border-top:1px dashed var(--tbl-border); padding-top:12px;">
                 <button class="btn sm secondary" id="btnAddStudentRow"><i class="bi bi-plus-lg"></i> 新增一行</button>
                 <div style="display:flex; gap:8px;">
-                     <details style="display:inline-block;"><summary class="btn sm ghost" style="list-style:none; cursor:pointer;">📜 貼上名單</summary>
-                        <div style="position:absolute; bottom:60px; right:20px; background:var(--card); padding:10px; border:2px solid var(--primary); border-radius:8px; width:250px; z-index:100;">
+                      <details id="detailsRosterPaste" style="display:inline-block;"><summary class="btn sm ghost" style="list-style:none; cursor:pointer;">📜 貼上名單</summary>
+                        <div style="position:absolute; bottom:60px; right:20px; background:var(--card); padding:12px; border:2px solid var(--primary); border-radius:8px; width:250px; z-index:100; box-shadow: var(--shadow);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-weight:bold; font-size:14px; color:var(--primary);">大量貼上名單</span>
+                                <button id="btnCloseRosterPaste" class="btn ghost sm icon-only" style="border:none; padding:2px 6px;"><i class="bi bi-x-lg"></i></button>
+                            </div>
                             <textarea id="taRosterPaste" rows="10" style="width:100%;" placeholder="一行一個姓名..."></textarea>
-                            <button class="btn sm secondary" id="btnLoadFromPaste" style="width:100%; margin-top:8px;">載入</button>
+                            <button class="btn sm secondary" id="btnLoadFromPaste" style="width:100%; margin-top:8px;">取代 / 附加名單</button>
                         </div>
                      </details>
                      <button class="btn" id="btnApplyRoster"><i class="bi bi-check-circle"></i> 儲存變更</button>
@@ -2258,15 +2262,51 @@
         });
     }
     
+    // 關閉貼上名單視窗
+    document.getElementById('btnCloseRosterPaste').addEventListener('click', () => {
+        document.getElementById('detailsRosterPaste').removeAttribute('open');
+    });
+
+    // 貼上名單邏輯 (🔥 升級版：智能覆蓋預設值)
     document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
         const txt = document.getElementById('taRosterPaste').value.trim();
         if(!txt) return;
         const d = document.getElementById('rosterEditor');
-        let c = d.querySelectorAll('.roster-item').length + 1;
+        
+        // 判斷是否要「覆蓋」現有名單
+        let isOverwrite = false;
+        
+        // 檢查目前名單是否剛好是預設的「勇者A、法師B、弓手C」
+        const currentInputs = Array.from(d.querySelectorAll('.roster-name-input'));
+        const currentNames = currentInputs.map(i => i.value.trim());
+        const isDefaultRoster = currentNames.length === 3 && currentNames[0] === '勇者A' && currentNames[1] === '法師B' && currentNames[2] === '弓手C';
+        
+        // 如果是預設名單或空名單，直接覆蓋；如果不是，詢問公會長
+        if (isDefaultRoster || currentNames.length === 0) {
+            isOverwrite = true;
+        } else {
+            isOverwrite = confirm("要【覆蓋】目前的冒險者名單嗎？\n\n[確定]：清除舊名單，完全使用新貼上的名單\n[取消]：將新名單附加在現有座號最後面");
+        }
+
+        let c = 1; // 座號預設從 1 號開始
+        if (isOverwrite) {
+            d.innerHTML = ''; // 清除現有 DOM (把勇者A等人踢出公會)
+        } else {
+            c = d.querySelectorAll('.roster-item').length + 1; // 接續目前的最後一號
+        }
+
+        // 開始依序塞入新名單
         txt.split(/\r?\n/).forEach(n => {
-            if(n.trim()){ d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; }
+            if(n.trim()){ 
+                d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; 
+            }
         });
+        
         document.getElementById('taRosterPaste').value = '';
+        document.getElementById('detailsRosterPaste').removeAttribute('open'); // 成功後自動關閉小視窗
+        
+        // 提示公會長要記得按儲存
+        alert("📜 名單已載入編輯區！請確認無誤後，點擊右下角的「儲存變更」。");
     });
 
     // 指派對象 Modal
