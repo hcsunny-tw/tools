@@ -48,7 +48,27 @@
     html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
     html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
     html[data-color-theme='green'][data-theme='dark'] { --primary: #66bb6a; --bg: #1b5e20; --card: #2e7d32; --text-main: #e8f5e9; --tbl-head: #1b5e20; --tbl-alt: #14421b; --tbl-hover: #388e3c; --tbl-border: #4caf50; }
+    /* 🍰 新增：溫暖可愛 (Warm Cute) 主題 */
+    html[data-color-theme='warm-cute'] {       --primary: #8FA781; /* 溫暖草綠 */      --accent: #D4A373;  /* 溫暖焦糖 */  --ring: rgba(143, 167, 129, 0.3);  --bg: #FAEDCD;   /* 奶油米黃背景 */   --card: #FEFAE0;/* 柔和乳白卡片 */--tbl-head: #E9EDC9; --tbl-alt: #FEFAE0;   --tbl-hover: #E9EDC9;   --tbl-border: #CCD5AE;  --text-main: #582F0E; /* 深可可文字 */   --text-light: #7F4F24;    --muted: #A68A64;   --shadow: 0 4px 12px rgba(88, 47, 14, 0.08);   --radius: 16px;     /* 更圓潤的邊角 */
+      --seat: 56px;  --seat-font: 16px;   --progress-bar: #8FA781; --success: #6B9080;  --danger: #E5989B;}
+    
+    /* 溫暖可愛專屬：圓點點背景與可愛風按鈕 */
+    html[data-color-theme='warm-cute'] body {
+      background-image: radial-gradient(#D4A373 1.5px, transparent 1.5px);
+      background-size: 25px 25px;
+    }
+    html[data-color-theme='warm-cute'] .card { border: 2px dashed var(--tbl-border); }
+    html[data-color-theme='warm-cute'] .btn { border-radius: 20px; box-shadow: 0 3px 0 var(--text-light); border: none; }
+    html[data-color-theme='warm-cute'] .btn:active { box-shadow: 0 0 0 var(--text-light); transform: translateY(3px); }
+    html[data-color-theme='warm-cute'] .seat { border-radius: 50%; /* 座位變成圓形 */ }
 
+    /* 溫暖可愛的夜間模式 (營火模式下的護眼深焙咖啡色) */
+    html[data-color-theme='warm-cute'][data-theme='dark'] { 
+      --primary: #A3B18A; --accent: #D4A373; 
+      --bg: #3A302A; --card: #4A3F35; 
+      --text-main: #EAE0D5; --text-light: #C6AC8F; --muted: #8E8071;
+      --tbl-head: #2C241E; --tbl-alt: #3A302A; --tbl-hover: #5E503F; --tbl-border: #5E503F;
+    }
     *{ box-sizing:border-box; }
     html, body{ 
         height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
@@ -209,6 +229,7 @@
     .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
     .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
     .theme-option[data-theme="green"] { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
+    <div class="theme-option" data-theme="warm-cute" title="溫暖可愛" style="background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%); border-radius: 50%;"></div>
     
     .dark-mode-toggle { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); margin-top: 20px; }
     .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
