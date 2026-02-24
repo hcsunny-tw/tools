@@ -1660,14 +1660,6 @@
         
         picker.classList.add('show');
 
-        // 點擊空白處關閉選單
-        const close = (evt) => { 
-            if(!picker.contains(evt.target)) { 
-                picker.classList.remove('show'); 
-                document.removeEventListener('click', close); 
-            }
-        };
-        setTimeout(() => document.addEventListener('click', close), 100);
     });
 
     // (下方緊接著您原本的「單人卷軸列印」程式碼...)
