@@ -1714,7 +1714,16 @@
         pending.forEach(item => {
             const s = data.roster[item.idx];
             const div = document.createElement('div'); div.className = 'card';
-            let html = `<div class="student-card-header"><h2>${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} ${s.no}. ${s.name}</h2><button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button></div><ul class="student-status-list">`;
+           // 🔥 新增：在列印按鈕旁邊加入「複製聯絡簿訊息」的按鈕
+            let html = `
+                <div class="student-card-header">
+                    <h2>${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} ${s.no}. ${s.name}</h2>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn sm ghost btn-copy-report" data-sidx="${item.idx}" title="複製聯絡簿訊息"><i class="bi bi-chat-dots"></i></button>
+                        <button class="btn sm ghost btn-print-single" data-sidx="${item.idx}" title="列印任務卷軸"><i class="bi bi-printer"></i></button>
+                    </div>
+                </div>
+                <ul class="student-status-list">`;
             item.tasks.forEach(t => {
                 // 設定顏色與文字
                 let pillClass = 'p-gray';
@@ -1754,7 +1763,7 @@
 
     document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
         // 1. 如果點到「列印按鈕」或「批量勾選」，就忽略 (交給下面的監聽器處理)
-        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        if(e.target.closest('.btn-print-single') || e.target.closest('.btn-copy-report') || e.target.classList.contains('batch-export-checkbox')) return;
         
         // 2. 抓取點擊的項目 (li)
         const li = e.target.closest('li');
@@ -1915,6 +1924,50 @@
                         .print-card { border-width: 2px; box-shadow:none; max-width: none; width: 100%; border-radius: 0; }
                         @page { margin: 1.5cm; }
                     }
+                    // ============================================================
+    // 💬 新增：聯絡簿一鍵複製邏輯
+    // ============================================================
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        const btnCopy = e.target.closest('.btn-copy-report');
+        if (!btnCopy) return; 
+        e.stopPropagation();
+
+        const sidx = parseInt(btnCopy.dataset.sidx);
+        const student = data.roster[sidx];
+
+        // 整理這位學生的未完成任務
+        const pendingTasks = [];
+        (data.assignments || []).forEach(a => {
+            if (a.archived) return;
+            const indices = a.assignedIndices || 'all';
+            if (indices === 'all' || indices.includes(sidx)) {
+                const st = (a.statuses || [])[sidx] || 0;
+                // 找出未回報(0) 與 再挑戰(2)
+                if (st === 0 || st === 2) {
+                    pendingTasks.push(a.title + (st === 2 ? ' (再挑戰)' : ''));
+                }
+            }
+        });
+
+        if (pendingTasks.length === 0) {
+            showToast(`🎉 ${student.name} 目前沒有欠交的任務喔！`, "確認");
+            return;
+        }
+
+        // 組合溫柔的親師溝通訊息
+        const taskText = pendingTasks.join('、');
+        const message = `家長您好，這裡是冒險者公會進度廣播：\n【${student.no}號 ${student.name}】目前還有 ${pendingTasks.length} 項委託尚未完成（${taskText}）。\n再麻煩您留意小冒險者的任務進度喔！謝謝您！`;
+
+        // 執行複製到剪貼簿
+        navigator.clipboard.writeText(message).then(() => {
+            // 成功時跳出提示並播放音效
+            playSuccessSound();
+            showToast(`✅ 已複製 ${student.name} 的聯絡簿訊息！`, "確認");
+        }).catch(err => {
+            // 防呆：如果瀏覽器阻擋剪貼簿權限，改用傳統 alert 讓老師手動複製
+            alert("請複製以下訊息：\n\n" + message);
+        });
+    });
                 </style>
             </head>
             <body>
