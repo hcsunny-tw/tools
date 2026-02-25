@@ -1499,6 +1499,63 @@
         }
     };
 
+    // ============================================================
+    // 🚨 舊帳快速清算系統 (跨任務補交) - 絕對安全防呆區
+    // ============================================================
+    function openQuickDebtMenu(e, sidx, oldDebts) {
+        e.stopPropagation();
+        const menu = document.getElementById('quickDebtMenu');
+        const list = document.getElementById('quickDebtList');
+        const student = data.roster[sidx];
+
+        document.getElementById('quickDebtTitle').innerText = `【${student.name}】待清舊帳`;
+        list.innerHTML = '';
+        
+        oldDebts.forEach(debt => {
+            const item = document.createElement('div');
+            item.className = 'quick-debt-item';
+            const stLbl = debt.st === 2 ? '<span style="color:#c62828; font-size:11px;">(再戰)</span>' : '<span style="color:#888; font-size:11px;">(未交)</span>';
+            
+            item.innerHTML = `
+                <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:bold;" title="${debt.title}">${debt.title} ${stLbl}</div>
+                <button class="btn sm" style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--primary); color: #fff;"><i class="bi bi-check-lg"></i> 補交</button>
+            `;
+            
+            // 點擊補交按鈕
+            item.onclick = (evt) => {
+                evt.stopPropagation();
+                // 呼叫原本的更新函數，直接標記為討伐成功(3)
+                updateStatus(debt.id, sidx, 3);
+                menu.classList.remove('show');
+                showToast(`✅ 已將「${debt.title}」標記為完成！`, "確認");
+            };
+            list.appendChild(item);
+        });
+
+        // 自動定位在滑鼠點擊處附近
+        menu.style.display = 'flex'; 
+        let x = e.clientX + 10;
+        let y = e.clientY + 10;
+        
+        // 防呆：避免選單超出螢幕右下角
+        const rect = menu.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 10;
+        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
+
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.classList.add('show');
+    }
+
+    // 點擊網頁空白處會自動關閉選單
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('quickDebtMenu');
+        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge')) {
+            menu.classList.remove('show');
+        }
+    });
+
+
     function renderDashboardDetail(id) {
         const a = data.assignments.find(x => x.id == id);
         if (!a) return;
@@ -2761,61 +2818,6 @@
     });
 
 
-    // ============================================================
-    // 🚨 新增：舊帳快速清算系統 (跨任務補交)
-    // ============================================================
-    function openQuickDebtMenu(e, sidx, oldDebts) {
-        e.stopPropagation();
-        const menu = document.getElementById('quickDebtMenu');
-        const list = document.getElementById('quickDebtList');
-        const student = data.roster[sidx];
-
-        document.getElementById('quickDebtTitle').innerText = `【${student.name}】待清舊帳`;
-        list.innerHTML = '';
-        
-        oldDebts.forEach(debt => {
-            const item = document.createElement('div');
-            item.className = 'quick-debt-item';
-            const stLbl = debt.st === 2 ? '<span style="color:#c62828; font-size:11px;">(再戰)</span>' : '<span style="color:#888; font-size:11px;">(未交)</span>';
-            
-            item.innerHTML = `
-                <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:bold;" title="${debt.title}">${debt.title} ${stLbl}</div>
-                <button class="btn sm" style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--primary); color: #fff;"><i class="bi bi-check-lg"></i> 補交</button>
-            `;
-            
-            // 點擊補交按鈕
-            item.onclick = (evt) => {
-                evt.stopPropagation();
-                // 呼叫原本的更新函數，直接標記為討伐成功(3)
-                updateStatus(debt.id, sidx, 3);
-                menu.classList.remove('show');
-                showToast(`✅ 已將「${debt.title}」標記為完成！`, "確認");
-            };
-            list.appendChild(item);
-        });
-
-        // 自動定位在滑鼠點擊處附近
-        menu.style.display = 'flex'; 
-        let x = e.clientX + 10;
-        let y = e.clientY + 10;
-        
-        // 防呆：避免選單超出螢幕右下角
-        const rect = menu.getBoundingClientRect();
-        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 10;
-        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
-
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
-        menu.classList.add('show');
-    }
-
-    // 點擊網頁空白處會自動關閉選單
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('quickDebtMenu');
-        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge')) {
-            menu.classList.remove('show');
-        }
-    });
     
   </script>
 </body>
