@@ -1157,18 +1157,20 @@
         o.start(); o.stop(ctx.currentTime + 0.5);
     }
 
-    // 🔥 新增：抽籤轉動時的滴答聲
+
+    // 🔥 新增：抽籤轉動時的滴答聲 (修正時間精準度)
     function playTickSound() {
         const ctx = resumeAudio();
+        const now = ctx.currentTime; // 統一取得當前時間
         const o = ctx.createOscillator(); 
         const g = ctx.createGain();
         o.type = 'triangle'; 
-        o.frequency.setValueAtTime(800, ctx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.05);
-        g.gain.setValueAtTime(0.1, ctx.currentTime); 
-        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+        o.frequency.setValueAtTime(800, now);
+        o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+        g.gain.setValueAtTime(0.1, now); 
+        g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
         o.connect(g); g.connect(ctx.destination);
-        o.start(); o.stop(ctx.currentTime + 0.05);
+        o.start(now); o.stop(now + 0.05);
     }
 
     function playAlarmSound() {
@@ -1381,10 +1383,11 @@
             const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
 
 
-          // 🔥 修正：精準判斷委託的批改狀態 (未批改完 / 尚未清點 / 批改完成)
+          // 🔥 修正：精準判斷委託的批改狀態與「缺交人數」
             let hasStatus1 = false; // 是否有「已回報(1)」
             let allStatus0 = true;  // 是否「全為未回報(0)」
             let assignedCount = 0;  // 計算有被指派的人數
+            let missingCount = 0;   // 🔥 新增：計算缺交(未回報0)人數
             
             // 掃描這項任務的所有指定學生狀態
             for (let i = 0; i < data.roster.length; i++) {
@@ -1393,31 +1396,41 @@
                     const st = (a.statuses || [])[i] || 0;
                     if (st === 1) hasStatus1 = true;
                     if (st !== 0) allStatus0 = false;
+                    if (st === 0) missingCount++; // 累加缺交人數
                 }
             }
 
-            // 根據掃描結果給予正確的標籤
+            // 根據掃描結果給予正確的「批改標籤」
             let gradeBadge = '';
             if (assignedCount === 0) {
-                // 防呆：如果這項任務沒有指派給任何人
                 gradeBadge = `<span style="color: #9ca3af; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-weight: bold;">無對象</span>`;
             } else if (hasStatus1) {
-                // 只要有人繳交(狀態1)，就是未批改完
                 gradeBadge = `<span style="color: #ea580c; background: #ffedd5; padding: 2px 6px; border-radius: 4px; font-weight: bold;">未批改完</span>`;
             } else if (allStatus0) {
-                // 沒有人繳交，且全部都是未接取(狀態0)，代表還沒收作業
                 gradeBadge = `<span style="color: #4b5563; background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-weight: bold;">尚未清點</span>`;
             } else {
-                // 排除以上狀況（沒有狀態1，且有人已經被改成2或3了），代表目前桌上沒卷子
                 gradeBadge = `<span style="color: #166534; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-weight: bold;">批改完成</span>`;
+            }
+
+            // 🔥 新增：根據缺交人數給予「缺交標籤」
+            let missingBadge = '';
+            if (assignedCount > 0) {
+                if (missingCount > 0) {
+                    missingBadge = `<span style="color: #be123c; background: #ffe4e6; padding: 2px 6px; border-radius: 4px; font-weight: bold;">缺交 ${missingCount}</span>`;
+                } else {
+                    missingBadge = `<span style="color: #1d4ed8; background: #dbeafe; padding: 2px 6px; border-radius: 4px; font-weight: bold;">0 缺交</span>`;
+                }
             }
 
             el.innerHTML = `
                 <div class="side-item-title">${a.title}</div>
-                <div class="side-item-meta muted" style="align-items: center;">
+                <div class="side-item-meta muted" style="align-items: center; flex-wrap: wrap; gap: 4px;">
                     <span>${a.date}</span>
                     <span>${a.teacher}</span>
-                    ${gradeBadge}
+                    <div style="margin-left: auto; display: flex; gap: 4px;">
+                        ${missingBadge}
+                        ${gradeBadge}
+                    </div>
                 </div>
                 <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
                     <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
@@ -2619,10 +2632,12 @@
 
 // 6. 抽籤邏輯 (🔥 升級版：漸進減速、滴答音效與煙火)
     document.getElementById('btnLuckyDraw').addEventListener('click', () => {
+        resumeAudio(); // 🔥 關鍵修復：必須在點擊的第一時間喚醒音效系統，瀏覽器才不會阻擋
+
         const btn = document.getElementById('btnLuckyDraw');
         const res = document.getElementById('luckyDrawResult');
         
-        if (!data.roster || data.roster.length === 0) { 
+        if (!data.roster || data.roster.length === 0) {
             res.innerText = "無人可抽"; 
             return; 
         }
