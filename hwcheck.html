@@ -1587,8 +1587,8 @@
         menu.dataset.currentSidx = "";
     });
 
-    // ============================================================
-    // 渲染右側儀表板內容 (包含您許願的「紅點點位置優化」)
+// ============================================================
+    // 渲染右側儀表板內容 (修正紅點位置與無效符號)
     // ============================================================
     function renderDashboardDetail(id) {
         const a = data.assignments.find(x => x.id == id);
@@ -1610,7 +1610,7 @@
             const isAssigned = indices === 'all' || indices.includes(i);
             const status = (a.statuses || [])[i] || 0;
             const div = document.createElement('div');
-            div.className = \`seatItem \${!isAssigned ? 'not-assigned' : ''}\`;
+            div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
             
             let oldDebts = [];
             if(isAssigned) {
@@ -1629,17 +1629,17 @@
 
             let badgeHtml = '';
             if (oldDebts.length > 0) {
-                badgeHtml = \`<div class="debt-badge" title="有 \${oldDebts.length} 項未完成的舊任務">\${oldDebts.length}</div>\`;
+                badgeHtml = `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>`;
             }
 
             // 🔥 紅點點對齊優化：將紅點與「座號按鈕」包裝在一起
-            div.innerHTML = \`
+            div.innerHTML = `
                 <div style="position: relative; flex-shrink: 0;">
-                    \${badgeHtml}
-                    <div class="seat s\${status}">\${s.no}</div>
+                    ${badgeHtml}
+                    <div class="seat s${status}">${s.no}</div>
                 </div>
-                <div class="seatName">\${s.name}</div>
-            \`;
+                <div class="seatName">${s.name}</div>
+            `;
             
             if(isAssigned) {
                 div.querySelector('.seat').onclick = () => toggleStatus(id, i);
