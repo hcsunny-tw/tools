@@ -1498,27 +1498,28 @@
             renderDashboard(); // 重新渲染列表以更新側邊欄標題
         }
     };
-
-    // ============================================================
-    // 🚨 舊帳快速清算系統 (跨任務補交) - 絕對修復淨化版
+// ============================================================
+    // 🚨 舊帳快速清算系統 (跨任務補交) - 終極防呆版
     // ============================================================
     function openQuickDebtMenu(e, sidx, oldDebts) {
         e.stopPropagation();
         const menu = document.getElementById('quickDebtMenu');
+        
+        // 🔥 強制型別轉換防呆：確保字串與數字比對不會出錯
         const studentId = String(sidx);
         
-        // 1. 如果點擊同一個學生的紅點，則收起
+        // 判斷是否點擊同一個學生的紅點，如果是則收起
         if (menu.classList.contains('show') && menu.dataset.currentSidx === studentId) {
             menu.classList.remove('show');
-            menu.style.display = ''; // 🔥 淨化魔法：清除任何霸道的殘留樣式
-            menu.dataset.currentSidx = ""; 
+            menu.dataset.currentSidx = ""; // 乾淨地清空狀態
             return;
         }
         
-        menu.dataset.currentSidx = studentId;
+        menu.dataset.currentSidx = studentId; // 記錄目前開著誰的舊帳
         const list = document.getElementById('quickDebtList');
         const student = data.roster[sidx];
 
+        // 繪製標題與更明顯的 X 關閉按鈕 (加入了專屬 class: btn-close-debt)
         document.getElementById('quickDebtTitle').innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span>【${student.name}】待清舊帳</span>
@@ -1541,18 +1542,14 @@
                 evt.stopPropagation();
                 updateStatus(debt.id, sidx, 3);
                 menu.classList.remove('show');
-                menu.style.display = ''; // 🔥 淨化魔法
                 menu.dataset.currentSidx = "";
                 showToast(`✅ 已將「${debt.title}」標記為完成！`, "確認");
             };
             list.appendChild(item);
         });
 
-        // 🔥 修復關鍵：把控制權交還給 CSS，徹底移除手動寫死的 display
-        menu.style.display = ''; 
-        menu.classList.add('show'); 
-        
-        // 自動定位在滑鼠點擊處附近
+        // 定位並顯示
+        menu.style.display = 'flex'; 
         let x = e.clientX + 10;
         let y = e.clientY + 10;
         const rect = menu.getBoundingClientRect();
@@ -1560,9 +1557,10 @@
         if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
         menu.style.left = x + 'px';
         menu.style.top = y + 'px';
+        menu.classList.add('show');
     }
 
-    // 🔥 統一處理全域點擊事件 (精準控制視窗關閉與淨化)
+    // 🔥 統一處理全域點擊事件 (精準控制視窗關閉)
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('quickDebtMenu');
         if (!menu || !menu.classList.contains('show')) return;
@@ -1570,7 +1568,6 @@
         // 情況 1：如果點擊到「X」關閉按鈕
         if (e.target.closest('.btn-close-debt')) {
             menu.classList.remove('show');
-            menu.style.display = ''; // 🔥 淨化魔法
             menu.dataset.currentSidx = "";
             return;
         }
@@ -1583,9 +1580,81 @@
 
         // 情況 4：點擊網頁其他空白處，一律強制關閉
         menu.classList.remove('show');
-        menu.style.display = ''; // 🔥 淨化魔法
         menu.dataset.currentSidx = "";
     });
+
+    function renderDashboardDetail(id) {
+        const a = data.assignments.find(x => x.id == id);
+        if (!a) return;
+        document.getElementById('dashEmptyState').style.display = 'none';
+        document.getElementById('dashDetailPanel').classList.add('show');
+        
+        // 🔥 新增：標題旁的編輯按鈕
+        document.getElementById('dashDetailTitle').innerHTML = `
+            <span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> 
+            ${a.title}
+            <button class="btn sm ghost icon-only" title="編輯名稱" onclick="editAssignmentTitle(${a.id})" style="border:none; color:var(--muted);"><i class="bi bi-pencil-fill"></i></button>
+        `;
+
+        const grid = document.getElementById('dashGridContainer');
+        grid.innerHTML = '';
+        const indices = a.assignedIndices || 'all';
+        
+
+      data.roster.forEach((s, i) => {
+            const isAssigned = indices === 'all' || indices.includes(i);
+            const status = (a.statuses || [])[i] || 0;
+            const div = document.createElement('div');
+            div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
+            div.style.position = 'relative'; // 讓紅點可以附著在座位上
+            
+            // 🔥 新增：跨任務搜尋該學生的「其他未完成舊帳」
+            let oldDebts = [];
+            if(isAssigned) {
+                (data.assignments || []).forEach(otherA => {
+                    // 排除當前任務與封存任務
+                    if (otherA.id !== a.id && !otherA.archived) {
+                        const otherIndices = otherA.assignedIndices || 'all';
+                        if (otherIndices === 'all' || otherIndices.includes(i)) {
+                            const otherSt = (otherA.statuses || [])[i] || 0;
+                            // 如果是未回報(0)或再挑戰(2)，就列入舊帳
+                            if (otherSt === 0 || otherSt === 2) {
+                                oldDebts.push({ id: otherA.id, title: otherA.title, st: otherSt });
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 如果有舊帳，產生紅色數字提示點
+            let badgeHtml = '';
+            if (oldDebts.length > 0) {
+                badgeHtml = `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>`;
+            }
+
+            div.innerHTML = `
+                ${badgeHtml}
+                <div class="seat s${status}">${s.no}</div>
+                <div class="seatName">${s.name}</div>
+            `;
+            
+            if(isAssigned) {
+                // 點擊座位方塊：切換「當前」任務狀態
+                div.querySelector('.seat').onclick = () => toggleStatus(id, i);
+                
+                // 點擊紅點：開啟「舊帳清單」
+                const badge = div.querySelector('.debt-badge');
+                if (badge) badge.onclick = (e) => openQuickDebtMenu(e, i, oldDebts);
+            }
+            grid.appendChild(div);
+        });
+
+        document.getElementById('btnDeleteCurrent').onclick = () => {
+            targetAssignmentIdToDelete = id;
+            document.getElementById('deleteTargetTitle').innerText = a.title;
+            document.getElementById('deleteChoiceModal').classList.add('show');
+        };
+    }
 
     function toggleStatus(aid, idx) {
         resumeAudio();
