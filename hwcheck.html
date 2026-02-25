@@ -1498,31 +1498,32 @@
             renderDashboard(); // 重新渲染列表以更新側邊欄標題
         }
     };
-
 // ============================================================
-    // 🚨 舊帳快速清算系統 (跨任務補交) - 優化版 (可關閉)
+    // 🚨 舊帳快速清算系統 (跨任務補交) - 終極防呆版
     // ============================================================
     function openQuickDebtMenu(e, sidx, oldDebts) {
         e.stopPropagation();
         const menu = document.getElementById('quickDebtMenu');
         
-        // 🔥 優化 1：如果選單已經開著，而且點的是同一個學生的紅點，就直接關閉
-        if (menu.classList.contains('show') && menu.dataset.currentSidx == sidx) {
+        // 🔥 強制型別轉換防呆：確保字串與數字比對不會出錯
+        const studentId = String(sidx);
+        
+        // 判斷是否點擊同一個學生的紅點，如果是則收起
+        if (menu.classList.contains('show') && menu.dataset.currentSidx === studentId) {
             menu.classList.remove('show');
+            menu.dataset.currentSidx = ""; // 乾淨地清空狀態
             return;
         }
         
-        menu.dataset.currentSidx = sidx; // 紀錄目前開啟的是哪位學生
+        menu.dataset.currentSidx = studentId; // 記錄目前開著誰的舊帳
         const list = document.getElementById('quickDebtList');
         const student = data.roster[sidx];
 
-        // 🔥 優化 2：在標題列加入明顯的「X」關閉按鈕
+        // 繪製標題與更明顯的 X 關閉按鈕 (加入了專屬 class: btn-close-debt)
         document.getElementById('quickDebtTitle').innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span>【${student.name}】待清舊帳</span>
-                <i class="bi bi-x-circle-fill" style="cursor: pointer; font-size: 16px; opacity: 0.7;" 
-                   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" 
-                   onclick="document.getElementById('quickDebtMenu').classList.remove('show')"></i>
+                <i class="bi bi-x-circle-fill btn-close-debt" style="cursor: pointer; font-size: 18px; color: var(--danger); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" title="關閉"></i>
             </div>
         `;
         list.innerHTML = '';
@@ -1537,40 +1538,50 @@
                 <button class="btn sm" style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--primary); color: #fff;"><i class="bi bi-check-lg"></i> 補交</button>
             `;
             
-            // 點擊補交按鈕
             item.onclick = (evt) => {
                 evt.stopPropagation();
-                // 呼叫原本的更新函數，直接標記為討伐成功(3)
                 updateStatus(debt.id, sidx, 3);
                 menu.classList.remove('show');
+                menu.dataset.currentSidx = "";
                 showToast(`✅ 已將「${debt.title}」標記為完成！`, "確認");
             };
             list.appendChild(item);
         });
 
-        // 自動定位在滑鼠點擊處附近
+        // 定位並顯示
         menu.style.display = 'flex'; 
         let x = e.clientX + 10;
         let y = e.clientY + 10;
-        
-        // 防呆：避免選單超出螢幕右下角
         const rect = menu.getBoundingClientRect();
         if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 10;
         if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
-
         menu.style.left = x + 'px';
         menu.style.top = y + 'px';
         menu.classList.add('show');
     }
 
-    // 點擊網頁空白處會自動關閉選單 (保留這個好用的功能)
+    // 🔥 統一處理全域點擊事件 (精準控制視窗關閉)
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('quickDebtMenu');
-        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge')) {
-            menu.classList.remove('show');
-        }
-    });
+        if (!menu || !menu.classList.contains('show')) return;
 
+        // 情況 1：如果點擊到「X」關閉按鈕
+        if (e.target.closest('.btn-close-debt')) {
+            menu.classList.remove('show');
+            menu.dataset.currentSidx = "";
+            return;
+        }
+
+        // 情況 2：如果點擊到選單裡面 (包含補交按鈕等)，不要關閉
+        if (menu.contains(e.target)) return;
+        
+        // 情況 3：如果點擊到其他的紅點，不要在這裡關閉，交給上面的紅點 onclick 處理
+        if (e.target.closest('.debt-badge')) return;
+
+        // 情況 4：點擊網頁其他空白處，一律強制關閉
+        menu.classList.remove('show');
+        menu.dataset.currentSidx = "";
+    });
 
     function renderDashboardDetail(id) {
         const a = data.assignments.find(x => x.id == id);
@@ -2828,13 +2839,10 @@
                 btn.innerText = "再次抽出冒險者";
             }
         }
-        
         // 開始轉動
         roll();
     });
 
-
-    
   </script>
 </body>
 </html>
