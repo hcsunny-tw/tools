@@ -1499,16 +1499,32 @@
         }
     };
 
-    // ============================================================
-    // 🚨 舊帳快速清算系統 (跨任務補交) - 絕對安全防呆區
+// ============================================================
+    // 🚨 舊帳快速清算系統 (跨任務補交) - 優化版 (可關閉)
     // ============================================================
     function openQuickDebtMenu(e, sidx, oldDebts) {
         e.stopPropagation();
         const menu = document.getElementById('quickDebtMenu');
+        
+        // 🔥 優化 1：如果選單已經開著，而且點的是同一個學生的紅點，就直接關閉
+        if (menu.classList.contains('show') && menu.dataset.currentSidx == sidx) {
+            menu.classList.remove('show');
+            return;
+        }
+        
+        menu.dataset.currentSidx = sidx; // 紀錄目前開啟的是哪位學生
         const list = document.getElementById('quickDebtList');
         const student = data.roster[sidx];
 
-        document.getElementById('quickDebtTitle').innerText = `【${student.name}】待清舊帳`;
+        // 🔥 優化 2：在標題列加入明顯的「X」關閉按鈕
+        document.getElementById('quickDebtTitle').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>【${student.name}】待清舊帳</span>
+                <i class="bi bi-x-circle-fill" style="cursor: pointer; font-size: 16px; opacity: 0.7;" 
+                   onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" 
+                   onclick="document.getElementById('quickDebtMenu').classList.remove('show')"></i>
+            </div>
+        `;
         list.innerHTML = '';
         
         oldDebts.forEach(debt => {
@@ -1547,7 +1563,7 @@
         menu.classList.add('show');
     }
 
-    // 點擊網頁空白處會自動關閉選單
+    // 點擊網頁空白處會自動關閉選單 (保留這個好用的功能)
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('quickDebtMenu');
         if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge')) {
