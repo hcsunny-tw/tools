@@ -2069,6 +2069,10 @@
     });
     document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
 
+
+    // ============================================================
+    // 發布單一新任務
+    // ============================================================
     document.getElementById('btnCreate').addEventListener('click', () => {
         let t = document.getElementById('ipTeacherSelect').value;
         if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
@@ -2085,7 +2089,50 @@
         triggerAutoSave(); resetNewAssignmentState(); renderAll();
         // 成功後關閉彈窗
         document.getElementById('panelNewQuest').classList.remove('show');
-    });
+    }); // 👈 剛才很可能是這裡的 }); 不小心被吃掉了！
+
+    // ============================================================
+    // 🪄 新增：一鍵發布「每日套裝」邏輯
+    // ============================================================
+    document.getElementById('btnCreateDailyCombo').addEventListener('click', () => {
+        let t = document.getElementById('ipTeacherSelect').value;
+        if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
+        const d = document.getElementById('ipDate').value;
+        
+        if(!t || !d) { alert("請確認導師姓名與發布日期！"); return; }
+        if(!data.teachers.includes(t)) data.teachers.push(t);
+        
+        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
+        const assigned = isAll ? 'all' : newAssignmentAssignedIndices;
+
+        // 🌟 您可以在這裡自訂每天固定的任務清單！
+        const dailyTasks = [
+            { title: "國語課文朗讀", subject: "國語" },
+            { title: "數學課後演練", subject: "數學" },
+            { title: "家事小幫手", subject: "綜合" }
+        ];
+
+        // 瞬間產生多筆任務
+        dailyTasks.forEach((task, index) => {
+            data.assignments.push({ 
+                id: Date.now() + index, 
+                teacher: t, 
+                title: task.title, 
+                subject: task.subject, 
+                date: d, 
+                assignedIndices: assigned, 
+                statuses: Array(data.roster.length).fill(0) 
+            });
+        });
+
+        triggerAutoSave(); 
+        resetNewAssignmentState(); 
+        renderAll();
+        
+        document.getElementById('panelNewQuest').classList.remove('show');
+        playSuccessSound(); 
+        showToast("✨ 每日套裝已成功發布！", "確認");
+    }); // 👈 以及確認最後這行有完整複製到
 
     document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("全員已報？")) updateAllStatus(1); });
     document.getElementById('btnMarkAllOrange').addEventListener('click', () => { if(confirm("全員再戰？")) updateAllStatus(2); });
