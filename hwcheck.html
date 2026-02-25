@@ -202,6 +202,32 @@
     .overview-card.danger .overview-header { color: var(--danger); }
     .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
 
+
+    /* 🚨 舊帳快速清算系統 */
+    .debt-badge { 
+        position: absolute; top: -6px; right: -6px; 
+        background: var(--danger); color: white; border-radius: 50%; 
+        width: 22px; height: 22px; font-size: 12px; font-weight: bold; 
+        display: grid; place-items: center; border: 2px solid var(--card); 
+        z-index: 5; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
+        transition: transform 0.2s; 
+    }
+    .debt-badge:hover { transform: scale(1.2) rotate(10deg); }
+    
+    #quickDebtMenu { 
+        display: none; position: fixed; background: var(--card); 
+        border: 3px solid var(--danger); border-radius: 8px; padding: 12px; 
+        z-index: 20000; box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: 260px; 
+        flex-direction: column; 
+    }
+    #quickDebtMenu.show { display: flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .quick-debt-item { 
+        background: var(--bg); border: 1px solid var(--tbl-border); padding: 8px; 
+        border-radius: 6px; display: flex; justify-content: space-between; 
+        align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; 
+    }
+    .quick-debt-item:hover { border-color: var(--success); background: #f0fdf4; transform: translateX(2px); }
+    
     /* 🔥 修復：狀態選單 (使用 fixed 避免跑版，移除 scale 計算) */
     #statusPicker { display: none; position: fixed; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 20000; width: 160px; flex-direction: column; gap: 8px; }
     #statusPicker.show { display: flex; }
@@ -880,6 +906,10 @@
       <button class="status-option-btn sp-2" data-status="2"><span class="dot s2"></span> 再挑戰</button>
       <button class="status-option-btn sp-3" data-status="3"><span class="dot s3"></span> 討伐成功</button>
   </div>
+  <div id="quickDebtMenu">
+      <div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div>
+      <div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div>
+  </div>
   <div id="customTooltip" class="custom-tooltip"></div>
 
   <!-- 工具箱結構 -->
@@ -1486,14 +1516,51 @@
         grid.innerHTML = '';
         const indices = a.assignedIndices || 'all';
         
-        data.roster.forEach((s, i) => {
+
+      data.roster.forEach((s, i) => {
             const isAssigned = indices === 'all' || indices.includes(i);
             const status = (a.statuses || [])[i] || 0;
             const div = document.createElement('div');
             div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
-            div.innerHTML = `<div class="seat s${status}">${s.no}</div><div class="seatName">${s.name}</div>`;
+            div.style.position = 'relative'; // 讓紅點可以附著在座位上
+            
+            // 🔥 新增：跨任務搜尋該學生的「其他未完成舊帳」
+            let oldDebts = [];
             if(isAssigned) {
+                (data.assignments || []).forEach(otherA => {
+                    // 排除當前任務與封存任務
+                    if (otherA.id !== a.id && !otherA.archived) {
+                        const otherIndices = otherA.assignedIndices || 'all';
+                        if (otherIndices === 'all' || otherIndices.includes(i)) {
+                            const otherSt = (otherA.statuses || [])[i] || 0;
+                            // 如果是未回報(0)或再挑戰(2)，就列入舊帳
+                            if (otherSt === 0 || otherSt === 2) {
+                                oldDebts.push({ id: otherA.id, title: otherA.title, st: otherSt });
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 如果有舊帳，產生紅色數字提示點
+            let badgeHtml = '';
+            if (oldDebts.length > 0) {
+                badgeHtml = `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>`;
+            }
+
+            div.innerHTML = `
+                ${badgeHtml}
+                <div class="seat s${status}">${s.no}</div>
+                <div class="seatName">${s.name}</div>
+            `;
+            
+            if(isAssigned) {
+                // 點擊座位方塊：切換「當前」任務狀態
                 div.querySelector('.seat').onclick = () => toggleStatus(id, i);
+                
+                // 點擊紅點：開啟「舊帳清單」
+                const badge = div.querySelector('.debt-badge');
+                if (badge) badge.onclick = (e) => openQuickDebtMenu(e, i, oldDebts);
             }
             grid.appendChild(div);
         });
