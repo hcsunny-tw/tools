@@ -69,6 +69,7 @@
             text-align: center;
             max-width: 600px;
             width: 90%;
+            position: relative; /* 為了全螢幕按鈕定位 */
         }
 
         h1 {
@@ -97,6 +98,7 @@
             overflow: hidden;
             margin: 1.5rem 0;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            position: relative; /* 為了放置參考線 */
         }
 
         .meter-bar {
@@ -106,6 +108,20 @@
             border-radius: 20px;
             transition: width 0.1s ease, background-color 0.8s ease;
         }
+
+        /* 音量參考線 */
+        .threshold-marker {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+
+        .threshold-marker.warn { background-color: #f59e0b; }
+        .threshold-marker.danger { background-color: #ef4444; }
+
 
         .volume-text {
             font-size: 2.5rem;
@@ -168,6 +184,27 @@
         .btn-record { background-color: #f59e0b; color: white; }
         .btn-export { background-color: #10b981; color: white; }
         .btn-stop { background-color: #ef4444; color: white; display: none; }
+        
+        /* 全螢幕按鈕 */
+        .btn-fullscreen {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            box-shadow: none;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .btn-fullscreen:hover {
+            opacity: 1;
+            transform: none;
+            box-shadow: none;
+        }
+
 
         /* 狀態指示標籤 */
         .status-badge {
@@ -240,6 +277,9 @@
     </div>
 
     <div class="main-container">
+        <!-- 全螢幕按鈕 -->
+        <button class="btn-fullscreen" id="btn-fullscreen" title="全螢幕">🖥️</button>
+
         <h1>🌟 班級音量小精靈 🌟</h1>
         
         <div class="emoji-display" id="main-emoji">😊</div>
@@ -250,6 +290,9 @@
         
         <div class="meter-container">
             <div class="meter-bar" id="meter-bar"></div>
+            <!-- 音量參考線 -->
+            <div class="threshold-marker warn" id="marker-warn" style="left: 50%;"></div>
+            <div class="threshold-marker danger" id="marker-danger" style="left: 75%;"></div>
         </div>
         
         <div class="status-badge" id="recording-status">目前未記錄</div>
@@ -283,6 +326,7 @@
         
         // 狀態與設定
         let currentVolume = 0;
+        let smoothedVolume = 0; // 平滑化後的音量
         let warnThreshold = 50;
         let dangerThreshold = 75;
         let currentState = 'quiet'; // 'quiet', 'warning', 'danger'
@@ -311,7 +355,44 @@
         const btnModalCancel = document.getElementById('btn-modal-cancel');
         const btnModalConfirm = document.getElementById('btn-modal-confirm');
 
-        // --- 初始化滑桿 ---
+        // 參考線元素
+        const markerWarn = document.getElementById('marker-warn');
+        const markerDanger = document.getElementById('marker-danger');
+
+        // 全螢幕按鈕
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+
+        // --- 全螢幕功能 ---
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`錯誤，無法啟用全螢幕模式: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // 監聽全螢幕狀態改變，更新按鈕圖示
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                btnFullscreen.innerText = '❌'; // 退出全螢幕圖示
+                btnFullscreen.title = '退出全螢幕';
+            } else {
+                btnFullscreen.innerText = '🖥️'; // 進入全螢幕圖示
+                btnFullscreen.title = '全螢幕';
+            }
+        });
+
+
+        // --- 初始化滑桿與參考線 ---
+        function updateMarkers() {
+            markerWarn.style.left = `${warnThreshold}%`;
+            markerDanger.style.left = `${dangerThreshold}%`;
+        }
+
         document.getElementById('warn-threshold').addEventListener('input', (e) => {
             warnThreshold = parseInt(e.target.value);
             document.getElementById('warn-val').innerText = warnThreshold;
@@ -321,6 +402,7 @@
                 document.getElementById('danger-threshold').value = dangerThreshold;
                 document.getElementById('danger-val').innerText = dangerThreshold;
             }
+            updateMarkers();
         });
 
         document.getElementById('danger-threshold').addEventListener('input', (e) => {
@@ -332,6 +414,7 @@
                 document.getElementById('warn-threshold').value = warnThreshold;
                 document.getElementById('warn-val').innerText = warnThreshold;
             }
+            updateMarkers();
         });
 
         // --- 啟動麥克風 ---
@@ -386,7 +469,11 @@
             let average = sum / dataArray.length;
             
             // 將 0-255 映射到大概 0-100 的視覺分貝值
-            currentVolume = Math.min(100, Math.round(average * 1.2));
+            let targetVolume = Math.min(100, Math.round(average * 1.2));
+            
+            // 平滑化緩動演算法 (Lerp)
+            smoothedVolume = smoothedVolume * 0.8 + targetVolume * 0.2;
+            currentVolume = Math.round(smoothedVolume);
             
             // 平滑更新數字與進度條
             volumeValue.innerText = currentVolume;
@@ -450,12 +537,12 @@
             const duration = Math.random() * 3 + 4; // 4 到 7 秒
             bubble.style.animationDuration = `${duration}s`;
             
-            bubblesContainer.appendChild(bubble);
-
-            // 動畫結束後移除元素，避免佔用記憶體
-            setTimeout(() => {
+            // 效能優化：使用 animationend 事件確保泡泡動畫結束後移除
+            bubble.addEventListener('animationend', () => {
                 bubble.remove();
-            }, duration * 1000);
+            });
+
+            bubblesContainer.appendChild(bubble);
         }
 
         // --- 記錄功能 ---
@@ -526,6 +613,19 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            // 匯出後清除記錄標記，解除防呆警告
+            volumeLog = [];
+            statusBadge.innerText = `✅ 已成功匯出`;
+        });
+
+        // --- 防呆機制：防止誤關網頁遺失資料 ---
+        window.addEventListener('beforeunload', (e) => {
+            if (isRecording || volumeLog.length > 0) {
+                // 大多數現代瀏覽器會顯示內建的警告訊息
+                e.preventDefault();
+                e.returnValue = '';
+            }
         });
 
     </script>
