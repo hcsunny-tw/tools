@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班級音量小精靈</title>
+    <style>
+        :root {
+            /* 預設顏色 (安靜) */
+            --bg-color: #e0f8e9;
+            --primary-color: #4ade80;
+            --text-color: #166534;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', '微軟正黑體', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.8s ease, color 0.8s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 漂浮泡泡容器 */
+        #bubbles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            font-size: 2rem;
+            animation: floatUp linear forwards;
+            opacity: 0.7;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.8);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-110vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* 主要控制與顯示區塊 */
+        .main-container {
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 2.2rem;
+        }
+
+        /* 大表情符號 */
+        .emoji-display {
+            font-size: 8rem;
+            margin: 1rem 0;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        
+        .emoji-display.bounce {
+            transform: scale(1.1);
+        }
+
+        /* 音量條 */
+        .meter-container {
+            width: 100%;
+            height: 40px;
+            background-color: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .meter-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary-color);
+            border-radius: 20px;
+            transition: width 0.1s ease, background-color 0.8s ease;
+        }
+
+        .volume-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        /* 控制面板 (滑桿與按鈕) */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed #ccc;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 60%;
+            accent-color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-start { background-color: #3b82f6; color: white; }
+        .btn-record { background-color: #f59e0b; color: white; }
+        .btn-export { background-color: #10b981; color: white; }
+        .btn-stop { background-color: #ef4444; color: white; display: none; }
+
+        /* 狀態指示標籤 */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            opacity: 0.8;
+        }
+
+        /* 彈出視窗 (Modal) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-box {
+            transform: translateY(0);
+        }
+        .modal-btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn-confirm { background-color: #3b82f6; color: white; }
+        .btn-cancel { background-color: #9ca3af; color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="bubbles-container"></div>
+
+    <!-- 麥克風權限提示 Modal -->
+    <div class="modal-overlay" id="mic-modal">
+        <div class="modal-box">
+            <h2>🎤 準備開始挑戰</h2>
+            <p style="font-size: 1.1rem; color: #4b5563; margin-bottom: 1.5rem;">
+                為了讓小精靈聽到班上的聲音，我們需要開啟麥克風權限喔！<br><br>請在稍後的提示中點選「<b>允許</b>」。
+            </p>
+            <div class="modal-btn-group">
+                <button class="btn-cancel" id="btn-modal-cancel">先不要</button>
+                <button class="btn-confirm" id="btn-modal-confirm">準備好了！</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h1>🌟 班級音量小精靈 🌟</h1>
+        
+        <div class="emoji-display" id="main-emoji">😊</div>
+        
+        <div class="volume-text">
+            <span id="volume-value">0</span> <span style="font-size: 1.2rem;">分貝 (估算)</span>
+        </div>
+        
+        <div class="meter-container">
+            <div class="meter-bar" id="meter-bar"></div>
+        </div>
+        
+        <div class="status-badge" id="recording-status">目前未記錄</div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <label>😯 討論提醒標準：<span id="warn-val">50</span></label>
+                <input type="range" id="warn-threshold" min="30" max="90" value="50">
+            </div>
+            <div class="slider-group">
+                <label>🤯 太吵警告標準：<span id="danger-val">75</span></label>
+                <input type="range" id="danger-threshold" min="40" max="100" value="75">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-start" id="btn-mic">開始挑戰 🚀</button>
+                <button class="btn-record" id="btn-record">開始記錄 📝</button>
+                <button class="btn-stop" id="btn-stop-record">停止記錄 ⏹️</button>
+                <button class="btn-export" id="btn-export">匯出 Excel (CSV) 📊</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心變數 ---
+        let audioContext;
+        let analyser;
+        let microphone;
+        let dataArray;
+        let isMicActive = false;
+        
+        // 狀態與設定
+        let currentVolume = 0;
+        let warnThreshold = 50;
+        let dangerThreshold = 75;
+        let currentState = 'quiet'; // 'quiet', 'warning', 'danger'
+        
+        // 紀錄相關
+        let isRecording = false;
+        let volumeLog = []; // 儲存記錄的陣列
+        let recordInterval;
+
+        // Emoji 設定
+        const emojis = {
+            quiet: ['😊', '😄', '🥰', '👼', '🌱'],
+            warning: ['😯', '🤔', '🤫', '💬', '👀'],
+            danger: ['🤯', '🙉', '🌋', '📢', '💢']
+        };
+
+        // DOM 元素
+        const mainEmoji = document.getElementById('main-emoji');
+        const volumeValue = document.getElementById('volume-value');
+        const meterBar = document.getElementById('meter-bar');
+        const bubblesContainer = document.getElementById('bubbles-container');
+        const root = document.documentElement;
+        
+        // Modal 元素
+        const micModal = document.getElementById('mic-modal');
+        const btnModalCancel = document.getElementById('btn-modal-cancel');
+        const btnModalConfirm = document.getElementById('btn-modal-confirm');
+
+        // --- 初始化滑桿 ---
+        document.getElementById('warn-threshold').addEventListener('input', (e) => {
+            warnThreshold = parseInt(e.target.value);
+            document.getElementById('warn-val').innerText = warnThreshold;
+            // 確保危險標準大於警告標準
+            if (warnThreshold >= dangerThreshold) {
+                dangerThreshold = warnThreshold + 5;
+                document.getElementById('danger-threshold').value = dangerThreshold;
+                document.getElementById('danger-val').innerText = dangerThreshold;
+            }
+        });
+
+        document.getElementById('danger-threshold').addEventListener('input', (e) => {
+            dangerThreshold = parseInt(e.target.value);
+            document.getElementById('danger-val').innerText = dangerThreshold;
+            // 確保危險標準大於警告標準
+            if (dangerThreshold <= warnThreshold) {
+                warnThreshold = dangerThreshold - 5;
+                document.getElementById('warn-threshold').value = warnThreshold;
+                document.getElementById('warn-val').innerText = warnThreshold;
+            }
+        });
+
+        // --- 啟動麥克風 ---
+        document.getElementById('btn-mic').addEventListener('click', () => {
+            if (isMicActive) return;
+            micModal.classList.add('show'); // 顯示確認視窗
+        });
+
+        btnModalCancel.addEventListener('click', () => {
+            micModal.classList.remove('show'); // 隱藏確認視窗
+        });
+
+        btnModalConfirm.addEventListener('click', async () => {
+            micModal.classList.remove('show'); // 隱藏確認視窗
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                await audioContext.resume(); // 強制喚醒音訊系統，避免瀏覽器阻擋
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                
+                analyser.smoothingTimeConstant = 0.8;
+                analyser.fftSize = 256;
+                microphone.connect(analyser);
+                
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                isMicActive = true;
+                
+                document.getElementById('btn-mic').innerText = "挑戰進行中 🟢";
+                document.getElementById('btn-mic').style.backgroundColor = "#22c55e";
+                
+                updateLoop();
+                setInterval(spawnBubble, 800); // 每0.8秒產生一個背景泡泡
+            } catch (err) {
+                alert("無法存取麥克風！\n\n1. 請確認瀏覽器網址列左上角有「允許」麥克風權限。\n2. 如果您在「預覽畫面」測試，可能被瀏覽器阻擋，請複製程式碼存成 html 檔後直接在瀏覽器開啟測試喔！");
+                console.error(err);
+            }
+        });
+
+        // --- 音量偵測與畫面更新 ---
+        function updateLoop() {
+            if (!isMicActive) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            
+            // 計算平均音量
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            let average = sum / dataArray.length;
+            
+            // 將 0-255 映射到大概 0-100 的視覺分貝值
+            currentVolume = Math.min(100, Math.round(average * 1.2));
+            
+            // 平滑更新數字與進度條
+            volumeValue.innerText = currentVolume;
+            meterBar.style.width = `${currentVolume}%`;
+
+            checkState();
+            
+            requestAnimationFrame(updateLoop);
+        }
+
+        // --- 檢查並切換狀態 (顏色與表情) ---
+        function checkState() {
+            let newState = 'quiet';
+            if (currentVolume >= dangerThreshold) {
+                newState = 'danger';
+            } else if (currentVolume >= warnThreshold) {
+                newState = 'warning';
+            }
+
+            if (newState !== currentState) {
+                currentState = newState;
+                updateUIForState();
+            }
+        }
+
+        function updateUIForState() {
+            mainEmoji.classList.add('bounce');
+            setTimeout(() => mainEmoji.classList.remove('bounce'), 300);
+
+            if (currentState === 'quiet') {
+                mainEmoji.innerText = '😊';
+                root.style.setProperty('--bg-color', '#e0f8e9'); // 柔和綠
+                root.style.setProperty('--primary-color', '#4ade80');
+                root.style.setProperty('--text-color', '#166534');
+            } else if (currentState === 'warning') {
+                mainEmoji.innerText = '😯';
+                root.style.setProperty('--bg-color', '#fef3c7'); // 柔和黃
+                root.style.setProperty('--primary-color', '#fbbf24');
+                root.style.setProperty('--text-color', '#92400e');
+            } else if (currentState === 'danger') {
+                mainEmoji.innerText = '🤯';
+                root.style.setProperty('--bg-color', '#fee2e2'); // 柔和紅
+                root.style.setProperty('--primary-color', '#ef4444');
+                root.style.setProperty('--text-color', '#991b1b');
+            }
+        }
+
+        // --- 產生背景漂浮泡泡 ---
+        function spawnBubble() {
+            if (!isMicActive) return;
+
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            
+            // 根據目前狀態隨機選擇一個 Emoji
+            const emojiList = emojis[currentState];
+            bubble.innerText = emojiList[Math.floor(Math.random() * emojiList.length)];
+            
+            // 隨機水平位置與大小
+            bubble.style.left = `${Math.random() * 90 + 5}%`;
+            const duration = Math.random() * 3 + 4; // 4 到 7 秒
+            bubble.style.animationDuration = `${duration}s`;
+            
+            bubblesContainer.appendChild(bubble);
+
+            // 動畫結束後移除元素，避免佔用記憶體
+            setTimeout(() => {
+                bubble.remove();
+            }, duration * 1000);
+        }
+
+        // --- 記錄功能 ---
+        const btnRecord = document.getElementById('btn-record');
+        const btnStopRecord = document.getElementById('btn-stop-record');
+        const statusBadge = document.getElementById('recording-status');
+
+        btnRecord.addEventListener('click', () => {
+            if (!isMicActive) {
+                alert("請先啟動麥克風！");
+                return;
+            }
+            isRecording = true;
+            volumeLog = []; // 清空之前的紀錄
+            btnRecord.style.display = 'none';
+            btnStopRecord.style.display = 'block';
+            statusBadge.innerText = '🔴 記錄中...';
+            statusBadge.style.backgroundColor = '#ef4444';
+            
+            // 每 2 秒記錄一次資料
+            recordInterval = setInterval(() => {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-TW', { hour12: false });
+                
+                let stateLabel = "安靜";
+                if (currentState === 'warning') stateLabel = "討論中";
+                if (currentState === 'danger') stateLabel = "太吵";
+
+                volumeLog.push({
+                    time: timeString,
+                    volume: currentVolume,
+                    state: stateLabel
+                });
+            }, 2000);
+        });
+
+        btnStopRecord.addEventListener('click', () => {
+            isRecording = false;
+            clearInterval(recordInterval);
+            btnRecord.style.display = 'block';
+            btnStopRecord.style.display = 'none';
+            statusBadge.innerText = `✅ 記錄完成 (共 ${volumeLog.length} 筆)`;
+            statusBadge.style.backgroundColor = '#10b981';
+        });
+
+        // --- 匯出 Excel (CSV) 功能 ---
+        document.getElementById('btn-export').addEventListener('click', () => {
+            if (volumeLog.length === 0) {
+                alert("目前沒有任何記錄喔！請先點擊「開始記錄」。");
+                return;
+            }
+
+            // 加入 BOM (\uFEFF) 確保 Excel 開啟時中文不會亂碼
+            let csvContent = "\uFEFF時間,音量大小(分貝),狀態\n";
+            
+            volumeLog.forEach(row => {
+                csvContent += `${row.time},${row.volume},${row.state}\n`;
+            });
+
+            // 建立 Blob 並觸發下載
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `班級音量紀錄_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+    </script>
+</body>
+</html>
