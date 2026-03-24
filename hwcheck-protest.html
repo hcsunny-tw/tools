@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 (PROT版) 🛡️</title>
+  <title>🛡️ 冒險者公會 (PRO版) 🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -756,22 +756,35 @@
         return `<span class="rank-text" style="color:${color};">${rank}</span>`;
     }
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
-  authDomain: "homework-hc906.firebaseapp.com",
-  projectId: "homework-hc906",
-  storageBucket: "homework-hc906.firebasestorage.app",
-  messagingSenderId: "1051903125085",
-  appId: "1:1051903125085:web:b205f868669ea7d5c34fb4",
-  measurementId: "G-V0BEG0TVJY"
-};
+    // =================================================================
+    // 🚨 Firebase 資料庫設定區 🚨
+    // 如果您「新建了一個專門給測試站的資料庫專案」，請務必將下方的設定
+    // 替換成您新專案的 firebaseConfig！ (可在新專案的 Project Settings 找到)
+    // =================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDlVtBkmo7pmrxQKXKUzQqIK8LIGW59Dyw",
+      authDomain: "hwcheck-8888.firebaseapp.com",
+      projectId: "hwcheck-8888",
+      storageBucket: "hwcheck-8888.firebasestorage.app",
+      messagingSenderId: "661808262560",
+      appId: "1:661808262560:web:413e036d53b19ea3c108c5",
+      measurementId: "G-FR4LMZ630Q"
+    };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let app, db, auth;
-    try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); } catch (e) { console.error(e); alert("Firebase 設定錯誤"); }
+    try { 
+        app = initializeApp(firebaseConfig); 
+        // 💡 備註：如果您是在同一個專案下建立了「第二個命名資料庫」(例如叫做 test-db)
+        // 請將下方改為： db = getFirestore(app, "test-db");
+        db = getFirestore(app); 
+        auth = getAuth(app); 
+    } catch (e) { 
+        console.error(e); alert("Firebase 初始化錯誤，請檢查 Config"); 
+    }
 
     let currentUser = null;
     let data = { roster: [], assignments: [], teachers: [], questSettings: {}, attendance: {}, discipline: null }; 
@@ -862,10 +875,17 @@ const firebaseConfig = {
             updateSaveStatus('success', '讀取完成');
             checkAttendanceReminder();
         } catch (error) {
-            console.log("切換至離線模式");
+            console.error("🔥 Firebase 讀取失敗:", error);
+            console.log("已切換至離線模式");
             if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData));
             onDataLoaded();
-            updateSaveStatus('error', '連線失敗(離線模式)');
+            
+            // 明確的權限錯誤提示
+            if (error.code === 'permission-denied') {
+                updateSaveStatus('error', '權限不足 (離線模式)');
+            } else {
+                updateSaveStatus('error', '連線失敗 (離線模式)');
+            }
         }
     }
 
@@ -875,8 +895,18 @@ const firebaseConfig = {
         updateSaveStatus('pending');
         saveTimeout = setTimeout(async () => {
             if (!currentUser) return;
-            try { await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data); updateSaveStatus('success'); } 
-            catch (e) { updateSaveStatus('error', '儲存失敗'); }
+            try { 
+                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data); 
+                updateSaveStatus('success'); 
+            } catch (e) { 
+                console.error("🔥 Firebase 儲存失敗:", e);
+                // 針對最常見的新資料庫「規則未開放」錯誤，給予精準的中文提示
+                if (e.code === 'permission-denied') {
+                    updateSaveStatus('error', '權限不足 (請檢查資料庫 Rules)');
+                } else {
+                    updateSaveStatus('error', '儲存失敗: ' + e.code);
+                }
+            }
         }, 1500); 
     }
 
@@ -886,7 +916,7 @@ const firebaseConfig = {
         if (status === 'pending') indicator.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
         else if (status === 'saving') indicator.innerHTML = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
         else if (status === 'success') indicator.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
-        else indicator.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
+        else indicator.innerHTML = `<span style="color:var(--danger)" title="${message}"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
     }
 
     let currentAssignmentId = null;
@@ -967,51 +997,6 @@ const firebaseConfig = {
         if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
         setTimeout(()=>t.remove(), 3000);
     }
-
-    function initApp() {
-        const theme = localStorage.getItem('hwTheme') || 'light';
-        const color = localStorage.getItem('hwColor') || 'guild';
-        document.documentElement.setAttribute('data-theme', theme);
-        document.documentElement.setAttribute('data-color-theme', color);
-        document.getElementById('darkModeToggle').checked = theme === 'dark';
-        document.querySelectorAll('.theme-option').forEach(el => el.classList.toggle('active', el.dataset.theme === color));
-        
-        switchView('view-dashboard');
-        loadDataFromFirebase(); // 🚨 使用正確的 Firebase 讀取函數
-        updateLabModeUI();      // 初始化 Lab 模式的 UI
-        
-        setInterval(() => {
-             const clk = document.getElementById('tbClock');
-             if(clk) clk.innerText = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
-        }, 1000);
-        document.getElementById('attDatePicker').value = getTaipeiDateString();
-    }
-
-    function checkAttendanceReminder() {
-        const today = new Date().toISOString().split('T')[0];
-        if (data.attendance && !data.attendance[today]) setTimeout(() => document.getElementById('attendanceReminderModal').classList.add('show'), 1000);
-    }
-    
-    document.getElementById('btnGoToAttendance').addEventListener('click', () => {
-        document.getElementById('attendanceReminderModal').classList.remove('show');
-        document.getElementById('adminProfileModal').classList.add('show');
-    });
-
-    // ⭐ EXP 變動函數
-    window.changeExp = function(sidx, delta, silent = false) {
-        if (!data.roster[sidx]) return;
-        if (typeof data.roster[sidx].exp === 'undefined') data.roster[sidx].exp = 0;
-        data.roster[sidx].exp += delta;
-        if (data.roster[sidx].exp < 0) data.roster[sidx].exp = 0; // 最低 0 分
-        
-        if (!silent) {
-            playCoinSound();
-            if (delta > 0) showToast(`✨ ${data.roster[sidx].name} 獲得 ${delta} 點 EXP！`);
-            else showToast(`💔 ${data.roster[sidx].name} 失去 ${Math.abs(delta)} 點 EXP...`);
-            triggerAutoSave();
-            renderAll();
-        }
-    };
 
     function onDataLoaded() {
         populateTeacherDropdowns();
