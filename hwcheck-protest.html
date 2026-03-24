@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW" data-theme="light" data-color-theme="guild">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🛡️ 冒險者公會 (PRO版) 🛡️</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* ============================================================
+       🚨 核心視圖控制 & 變數
+       ============================================================ */
+    .view { display: none !important; } 
+    .view.show { display: block !important; animation: fadeIn .3s ease; }
+    @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+    :root, html[data-color-theme='guild'] {
+      --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
+      --bg: #F4E4BC; --card: #FDF5E6; 
+      --tbl-head: #E6D2B5; --tbl-alt: #FAF0E6; --tbl-hover: #DEB887; --tbl-border: #D2B48C;
+      --text-main: #3E2723; --text-light: #5D4037; --muted: #8D6E63;
+      --success: #556B2F; --danger: #8B0000;
+      --progress-bar: #32CD32; 
+      --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
+      --radius: 8px; --seat: 56px; --seat-font: 16px; 
+    }
+    
+    html[data-color-theme='guild'] body {
+      font-family: "Courier New", Courier, "Microsoft JhengHei", monospace;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
+    html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
+    html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
+
+    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
+
+    html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --ring: rgba(211, 47, 47, 0.3); --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; --progress-bar: #00e676; --seat: 56px; --seat-font: 16px; }
+    html[data-color-theme='christmas'] body { background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 160 L60 120 L50 120 L70 90 L60 90 L80 60 L100 90 L90 90 L110 120 L100 120 L120 160 Z' fill='%232e7d32' opacity='0.15'/%3E%3Crect x='75' y='160' width='10' height='20' fill='%23795548' opacity='0.15'/%3E%3C!-- 雪人 --%3E%3Ccircle cx='150' cy='150' r='25' fill='%23b0bec5' opacity='0.15'/%3E%3Ccircle cx='150' cy='110' r='18' fill='%23b0bec5' opacity='0.15'/%3E%3C/svg%3E"); }
+    html[data-color-theme='christmas'] .logo { background: linear-gradient(135deg, #d32f2f, #2e7d32); box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); }
+    html[data-color-theme='christmas'][data-theme='dark'] { --primary: #ef5350; --accent: #66bb6a; --bg: #1b1b1b; --card: #2d2d2d; --text-main: #e2e8f0; --text-light: #94a3b8; --tbl-head: #2e3a2f; --tbl-alt: #1b1b1b; --tbl-hover: #3e2727; --tbl-border: #424242; }
+
+    html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --ring: rgba(37, 99, 235, 0.3); --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #3b82f6; }
+    html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --ring: rgba(249, 115, 22, 0.3); --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #f97316; }
+    html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --ring: rgba(46, 125, 50, 0.3); --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; --seat: 56px; --seat-font: 16px; --progress-bar: #4caf50; }
+    
+    html[data-color-theme='blue'][data-theme='dark'] { --primary: #60a5fa; --bg: #0f172a; --card: #1e293b; --text-main: #e2e8f0; --tbl-head: #1e293b; --tbl-alt: #0f172a; --tbl-hover: #334155; --tbl-border: #334155; }
+    html[data-color-theme='orange'][data-theme='dark'] { --primary: #fb923c; --bg: #431407; --card: #2a0a04; --text-main: #ffedd5; --tbl-head: #431407; --tbl-alt: #2a0a04; --tbl-hover: #5e1c0a; --tbl-border: #7c2d12; }
+    html[data-color-theme='green'][data-theme='dark'] { --primary: #66bb6a; --bg: #1b5e20; --card: #2e7d32; --text-main: #e8f5e9; --tbl-head: #1b5e20; --tbl-alt: #14421b; --tbl-hover: #388e3c; --tbl-border: #4caf50; }
+    
+    html[data-color-theme='warm-cute'] { --primary: #8FA781; --accent: #D4A373; --ring: rgba(143, 167, 129, 0.3); --bg: #FAEDCD; --card: #FEFAE0; --tbl-head: #E9EDC9; --tbl-alt: #FEFAE0; --tbl-hover: #E9EDC9; --tbl-border: #CCD5AE; --text-main: #582F0E; --text-light: #7F4F24; --muted: #A68A64; --shadow: 0 4px 12px rgba(88, 47, 14, 0.08); --radius: 16px; --seat: 56px; --seat-font: 16px; --progress-bar: #8FA781; --success: #6B9080; --danger: #E5989B;}
+    html[data-color-theme='warm-cute'] body { background-image: radial-gradient(#D4A373 1.5px, transparent 1.5px); background-size: 25px 25px; }
+    html[data-color-theme='warm-cute'] .card { border: 2px dashed var(--tbl-border); }
+    html[data-color-theme='warm-cute'] .btn { border-radius: 20px; box-shadow: 0 3px 0 var(--text-light); border: none; }
+    html[data-color-theme='warm-cute'] .btn:active { box-shadow: 0 0 0 var(--text-light); transform: translateY(3px); }
+    html[data-color-theme='warm-cute'] .seat { border-radius: 50%; }
+    html[data-color-theme='warm-cute'][data-theme='dark'] { --primary: #A3B18A; --accent: #D4A373; --bg: #3A302A; --card: #4A3F35; --text-main: #EAE0D5; --text-light: #C6AC8F; --muted: #8E8071; --tbl-head: #2C241E; --tbl-alt: #3A302A; --tbl-hover: #5E503F; --tbl-border: #5E503F; }
+
+    *{ box-sizing:border-box; }
+    html, body{ 
+        height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; 
+        transition: background-color .3s, color .3s; 
+        background: var(--bg); color: var(--text-main);
+    }
+    .wrap{ max-width:1200px; margin:0 auto; padding:16px 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
+    h1{ margin:0; font-size:clamp(18px,2.2vw,24px); font-weight:800; }
+    .muted{ color:var(--muted); font-size:12px; }
+    
+    .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
+    .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
+    .field{ display:flex; flex-direction:column; gap:4px; }
+    
+    label{ font-weight:800; font-size:13px; color: var(--text-light); }
+    input:not([type="checkbox"]), select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
+    input:focus, select:focus{ border-color:var(--primary); }
+    input[type="checkbox"] { width: auto; display: inline-block; cursor: pointer; }
+
+    .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .btn{ border:2px solid var(--text-light); border-radius:6px; padding:8px 16px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#fff; font-size:14px; }
+    .btn.ghost{ background:var(--card); color:var(--text-light); border:2px dashed var(--tbl-border); }
+    .btn.sm{ font-size:12px; padding:4px 10px; }
+    .btn.icon-only { padding: 4px 8px; font-size: 14px; }
+    .btn.chest { background: #DAA520; border-color: #B8860B; color: #fff; }
+    .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
+    .btn:active{ transform:translateY(2px); box-shadow:none; }
+    .btn.warn { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+    .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
+    .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
+    
+    .grid{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(calc(var(--seat) + 70px), 1fr)); background:var(--bg); border:2px solid var(--tbl-border); border-radius:var(--radius); padding:10px; }
+    .seatItem{ display:flex; align-items:center; gap:8px; }
+    .seatItem.not-assigned { opacity: 0.35; filter: grayscale(80%); pointer-events: none; }
+    .seat{ width:var(--seat); height:var(--seat); border-radius:12px; display:grid; place-items:center; font-weight:900; font-size:var(--seat-font); border:2px solid #5D4037; cursor:pointer; box-shadow:var(--shadow); transition:transform .06s; }
+    .seat:active{ transform:scale(.95); }
+    html[data-theme='dark'] .seat { border-color: var(--tbl-border); }
+    .s0{ background:#d6d3d1; color:#44403c; } .s1{ background:#fef9c3; color:#713f12; } 
+    .s2{ background:#fdba74; color:#9a3412; } .s3{ background:#86efac; color:#14532d; } 
+    .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* ⭐ EXP Badge & Titles */
+    .exp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: 900; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); border: 1px solid #b45309; }
+    .rank-text { font-size: 10px; opacity: 0.9; margin-left: 2px; }
+
+    .custom-tooltip { position: fixed; background: #3E2723; color: #FDF5E6; padding: 10px 14px; border-radius: 6px; font-size: 18px; font-weight: 900; pointer-events: none; z-index: 10002; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #CD853F; font-family: "Courier New", monospace; line-height: 1.5; white-space: pre-line; }
+    .custom-tooltip.show { display: block; animation: fadeIn .1s ease-out; }
+
+    .assignment-tooltip { position: fixed; background: var(--card); border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 9999; display: none; pointer-events: none; min-width: 180px; max-width: 300px; animation: fadeIn 0.15s ease-out; }
+    .assignment-tooltip h4 { margin: 0 0 8px; font-size: 18px; font-weight: 900; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
+    .assignment-tooltip ul { padding: 0; margin: 0; list-style: none; font-size: 16px; font-weight: bold; line-height: 1.5; }
+    .assignment-tooltip li { margin-bottom: 4px; word-wrap: break-word; }
+    .assignment-tooltip .t-miss { color: var(--muted); }
+    .assignment-tooltip .t-redo { color: var(--accent); }
+
+    .draw-rolling { animation: shakeBlur 0.1s infinite alternate; color: var(--muted) !important; transform: scale(1.05); border-color: var(--muted) !important; }
+    .draw-winner { animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; color: var(--danger) !important; background: #fff8e1 !important; border-color: var(--danger) !important; box-shadow: 0 0 15px rgba(211, 47, 47, 0.4); }
+    @keyframes shakeBlur { 0% { transform: translateX(-2px) translateY(1px) scale(1.05); filter: blur(0.5px); } 100% { transform: translateX(2px) translateY(-1px) scale(1.05); filter: blur(1px); } }
+    @keyframes popBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+    
+    .virtual-keypad { display: none; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; background: var(--tbl-alt); padding: 6px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
+    .vk-btn { background: var(--card); border: 1px solid var(--tbl-border); border-radius: 4px; padding: 6px 2px; font-size: 12px; font-weight: bold; cursor: pointer; color: var(--text-main); text-align: center; transition: all .1s; }
+    .vk-btn:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
+    .vk-btn:active { transform: translateY(1px); }
+    .vk-btn.wide { grid-column: span 2; }
+
+    .quest-config-card { background: var(--card); border: 1px solid var(--tbl-border); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+    .quest-config-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--tbl-head); padding-bottom: 8px; margin-bottom: 8px; }
+    .quest-config-title { font-weight: 900; font-size: 16px; color: var(--primary); }
+    .quest-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .quest-tag { background: var(--tbl-alt); padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; }
+    .quest-tag i { cursor: pointer; opacity: 0.6; transition: opacity .2s; }
+    .quest-tag i:hover { opacity: 1; color: var(--danger); }
+    .quest-add-row { display: flex; gap: 6px; margin-top: 10px; }
+
+    .status-overview { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .overview-card { flex: 1; min-width: 250px; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .overview-card.success { border-color: var(--success); background: #f0fdf4; }
+    .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
+    .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+    .overview-nums { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
+    .num-badge { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: bold; font-size: 22px; border: 2px solid rgba(255,255,255,0.5); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+    .overview-card.success .num-badge { background: var(--success); color: #fff; }
+    .overview-card.danger .num-badge { background: var(--danger); color: #fff; }
+    .overview-card.success .overview-header { color: var(--success); }
+    .overview-card.danger .overview-header { color: var(--danger); }
+    .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
+
+    .debt-badge { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: grid; place-items: center; border: 2px solid var(--card); z-index: 5; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s; }
+    .debt-badge:hover { transform: scale(1.2) rotate(10deg); }
+    
+    #quickDebtMenu { display: none; position: fixed; background: var(--card); border: 3px solid var(--danger); border-radius: 8px; padding: 12px; z-index: 20000; box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: 260px; flex-direction: column; }
+    #quickDebtMenu.show { display: flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .quick-debt-item { background: var(--bg); border: 1px solid var(--tbl-border); padding: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; }
+    .quick-debt-item:hover { border-color: var(--success); background: #f0fdf4; transform: translateX(2px); }
+    
+    #statusPicker { display: none; position: fixed; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 20000; width: 160px; flex-direction: column; gap: 8px; }
+    #statusPicker.show { display: flex; }
+    .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
+    .status-option-btn.sp-1 { background: #fef9c3; color: #854d0e; border-color: #facc15; }
+    .status-option-btn.sp-2 { background: #ffedd5; color: #9a3412; border-color: #fb923c; }
+    .status-option-btn.sp-3 { background: #dcfce7; color: #166534; border-color: #4ade80; }
+
+    #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+    #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; display: none; justify-content: center; align-items: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
+    .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
+
+    .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+    .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
+    .theme-option:hover { transform: scale(1.1); }
+    .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
+    .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
+    .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
+    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .theme-option[data-theme="green"] { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
+
+    .dark-mode-toggle { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border); margin-top: 20px; }
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .roster-tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
+    .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 800; cursor: pointer; color: var(--text-light); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; transition: all .2s; min-width: 120px; }
+    .tab-btn:hover { background: var(--tbl-hover); }
+    .tab-btn.active { background: var(--card); color: var(--primary); border-bottom-color: var(--primary); }
+    .roster-content { display: none; background: var(--card); padding: 16px; border-radius: 0 0 8px 8px; border: 1px solid var(--tbl-border); border-top: none; }
+    .roster-content.show { display: block; }
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; }
+    .roster-item, .teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-bottom: 1px dashed var(--tbl-border); }
+    .roster-no-input { flex: 0 0 60px; min-width: 0; }
+    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
+
+    .student-status-list { list-style: none; padding: 0; }
+    .student-status-list li { padding: 8px; border-bottom: 1px dashed var(--tbl-border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s; }
+    .student-status-list li:hover { background: var(--tbl-hover); }
+    .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-items: start; }
+    .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
+    .batch-mode .batch-export-checkbox { display: inline-block !important; }
+    
+    .pill { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: 20px; font-weight: 800; color: #fff; white-space: nowrap; font-size: 14px; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); transition: transform 0.1s; }
+    .pill:active { transform: scale(0.95); }
+    
+    .p-gray { background: #e5e7eb; color: #374151; } 
+    .p-yellow { background: #fef9c3; color: #854d0e; } 
+    .p-orange { background: #ffedd5; color: #9a3412; } 
+    .p-green { background: #dcfce7; color: #166534; } 
+    
+    .assign-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px; max-height: 400px; overflow-y: auto; }
+    .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
+    .assign-student-item:hover { background: var(--tbl-hover); }
+
+    .app-footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; font-weight: bold; margin-top: auto; border-top: 1px dashed var(--tbl-border); width: 100%; }
+
+    .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s; z-index: 5002; }
+    .toolbox-toggle:hover { transform: scale(1.1); }
+    .toolbox-toggle.active { transform: rotate(45deg); background: var(--danger); border-color: #ffcccc; }
+
+    .toolbox-menu { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 5px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s; pointer-events: none; }
+    .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    
+    .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; position: relative; }
+    .fab-btn:hover { transform: scale(1.15); color: #fff; background: var(--primary); }
+    
+    .tool-window { position: fixed; bottom: 100px; right: 90px; width: 300px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5005; }
+    .tool-window.show { display: flex; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    
+    .tool-header { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; padding: 0 5px; }
+    .tool-close:hover { opacity: 1; transform: scale(1.2); }
+    .tool-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .tb-clock { font-family: monospace; font-size: 32px; font-weight: bold; text-align: center; color: var(--primary); letter-spacing: 2px; }
+    .timer-controls { display: flex; gap: 8px; align-items: center; }
+    #timerDisplay { font-family: monospace; font-size: 28px; font-weight: bold; flex: 1; text-align: center; color: var(--text-main); }
+    #luckyDrawResult { font-size: 24px; font-weight: 900; text-align: center; color: var(--danger); min-height: 60px; display: grid; place-items: center; margin-bottom: 4px; border: 2px dashed var(--accent); border-radius: 8px; background: var(--bg); }
+    
+    .delete-choice-card { text-align: center; display: flex; flex-direction: column; gap: 16px; }
+    .delete-choice-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-archive { background: #607d8b; border-color: #455a64; color: #fff; }
+    .btn-destroy { background: #c62828; border-color: #b71c1c; color: #fff; }
+    .delete-desc { font-size: 14px; color: var(--muted); line-height: 1.5; background: var(--bg); padding: 10px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
+
+    .marquee-container { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.85); overflow: hidden; z-index: 9999; padding: 8px 0; pointer-events: none; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .marquee-content { display: inline-block; white-space: nowrap; font-weight: 900; padding-left: 100%; animation: marquee-anim linear infinite; font-family: "Microsoft JhengHei", monospace; text-shadow: 2px 2px 0px #000; }
+    @keyframes marquee-anim { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+    .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .toast-msg { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 16px; animation: slideUpFade 0.3s ease-out; font-weight: bold; min-width: 300px; justify-content: space-between; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; height: calc(100vh - 80px); overflow: hidden; }
+    .dash-sidebar { flex: 0 0 240px; display: flex; flex-direction: column; gap: 12px; height: 100%; overflow: hidden; }
+    .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto; }
+    .filter-panel { display: none; background: var(--card); border: 1px solid var(--tbl-border); border-top: none; padding: 10px; border-radius: 0 0 6px 6px; margin-bottom: 12px; animation: slideDown 0.2s ease-out; }
+    .filter-panel.show { display: block; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 768px) { .dashboard-layout { flex-direction: column; height: auto; } .dash-sidebar { width: 100%; position: static; flex: none; height: auto; } }
+
+    .side-list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; padding-right: 4px; border-top: 1px dashed var(--tbl-border); padding-top: 8px; }
+    .side-item { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .side-item:hover { border-color: var(--primary); transform: translateX(4px); }
+    .side-item.active { background: var(--primary); color: #fff; border-color: var(--text-main); box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+    .side-item.active .muted { color: rgba(255,255,255,0.8) !important; }
+    .side-item-title { font-weight: 900; font-size: 15px; margin-bottom: 4px; }
+    .side-item-meta { font-size: 12px; display: flex; justify-content: space-between; }
+    #dashDetailPanel { display: none; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 16px; min-height: 400px; }
+    #dashDetailPanel.show { display: block; animation: fadeIn 0.3s; }
+    #dashEmptyState { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--muted); border: 2px dashed var(--tbl-border); border-radius: 8px; }
+
+    .att-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px dashed var(--tbl-border); gap: 10px; background: var(--card); margin-bottom: 6px; border-radius: 6px; }
+    .att-no { font-weight: 900; width: 40px; text-align: center; font-size: 18px; color: var(--primary); }
+    .att-name { flex: 1; font-weight: bold; font-size: 16px; display: flex; align-items: center; }
+    .att-note { font-size: 12px; color: var(--danger); background: #fee2e2; padding: 2px 6px; border-radius: 4px; margin-left: 8px; border: 1px solid #fecaca; }
+    .att-status-group { display: flex; gap: 4px; flex-wrap: wrap; }
+    
+    .att-btn { border: 1px solid var(--tbl-border); background: #fff; color: var(--muted); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.2s; min-width: 60px; }
+    .att-btn.active[data-status="0"] { background: var(--success); color: #fff; border-color: var(--success); box-shadow: 0 2px 5px rgba(85, 107, 47, 0.4); }
+    .att-btn.active[data-status="1"] { background: #d97706; color: #fff; border-color: #d97706; box-shadow: 0 2px 5px rgba(217, 119, 6, 0.4); }
+    .att-btn.active[data-status="2"] { background: #2563eb; color: #fff; border-color: #2563eb; box-shadow: 0 2px 5px rgba(37, 99, 235, 0.4); }
+    .att-btn.active[data-status="3"] { background: var(--danger); color: #fff; border-color: var(--danger); box-shadow: 0 2px 5px rgba(139, 0, 0, 0.4); }
+    .att-btn.active[data-status="4"] { background: #9333ea; color: #fff; border-color: #9333ea; box-shadow: 0 2px 5px rgba(147, 51, 234, 0.4); }
+    .att-btn.active[data-status="5"] { background: #4b5563; color: #fff; border-color: #4b5563; box-shadow: 0 2px 5px rgba(75, 85, 99, 0.4); }
+    .att-btn:hover:not(.active) { background: var(--tbl-hover); transform: translateY(-2px); }
+    .att-btn.active { transform: scale(1.05); }
+    
+    .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--tbl-alt); padding: 10px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--tbl-border); }
+    .att-stat-item { flex: 1; text-align: center; min-width: 60px; border-right: 1px solid var(--tbl-border); }
+    .att-stat-item:last-child { border-right: none; }
+    .att-stat-val { font-size: 20px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
+
+    /* ============================================================
+       🚦 紀律看板專屬樣式 (紅綠燈與分數)
+       ============================================================ */
+    .discipline-zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .d-zone { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 400px; }
+    .z-green { border-color: #4ade80; background: #f0fdf4; }
+    .z-yellow { border-color: #facc15; background: #fefce8; }
+    .z-red { border-color: #f87171; background: #fef2f2; }
+    
+    .z-header { font-size: 18px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 12px; }
+    .z-green .z-header { color: #166534; }
+    .z-yellow .z-header { color: #854d0e; }
+    .z-red .z-header { color: #991b1b; }
+    
+    .d-student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; align-content: start; flex: 1; }
+    
+    .d-student-card { display: flex; flex-direction: column; align-items: center; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 10px; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s; position: relative; }
+    .d-student-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    
+    .d-avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; font-weight: 900; color: #fff; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; border: 2px solid rgba(0,0,0,0.2); }
+    .d-avatar:active { transform: scale(0.9); }
+    .z-green .d-avatar { background: #22c55e; box-shadow: 0 0 10px rgba(34,197,94,0.4); }
+    .z-yellow .d-avatar { background: #eab308; box-shadow: 0 0 10px rgba(234,179,8,0.4); }
+    .z-red .d-avatar { background: #ef4444; box-shadow: 0 0 10px rgba(239,68,68,0.4); }
+    
+    .d-info { text-align: center; }
+    .d-name { font-size: 14px; font-weight: 900; color: #333; margin-bottom: 2px; }
+    .d-exp { font-size: 11px; font-weight: bold; color: #d97706; background: #fef3c7; padding: 2px 6px; border-radius: 10px; display: inline-block; }
+    
+    .d-actions { display: flex; gap: 4px; width: 100%; justify-content: center; margin-top: auto; }
+    .btn-exp { flex: 1; padding: 4px 0; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; color: #fff; transition: opacity 0.2s; }
+    .btn-exp:hover { opacity: 0.8; }
+    .btn-exp:active { transform: scale(0.95); }
+    .btn-exp.add { background: #3b82f6; }
+    .btn-exp.sub { background: #64748b; }
+
+    /* 清單樣式 */
+    .checklist-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
+    .checklist-item { background: var(--card); border: 2px dashed var(--primary); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px; font-size: 20px; font-weight: 900; color: var(--text-main); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; }
+    .checklist-item:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+    .checklist-item.done { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
+
+    @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
+  </style>
+</head>
+<body>
+  
+  <div id="topMarquee" class="marquee-container" style="display:none;">
+      <div id="marqueeText" class="marquee-content"></div>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+  <div id="toastContainer" class="toast-container"></div>
+  
+  <div id="assignmentTooltip" class="assignment-tooltip"></div>
+
+  <div id="attendanceReminderModal" class="modal-overlay">
+      <div class="modal-content" style="text-align: center; border: 4px double var(--danger);">
+          <div class="modal-header" style="border-bottom: none; justify-content: center;">
+              <h2 style="color: var(--danger); font-size: 24px;"><i class="bi bi-exclamation-diamond-fill"></i> 緊急任務</h2>
+          </div>
+          <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">本日點名尚未完成！<br><span style="font-size: 14px; color: var(--muted);">確認冒險者安危是公會長的首要職責。</span></p>
+          <button class="btn" id="btnGoToAttendance" style="width: 100%; justify-content: center; font-size: 18px;">前往點名</button>
+          <button class="btn ghost sm" style="margin-top: 10px; width: 100%; border: none;" onclick="document.getElementById('attendanceReminderModal').classList.remove('show')">稍後再說</button>
+      </div>
+  </div>
+
+  <div id="loginOverlay">
+      <div id="loginBox">
+          <div class="logo" style="margin: 0 auto 20px; width: 80px; height: 80px; font-size: 40px;">🛡️</div>
+          <h1>冒險者公會登入</h1>
+          <p class="muted">請出示您的公會長證件 (Google 帳號)</p>
+          <button id="btnLogin" class="btn" style="font-size: 18px; padding: 12px 24px; width: 100%; justify-content: center;">
+              <i class="bi bi-google"></i> 使用 Google 登入
+          </button>
+      </div>
+  </div>
+
+  <div class="wrap no-print" style="display:none; flex-direction:column;" id="mainApp">
+    <header>
+      <div class="brand">
+        <div class="logo"><i class="bi bi-shield-shaded"></i></div>
+        <div>
+          <h1>冒險者公會</h1>
+          <div class="muted">狀態循環：灰＝未接取 → 黃＝已回報 → 橘＝再挑戰 → 綠＝討伐成功</div>
+        </div>
+      </div>
+      <div class="actions">
+        <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> 公會長</span>
+        <button class="btn ghost" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i></button>
+        <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
+        <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
+        <!-- 🚦 公會紀律按鈕 (預設隱藏，由 Lab 模式開啟) -->
+        <button class="btn ghost" id="btnNavDiscipline" style="display: none;"><i class="bi bi-stoplights"></i> 公會紀律</button>
+        
+        <button class="btn ghost" id="btnNavRoster"><i class="bi bi-people"></i> 公會名冊</button>
+        <button class="btn ghost" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i></button>
+        <div id="saveStatusIndicator"><i class="bi bi-hourglass"></i></div>
+      </div>
+    </header>
+
+<section id="view-dashboard" class="view show">
+  <div class="dashboard-layout">
+    <aside class="dash-sidebar">
+      <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
+          <button id="btnToggleFilter" class="btn ghost sm" style="flex: 1;" onclick="this.classList.toggle('active'); document.getElementById('filterPanel').classList.toggle('show');">
+              <i class="bi bi-funnel"></i> 篩選條件
+          </button>
+          <button id="btnOpenNewQuestWindowSidebar" class="btn sm" style="flex: 0 0 auto;" title="發布新委託">
+              <i class="bi bi-plus-lg"></i> 新增任務
+          </button>
+      </div>
+      <div id="filterPanel" class="filter-panel">
+          <div style="margin-bottom: 8px;"><select id="teacherFilter" style="width:100%; padding:6px;"><option value="all">所有導師</option></select></div>
+          <div style="margin-bottom: 8px;"><select id="subjectFilter" style="width:100%; padding:6px;"><option value="all">所有科目</option></select></div>
+          <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;"><i class="bi bi-arrow-counterclockwise"></i> 重置</button>
+      </div>
+      <div id="sideAssignmentList" class="side-list-container"></div>
+    </aside>
+
+    <main class="dash-main">
+      <div id="dashEmptyState">
+          <i class="bi bi-arrow-left-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+          <p style="font-weight:bold;">請從左側選擇一張委託</p>
+          <p style="font-size:12px;">或點擊左上角「新增任務」發布</p>
+      </div>
+
+      <div id="dashDetailPanel">
+         <div class="assignment-bar" style="border-bottom: 2px solid var(--tbl-border); padding-bottom:12px; margin-bottom:12px;">
+            <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:8px;"></div>
+            <div class="actions" style="margin-top:8px; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button class="btn sm ghost" id="btnMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
+                <button class="btn sm ghost" id="btnMarkAllOrange"><i class="bi bi-exclamation-circle-fill"></i> 全員再戰</button>
+                <div class="legend" style="font-size:12px;">
+                    <span><span class="dot s0"></span></span>
+                    <span><span class="dot s1"></span></span>
+                    <span><span class="dot s2"></span></span>
+                    <span><span class="dot s3"></span></span>
+                </div>
+                <button class="btn sm warn ghost" id="btnDeleteCurrent" style="margin-left:auto;"><i class="bi bi-trash3"></i> 刪除</button>
+            </div>
+        </div>
+        <div class="field" style="margin-bottom: 8px;">
+            <input type="range" id="rangeSize" min="40" max="100" value="56" style="padding: 0;">
+        </div>
+        <div id="dashGridContainer" class="grid"></div>
+      </div>
+    </main>
+  </div>
+</section>
+
+    <!-- 🌟 公會紀律看板 (紅綠燈與準備清單) -->
+    <section id="view-discipline" class="view">
+        <div class="roster-tabs">
+            <button id="tabBtnTraffic" class="tab-btn active"><i class="bi bi-stoplights"></i> 秩序看板</button>
+            <button id="tabBtnRecess" class="tab-btn"><i class="bi bi-backpack"></i> 🎒 下課前準備</button>
+            <button id="tabBtnDismissal" class="tab-btn"><i class="bi bi-door-open"></i> 🚶 放學前準備</button>
+        </div>
+        
+        <div id="content-traffic" class="roster-content show" style="background: transparent; border: none; padding: 0;">
+            <div class="discipline-zones">
+                <div class="d-zone z-green">
+                    <div class="z-header">
+                        <span><i class="bi bi-emoji-smile-fill"></i> 優良冒險者</span>
+                        <button class="btn sm" id="btnGreenAllExpPlus" style="background:#16a34a; border-color:#15803d;"><i class="bi bi-stars"></i> 全體 +1 EXP</button>
+                    </div>
+                    <div class="d-student-grid" id="zoneGreenGrid"></div>
+                </div>
+                <div class="d-zone z-yellow">
+                    <div class="z-header"><span><i class="bi bi-emoji-neutral-fill"></i> 觀察名單</span></div>
+                    <div class="d-student-grid" id="zoneYellowGrid"></div>
+                </div>
+                <div class="d-zone z-red">
+                    <div class="z-header"><span><i class="bi bi-emoji-frown-fill"></i> 勞動服務</span></div>
+                    <div class="d-student-grid" id="zoneRedGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-recess" class="roster-content">
+            <h2 style="color:var(--primary); font-weight:900; display:flex; align-items:center; gap:8px;"><i class="bi bi-backpack"></i> 🎒 下課囉！完成以下事項就可以休息啦</h2>
+            <div class="checklist-container" id="recessChecklist"></div>
+        </div>
+
+        <div id="content-dismissal" class="roster-content">
+            <h2 style="color:var(--primary); font-weight:900; display:flex; align-items:center; gap:8px;"><i class="bi bi-door-open"></i> 🚶 準備歸途！確認裝備再登出</h2>
+            <div class="checklist-container" id="dismissalChecklist"></div>
+        </div>
+    </section>
+
+    <section id="view-attendance" class="view">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                <h2><i class="bi bi-calendar-check"></i> 每日點名</h2>
+                <div style="display:flex; gap:8px;">
+                    <input type="date" id="attDatePicker" style="width: auto;">
+                    <button class="btn sm secondary" id="btnExportAttendance"><i class="bi bi-file-earmark-excel"></i> 下載報表</button>
+                </div>
+            </div>
+            <div class="att-stats-bar">
+                <div class="att-stat-item"><div class="att-stat-val" style="color:var(--success)" id="statPresent">0</div><div class="att-stat-label">出席</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#854d0e" id="statLate">0</div><div class="att-stat-label">遲到</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#1e40af" id="statEarly">0</div><div class="att-stat-label">早退</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:var(--danger)" id="statSick">0</div><div class="att-stat-label">病假</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#4b5563" id="statPersonal">0</div><div class="att-stat-label">事假</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#6b21a8" id="statOfficial">0</div><div class="att-stat-label">公假</div></div>
+            </div>
+            <div id="attendanceList"></div>
+            <div class="actions" style="justify-content: flex-end; margin-top: 16px;">
+                <button class="btn" id="btnSaveAttendance"><i class="bi bi-check-lg"></i> 確認送出點名單</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-roster" class="view">
+        <div class="roster-tabs">
+            <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
+            <button id="tabBtnTeachers" class="tab-btn"><i class="bi bi-person-badge"></i> 公會長名冊</button>
+        </div>
+        <div id="roster-content-students" class="roster-content show">
+            <div class="roster-grid" id="rosterEditor"></div>
+            <div class="actions" style="margin-top:16px; justify-content:space-between; border-top:1px dashed var(--tbl-border); padding-top:12px;">
+                <button class="btn sm secondary" id="btnAddStudentRow"><i class="bi bi-plus-lg"></i> 新增一行</button>
+                <div style="display:flex; gap:8px;">
+                      <details id="detailsRosterPaste" style="display:inline-block;"><summary class="btn sm ghost" style="list-style:none; cursor:pointer;">📜 貼上名單</summary>
+                        <div style="position:absolute; bottom:60px; right:20px; background:var(--card); padding:12px; border:2px solid var(--primary); border-radius:8px; width:250px; z-index:100; box-shadow: var(--shadow);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-weight:bold; font-size:14px; color:var(--primary);">大量貼上名單</span>
+                                <button id="btnCloseRosterPaste" class="btn ghost sm icon-only" style="border:none; padding:2px 6px;"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                            <textarea id="taRosterPaste" rows="10" style="width:100%;" placeholder="一行一個姓名..."></textarea>
+                            <button class="btn sm secondary" id="btnLoadFromPaste" style="width:100%; margin-top:8px;">取代 / 附加名單</button>
+                        </div>
+                     </details>
+                     <button class="btn" id="btnApplyRoster"><i class="bi bi-check-circle"></i> 儲存變更</button>
+                </div>
+            </div>
+        </div>
+        <div id="roster-content-teachers" class="roster-content">
+            <div class="roster-grid" id="teacherEditor"></div>
+            <div class="actions" style="margin-top:16px; justify-content:flex-end;">
+                 <button class="btn" id="btnApplyTeachers"><i class="bi bi-check-circle"></i> 儲存變更</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-student-status" class="view">
+      <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 id="studentStatusHeaderTitle"><i class="bi bi-clipboard2-check"></i> 冒險者狀態</h2>
+              <div class="actions">
+                  <button class="btn sm secondary" id="btnToggleBatchMode"><i class="bi bi-check-square"></i> 批量匯出卷軸</button>
+                  <button class="btn sm" id="btnBatchSelectAll" style="display:none;"><i class="bi bi-check-all"></i> 全選</button>
+                  <button class="btn sm" id="btnBatchExport" style="display:none;"><i class="bi bi-printer"></i> 匯出選取項目</button>
+              </div>
+          </div>
+          <div id="studentStatusContainer"></div>
+      </div>
+    </section>
+
+    <footer class="app-footer">Created by HCSunny & Abby</footer>
+  </div>
+
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h2><i class="bi bi-gear-fill"></i> 系統設定</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="field" style="margin-bottom: 20px;">
+            <label>風格主題</label>
+            <div class="theme-options" id="themeOptionsContainer">
+                <div class="theme-option" data-theme="guild" title="探險公會 (預設)"></div>
+                <div class="theme-option" data-theme="christmas" title="聖誕節"></div>
+                <div class="theme-option" data-theme="blue" title="皇家藍"></div>
+                <div class="theme-option" data-theme="orange" title="活力橘"></div>
+                <div class="theme-option" data-theme="green" title="護眼綠"></div>
+                <div class="theme-option" data-theme="warm-cute" title="溫暖可愛" style="background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%); border-radius: 50%;"></div>
+            </div>
+        </div>
+        <div class="field">
+            <label>環境光線</label>
+            <div class="dark-mode-toggle">
+                <span style="font-weight: bold;"><i class="bi bi-moon-stars-fill"></i> 夜間營火模式</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+  </div>
+  
+  <!-- 其餘 Modals -->
+  <div id="questSettingsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
+        <div class="modal-header"><h2><i class="bi bi-journal-plus"></i> 編輯任務選單</h2><button class="modal-close-btn">&times;</button></div>
+        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;"></div>
+        <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
+            <div style="display: flex; gap: 8px;"><input type="text" id="ipNewSubject" placeholder="輸入新科目名稱..." style="flex:1;"><button class="btn sm" id="btnAddSubject"><i class="bi bi-plus-lg"></i> 新增科目</button></div>
+        </div>
+        <div class="modal-footer"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button></div>
+    </div>
+  </div>
+  
+  <div id="adminProfileModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-header">
+              <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
+              <!-- 🧪 新增：實驗室模式按鈕 -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                  <button class="btn sm ghost" id="btnToggleLabMode" title="開啟實驗室新功能 (Beta)" style="border-color: #9333ea; color: #9333ea;"><i class="bi bi-magic"></i> 🧪 Lab</button>
+                  <button class="btn sm" id="btnAdminAttendance" title="點名簿"><i class="bi bi-book"></i> 點名簿</button>
+                  <button class="modal-close-btn">&times;</button>
+              </div>
+          </div>
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 20px;">
+              <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/再挑戰 > 5)</h3>
+              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+          </div>
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
+               <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
+          </div>
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">💾 公會資料庫備份與還原</h3>
+               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                   <button class="btn sm secondary" id="btnExportJSON"><i class="bi bi-cloud-arrow-down-fill"></i> 匯出備份 (JSON)</button>
+                   <button class="btn sm ghost" id="btnImportJSONTrigger"><i class="bi bi-cloud-arrow-up-fill"></i> 還原備份</button>
+                   <input type="file" id="ipImportJSON" accept=".json" style="display: none;">
+               </div>
+          </div>
+          <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
+                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button class="btn ghost warn" id="btnClearAssignments" style="justify-content:center;"><i class="bi bi-fire"></i> 銷毀所有契約 (保留名單)</button>
+                    <button class="btn warn" id="btnResetAll" style="justify-content:center;"><i class="bi bi-radioactive"></i> 另闢新公會 (全部重置)</button>
+                </div>
+          </div>
+          <div class="modal-footer" style="border-top: 2px dashed var(--tbl-border); padding-top: 16px; margin-top: 20px; justify-content: space-between;">
+              <span class="muted" style="align-self: center;">工作辛苦了！</span>
+              <button class="btn ghost" id="btnLogout" style="color: var(--danger); border-color: var(--danger);"><i class="bi bi-box-arrow-right"></i> 登出系統</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="assignStudentModal" class="modal-overlay">
+      <div class="modal-content"><div class="modal-header"><h2><i class="bi bi-person-check-fill"></i> 指派任務對象</h2><button class="modal-close-btn">&times;</button></div>
+          <div class="actions" style="margin-top: 0; margin-bottom: 12px;"><button class="btn sm" id="btnAssignSelectAll">全選</button><button class="btn sm ghost" id="btnAssignDeselectAll">取消</button></div>
+          <div id="assignStudentListContainer" class="assign-student-list"></div>
+          <div class="modal-footer"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnConfirmAssign">確認指派</button></div>
+      </div>
+  </div>
+
+  <div id="deleteChoiceModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 450px;">
+          <div class="modal-header"><h2 style="color: var(--danger);"><i class="bi bi-exclamation-triangle-fill"></i> 處置委託</h2><button class="modal-close-btn">&times;</button></div>
+          <div class="delete-choice-card">
+              <p style="font-size: 18px; font-weight: bold; margin: 0;">您打算如何處理這張委託單？</p><div id="deleteTargetTitle" style="color: var(--primary); font-weight: bold;"></div>
+              <div class="delete-desc"><strong>📦 封印至倉庫 (封存)：</strong><br>委託將從看板移除，但在「執務室」可以下載紀錄。</div>
+              <div class="delete-desc"><strong>🔥 銷毀契約 (刪除)：</strong><br>資料將永久消失，無法復原。</div>
+              <div class="delete-choice-actions"><button class="btn btn-archive" id="btnConfirmArchive"><i class="bi bi-archive-fill"></i> 封印至倉庫</button><button class="btn btn-destroy" id="btnConfirmDelete"><i class="bi bi-fire"></i> 銷毀契約</button></div>
+          </div>
+      </div>
+  </div>
+
+  <div id="statusPicker">
+      <button class="status-option-btn sp-1" data-status="1"><span class="dot s1"></span> 已回報</button>
+      <button class="status-option-btn sp-2" data-status="2"><span class="dot s2"></span> 再挑戰</button>
+      <button class="status-option-btn sp-3" data-status="3"><span class="dot s3"></span> 討伐成功</button>
+  </div>
+  <div id="quickDebtMenu"><div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div><div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div></div>
+  <div id="customTooltip" class="custom-tooltip"></div>
+
+  <!-- 工具箱 -->
+  <div class="toolbox-container">
+      <div class="toolbox-menu" id="toolboxMenu">
+          <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
+          <button class="fab-btn" id="btnOpenTimer" title="計時器"><i class="bi bi-stopwatch"></i></button>
+          <button class="fab-btn" id="btnOpenDraw" title="抽籤"><i class="bi bi-gift"></i></button>
+      </div>
+      <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
+  </div>
+  
+  <div id="panelNewQuest" class="tool-window" style="width: 350px; bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); height: auto; max-height: 80vh; overflow-y: auto;">
+      <div class="tool-header"><span><i class="bi bi-plus-circle-dotted"></i> 發布新委託</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div class="field"><label style="font-size:12px;">發布導師</label><select id="ipTeacherSelect" style="padding:6px;"></select><input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;"></div>
+          <div class="field" style="margin-top:4px;"><label style="font-size:12px;">日期</label><input id="ipDate" type="date" style="padding:6px;"></div>
+          <div class="field" style="margin-top:4px;">
+               <label style="font-size:12px;">內容</label>
+               <div style="display:flex; gap:4px; margin-bottom:4px;"><select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select><select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select><button class="btn ghost sm" id="btnOpenQuestSettings" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button></div>
+               <div style="display:flex; gap:4px;"><input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" /><button class="btn sm ghost" id="btnToggleKeypad" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button></div>
+               <div class="virtual-keypad" id="virtualKeypad">
+                   <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
+                   <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
+                   <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
+                   <div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="~">~</div>
+                   <div class="vk-btn" data-val="L.">L</div><div class="vk-btn" data-val="P.">P</div><div class="vk-btn" data-val="U.">U</div>
+                   <div class="vk-btn" data-val="CH.">CH</div><div class="vk-btn" data-val="習作">習</div><div class="vk-btn" data-val="考卷">卷</div>
+                   <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">_</div>
+               </div>
+          </div>
+          <div class="field" style="margin-top:4px;"><button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button><div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted);">全體冒險者</div></div>
+          <button class="btn sm" id="btnCreate" style="margin-top:8px; width:100%; justify-content:center;">確認發布</button>
+      </div>
+  </div>
+      
+  <div id="panelMarquee" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-broadcast"></i> 公告跑馬燈</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
+          <div class="tb-control-row" style="display:flex;gap:8px;"><label style="font-size:12px;">顏色</label><input type="color" id="mqColorInput" value="#FFD700" style="width:40px;height:36px;padding:0;"><label style="font-size:12px; margin-left:8px;">大小</label><input type="range" id="mqSizeInput" min="16" max="60" value="24" style="flex:1"></div>
+          <div class="tb-control-row" style="display:flex;gap:8px;"><label style="font-size:12px;">速度</label><input type="range" id="mqSpeedInput" min="1" max="5" step="0.5" value="1" style="flex:1" title="越右邊越快"></div>
+          <div class="actions sm" style="justify-content: flex-end;"><button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button><button class="btn sm warn" id="btnMqHide">關閉</button></div>
+      </div>
+  </div>
+
+  <div id="panelTimer" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 計時器 & 時鐘</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+           <div id="tbClock" class="tb-clock" style="margin-bottom:8px;">00:00:00</div>
+           <div class="timer-presets" style="display:flex;gap:6px;">
+              <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1;">1分</button><button class="btn sm ghost btn-timer-preset" data-min="3" style="flex:1;">3分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1;">5分</button><button class="btn sm ghost btn-timer-preset" data-min="10" style="flex:1;">10分</button>
+           </div>
+           <div class="timer-controls"><input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;"><span style="font-weight:bold">:</span><input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;"><div id="timerDisplay">00:00</div></div>
+           <div class="actions sm" style="justify-content: flex-end;"><button class="btn sm" id="btnTimerStart">開始</button><button class="btn sm warn" id="btnTimerReset">重置</button></div>
+      </div>
+  </div>
+
+  <div id="panelDraw" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-gift"></i> 幸運抽籤</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body"><div id="luckyDrawResult">???</div><button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button></div>
+  </div>
+
+  <!-- 🚨 正確的 Firebase 與主程式邏輯 🚨 -->
+  <script type="module">
+    function getTaipeiDateString() { return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); }
+    function getTaipeiTimeString() { return new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' }); }
+    
+    // ⭐ 計算階級 (EXP Rank)
+    window.getRankHtml = function(exp) {
+        let rank = "新手"; let color = "#9ca3af";
+        if (exp >= 100) { rank = "S級傳說"; color = "#f43f5e"; }
+        else if (exp >= 50) { rank = "A級菁英"; color = "#eab308"; }
+        else if (exp >= 20) { rank = "B級熟手"; color = "#3b82f6"; }
+        else if (exp >= 5) { rank = "C級見習"; color = "#22c55e"; }
+        return `<span class="rank-text" style="color:${color};">${rank}</span>`;
+    }
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
+  authDomain: "homework-hc906.firebaseapp.com",
+  projectId: "homework-hc906",
+  storageBucket: "homework-hc906.firebasestorage.app",
+  messagingSenderId: "1051903125085",
+  appId: "1:1051903125085:web:b205f868669ea7d5c34fb4",
+  measurementId: "G-V0BEG0TVJY"
+};
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    let app, db, auth;
+    try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); } catch (e) { console.error(e); alert("Firebase 設定錯誤"); }
+
+    let currentUser = null;
+    let data = { roster: [], assignments: [], teachers: [], questSettings: {}, attendance: {}, discipline: null }; 
+    const defaultData = {
+        roster: [ { no: 1, name: "勇者A", exp: 0 }, { no: 2, name: "法師B", exp: 0 }, { no: 3, name: "弓手C", exp: 0 } ],
+        assignments: [], teachers: ["公會長"],
+        questSettings: { "國語": ["國語習作", "國語考卷"], "數學": ["數學習作", "數學考卷"] },
+        attendance: {}, discipline: null
+    };
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    const mainApp = document.getElementById('mainApp');
+    const APP_SCALE = 1; 
+
+    // 🧪 實驗室模式 (Lab Mode) 功能開關
+    let isLabMode = localStorage.getItem('guildLabMode') === 'true';
+    const btnNavDiscipline = document.getElementById('btnNavDiscipline');
+    const btnToggleLabMode = document.getElementById('btnToggleLabMode');
+
+    function updateLabModeUI() {
+        if (isLabMode) {
+            btnNavDiscipline.style.display = 'inline-flex';
+            btnToggleLabMode.style.background = '#9333ea';
+            btnToggleLabMode.style.color = '#fff';
+        } else {
+            btnNavDiscipline.style.display = 'none';
+            btnToggleLabMode.style.background = 'transparent';
+            btnToggleLabMode.style.color = '#9333ea';
+            
+            // 如果當前正在公會紀律頁面，關閉 Lab 後強制跳回看板
+            if (document.getElementById('view-discipline').classList.contains('show')) {
+                switchView('view-dashboard');
+            }
+        }
+    }
+
+    btnToggleLabMode.addEventListener('click', () => {
+        isLabMode = !isLabMode;
+        localStorage.setItem('guildLabMode', isLabMode);
+        updateLabModeUI();
+        if (isLabMode) {
+            showToast("🧪 實驗室模式已開啟！解鎖：公會紀律看板", "確認");
+        } else {
+            showToast("🧪 實驗室模式已關閉。", "確認");
+        }
+    });
+
+    document.getElementById('btnLogin').addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(error => alert("登入失敗：" + error.message));
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        if(confirm("確定要登出系統嗎？")) signOut(auth).then(() => window.location.reload());
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user; loginOverlay.style.display = 'none'; mainApp.style.display = 'flex'; mainApp.style.flexDirection = 'column';
+            const emailDisp = document.getElementById('userEmailDisplay');
+            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> ${user.email.split('@')[0]}`;
+            initApp();
+        } else {
+            loginOverlay.style.display = 'flex'; mainApp.style.display = 'none';
+        }
+    });
+
+    async function loadDataFromFirebase() {
+        if (!currentUser) return;
+        updateSaveStatus('saving', '讀取中...');
+        try {
+            const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                data = docSnap.data();
+                if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
+                if(!data.attendance) data.attendance = {};
+                if(!data.assignments) data.assignments = [];
+                // 初始化每人的 EXP
+                if(data.roster) {
+                    data.roster.forEach(r => { if(typeof r.exp === 'undefined') r.exp = 0; });
+                }
+            } else {
+                data = JSON.parse(JSON.stringify(defaultData));
+                await setDoc(docRef, data);
+            }
+            onDataLoaded();
+            updateSaveStatus('success', '讀取完成');
+            checkAttendanceReminder();
+        } catch (error) {
+            console.log("切換至離線模式");
+            if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData));
+            onDataLoaded();
+            updateSaveStatus('error', '連線失敗(離線模式)');
+        }
+    }
+
+    let saveTimeout = null;
+    function triggerAutoSave() {
+        clearTimeout(saveTimeout);
+        updateSaveStatus('pending');
+        saveTimeout = setTimeout(async () => {
+            if (!currentUser) return;
+            try { await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data); updateSaveStatus('success'); } 
+            catch (e) { updateSaveStatus('error', '儲存失敗'); }
+        }, 1500); 
+    }
+
+    function updateSaveStatus(status, message = '') {
+        const indicator = document.getElementById('saveStatusIndicator');
+        if(!indicator) return;
+        if (status === 'pending') indicator.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
+        else if (status === 'saving') indicator.innerHTML = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
+        else if (status === 'success') indicator.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
+        else indicator.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
+    }
+
+    let currentAssignmentId = null;
+    let currentFilter = { teacher: 'all', subject: 'all' }; 
+    let newAssignmentAssignedIndices = []; 
+    let isBatchMode = false;
+    let tempQuestSettings = {};
+    let tempAttendanceData = []; 
+    let targetAssignmentIdToDelete = null; 
+
+    let audioCtx = null;
+    function resumeAudio() { 
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume(); 
+        return audioCtx;
+    }
+
+    function playSuccessSound() {
+        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(523.25, ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(); o.stop(ctx.currentTime + 0.5);
+    }
+    
+    function playCoinSound() {
+        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'square'; o.frequency.setValueAtTime(987.77, ctx.currentTime);
+        o.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
+    }
+
+    function playTickSound() {
+        const ctx = resumeAudio(); const now = ctx.currentTime; const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+        g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
+    }
+
+    function playAlarmSound() {
+        const ctx = resumeAudio(); const now = ctx.currentTime;
+        [523, 659, 783, 1046, 783, 659, 523].forEach((f, i) => {
+            const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.frequency.setValueAtTime(f, now + i * 0.4);
+            g.gain.setValueAtTime(0.2, now + i * 0.4); g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.4 + 0.3);
+            o.connect(g); g.connect(ctx.destination);
+            o.start(now + i * 0.4); o.stop(now + i * 0.4 + 0.4);
+        });
+    }
+
+    function confetti() {
+        const c = document.getElementById('confettiCanvas'); 
+        if(!c) return; const ctx = c.getContext('2d');
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        const pieces = Array.from({length:300}).map(()=>({
+            x: Math.random()*c.width, y: Math.random()*c.height-c.height, w: Math.random()*10+5, h: Math.random()*10+5, 
+            c: `hsl(${Math.random()*360}, 100%, 50%)`, v: Math.random()*5+2, r: Math.random()*360
+        }));
+        function draw() {
+            ctx.clearRect(0,0,c.width,c.height); let active = false;
+            pieces.forEach(p=>{
+                p.y+=p.v; p.r+=p.v; if(p.y<c.height) active=true;
+                ctx.save(); ctx.translate(p.x+p.w/2,p.y+p.h/2); ctx.rotate(p.r*Math.PI/180);
+                ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+            });
+            if(active) requestAnimationFrame(draw); else ctx.clearRect(0,0,c.width,c.height);
+        }
+        draw();
+    }
+
+    function showToast(msg, actText, actCb) {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div'); t.className = 'toast-msg';
+        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : '');
+        c.appendChild(t);
+        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
+        setTimeout(()=>t.remove(), 3000);
+    }
+
+    function initApp() {
+        const theme = localStorage.getItem('hwTheme') || 'light';
+        const color = localStorage.getItem('hwColor') || 'guild';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-color-theme', color);
+        document.getElementById('darkModeToggle').checked = theme === 'dark';
+        document.querySelectorAll('.theme-option').forEach(el => el.classList.toggle('active', el.dataset.theme === color));
+        
+        switchView('view-dashboard');
+        loadDataFromFirebase(); // 🚨 使用正確的 Firebase 讀取函數
+        updateLabModeUI();      // 初始化 Lab 模式的 UI
+        
+        setInterval(() => {
+             const clk = document.getElementById('tbClock');
+             if(clk) clk.innerText = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
+        }, 1000);
+        document.getElementById('attDatePicker').value = getTaipeiDateString();
+    }
+
+    function checkAttendanceReminder() {
+        const today = new Date().toISOString().split('T')[0];
+        if (data.attendance && !data.attendance[today]) setTimeout(() => document.getElementById('attendanceReminderModal').classList.add('show'), 1000);
+    }
+    
+    document.getElementById('btnGoToAttendance').addEventListener('click', () => {
+        document.getElementById('attendanceReminderModal').classList.remove('show');
+        document.getElementById('adminProfileModal').classList.add('show');
+    });
+
+    // ⭐ EXP 變動函數
+    window.changeExp = function(sidx, delta, silent = false) {
+        if (!data.roster[sidx]) return;
+        if (typeof data.roster[sidx].exp === 'undefined') data.roster[sidx].exp = 0;
+        data.roster[sidx].exp += delta;
+        if (data.roster[sidx].exp < 0) data.roster[sidx].exp = 0; // 最低 0 分
+        
+        if (!silent) {
+            playCoinSound();
+            if (delta > 0) showToast(`✨ ${data.roster[sidx].name} 獲得 ${delta} 點 EXP！`);
+            else showToast(`💔 ${data.roster[sidx].name} 失去 ${Math.abs(delta)} 點 EXP...`);
+            triggerAutoSave();
+            renderAll();
+        }
+    };
+
+    function onDataLoaded() {
+        populateTeacherDropdowns();
+        updateSubjectDropdown();
+        resetNewAssignmentState();
+        checkAndResetDiscipline(); // 檢查紅綠燈是否需換日重置
+        renderAll();
+        renderChecklists(); // 渲染紀律頁面的清單
+    }
+
+    function checkAndResetDiscipline() {
+        const today = getTaipeiDateString();
+        if (!data.discipline || data.discipline.date !== today) {
+            data.discipline = { date: today, statuses: {} };
+            triggerAutoSave();
+        }
+    }
+
+    function renderAll() {
+        const v = document.querySelector('.view.show');
+        if(!v) return;
+        if (v.id === 'view-dashboard') renderDashboard();
+        else if (v.id === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
+        else if (v.id === 'view-student-status') renderStudentStatus();
+        else if (v.id === 'view-attendance') initAttendanceView();
+        else if (v.id === 'view-discipline') renderDiscipline();
+    }
+
+    window.switchView = function(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+        const target = document.getElementById(id);
+        if(target) {
+            target.classList.add('show');
+            renderAll();
+        }
+    }
+
+    // ============================================================
+    // 🚦 公會紀律 (紅綠燈) 與清單渲染邏輯
+    // ============================================================
+    function renderDiscipline() {
+        checkAndResetDiscipline();
+        const zGreen = document.getElementById('zoneGreenGrid');
+        const zYellow = document.getElementById('zoneYellowGrid');
+        const zRed = document.getElementById('zoneRedGrid');
+        zGreen.innerHTML = ''; zYellow.innerHTML = ''; zRed.innerHTML = '';
+
+        data.roster.forEach((s, i) => {
+            const st = data.discipline.statuses[i] || 0; // 0:綠, 1:黃, 2:紅
+            const card = document.createElement('div');
+            card.className = 'd-student-card';
+            
+            // 點擊頭像切換紅綠燈：綠(0) -> 黃(1) -> 紅(2) -> 綠(0)
+            card.innerHTML = `
+                <div class="d-avatar" onclick="cycleTrafficLight(${i})">${s.no}</div>
+                <div class="d-info">
+                    <div class="d-name">${s.name}</div>
+                    <div class="d-exp">⭐ ${s.exp || 0}</div>
+                </div>
+                <div class="d-actions">
+                    <button class="btn-exp add" onclick="changeExp(${i}, 1)">+1</button>
+                    <button class="btn-exp sub" onclick="changeExp(${i}, -1)">-1</button>
+                </div>
+            `;
+            
+            if (st === 0) zGreen.appendChild(card);
+            else if (st === 1) zYellow.appendChild(card);
+            else zRed.appendChild(card);
+        });
+    }
+
+    window.cycleTrafficLight = function(sidx) {
+        let st = data.discipline.statuses[sidx] || 0;
+        st = (st + 1) % 3;
+        data.discipline.statuses[sidx] = st;
+        triggerAutoSave();
+        renderDiscipline();
+    };
+
+    // 綠燈區全體 +1
+    document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
+        let count = 0;
+        data.roster.forEach((s, i) => {
+            const st = data.discipline.statuses[i] || 0;
+            if (st === 0) {
+                if (typeof s.exp === 'undefined') s.exp = 0;
+                s.exp += 1;
+                count++;
+            }
+        });
+        if (count > 0) {
+            playSuccessSound();
+            showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 EXP！`, "確認");
+            triggerAutoSave();
+            renderAll();
+        }
+    });
+
+    // 渲染兩個準備清單
+    function renderChecklists() {
+        const recessItems = ['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所', '📝 訂正作業', '🎉 開心休息'];
+        const dismissalItems = ['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿與作業帶齊', '🎒 整理背包', '🚶 走廊排路隊'];
+        
+        const buildList = (items, containerId) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = items.map((item, idx) => `
+                <div class="checklist-item" onclick="this.classList.toggle('done')">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:18px;">${idx+1}</div>
+                    ${item}
+                </div>
+            `).join('');
+        };
+        buildList(recessItems, 'recessChecklist');
+        buildList(dismissalItems, 'dismissalChecklist');
+    }
+
+    // 紀律分頁 Tabs 切換
+    document.getElementById('tabBtnTraffic').addEventListener('click', function() { activateTab(this, 'content-traffic'); });
+    document.getElementById('tabBtnRecess').addEventListener('click', function() { activateTab(this, 'content-recess'); });
+    document.getElementById('tabBtnDismissal').addEventListener('click', function() { activateTab(this, 'content-dismissal'); });
+    
+    function activateTab(btn, contentId) {
+        btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        btn.parentElement.parentElement.querySelectorAll('.roster-content').forEach(c => c.classList.remove('show'));
+        document.getElementById(contentId).classList.add('show');
+    }
+
+    // ============================================================
+    // 其餘原本的邏輯整合 (包含 UpdateStatus 的自動加扣分)
+    // ============================================================
+
+    function populateTeacherDropdowns() {
+        const ts = data.teachers || [];
+        const sel = document.getElementById('ipTeacherSelect');
+        const fil = document.getElementById('teacherFilter');
+        if(sel) {
+            sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>';
+            document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none';
+        }
+        if(fil) {
+            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join('');
+            fil.value = currentFilter.teacher;
+        }
+    }
+    
+    function resetNewAssignmentState() {
+        document.getElementById('ipTitle').value = '';
+        document.getElementById('selSubject').value = '';
+        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
+        document.getElementById('ipDate').value = getTaipeiDateString();
+        newAssignmentAssignedIndices = [];
+        document.getElementById('assignStatusText').innerText = "全體冒險者";
+        const sel = document.getElementById('ipTeacherSelect');
+        if(sel && data.teachers && data.teachers.length > 0) { sel.value = data.teachers[0]; document.getElementById('ipTeacherCustom').style.display = 'none'; }
+    }
+
+    function updateSubjectDropdown() {
+        const db = data.questSettings || defaultData.questSettings;
+        const sel = document.getElementById('selSubject');
+        const fil = document.getElementById('subjectFilter');
+        if(sel) sel.innerHTML = '<option value="">📂 科目...</option>';
+        if(fil) fil.innerHTML = '<option value="all">📚 所有科目</option>';
+        if(db && sel && fil) Object.keys(db).forEach(s => { sel.add(new Option(s, s)); fil.add(new Option(s, s)); });
+    }
+
+    const toolTipEl = document.getElementById('assignmentTooltip');
+    function showAssignmentTooltip(e, a) {
+        if (!a) return;
+        const indices = a.assignedIndices || 'all';
+        const missing = [];
+        const redo = [];
+        
+        data.roster.forEach((s, i) => {
+            if (indices === 'all' || indices.includes(i)) {
+                const status = (a.statuses || [])[i] || 0;
+                if (status === 0) missing.push(s.no);
+                if (status === 2) redo.push(s.no);
+            }
+        });
+
+        if (missing.length === 0 && redo.length === 0) return;
+
+        let html = `<h4>${a.title}</h4><ul>`;
+        if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
+        if (missing.length) html += `<li class="t-miss">未回報：${missing.join(', ')}</li>`;
+        html += `</ul>`;
+        
+        toolTipEl.innerHTML = html; toolTipEl.style.display = 'block'; moveAssignmentTooltip(e);
+    }
+
+    function moveAssignmentTooltip(e) {
+        const x = (e.clientX + 15) / APP_SCALE; const y = (e.clientY + 15) / APP_SCALE;
+        toolTipEl.style.top = y + 'px'; toolTipEl.style.left = x + 'px';
+        const rect = toolTipEl.getBoundingClientRect();
+        if((x * APP_SCALE + rect.width) > window.innerWidth) toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
+        if((y * APP_SCALE + rect.height) > window.innerHeight) toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
+    }
+    function hideAssignmentTooltip() { toolTipEl.style.display = 'none'; }
+
+    function renderDashboard() {
+        const list = document.getElementById('sideAssignmentList');
+        const empty = document.getElementById('dashEmptyState');
+        const detail = document.getElementById('dashDetailPanel');
+        if(!list) return;
+
+        let assignments = (data.assignments || []).filter(a => {
+            if (a.archived) return false;
+            return (currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher) &&
+                   (currentFilter.subject === 'all' || (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject)));
+        }).sort((a,b) => a.date < b.date ? 1 : -1);
+
+        list.innerHTML = '';
+        if (assignments.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">沒有符合的委託</div>';
+            empty.style.display = 'flex'; detail.classList.remove('show'); return;
+        }
+
+        assignments.forEach(a => {
+            const el = document.createElement('div');
+            el.className = 'side-item' + (currentAssignmentId === a.id ? ' active' : '');
+            const indices = a.assignedIndices || 'all';
+            const total = indices === 'all' ? data.roster.length : indices.length;
+            const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
+
+            let hasStatus1 = false; let allStatus0 = true; let assignedCount = 0; let missingCount = 0;   
+            for (let i = 0; i < data.roster.length; i++) {
+                if (indices === 'all' || indices.includes(i)) {
+                    assignedCount++;
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 1) hasStatus1 = true;
+                    if (st !== 0) allStatus0 = false;
+                    if (st === 0) missingCount++; 
+                }
+            }
+
+            let gradeBadge = '';
+            if (assignedCount === 0) gradeBadge = `<span style="color: #9ca3af; background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">無對象</span>`;
+            else if (hasStatus1) gradeBadge = `<span style="color: #ea580c; background: #ffedd5; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">未批改</span>`;
+            else if (allStatus0) gradeBadge = `<span style="color: #4b5563; background: #e5e7eb; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">未清點</span>`;
+            else gradeBadge = `<span style="color: #166534; background: #dcfce7; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">批改完</span>`;
+
+            let missingBadge = '';
+            if (assignedCount > 0) {
+                if (missingCount > 0) missingBadge = `<span style="color: #be123c; background: #ffe4e6; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">缺${missingCount}</span>`;
+                else missingBadge = `<span style="color: #1d4ed8; background: #dbeafe; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">缺0</span>`;
+            }
+
+            el.innerHTML = `
+                <div class="side-item-title" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                    <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${a.title}">${a.title}</span>
+                    <div style="display: flex; gap: 4px; flex-shrink: 0;">${missingBadge} ${gradeBadge}</div>
+                </div>
+                <div class="side-item-meta muted" style="display: flex; justify-content: space-between; margin-top: 4px;">
+                    <span>${a.date}</span><span>${a.teacher}</span>
+                </div>
+                <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
+                    <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
+                        <div style="width:${progress}%; height:100%; background:${color}; transition: width 0.5s;"></div>
+                    </div>
+                    <span>${completed}/${total}</span>
+                </div>
+            `;
+
+            el.addEventListener('click', () => { currentAssignmentId = a.id; renderDashboard(); renderDashboardDetail(a.id); });
+            el.addEventListener('mouseenter', (e) => showAssignmentTooltip(e, a));
+            el.addEventListener('mousemove', moveAssignmentTooltip);
+            el.addEventListener('mouseleave', hideAssignmentTooltip);
+            list.appendChild(el);
+        });
+
+        if (currentAssignmentId && assignments.find(x=>x.id==currentAssignmentId)) renderDashboardDetail(currentAssignmentId);
+        else { empty.style.display = 'flex'; detail.classList.remove('show'); }
+    }
+
+    window.editAssignmentTitle = function(id) {
+        const a = data.assignments.find(x => x.id == id);
+        if(!a) return;
+        const newTitle = prompt("請輸入新的委託內容：", a.title);
+        if(newTitle && newTitle.trim() !== "") {
+            a.title = newTitle.trim(); triggerAutoSave();
+            renderDashboardDetail(id); renderDashboard();
+        }
+    };
+
+    window.openQuickDebtMenu = function(e, sidx, oldDebts) {
+        e.stopPropagation();
+        const menu = document.getElementById('quickDebtMenu');
+        const studentId = String(sidx);
+        
+        if (menu.classList.contains('show') && menu.dataset.currentSidx === studentId) {
+            menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = ""; return;
+        }
+        
+        menu.dataset.currentSidx = studentId;
+        const list = document.getElementById('quickDebtList');
+        const student = data.roster[sidx];
+
+        document.getElementById('quickDebtTitle').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>【${student.name}】待清舊帳</span>
+                <i class="bi bi-x-circle-fill btn-close-debt" style="cursor: pointer; font-size: 18px; color: var(--danger); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" title="關閉"></i>
+            </div>
+        `;
+        list.innerHTML = '';
+        
+        oldDebts.forEach(debt => {
+            const item = document.createElement('div'); item.className = 'quick-debt-item';
+            const stLbl = debt.st === 2 ? '<span style="color:#c62828; font-size:11px;">(再戰)</span>' : '<span style="color:#888; font-size:11px;">(未交)</span>';
+            
+            item.innerHTML = `
+                <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:bold;" title="${debt.title}">${debt.title} ${stLbl}</div>
+                <button class="btn sm" style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--primary); color: #fff;"><i class="bi bi-check-lg"></i> 補交</button>
+            `;
+            
+            item.onclick = (evt) => {
+                evt.stopPropagation(); updateStatus(debt.id, sidx, 3);
+                menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+                showToast(`✅ 已將「${debt.title}」標記為完成！`, "確認");
+            };
+            list.appendChild(item);
+        });
+
+        menu.style.display = ''; menu.classList.add('show'); 
+        let x = e.clientX + 10; let y = e.clientY + 10;
+        const rect = menu.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 10;
+        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
+        menu.style.left = x + 'px'; menu.style.top = y + 'px';
+    };
+
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('quickDebtMenu');
+        if (!menu || !menu.classList.contains('show')) return;
+        if (e.target.closest('.btn-close-debt')) { menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = ""; return; }
+        if (menu.contains(e.target)) return;
+        if (e.target.closest('.debt-badge')) return;
+        menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+    });
+
+    window.renderDashboardDetail = function(id) {
+        const a = data.assignments.find(x => x.id == id);
+        if (!a) return;
+        document.getElementById('dashEmptyState').style.display = 'none';
+        document.getElementById('dashDetailPanel').classList.add('show');
+        
+        document.getElementById('dashDetailTitle').innerHTML = `
+            <span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> 
+            ${a.title}
+            <button class="btn sm ghost icon-only" title="編輯名稱" onclick="editAssignmentTitle(${a.id})" style="border:none; color:var(--muted);"><i class="bi bi-pencil-fill"></i></button>
+        `;
+
+        const grid = document.getElementById('dashGridContainer'); grid.innerHTML = '';
+        const indices = a.assignedIndices || 'all';
+
+        data.roster.forEach((s, i) => {
+            const isAssigned = indices === 'all' || indices.includes(i);
+            const status = (a.statuses || [])[i] || 0;
+            const div = document.createElement('div'); div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
+            
+            let oldDebts = [];
+            if(isAssigned) {
+                (data.assignments || []).forEach(otherA => {
+                    if (otherA.id !== a.id && !otherA.archived) {
+                        const otherIndices = otherA.assignedIndices || 'all';
+                        if (otherIndices === 'all' || otherIndices.includes(i)) {
+                            const otherSt = (otherA.statuses || [])[i] || 0;
+                            if (otherSt === 0 || otherSt === 2) oldDebts.push({ id: otherA.id, title: otherA.title, st: otherSt });
+                        }
+                    }
+                });
+            }
+
+            let badgeHtml = '';
+            if (oldDebts.length > 0) badgeHtml = `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>`;
+
+            // ⭐ Dashboard 顯示 EXP 徽章
+            div.innerHTML = `
+                <div style="position: relative; flex-shrink: 0;">
+                    ${badgeHtml}
+                    <div class="seat s${status}">${s.no}</div>
+                </div>
+                <div class="seatName" style="display:flex; flex-direction:column;">
+                    <span>${s.name}</span>
+                    <span style="font-size:10px; color:var(--muted);">${getRankHtml(s.exp || 0)}</span>
+                </div>
+            `;
+            
+            if(isAssigned) {
+                div.querySelector('.seat').onclick = () => window.toggleStatus(id, i);
+                const badge = div.querySelector('.debt-badge');
+                if (badge) badge.onclick = (e) => openQuickDebtMenu(e, i, oldDebts);
+            }
+            grid.appendChild(div);
+        });
+
+        document.getElementById('btnDeleteCurrent').onclick = () => {
+            targetAssignmentIdToDelete = id;
+            document.getElementById('deleteTargetTitle').innerText = a.title;
+            document.getElementById('deleteChoiceModal').classList.add('show');
+        };
+    }
+
+    window.toggleStatus = function(aid, idx) {
+        resumeAudio();
+        const a = data.assignments.find(x => x.id == aid);
+        if(!a) return;
+        let s = (a.statuses || [])[idx] || 0;
+        s = (s + 1) % 4;
+        updateStatus(aid, idx, s); // 統一呼叫 updateStatus 處理加分邏輯
+    };
+
+    function initAttendanceView() {
+        const date = document.getElementById('attDatePicker').value;
+        const btn = document.getElementById('btnSaveAttendance');
+        if (data.attendance[date]) {
+            tempAttendanceData = JSON.parse(JSON.stringify(data.attendance[date]));
+            btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 更新點名紀錄`;
+        } else {
+            tempAttendanceData = data.roster.map(() => ({ status: 0, note: '' }));
+            btn.innerHTML = `<i class="bi bi-check-lg"></i> 確認送出點名單`;
+        }
+        renderAttendanceUI();
+    }
+
+    function renderAttendanceUI() {
+        const list = document.getElementById('attendanceList');
+        const stats = [0,0,0,0,0,0];
+        tempAttendanceData.forEach(d => { if(d.status >=0 && d.status <=5) stats[d.status]++; });
+        document.getElementById('statPresent').innerText = stats[0]; document.getElementById('statLate').innerText = stats[1];
+        document.getElementById('statEarly').innerText = stats[2]; document.getElementById('statSick').innerText = stats[3];
+        document.getElementById('statOfficial').innerText = stats[4]; document.getElementById('statPersonal').innerText = stats[5];
+
+        list.innerHTML = '';
+        data.roster.forEach((s, i) => {
+            const r = tempAttendanceData[i];
+            const div = document.createElement('div'); div.className = 'att-card';
+            let btns = '';
+            [{id:0,l:'出席'},{id:1,l:'遲到'},{id:2,l:'早退'},{id:3,l:'病假'},{id:5,l:'事假'},{id:4,l:'公假'}].forEach(o => {
+                btns += `<button class="att-btn ${r.status===o.id?'active':''}" data-status="${o.id}" data-idx="${i}">${o.l}</button>`;
+            });
+            div.innerHTML = `<div class="att-no">${s.no}</div><div class="att-name">${s.name} ${r.note?`<span class="att-note">${r.note}</span>`:''}</div><div class="att-status-group" style="flex-wrap:wrap;">${btns}</div>`;
+            list.appendChild(div);
+        });
+    }
+
+    document.getElementById('attendanceList').addEventListener('click', (e) => {
+        if(e.target.classList.contains('att-btn')) {
+            const idx = parseInt(e.target.dataset.idx);
+            const status = parseInt(e.target.dataset.status);
+            let note = tempAttendanceData[idx].note;
+            if (status === 2) { 
+                const time = prompt("早退時間 (例 14:00)：", getTaipeiTimeString());
+                if (time) note = `早退 ${time}`;
+            } else note = '';
+            tempAttendanceData[idx] = { status, note };
+            renderAttendanceUI();
+        }
+    });
+    
+    document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
+    document.getElementById('btnSaveAttendance').addEventListener('click', () => {
+        data.attendance[document.getElementById('attDatePicker').value] = tempAttendanceData;
+        triggerAutoSave(); alert("點名紀錄已儲存！"); initAttendanceView();
+    });
+
+    document.getElementById('btnExportAttendance').addEventListener('click', () => {
+        let csv = "\uFEFF座號,姓名,出席總計,遲到,早退,病假,事假,公假,缺席總計,";
+        const dates = Object.keys(data.attendance).sort();
+        if(!dates.length) { alert("無紀錄"); return; }
+        csv += dates.join(",") + "\n";
+        data.roster.forEach((s, idx) => {
+            let row = `${s.no},${s.name}`; let c = {0:0,1:0,2:0,3:0,4:0,5:0};
+            const ds = dates.map(d => {
+                const r = data.attendance[d][idx]; if(!r) return "-";
+                if(c[r.status]!==undefined) c[r.status]++;
+                let t = {0:"✔",1:"遲",2:"早",3:"病",4:"公",5:"事"}[r.status] || "?";
+                if(r.status===2 && r.note) t+=`(${r.note})`;
+                return t;
+            });
+            row += `,${c[0]+c[1]+c[2]},${c[1]},${c[2]},${c[3]},${c[5]},${c[4]},${c[3]+c[4]+c[5]},` + ds.join(",");
+            csv += row + "\n";
+        });
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+        const a = document.createElement("a"); a.href=url; a.download="點名報表.csv"; a.click();
+    });
+
+    function renderStudentStatus() {
+        const con = document.getElementById('studentStatusContainer');
+        const title = document.getElementById('studentStatusHeaderTitle');
+        const btn = document.getElementById('btnToggleBatchMode');
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
+        
+        con.innerHTML = '';
+        
+        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        const clearedStudents = []; const helpStudents = [];
+        
+        data.roster.forEach((s, i) => {
+            let pendingCount = 0;
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) pendingCount++;
+                }
+            }
+            if (pendingCount === 0) clearedStudents.push(s.no);
+            if (pendingCount >= 5) helpStudents.push(s.no);
+        });
+        
+        clearedStudents.sort((a,b)=>a-b); helpStudents.sort((a,b)=>a-b);
+
+        if (!isBatchMode) { 
+            const overview = document.createElement('div'); overview.className = 'status-overview';
+            overview.innerHTML = `
+                <div class="overview-card success"><div class="overview-icon-bg"><i class="bi bi-trophy"></i></div><div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
+                    <div class="overview-nums">${clearedStudents.length > 0 ? clearedStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">💪 尚無人達成</span>'}</div>
+                </div>
+                <div class="overview-card danger"><div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div><div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (欠款≥5)</div>
+                    <div class="overview-nums">${helpStudents.length > 0 ? helpStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">✅ 全員健康</span>'}</div>
+                </div>
+            `;
+            con.appendChild(overview);
+        }
+
+        if(isBatchMode) { 
+            con.classList.add('batch-mode'); btn.classList.add('warn'); btn.innerHTML = `<i class="bi bi-x-square"></i> 取消批量`;
+            document.getElementById('btnBatchExport').style.display='inline-flex';
+            if(btnSelectAll) btnSelectAll.style.display='inline-flex'; 
+            title.innerHTML = `<i class="bi bi-check2-square"></i> 勾選匯出對象`;
+        } else { 
+            con.classList.remove('batch-mode'); btn.classList.remove('warn'); btn.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
+            document.getElementById('btnBatchExport').style.display='none'; 
+            if(btnSelectAll) btnSelectAll.style.display='none'; 
+            title.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者狀態`;
+        }
+
+        const pending = [];
+        data.roster.forEach((s, idx) => {
+            let tasks = [];
+            (data.assignments || []).forEach(a => {
+                if(a.archived) return;
+                const indices = a.assignedIndices || 'all';
+                if ((indices === 'all' || indices.includes(idx))) {
+                    const st = (a.statuses || [])[idx] || 0;
+                    if (st === 0 || st === 2) tasks.push({ id: a.id, title: a.title, status: st });
+                }
+            });
+            if (tasks.length > 0) pending.push({ idx, tasks });
+        });
+
+        if (pending.length === 0) { 
+            const happyDiv = document.createElement('div'); happyDiv.style.textAlign = 'center'; happyDiv.style.marginTop = '20px';
+            happyDiv.innerHTML = `<div style="font-size:40px;">🎉</div><div style="font-size:20px;font-weight:bold;">全員討伐成功！</div>`;
+            con.appendChild(happyDiv); return; 
+        }
+
+        const grid = document.createElement('div'); grid.className = 'student-status-grid';
+        pending.forEach(item => {
+            const s = data.roster[item.idx];
+            const div = document.createElement('div'); div.className = 'card';
+            // ⭐ 標題顯示 EXP 徽章
+            let html = `
+                <div class="student-card-header">
+                    <h2>
+                        ${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} 
+                        ${s.no}. ${s.name} 
+                        <span class="exp-badge" style="margin-left:6px;">⭐ ${s.exp||0} ${getRankHtml(s.exp||0)}</span>
+                    </h2>
+                    <button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button>
+                </div>
+                <ul class="student-status-list">`;
+                
+            item.tasks.forEach(t => {
+                let pillClass = 'p-gray'; let statusText = '未回報';
+                if(t.status === 1) { pillClass = 'p-yellow'; statusText = '已回報'; }
+                else if(t.status === 2) { pillClass = 'p-orange'; statusText = '再挑戰'; }
+                html += `<li data-aid="${t.id}" data-sidx="${item.idx}" data-status="${t.status}">
+                            <span style="flex:1;">${t.title}</span> 
+                            <span class="pill ${pillClass}">${statusText}</span>
+                         </li>`;
+            });
+            div.innerHTML = html + '</ul>'; grid.appendChild(div);
+        });
+        con.appendChild(grid);
+    }
+    
+    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.batch-export-checkbox');
+        const allChecked = Array.from(checkboxes).every(c => c.checked);
+        checkboxes.forEach(c => c.checked = !allChecked);
+    });
+    
+    document.getElementById('btnToggleKeypad').addEventListener('click', () => {
+        const kp = document.getElementById('virtualKeypad');
+        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
+    });
+
+    let pickerTarget = null; 
+
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        
+        const li = e.target.closest('li'); if(!li) return;
+        const aid = li.dataset.aid; const sidx = parseInt(li.dataset.sidx);
+        const assignment = data.assignments.find(i => i.id == aid); if (!assignment) return;
+        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
+                updateStatus(aid, sidx, 3);
+            }
+            return;
+        }
+
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        let mouseX = e.clientX; let mouseY = e.clientY;
+        picker.style.top = (mouseY + 10) + 'px'; picker.style.left = (mouseX + 10) + 'px';
+        picker.classList.add('show');
+    });
+    
+    document.addEventListener('click', (e) => {
+        const picker = document.getElementById('statusPicker');
+        if (!picker || !picker.classList.contains('show')) return;
+        if (picker.contains(e.target)) return;
+        if (e.target.closest('li[data-aid]')) return;
+        picker.classList.remove('show');
+    });
+
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-print-single'); if (!btn) return; e.stopPropagation(); 
+        const sidx = parseInt(btn.dataset.sidx); const student = data.roster[sidx];
+        const printDate = new Date().toLocaleDateString('zh-TW');
+
+        const studentTasks = (data.assignments || []).filter(a => {
+            if (a.archived) return false;
+            const indices = a.assignedIndices || 'all'; return (indices === 'all' || indices.includes(sidx));
+        }).map(a => { return { title: a.title, status: (a.statuses || [])[sidx] || 0 }; });
+
+        const pendingTasks = studentTasks.filter(t => t.status !== 3);
+        pendingTasks.sort((a, b) => { const weight = { 2: 0, 0: 1, 1: 2 }; return weight[a.status] - weight[b.status]; });
+
+        const listHtml = pendingTasks.length > 0 ? pendingTasks.map(t => {
+            let statusText = ''; let rowStyle = '';
+            if(t.status === 0) statusText = '未回報'; else if(t.status === 1) statusText = '已回報';
+            else if(t.status === 2) { statusText = '再挑戰'; rowStyle = 'color: #c62828; font-weight:bold;'; } 
+            return `<li class="print-task-item" style="${rowStyle}"><span class="print-checkbox">☐</span><span class="print-task-name">${t.title}</span><span class="print-task-status">(${statusText})</span></li>`;
+        }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888; padding: 20px;">🎉 太棒了！目前沒有待辦任務！</li>';
+
+        const w = window.open('', '', 'width=900,height=800');
+        w.document.write(`<html><head><title>${student.name} - 任務卷軸</title><style>body { font-family: "Microsoft JhengHei", sans-serif; padding: 40px; background: #fff; display:flex; justify-content:center;} .print-card { border: 3px solid #5D4037; border-radius: 12px; padding: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; box-shadow: 5px 5px 0px rgba(0,0,0,0.1); } .print-header { border-bottom: 2px dashed #8B4513; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; } .print-name { font-size: 28px; font-weight: 900; color: #3E2723; } .print-title { font-size: 16px; font-weight: bold; color: #666; } .print-list { list-style: none; padding: 0; margin: 0; flex: 1; } .print-task-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dotted #ccc; font-size: 18px; } .print-checkbox { font-size: 22px; font-weight: bold; line-height: 1; } .print-task-name { font-weight: bold; flex: 1; } .print-task-status { font-size: 14px; color: #888; font-weight: normal; } .print-footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 14px; } .print-sign { font-weight: 900; color: #000; font-size: 16px; } @media print { body { padding: 0; margin: 0; display:block;} .print-card { border-width: 2px; box-shadow:none; max-width: none; width: 100%; border-radius: 0; } @page { margin: 1.5cm; } }</style></head><body><div class="print-card"><div class="print-header"><div class="print-name">${student.no}. ${student.name}</div><div class="print-title">冒險者任務卷軸</div></div><ul class="print-list">${listHtml}</ul><div class="print-footer"><div class="print-date">📅 列印日期：${printDate}</div><div class="print-sign">家長簽名：________________</div></div></div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };<\/script></body></html>`);
+        w.document.close();
+    });
+
+    window.updateStatus = function(aid, sidx, newStatus) {
+        const a = data.assignments.find(i => i.id == aid);
+        if(a) {
+            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+            const oldStatus = a.statuses[sidx] || 0;
+            a.statuses[sidx] = newStatus;
+            
+            if (oldStatus !== 3 && newStatus === 3) {
+                changeExp(sidx, 5, true); 
+                playSuccessSound();
+                showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`);
+            } else if (oldStatus === 3 && newStatus !== 3) {
+                changeExp(sidx, -5, true); 
+                showToast(`⚠️ 取消討伐！${data.roster[sidx].name} 失去 5 EXP`);
+            }
+            
+            triggerAutoSave(); 
+            renderStudentStatus();
+            renderDashboard();   
+            if (document.getElementById('view-discipline').classList.contains('show')) {
+                renderDiscipline();
+            }
+        }
+    };
+
+    document.querySelectorAll('.status-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if(!pickerTarget) return;
+            const s = parseInt(btn.dataset.status);
+            updateStatus(pickerTarget.aid, pickerTarget.idx, s);
+            document.getElementById('statusPicker').classList.remove('show');
+        });
+    });
+
+    document.getElementById('btnConfirmArchive').addEventListener('click', () => {
+        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+        if(a) { a.archived = true; triggerAutoSave(); renderDashboard(); }
+        document.getElementById('deleteChoiceModal').classList.remove('show');
+    });
+
+    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+        if(a) {
+            const backup = JSON.stringify(a);
+            data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
+            triggerAutoSave(); renderDashboard();
+            showToast("已刪除", "復原", () => {
+                data.assignments.push(JSON.parse(backup));
+                triggerAutoSave(); renderDashboard();
+            });
+        }
+        document.getElementById('deleteChoiceModal').classList.remove('show');
+    });
+
+    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster', 'btnNavDiscipline'].forEach(id => {
+        document.getElementById(id).addEventListener('click', (e) => {
+            const map = {
+                'btnNavDashboard':'view-dashboard',
+                'btnNavStudentStatus':'view-student-status',
+                'btnNavRoster':'view-roster',
+                'btnNavDiscipline':'view-discipline'
+            };
+            switchView(map[e.currentTarget.id]);
+        });
+    });
+
+    document.getElementById('tabBtnStudents').addEventListener('click', () => {
+        document.getElementById('tabBtnStudents').classList.add('active'); document.getElementById('tabBtnTeachers').classList.remove('active');
+        document.getElementById('roster-content-students').classList.add('show'); document.getElementById('roster-content-teachers').classList.remove('show');
+    });
+    document.getElementById('tabBtnTeachers').addEventListener('click', () => {
+        document.getElementById('tabBtnTeachers').classList.add('active'); document.getElementById('tabBtnStudents').classList.remove('active');
+        document.getElementById('roster-content-teachers').classList.add('show'); document.getElementById('roster-content-students').classList.remove('show');
+    });
+
+    document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
+    document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
+    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none');
+    
+    document.getElementById('selSubject').addEventListener('change', (e) => {
+        const sel = document.getElementById('selPresetTask'); sel.innerHTML = '<option value="">📜 常用任務...</option>';
+        if(e.target.value && data.questSettings[e.target.value]) data.questSettings[e.target.value].forEach(t => sel.add(new Option(t, t)));
+    });
+    document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+        let t = document.getElementById('ipTeacherSelect').value;
+        if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
+        const title = document.getElementById('ipTitle').value.trim();
+        const sub = document.getElementById('selSubject').value;
+        const d = document.getElementById('ipDate').value;
+        if(!t || !title || !d) { alert("請填寫完整"); return; }
+        if(!data.teachers.includes(t)) data.teachers.push(t);
+        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
+        data.assignments.push({ 
+            id: Date.now(), teacher: t, title, subject: sub, date: d, 
+            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) 
+        });
+        triggerAutoSave(); resetNewAssignmentState(); renderAll();
+        document.getElementById('panelNewQuest').classList.remove('show');
+    });
+
+    document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("全員已報？")) updateAllStatus(1); });
+    document.getElementById('btnMarkAllOrange').addEventListener('click', () => { if(confirm("全員再戰？")) updateAllStatus(2); });
+    function updateAllStatus(s) {
+        const a = data.assignments.find(x => x.id == currentAssignmentId);
+        if(a) { 
+            const idxs = a.assignedIndices || 'all';
+            data.roster.forEach((_, i) => { if(idxs === 'all' || idxs.includes(i)) a.statuses[i] = s; });
+            triggerAutoSave(); renderDashboardDetail(currentAssignmentId);
+        }
+    }
+    
+    document.getElementById('rangeSize').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--seat', `${e.target.value}px`);
+        document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`);
+    });
+
+    const userBadge = document.getElementById('userEmailDisplay');
+    if(userBadge) {
+        userBadge.addEventListener('click', () => {
+            const list = document.getElementById('adminDebtList'); list.innerHTML = '';
+            const debts = [];
+            data.roster.forEach((s, idx) => {
+                let c = 0;
+                data.assignments.forEach(a => { if(!a.archived) { const st = (a.statuses||[])[idx]||0; if(st===0||st===2) c++; } });
+                if(c>=5) debts.push({name: s.name, c});
+            });
+            if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${d.name} (${d.c})</span>`);
+            else list.innerHTML = '<p style="color:var(--success)">目前無人欠款！</p>';
+            document.getElementById('adminProfileModal').classList.add('show');
+        });
+    }
+
+    document.getElementById('btnAdminAttendance').addEventListener('click', () => {
+        document.getElementById('adminProfileModal').classList.remove('show');
+        switchView('view-attendance');
+    });
+
+    document.getElementById('btnDownloadArchive').addEventListener('click', () => {
+        const arcs = data.assignments.filter(a => a.archived);
+        if(!arcs.length) { alert("無封存資料"); return; }
+        let csv = "\uFEFF發布日期,內容,導師," + data.roster.map(s => s.name).join(",") + "\n";
+        arcs.forEach(a => {
+            const st = a.statuses || [];
+            csv += `${a.date},"${a.title}",${a.teacher},` + data.roster.map((_, i) => ["未","交","改","完"][st[i]||0]).join(",") + "\n";
+        });
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+        const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
+    });
+
+    document.getElementById('btnClearAssignments').addEventListener('click', () => {
+        if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { 
+            data.assignments = []; data.attendance = {}; 
+            triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
+        }
+    });
+    document.getElementById('btnResetAll').addEventListener('click', () => {
+        if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { 
+            data.roster = []; data.assignments = []; data.attendance = {}; data.discipline = null;
+            triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
+        }
+    });
+    
+    document.getElementById('btnExportJSON').addEventListener('click', () => {
+        const dataStr = JSON.stringify(data, null, 2); 
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url;
+        const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        a.download = `guild_backup_${dateStr}.json`;
+        a.click(); URL.revokeObjectURL(url); showToast("✅ 公會資料已成功匯出備份！", "確認");
+    });
+
+    document.getElementById('btnImportJSONTrigger').addEventListener('click', () => { document.getElementById('ipImportJSON').click(); });
+
+    document.getElementById('ipImportJSON').addEventListener('change', (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                if (!importedData || typeof importedData !== 'object') throw new Error("無效的檔案格式");
+                
+                if (!importedData.roster) importedData.roster = [];
+                if (!importedData.assignments) importedData.assignments = [];
+                if (!importedData.teachers) importedData.teachers = [];
+                if (!importedData.questSettings) importedData.questSettings = {};
+                if (!importedData.attendance) importedData.attendance = {};
+
+                if (confirm("⚠️ 警告：還原備份將會【完全覆蓋】目前系統內的所有資料！\n\n確定要繼續還原嗎？")) {
+                    data = importedData; triggerAutoSave(); renderAll();
+                    document.getElementById('adminProfileModal').classList.remove('show');
+                    showToast("✨ 備份資料已成功還原！", "確認");
+                }
+            } catch (error) { alert("❌ 讀取備份失敗，檔案可能已損毀或格式錯誤。\n詳細錯誤：" + error.message); } 
+            finally { e.target.value = '';  }
+        };
+        reader.readAsText(file);
+    });
+
+    ['teacherFilter','subjectFilter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            currentFilter[id.replace('Filter','')] = e.target.value;
+            renderDashboard(); document.getElementById('filterPanel').classList.remove('show'); document.getElementById('btnToggleFilter').classList.remove('active');
+        });
+    });
+    document.getElementById('btnClearFilter').addEventListener('click', () => {
+        currentFilter = { teacher: 'all', subject: 'all' };
+        document.getElementById('teacherFilter').value = 'all'; document.getElementById('subjectFilter').value = 'all';
+        renderDashboard(); document.getElementById('filterPanel').classList.remove('show');
+    });
+
+    document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
+        tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings));
+        renderQuestConfig(); document.getElementById('questSettingsModal').classList.add('show');
+    });
+    function renderQuestConfig() {
+        const list = document.getElementById('questConfigList'); list.innerHTML = '';
+        Object.keys(tempQuestSettings).forEach(sub => {
+            const div = document.createElement('div'); div.className = 'quest-config-card';
+            div.innerHTML = `
+                <div class="quest-config-header">
+                    <span class="quest-config-title">${sub}</span><button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除</button>
+                </div>
+                <div class="quest-tags">${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}</div>
+                <div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button></div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    const qList = document.getElementById('questConfigList');
+    qList.addEventListener('click', (e) => {
+        if(e.target.closest('.btn-del-subj')) {
+            const s = e.target.closest('.btn-del-subj').dataset.sub;
+            if(confirm(`確定要移除【${s}】科目嗎？`)) { delete tempQuestSettings[s]; renderQuestConfig(); }
+        } else if(e.target.closest('.btn-del-task')) {
+            const t = e.target.closest('.btn-del-task'); const s = t.dataset.sub; const i = parseInt(t.dataset.idx);
+            tempQuestSettings[s].splice(i, 1); renderQuestConfig();
+        } else if(e.target.closest('.btn-add-task')) {
+            const s = e.target.closest('.btn-add-task').dataset.sub; const ip = document.getElementById(`newT_${s}`);
+            if(ip.value.trim()) { tempQuestSettings[s].push(ip.value.trim()); renderQuestConfig(); }
+        }
+    });
+
+    document.getElementById('btnAddSubject').addEventListener('click', () => {
+        const v = document.getElementById('ipNewSubject').value.trim();
+        if(v && !tempQuestSettings[v]) { tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); }
+    });
+    document.getElementById('btnSaveQuestSettings').addEventListener('click', () => {
+        data.questSettings = tempQuestSettings; triggerAutoSave(); updateSubjectDropdown();
+        document.getElementById('questSettingsModal').classList.remove('show');
+    });
+    
+    document.getElementById('virtualKeypad').addEventListener('click', (e) => {
+        if(e.target.classList.contains('vk-btn')) {
+            const val = e.target.dataset.val; const ip = document.getElementById('ipTitle');
+            if (val === 'backspace') ip.value = ip.value.slice(0, -1);
+            else if (val === 'clear') ip.value = '';
+            else if (val === 'space') ip.value += ' ';
+            else ip.value += val;
+            ip.focus();
+        }
+    });
+
+    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
+        if(e.target.classList.contains('theme-option')) {
+            const t = e.target.dataset.theme; document.documentElement.setAttribute('data-color-theme', t); localStorage.setItem('hwColor', t);
+            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active')); e.target.classList.add('active');
+        }
+    });
+    document.getElementById('darkModeToggle').addEventListener('change', (e) => {
+        const t = e.target.checked ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('hwTheme', t);
+    });
+
+    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
+        const div = document.getElementById('rosterEditor'); const c = div.querySelectorAll('.roster-item').length + 1;
+        const d = document.createElement('div'); d.className = 'roster-item';
+        d.innerHTML = `<input type="number" value="${c}" class="roster-no-input"><input class="roster-name-input">`;
+        div.appendChild(d);
+    });
+    document.getElementById('btnApplyRoster').addEventListener('click', () => {
+        const r = [];
+        document.querySelectorAll('.roster-item').forEach(d => {
+            const no = parseInt(d.querySelector('.roster-no-input').value);
+            const name = d.querySelector('.roster-name-input').value.trim();
+            if(no && name) {
+                const existing = data.roster.find(x => x.no === no && x.name === name);
+                r.push({ no, name, exp: existing ? existing.exp : 0 });
+            }
+        });
+        data.roster = r; triggerAutoSave(); renderRosterEditor(); alert("已更新");
+    });
+    function renderRosterEditor() {
+        const d = document.getElementById('rosterEditor'); d.innerHTML = '';
+        data.roster.forEach(s => {
+            d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"></div>`;
+        });
+    }
+
+    document.getElementById('btnApplyTeachers').addEventListener('click', () => {
+        const ts = []; document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) ts.push(i.value.trim()); });
+        data.teachers = [...new Set(ts)]; triggerAutoSave(); renderTeacherEditor(); alert("已更新");
+    });
+    function renderTeacherEditor() {
+        const d = document.getElementById('teacherEditor'); d.innerHTML = '';
+        data.teachers.forEach(t => {
+            const div = document.createElement('div'); div.className = 'teacher-item';
+            div.innerHTML = `<input value="${t}" class="teacher-name-input"><button class="btn warn sm btn-del-t">刪</button>`;
+            div.querySelector('.btn-del-t').onclick = () => { if(confirm("刪除?")) { data.teachers = data.teachers.filter(x=>x!==t); triggerAutoSave(); renderTeacherEditor(); }};
+            d.appendChild(div);
+        });
+    }
+    
+    document.getElementById('btnCloseRosterPaste').addEventListener('click', () => document.getElementById('detailsRosterPaste').removeAttribute('open'));
+
+    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
+        const txt = document.getElementById('taRosterPaste').value.trim(); if(!txt) return;
+        const d = document.getElementById('rosterEditor');
+        const currentInputs = Array.from(d.querySelectorAll('.roster-name-input'));
+        const currentNames = currentInputs.map(i => i.value.trim());
+        const isDefaultRoster = currentNames.length === 3 && currentNames[0] === '勇者A' && currentNames[1] === '法師B' && currentNames[2] === '弓手C';
+        
+        let isOverwrite = false;
+        if (isDefaultRoster || currentNames.length === 0) isOverwrite = true;
+        else isOverwrite = confirm("要【覆蓋】目前的冒險者名單嗎？\n\n[確定]：清除舊名單\n[取消]：將新名單附加在最後");
+
+        let c = 1; 
+        if (isOverwrite) d.innerHTML = ''; 
+        else c = d.querySelectorAll('.roster-item').length + 1; 
+
+        txt.split(/\r?\n/).forEach(n => {
+            if(n.trim()) d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; 
+        });
+        
+        document.getElementById('taRosterPaste').value = ''; document.getElementById('detailsRosterPaste').removeAttribute('open'); 
+        alert("📜 名單已載入編輯區！請點擊右下角的「儲存變更」。");
+    });
+
+    document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
+        const c = document.getElementById('assignStudentListContainer'); c.innerHTML = '';
+        data.roster.forEach((s, i) => {
+            const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i);
+            const l = document.createElement('label'); l.className = 'assign-student-item';
+            l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`;
+            c.appendChild(l);
+        });
+        document.getElementById('assignStudentModal').classList.add('show');
+    });
+    document.getElementById('btnConfirmAssign').addEventListener('click', () => {
+        const chks = document.querySelectorAll('#assignStudentListContainer input:checked');
+        newAssignmentAssignedIndices = Array.from(chks).map(c => parseInt(c.dataset.idx));
+        document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "全體冒險者" : `已選 ${newAssignmentAssignedIndices.length} 位`;
+        document.getElementById('assignStudentModal').classList.remove('show');
+    });
+    document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
+    document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
+
+    document.getElementById('btnToggleBatchMode').addEventListener('click', () => { isBatchMode = !isBatchMode; renderStudentStatus(); });
+
+    document.getElementById('btnBatchExport').addEventListener('click', () => {
+        const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
+        if(!checkedBoxes.length) { alert("尚未勾選任何冒險者！"); return; }
+        const selectedIndices = Array.from(checkedBoxes).map(c => parseInt(c.dataset.sidx));
+
+        let exportList = selectedIndices.map(sidx => {
+            const student = data.roster[sidx];
+            const studentTasks = (data.assignments || []).filter(a => {
+                if (a.archived) return false;
+                const indices = a.assignedIndices || 'all'; return (indices === 'all' || indices.includes(sidx));
+            }).map(a => { return { title: a.title, status: (a.statuses || [])[sidx] || 0 }; });
+
+            const pendingTasks = studentTasks.filter(t => t.status !== 3);
+            const debtCount = studentTasks.filter(t => t.status === 0 || t.status === 2).length;
+            return { name: student.name, no: student.no, tasks: pendingTasks, debtCount: debtCount };
+        });
+
+        exportList.sort((a, b) => {
+            if (b.debtCount !== a.debtCount) return b.debtCount - a.debtCount; 
+            return a.no - b.no; 
+        });
+
+        let cardsHtml = ''; const printDate = new Date().toLocaleDateString('zh-TW');
+
+        exportList.forEach(student => {
+            const listItems = student.tasks.length > 0 ? student.tasks.map(t => {
+                let statusText = ''; if(t.status === 0) statusText = '未回報'; else if(t.status === 1) statusText = '已回報'; else if(t.status === 2) statusText = '再挑戰';
+                return `<li class="print-task-item"><span class="print-checkbox">☐</span><span class="print-task-name">${t.title}</span><span class="print-task-status">(${statusText})</span></li>`;
+            }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888;">🎉 太棒了！目前沒有待辦任務！</li>';
+
+            const titleStyle = student.debtCount >= 5 ? 'color: #c62828;' : 'color: #000;';
+            const debtBadge = student.debtCount > 0 ? `<span style="font-size:12px; color:#c62828; border:1px solid #c62828; padding:1px 4px; border-radius:4px; margin-left:6px;">欠 ${student.debtCount}</span>` : '';
+
+            cardsHtml += `
+                <div class="print-card"><div class="print-header"><div class="print-name" style="${titleStyle}">${student.no}. ${student.name} ${debtBadge}</div><div class="print-title">任務清單</div></div><ul class="print-list">${listItems}</ul><div class="print-footer"><div class="print-date">📅 ${printDate}</div><div class="print-sign">家長簽名：________________</div></div></div>
+            `;
+        });
+
+        const w = window.open('', '', 'width=900,height=800');
+        w.document.write(`<html><head><title>冒險者任務卷軸匯出</title><style>body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #fff; } .print-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } .print-card { border: 2px solid #5D4037; border-radius: 8px; padding: 12px; break-inside: avoid; display: flex; flex-direction: column; background: #fff; } .print-header { border-bottom: 2px dashed #8B4513; padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; } .print-name { font-size: 20px; font-weight: 900; } .print-title { font-size: 12px; font-weight: bold; color: #666; } .print-list { list-style: none; padding: 0; margin: 0; flex: 1; } .print-task-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 15px; } .print-checkbox { font-size: 18px; font-weight: bold; line-height: 1; } .print-task-name { font-weight: bold; flex: 1; } .print-task-status { font-size: 12px; color: #888; } .print-footer { margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 12px; } .print-sign { font-weight: 900; color: #000; font-size: 14px; } @media print { body { padding: 0; margin: 0; } .print-card { border-width: 1px; } @page { margin: 1cm; } }</style></head><body><div class="print-container">${cardsHtml}</div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };<\/script></body></html>`);
+        w.document.close();
+    });
+
+    document.getElementById('btnToggleToolbox').addEventListener('click', function() { document.getElementById('toolboxMenu').classList.toggle('show'); this.classList.toggle('active'); });
+    document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => { resetNewAssignmentState(); openTool('panelNewQuest'); });
+
+    function openTool(id) {
+        document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
+        const win = document.getElementById(id); if(win) win.classList.add('show');
+        document.getElementById('toolboxMenu').classList.remove('show'); document.getElementById('btnToggleToolbox').classList.remove('active');
+    }
+    document.getElementById('btnOpenMarquee').addEventListener('click', () => openTool('panelMarquee'));
+    document.getElementById('btnOpenTimer').addEventListener('click', () => openTool('panelTimer'));
+    document.getElementById('btnOpenDraw').addEventListener('click', () => openTool('panelDraw'));
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.tool-close')) { const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); }
+    });
+
+    document.getElementById('btnMqShow').addEventListener('click', () => {
+        const txt = document.getElementById('mqTextInput').value; const col = document.getElementById('mqColorInput').value; const sz = document.getElementById('mqSizeInput').value; const spd = document.getElementById('mqSpeedInput').value;
+        if(!txt) return; const el = document.getElementById('marqueeText'); el.innerText = txt; el.style.color = col; el.style.fontSize = sz + 'px'; el.style.animationDuration = (Math.max(10, txt.length*0.8) / spd) + 's'; document.getElementById('topMarquee').style.display = 'block';
+    });
+    document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
+    document.getElementById('mqSizeInput').addEventListener('input', (e) => document.getElementById('marqueeText').style.fontSize = e.target.value+'px');
+
+    let timerInt = null; let timerSec = 0;
+    function updateTimer() { document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; }
+    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => {
+        clearInterval(timerInt); timerInt = null; timerSec = e.target.dataset.min * 60; document.getElementById('timerInput').value = e.target.dataset.min; document.getElementById('btnTimerStart').innerText = "開始"; updateTimer();
+    }));
+    document.getElementById('btnTimerStart').addEventListener('click', (e) => {
+        resumeAudio();
+        if(timerInt) { clearInterval(timerInt); timerInt=null; e.target.innerText="繼續"; }
+        else {
+            if(timerSec === 0) { const m = parseInt(document.getElementById('timerInput').value)||0; const s = parseInt(document.getElementById('timerInputSec').value)||0; timerSec = m*60+s; }
+            if(timerSec>0) {
+                e.target.innerText="暫停";
+                timerInt = setInterval(() => {
+                    if(timerSec>0) { timerSec--; updateTimer(); }
+                    else { clearInterval(timerInt); timerInt=null; e.target.innerText="開始"; playAlarmSound(); showToast("⏰ 時間到！任務結束！", "確認"); }
+                }, 1000);
+            }
+        }
+    });
+    document.getElementById('btnTimerReset').addEventListener('click', () => {
+        clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer();
+        document.getElementById('btnTimerStart').innerText="開始"; document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value='';
+    });
+
+    document.getElementById('btnLuckyDraw').addEventListener('click', () => {
+        resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult');
+        if (!data.roster || data.roster.length === 0) { res.innerText = "無人可抽"; return; }
+        if (btn.disabled) return; btn.disabled = true; btn.innerText = "命運轉動中...";
+        res.classList.remove('draw-winner'); res.classList.add('draw-rolling');
+        let rollCount = 0; const maxRolls = 30; let delay = 40;      
+        function roll() {
+            const randomIndex = Math.floor(Math.random() * data.roster.length); res.innerText = data.roster[randomIndex].name;
+            playTickSound(); rollCount++;
+            if (rollCount < maxRolls) {
+                if (rollCount > maxRolls * 0.8) delay += 40; else if (rollCount > maxRolls * 0.5) delay += 15; 
+                setTimeout(roll, delay);
+            } else {
+                res.classList.remove('draw-rolling'); res.classList.add('draw-winner'); 
+                playSuccessSound(); confetti(); btn.disabled = false; btn.innerText = "再次抽出冒險者";
+            }
+        }
+        roll();
+    });
+  </script>
+</body>
+</html>
