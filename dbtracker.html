@@ -205,6 +205,38 @@
             box-shadow: none;
         }
 
+        /* 小知識按鈕 */
+        .btn-trivia {
+            position: absolute;
+            top: 60px; /* 定位在全螢幕按鈕下方 */
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            box-shadow: none;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .btn-trivia:hover {
+            opacity: 1;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 小知識清單排版 */
+        .trivia-list {
+            text-align: left;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #4b5563;
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+        .trivia-list li {
+            margin-bottom: 10px;
+        }
 
         /* 狀態指示標籤 */
         .status-badge {
@@ -276,9 +308,31 @@
         </div>
     </div>
 
+    <!-- 分貝小知識 Modal -->
+    <div class="modal-overlay" id="trivia-modal">
+        <div class="modal-box" style="max-width: 450px;">
+            <h2>📖 分貝小知識</h2>
+            <ul class="trivia-list">
+                <li><b>20 分貝：</b>微風吹過樹葉的聲音 🍃</li>
+                <li><b>40-50 分貝：</b>安靜的圖書館、輕聲討論 🗣️</li>
+                <li><b>70-80 分貝：</b>吵雜的街道、大聲喧嘩 🚗</li>
+                <li><b>100 分貝以上：</b>打雷、火車經過的轟隆聲 ⚡</li>
+                <li style="margin-top: 15px; color: #ef4444; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <b>⚠️ 聽力受損警告：</b><br>
+                    如果處在 <b>85 分貝</b> 的環境超過 8 小時，或是 <b>100 分貝</b> 只要待超過 <b>15 分鐘</b>，聽力就可能永久受損喔！請隨時保護好我們的小耳朵！👂✨
+                </li>
+            </ul>
+            <div class="modal-btn-group">
+                <button class="btn-confirm" id="btn-trivia-close">我懂了！</button>
+            </div>
+        </div>
+    </div>
+
     <div class="main-container">
         <!-- 全螢幕按鈕 -->
         <button class="btn-fullscreen" id="btn-fullscreen" title="全螢幕">🖥️</button>
+        <!-- 小知識按鈕 -->
+        <button class="btn-trivia" id="btn-trivia" title="分貝小知識">📖</button>
 
         <h1>🌟 班級音量小精靈 🌟</h1>
         
@@ -361,6 +415,20 @@
 
         // 全螢幕按鈕
         const btnFullscreen = document.getElementById('btn-fullscreen');
+
+        // 小知識元素
+        const triviaModal = document.getElementById('trivia-modal');
+        const btnTrivia = document.getElementById('btn-trivia');
+        const btnTriviaClose = document.getElementById('btn-trivia-close');
+
+        // --- 小知識功能 ---
+        btnTrivia.addEventListener('click', () => {
+            triviaModal.classList.add('show');
+        });
+
+        btnTriviaClose.addEventListener('click', () => {
+            triviaModal.classList.remove('show');
+        });
 
         // --- 全螢幕功能 ---
         btnFullscreen.addEventListener('click', () => {
