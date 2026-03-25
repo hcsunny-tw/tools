@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 (PROT版) 🛡️</title>
+  <title>🛡️ 冒險者公會 (ProT版) 🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -306,7 +306,7 @@
     .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
 
     /* ============================================================
-       🚦 紀律看板專屬樣式 (紅綠燈與分數)
+       🚦 紀律看板與晨間報到專屬樣式
        ============================================================ */
     .discipline-zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
     .d-zone { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 400px; }
@@ -347,7 +347,10 @@
     .checklist-item:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
     .checklist-item.done { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
 
-    @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas { display: none !important; } }
+    /* 浮動時鐘 */
+    .floating-clock { position: fixed; right: 20px; top: 80px; background: rgba(253, 245, 230, 0.9); border: 2px solid var(--primary); border-radius: 30px; padding: 6px 14px; font-family: "Courier New", monospace; font-size: 18px; font-weight: 900; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 1000; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
+
+    @media print { .no-print, .toolbox-container, .marquee-container, #confettiCanvas, .floating-clock { display: none !important; } }
   </style>
 </head>
 <body>
@@ -359,6 +362,8 @@
   <canvas id="confettiCanvas"></canvas>
   <div id="toastContainer" class="toast-container"></div>
   
+  <div id="floatingClock" class="floating-clock no-print"><i class="bi bi-clock"></i> <span id="fcTime">00:00:00</span></div>
+
   <div id="assignmentTooltip" class="assignment-tooltip"></div>
 
   <div id="attendanceReminderModal" class="modal-overlay">
@@ -375,7 +380,7 @@
   <div id="loginOverlay">
       <div id="loginBox">
           <div class="logo" style="margin: 0 auto 20px; width: 80px; height: 80px; font-size: 40px;">🛡️</div>
-          <h1>冒險者公會登入</h1>
+          <h1>冒險者公會 (ProT版) 登入</h1>
           <p class="muted">請出示您的公會長證件 (Google 帳號)</p>
           <button id="btnLogin" class="btn" style="font-size: 18px; padding: 12px 24px; width: 100%; justify-content: center;">
               <i class="bi bi-google"></i> 使用 Google 登入
@@ -388,7 +393,7 @@
       <div class="brand">
         <div class="logo"><i class="bi bi-shield-shaded"></i></div>
         <div>
-          <h1>冒險者公會</h1>
+          <h1>冒險者公會 <span style="font-size: 14px; background: var(--tbl-head); color: var(--primary); padding: 2px 6px; border-radius: 4px; vertical-align: middle;">ProT版</span></h1>
           <div class="muted">狀態循環：灰＝未接取 → 黃＝已回報 → 橘＝再挑戰 → 綠＝討伐成功</div>
         </div>
       </div>
@@ -397,6 +402,8 @@
         <button class="btn ghost" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i></button>
         <button class="btn ghost" id="btnNavDashboard"><i class="bi bi-columns-gap"></i> 委託看板</button>
         <button class="btn ghost" id="btnNavStudentStatus"><i class="bi bi-backpack4"></i> 冒險者狀態</button>
+        <!-- 🏰 晨間報到按鈕 -->
+        <button class="btn ghost" id="btnNavCheckIn"><i class="bi bi-sun"></i> 晨間報到</button>
         <!-- 🚦 公會紀律按鈕 (預設隱藏，由 Lab 模式開啟) -->
         <button class="btn ghost" id="btnNavDiscipline" style="display: none;"><i class="bi bi-stoplights"></i> 公會紀律</button>
         
@@ -456,6 +463,19 @@
   </div>
 </section>
 
+    <!-- 🌅 晨間報到看板 -->
+    <section id="view-checkin" class="view">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h2><i class="bi bi-sun"></i> 晨間報到看板</h2>
+                <div class="muted">準時到校者可獲得 1 點 EXP！ (規定時間：<span id="dispArrivalTime" style="color:var(--primary);font-weight:bold;">07:50</span>)</div>
+            </div>
+            <div class="grid" id="checkinGrid" style="grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap: 16px;">
+                <!-- 學生打卡按鈕將由 JavaScript 渲染 -->
+            </div>
+        </div>
+    </section>
+
     <!-- 🌟 公會紀律看板 (紅綠燈與準備清單) -->
     <section id="view-discipline" class="view">
         <div class="roster-tabs">
@@ -498,7 +518,7 @@
     <section id="view-attendance" class="view">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-                <h2><i class="bi bi-calendar-check"></i> 每日點名</h2>
+                <h2><i class="bi bi-calendar-check"></i> 每日點名 (公會長用)</h2>
                 <div style="display:flex; gap:8px;">
                     <input type="date" id="attDatePicker" style="width: auto;">
                     <button class="btn sm secondary" id="btnExportAttendance"><i class="bi bi-file-earmark-excel"></i> 下載報表</button>
@@ -585,15 +605,20 @@
                 <div class="theme-option" data-theme="warm-cute" title="溫暖可愛" style="background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%); border-radius: 50%;"></div>
             </div>
         </div>
-        <div class="field">
+        <div class="field" style="margin-bottom: 20px;">
             <label>環境光線</label>
-            <div class="dark-mode-toggle">
+            <div class="dark-mode-toggle" style="margin-top: 4px;">
                 <span style="font-weight: bold;"><i class="bi bi-moon-stars-fill"></i> 夜間營火模式</span>
                 <label class="switch">
                     <input type="checkbox" id="darkModeToggle">
                     <span class="slider"></span>
                 </label>
             </div>
+        </div>
+        <!-- 🏫 晨間到校時間設定 -->
+        <div class="field" style="border-top: 1px dashed var(--tbl-border); padding-top: 16px;">
+            <label>🏫 規定到校時間 (晨間報到用)</label>
+            <input type="time" id="ipSettingsArrivalTime" style="margin-top: 4px;">
         </div>
     </div>
   </div>
@@ -741,36 +766,18 @@
       <div class="tool-body"><div id="luckyDrawResult">???</div><button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button></div>
   </div>
 
-  <!-- 🚨 正確的 Firebase 與主程式邏輯 🚨 -->
+  <!-- 🚨 唯一且乾淨的 JavaScript 核心區塊 🚨 -->
   <script type="module">
-    function getTaipeiDateString() { return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); }
-    function getTaipeiTimeString() { return new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' }); }
-    
-    // ⭐ 計算階級 (EXP Rank)
-    window.getRankHtml = function(exp) {
-        let rank = "新手"; let color = "#9ca3af";
-        if (exp >= 100) { rank = "S級傳說"; color = "#f43f5e"; }
-        else if (exp >= 50) { rank = "A級菁英"; color = "#eab308"; }
-        else if (exp >= 20) { rank = "B級熟手"; color = "#3b82f6"; }
-        else if (exp >= 5) { rank = "C級見習"; color = "#22c55e"; }
-        return `<span class="rank-text" style="color:${color};">${rank}</span>`;
-    }
-
-    // =================================================================
-    // 🚨 Firebase 資料庫設定區 🚨
-    // 如果您「新建了一個專門給測試站的資料庫專案」，請務必將下方的設定
-    // 替換成您新專案的 firebaseConfig！ (可在新專案的 Project Settings 找到)
-    // =================================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
-  authDomain: "homework-hc906.firebaseapp.com",
-  projectId: "homework-hc906",
-  storageBucket: "homework-hc906.firebasestorage.app",
-  messagingSenderId: "1051903125085",
-  appId: "1:1051903125085:web:b205f868669ea7d5c34fb4",
-  measurementId: "G-V0BEG0TVJY"
-};
-
+    // --- 1. 基本設定與 Firebase 初始化 ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
+      authDomain: "homework-hc906.firebaseapp.com",
+      projectId: "homework-hc906",
+      storageBucket: "homework-hc906.firebasestorage.app",
+      messagingSenderId: "1051903125085",
+      appId: "1:1051903125085:web:b205f868669ea7d5c34fb4",
+      measurementId: "G-V0BEG0TVJY"
+    };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
@@ -779,147 +786,23 @@ const firebaseConfig = {
     let app, db, auth;
     try { 
         app = initializeApp(firebaseConfig); 
-        // 💡 備註：如果您是在同一個專案下建立了「第二個命名資料庫」(例如叫做 test-db)
-        // 請將下方改為： db = getFirestore(app, "test-db");
         db = getFirestore(app); 
         auth = getAuth(app); 
     } catch (e) { 
         console.error(e); alert("Firebase 初始化錯誤，請檢查 Config"); 
     }
 
+    // --- 2. 系統狀態與變數 ---
     let currentUser = null;
-    let data = { roster: [], assignments: [], teachers: [], questSettings: {}, attendance: {}, discipline: null }; 
     const defaultData = {
         roster: [ { no: 1, name: "勇者A", exp: 0 }, { no: 2, name: "法師B", exp: 0 }, { no: 3, name: "弓手C", exp: 0 } ],
         assignments: [], teachers: ["公會長"],
         questSettings: { "國語": ["國語習作", "國語考卷"], "數學": ["數學習作", "數學考卷"] },
-        attendance: {}, discipline: null
+        attendance: {}, discipline: null,
+        settings: { arrivalTime: "07:50" }
     };
-
-    const loginOverlay = document.getElementById('loginOverlay');
-    const mainApp = document.getElementById('mainApp');
-    const APP_SCALE = 1; 
-
-    // 🧪 實驗室模式 (Lab Mode) 功能開關
-    let isLabMode = localStorage.getItem('guildLabMode') === 'true';
-    const btnNavDiscipline = document.getElementById('btnNavDiscipline');
-    const btnToggleLabMode = document.getElementById('btnToggleLabMode');
-
-    function updateLabModeUI() {
-        if (isLabMode) {
-            btnNavDiscipline.style.display = 'inline-flex';
-            btnToggleLabMode.style.background = '#9333ea';
-            btnToggleLabMode.style.color = '#fff';
-        } else {
-            btnNavDiscipline.style.display = 'none';
-            btnToggleLabMode.style.background = 'transparent';
-            btnToggleLabMode.style.color = '#9333ea';
-            
-            // 如果當前正在公會紀律頁面，關閉 Lab 後強制跳回看板
-            if (document.getElementById('view-discipline').classList.contains('show')) {
-                switchView('view-dashboard');
-            }
-        }
-    }
-
-    btnToggleLabMode.addEventListener('click', () => {
-        isLabMode = !isLabMode;
-        localStorage.setItem('guildLabMode', isLabMode);
-        updateLabModeUI();
-        if (isLabMode) {
-            showToast("🧪 實驗室模式已開啟！解鎖：公會紀律看板", "確認");
-        } else {
-            showToast("🧪 實驗室模式已關閉。", "確認");
-        }
-    });
-
-    document.getElementById('btnLogin').addEventListener('click', () => {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(error => alert("登入失敗：" + error.message));
-    });
-
-    document.getElementById('btnLogout').addEventListener('click', () => {
-        if(confirm("確定要登出系統嗎？")) signOut(auth).then(() => window.location.reload());
-    });
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user; loginOverlay.style.display = 'none'; mainApp.style.display = 'flex'; mainApp.style.flexDirection = 'column';
-            const emailDisp = document.getElementById('userEmailDisplay');
-            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> ${user.email.split('@')[0]}`;
-            initApp();
-        } else {
-            loginOverlay.style.display = 'flex'; mainApp.style.display = 'none';
-        }
-    });
-
-    async function loadDataFromFirebase() {
-        if (!currentUser) return;
-        updateSaveStatus('saving', '讀取中...');
-        try {
-            const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                data = docSnap.data();
-                if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
-                if(!data.attendance) data.attendance = {};
-                if(!data.assignments) data.assignments = [];
-                // 初始化每人的 EXP
-                if(data.roster) {
-                    data.roster.forEach(r => { if(typeof r.exp === 'undefined') r.exp = 0; });
-                }
-            } else {
-                data = JSON.parse(JSON.stringify(defaultData));
-                await setDoc(docRef, data);
-            }
-            onDataLoaded();
-            updateSaveStatus('success', '讀取完成');
-            checkAttendanceReminder();
-        } catch (error) {
-            console.error("🔥 Firebase 讀取失敗:", error);
-            console.log("已切換至離線模式");
-            if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData));
-            onDataLoaded();
-            
-            // 明確的權限錯誤提示
-            if (error.code === 'permission-denied') {
-                updateSaveStatus('error', '權限不足 (離線模式)');
-            } else {
-                updateSaveStatus('error', '連線失敗 (離線模式)');
-            }
-        }
-    }
-
-    let saveTimeout = null;
-    function triggerAutoSave() {
-        clearTimeout(saveTimeout);
-        updateSaveStatus('pending');
-        saveTimeout = setTimeout(async () => {
-            if (!currentUser) return;
-            try { 
-                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data); 
-                updateSaveStatus('success'); 
-            } catch (e) { 
-                console.error("🔥 Firebase 儲存失敗:", e);
-                // 針對最常見的新資料庫「規則未開放」錯誤，給予精準的中文提示
-                if (e.code === 'permission-denied') {
-                    updateSaveStatus('error', '權限不足 (請檢查資料庫 Rules)');
-                } else {
-                    updateSaveStatus('error', '儲存失敗: ' + e.code);
-                }
-            }
-        }, 1500); 
-    }
-
-    function updateSaveStatus(status, message = '') {
-        const indicator = document.getElementById('saveStatusIndicator');
-        if(!indicator) return;
-        if (status === 'pending') indicator.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
-        else if (status === 'saving') indicator.innerHTML = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
-        else if (status === 'success') indicator.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
-        else indicator.innerHTML = `<span style="color:var(--danger)" title="${message}"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
-    }
-
+    let data = JSON.parse(JSON.stringify(defaultData)); 
+    
     let currentAssignmentId = null;
     let currentFilter = { teacher: 'all', subject: 'all' }; 
     let newAssignmentAssignedIndices = []; 
@@ -927,6 +810,40 @@ const firebaseConfig = {
     let tempQuestSettings = {};
     let tempAttendanceData = []; 
     let targetAssignmentIdToDelete = null; 
+    let saveTimeout = null;
+    let pickerTarget = null;
+    const APP_SCALE = 1;
+
+    // --- 3. 基礎工具函數 (全域可用) ---
+    function getTaipeiDateString() { return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); }
+    function getTaipeiTimeString() { return new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' }); }
+    
+    // 浮動時鐘更新邏輯
+    setInterval(() => {
+        const timeStr = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
+        const fc = document.getElementById('fcTime');
+        const tbClk = document.getElementById('tbClock');
+        if (fc) fc.innerText = timeStr;
+        if (tbClk) tbClk.innerText = timeStr;
+    }, 1000);
+
+    function getRankHtml(exp) {
+        let rank = "新手"; let color = "#9ca3af";
+        if (exp >= 100) { rank = "S級傳說"; color = "#f43f5e"; }
+        else if (exp >= 50) { rank = "A級菁英"; color = "#eab308"; }
+        else if (exp >= 20) { rank = "B級熟手"; color = "#3b82f6"; }
+        else if (exp >= 5) { rank = "C級見習"; color = "#22c55e"; }
+        return `<span class="rank-text" style="color:${color};">${rank}</span>`;
+    }
+
+    function showToast(msg, actText, actCb) {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div'); t.className = 'toast-msg';
+        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : '');
+        c.appendChild(t);
+        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
+        setTimeout(()=>t.remove(), 3000);
+    }
 
     let audioCtx = null;
     function resumeAudio() { 
@@ -990,302 +907,65 @@ const firebaseConfig = {
         draw();
     }
 
-    function showToast(msg, actText, actCb) {
-        const c = document.getElementById('toastContainer');
-        const t = document.createElement('div'); t.className = 'toast-msg';
-        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : '');
-        c.appendChild(t);
-        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
-        setTimeout(()=>t.remove(), 3000);
-    }
-
-    function onDataLoaded() {
-        populateTeacherDropdowns();
-        updateSubjectDropdown();
-        resetNewAssignmentState();
-        checkAndResetDiscipline(); // 檢查紅綠燈是否需換日重置
-        renderAll();
-        renderChecklists(); // 渲染紀律頁面的清單
-    }
-
-    function checkAndResetDiscipline() {
-        const today = getTaipeiDateString();
-        if (!data.discipline || data.discipline.date !== today) {
-            data.discipline = { date: today, statuses: {} };
+    // --- 4. 系統核心邏輯 (加扣分、更新狀態) ---
+    function changeExp(sidx, delta, silent = false) {
+        if (!data.roster[sidx]) return;
+        if (typeof data.roster[sidx].exp === 'undefined') data.roster[sidx].exp = 0;
+        data.roster[sidx].exp += delta;
+        if (data.roster[sidx].exp < 0) data.roster[sidx].exp = 0;
+        
+        if (!silent) {
+            playCoinSound();
+            if (delta > 0) showToast(`✨ ${data.roster[sidx].name} 獲得 ${delta} 點 EXP！`);
+            else showToast(`💔 ${data.roster[sidx].name} 失去 ${Math.abs(delta)} 點 EXP...`);
             triggerAutoSave();
-        }
-    }
-
-    function renderAll() {
-        const v = document.querySelector('.view.show');
-        if(!v) return;
-        if (v.id === 'view-dashboard') renderDashboard();
-        else if (v.id === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
-        else if (v.id === 'view-student-status') renderStudentStatus();
-        else if (v.id === 'view-attendance') initAttendanceView();
-        else if (v.id === 'view-discipline') renderDiscipline();
-    }
-
-    window.switchView = function(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
-        const target = document.getElementById(id);
-        if(target) {
-            target.classList.add('show');
             renderAll();
         }
     }
 
-    // ============================================================
-    // 🚦 公會紀律 (紅綠燈) 與清單渲染邏輯
-    // ============================================================
-    function renderDiscipline() {
-        checkAndResetDiscipline();
-        const zGreen = document.getElementById('zoneGreenGrid');
-        const zYellow = document.getElementById('zoneYellowGrid');
-        const zRed = document.getElementById('zoneRedGrid');
-        zGreen.innerHTML = ''; zYellow.innerHTML = ''; zRed.innerHTML = '';
-
-        data.roster.forEach((s, i) => {
-            const st = data.discipline.statuses[i] || 0; // 0:綠, 1:黃, 2:紅
-            const card = document.createElement('div');
-            card.className = 'd-student-card';
+    function updateStatus(aid, sidx, newStatus) {
+        const a = data.assignments.find(i => i.id == aid);
+        if(a) {
+            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+            const oldStatus = a.statuses[sidx] || 0;
+            a.statuses[sidx] = newStatus;
             
-            // 點擊頭像切換紅綠燈：綠(0) -> 黃(1) -> 紅(2) -> 綠(0)
-            card.innerHTML = `
-                <div class="d-avatar" onclick="cycleTrafficLight(${i})">${s.no}</div>
-                <div class="d-info">
-                    <div class="d-name">${s.name}</div>
-                    <div class="d-exp">⭐ ${s.exp || 0}</div>
-                </div>
-                <div class="d-actions">
-                    <button class="btn-exp add" onclick="changeExp(${i}, 1)">+1</button>
-                    <button class="btn-exp sub" onclick="changeExp(${i}, -1)">-1</button>
-                </div>
-            `;
+            if (oldStatus !== 3 && newStatus === 3) {
+                changeExp(sidx, 5, true); 
+                playSuccessSound();
+                showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`);
+            } else if (oldStatus === 3 && newStatus !== 3) {
+                changeExp(sidx, -5, true); 
+                showToast(`⚠️ 取消討伐！${data.roster[sidx].name} 失去 5 EXP`);
+            }
             
-            if (st === 0) zGreen.appendChild(card);
-            else if (st === 1) zYellow.appendChild(card);
-            else zRed.appendChild(card);
-        });
+            triggerAutoSave(); 
+            renderStudentStatus();
+            renderDashboard();   
+            if (document.getElementById('view-discipline').classList.contains('show')) {
+                renderDiscipline();
+            }
+        }
     }
 
-    window.cycleTrafficLight = function(sidx) {
+    function toggleStatus(aid, idx) {
+        resumeAudio();
+        const a = data.assignments.find(x => x.id == aid);
+        if(!a) return;
+        let s = (a.statuses || [])[idx] || 0;
+        s = (s + 1) % 4; // 循環: 0(灰) -> 1(黃) -> 2(橘) -> 3(綠) -> 0
+        updateStatus(aid, idx, s);
+    }
+
+    function cycleTrafficLight(sidx) {
         let st = data.discipline.statuses[sidx] || 0;
-        st = (st + 1) % 3;
+        st = (st + 1) % 3; // 循環: 0(綠) -> 1(黃) -> 2(紅) -> 0
         data.discipline.statuses[sidx] = st;
         triggerAutoSave();
         renderDiscipline();
-    };
-
-    // 綠燈區全體 +1
-    document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
-        let count = 0;
-        data.roster.forEach((s, i) => {
-            const st = data.discipline.statuses[i] || 0;
-            if (st === 0) {
-                if (typeof s.exp === 'undefined') s.exp = 0;
-                s.exp += 1;
-                count++;
-            }
-        });
-        if (count > 0) {
-            playSuccessSound();
-            showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 EXP！`, "確認");
-            triggerAutoSave();
-            renderAll();
-        }
-    });
-
-    // 渲染兩個準備清單
-    function renderChecklists() {
-        const recessItems = ['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所', '📝 訂正作業', '🎉 開心休息'];
-        const dismissalItems = ['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿與作業帶齊', '🎒 整理背包', '🚶 走廊排路隊'];
-        
-        const buildList = (items, containerId) => {
-            const container = document.getElementById(containerId);
-            container.innerHTML = items.map((item, idx) => `
-                <div class="checklist-item" onclick="this.classList.toggle('done')">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:18px;">${idx+1}</div>
-                    ${item}
-                </div>
-            `).join('');
-        };
-        buildList(recessItems, 'recessChecklist');
-        buildList(dismissalItems, 'dismissalChecklist');
     }
 
-    // 紀律分頁 Tabs 切換
-    document.getElementById('tabBtnTraffic').addEventListener('click', function() { activateTab(this, 'content-traffic'); });
-    document.getElementById('tabBtnRecess').addEventListener('click', function() { activateTab(this, 'content-recess'); });
-    document.getElementById('tabBtnDismissal').addEventListener('click', function() { activateTab(this, 'content-dismissal'); });
-    
-    function activateTab(btn, contentId) {
-        btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        btn.parentElement.parentElement.querySelectorAll('.roster-content').forEach(c => c.classList.remove('show'));
-        document.getElementById(contentId).classList.add('show');
-    }
-
-    // ============================================================
-    // 其餘原本的邏輯整合 (包含 UpdateStatus 的自動加扣分)
-    // ============================================================
-
-    function populateTeacherDropdowns() {
-        const ts = data.teachers || [];
-        const sel = document.getElementById('ipTeacherSelect');
-        const fil = document.getElementById('teacherFilter');
-        if(sel) {
-            sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>';
-            document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none';
-        }
-        if(fil) {
-            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join('');
-            fil.value = currentFilter.teacher;
-        }
-    }
-    
-    function resetNewAssignmentState() {
-        document.getElementById('ipTitle').value = '';
-        document.getElementById('selSubject').value = '';
-        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
-        document.getElementById('ipDate').value = getTaipeiDateString();
-        newAssignmentAssignedIndices = [];
-        document.getElementById('assignStatusText').innerText = "全體冒險者";
-        const sel = document.getElementById('ipTeacherSelect');
-        if(sel && data.teachers && data.teachers.length > 0) { sel.value = data.teachers[0]; document.getElementById('ipTeacherCustom').style.display = 'none'; }
-    }
-
-    function updateSubjectDropdown() {
-        const db = data.questSettings || defaultData.questSettings;
-        const sel = document.getElementById('selSubject');
-        const fil = document.getElementById('subjectFilter');
-        if(sel) sel.innerHTML = '<option value="">📂 科目...</option>';
-        if(fil) fil.innerHTML = '<option value="all">📚 所有科目</option>';
-        if(db && sel && fil) Object.keys(db).forEach(s => { sel.add(new Option(s, s)); fil.add(new Option(s, s)); });
-    }
-
-    const toolTipEl = document.getElementById('assignmentTooltip');
-    function showAssignmentTooltip(e, a) {
-        if (!a) return;
-        const indices = a.assignedIndices || 'all';
-        const missing = [];
-        const redo = [];
-        
-        data.roster.forEach((s, i) => {
-            if (indices === 'all' || indices.includes(i)) {
-                const status = (a.statuses || [])[i] || 0;
-                if (status === 0) missing.push(s.no);
-                if (status === 2) redo.push(s.no);
-            }
-        });
-
-        if (missing.length === 0 && redo.length === 0) return;
-
-        let html = `<h4>${a.title}</h4><ul>`;
-        if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
-        if (missing.length) html += `<li class="t-miss">未回報：${missing.join(', ')}</li>`;
-        html += `</ul>`;
-        
-        toolTipEl.innerHTML = html; toolTipEl.style.display = 'block'; moveAssignmentTooltip(e);
-    }
-
-    function moveAssignmentTooltip(e) {
-        const x = (e.clientX + 15) / APP_SCALE; const y = (e.clientY + 15) / APP_SCALE;
-        toolTipEl.style.top = y + 'px'; toolTipEl.style.left = x + 'px';
-        const rect = toolTipEl.getBoundingClientRect();
-        if((x * APP_SCALE + rect.width) > window.innerWidth) toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
-        if((y * APP_SCALE + rect.height) > window.innerHeight) toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
-    }
-    function hideAssignmentTooltip() { toolTipEl.style.display = 'none'; }
-
-    function renderDashboard() {
-        const list = document.getElementById('sideAssignmentList');
-        const empty = document.getElementById('dashEmptyState');
-        const detail = document.getElementById('dashDetailPanel');
-        if(!list) return;
-
-        let assignments = (data.assignments || []).filter(a => {
-            if (a.archived) return false;
-            return (currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher) &&
-                   (currentFilter.subject === 'all' || (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject)));
-        }).sort((a,b) => a.date < b.date ? 1 : -1);
-
-        list.innerHTML = '';
-        if (assignments.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">沒有符合的委託</div>';
-            empty.style.display = 'flex'; detail.classList.remove('show'); return;
-        }
-
-        assignments.forEach(a => {
-            const el = document.createElement('div');
-            el.className = 'side-item' + (currentAssignmentId === a.id ? ' active' : '');
-            const indices = a.assignedIndices || 'all';
-            const total = indices === 'all' ? data.roster.length : indices.length;
-            const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
-            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-            const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
-
-            let hasStatus1 = false; let allStatus0 = true; let assignedCount = 0; let missingCount = 0;   
-            for (let i = 0; i < data.roster.length; i++) {
-                if (indices === 'all' || indices.includes(i)) {
-                    assignedCount++;
-                    const st = (a.statuses || [])[i] || 0;
-                    if (st === 1) hasStatus1 = true;
-                    if (st !== 0) allStatus0 = false;
-                    if (st === 0) missingCount++; 
-                }
-            }
-
-            let gradeBadge = '';
-            if (assignedCount === 0) gradeBadge = `<span style="color: #9ca3af; background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">無對象</span>`;
-            else if (hasStatus1) gradeBadge = `<span style="color: #ea580c; background: #ffedd5; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">未批改</span>`;
-            else if (allStatus0) gradeBadge = `<span style="color: #4b5563; background: #e5e7eb; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">未清點</span>`;
-            else gradeBadge = `<span style="color: #166534; background: #dcfce7; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">批改完</span>`;
-
-            let missingBadge = '';
-            if (assignedCount > 0) {
-                if (missingCount > 0) missingBadge = `<span style="color: #be123c; background: #ffe4e6; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">缺${missingCount}</span>`;
-                else missingBadge = `<span style="color: #1d4ed8; background: #dbeafe; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">缺0</span>`;
-            }
-
-            el.innerHTML = `
-                <div class="side-item-title" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                    <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${a.title}">${a.title}</span>
-                    <div style="display: flex; gap: 4px; flex-shrink: 0;">${missingBadge} ${gradeBadge}</div>
-                </div>
-                <div class="side-item-meta muted" style="display: flex; justify-content: space-between; margin-top: 4px;">
-                    <span>${a.date}</span><span>${a.teacher}</span>
-                </div>
-                <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
-                    <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
-                        <div style="width:${progress}%; height:100%; background:${color}; transition: width 0.5s;"></div>
-                    </div>
-                    <span>${completed}/${total}</span>
-                </div>
-            `;
-
-            el.addEventListener('click', () => { currentAssignmentId = a.id; renderDashboard(); renderDashboardDetail(a.id); });
-            el.addEventListener('mouseenter', (e) => showAssignmentTooltip(e, a));
-            el.addEventListener('mousemove', moveAssignmentTooltip);
-            el.addEventListener('mouseleave', hideAssignmentTooltip);
-            list.appendChild(el);
-        });
-
-        if (currentAssignmentId && assignments.find(x=>x.id==currentAssignmentId)) renderDashboardDetail(currentAssignmentId);
-        else { empty.style.display = 'flex'; detail.classList.remove('show'); }
-    }
-
-    window.editAssignmentTitle = function(id) {
-        const a = data.assignments.find(x => x.id == id);
-        if(!a) return;
-        const newTitle = prompt("請輸入新的委託內容：", a.title);
-        if(newTitle && newTitle.trim() !== "") {
-            a.title = newTitle.trim(); triggerAutoSave();
-            renderDashboardDetail(id); renderDashboard();
-        }
-    };
-
-    window.openQuickDebtMenu = function(e, sidx, oldDebts) {
+    function openQuickDebtMenu(e, sidx, oldDebts) {
         e.stopPropagation();
         const menu = document.getElementById('quickDebtMenu');
         const studentId = String(sidx);
@@ -1329,18 +1009,370 @@ const firebaseConfig = {
         if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 10;
         if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
         menu.style.left = x + 'px'; menu.style.top = y + 'px';
-    };
+    }
 
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('quickDebtMenu');
-        if (!menu || !menu.classList.contains('show')) return;
-        if (e.target.closest('.btn-close-debt')) { menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = ""; return; }
-        if (menu.contains(e.target)) return;
-        if (e.target.closest('.debt-badge')) return;
-        menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+    function editAssignmentTitle(id) {
+        const a = data.assignments.find(x => x.id == id);
+        if(!a) return;
+        const newTitle = prompt("請輸入新的委託內容：", a.title);
+        if(newTitle && newTitle.trim() !== "") {
+            a.title = newTitle.trim(); triggerAutoSave();
+            renderDashboardDetail(id); renderDashboard();
+        }
+    }
+
+    // 將核心函數掛載到 window，供 HTML inline 的 onclick 使用
+    window.getRankHtml = getRankHtml;
+    window.changeExp = changeExp;
+    window.updateStatus = updateStatus;
+    window.toggleStatus = toggleStatus;
+    window.cycleTrafficLight = cycleTrafficLight;
+    window.openQuickDebtMenu = openQuickDebtMenu;
+    window.editAssignmentTitle = editAssignmentTitle;
+
+
+    // --- 5. Firebase 讀寫與登入機制 ---
+    function updateSaveStatus(status, message = '') {
+        const indicator = document.getElementById('saveStatusIndicator');
+        if(!indicator) return;
+        if (status === 'pending') indicator.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中...</span>`;
+        else if (status === 'saving') indicator.innerHTML = `<span style="color:var(--text-light)"><i class="bi bi-cloud-upload"></i> 同步中...</span>`;
+        else if (status === 'success') indicator.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> ${message || '已同步'}</span>`;
+        else indicator.innerHTML = `<span style="color:var(--danger)" title="${message}"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
+    }
+
+    function triggerAutoSave() {
+        clearTimeout(saveTimeout);
+        updateSaveStatus('pending');
+        saveTimeout = setTimeout(async () => {
+            if (!currentUser) return;
+            try { 
+                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data); 
+                updateSaveStatus('success'); 
+            } catch (e) { 
+                console.error("🔥 Firebase 儲存失敗:", e);
+                if (e.code === 'permission-denied') updateSaveStatus('error', '權限不足 (請檢查 Rules)');
+                else updateSaveStatus('error', '儲存失敗: ' + e.code);
+            }
+        }, 1500); 
+    }
+
+    async function loadDataFromFirebase() {
+        if (!currentUser) return;
+        updateSaveStatus('saving', '讀取中...');
+        try {
+            const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                data = docSnap.data();
+                if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
+                if(!data.attendance) data.attendance = {};
+                if(!data.assignments) data.assignments = [];
+                if(!data.settings) data.settings = { arrivalTime: "07:50" };
+                if(data.roster) data.roster.forEach(r => { if(typeof r.exp === 'undefined') r.exp = 0; });
+            } else {
+                data = JSON.parse(JSON.stringify(defaultData));
+                await setDoc(docRef, data);
+            }
+            onDataLoaded();
+            updateSaveStatus('success', '讀取完成');
+            checkAttendanceReminder();
+        } catch (error) {
+            console.error("🔥 Firebase 讀取失敗:", error);
+            if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData));
+            onDataLoaded();
+            if (error.code === 'permission-denied') updateSaveStatus('error', '權限不足 (離線模式)');
+            else updateSaveStatus('error', '連線失敗 (離線模式)');
+        }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user; document.getElementById('loginOverlay').style.display = 'none'; 
+            document.getElementById('mainApp').style.display = 'flex'; document.getElementById('mainApp').style.flexDirection = 'column';
+            const emailDisp = document.getElementById('userEmailDisplay');
+            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> ${user.email.split('@')[0]}`;
+            initApp();
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none';
+        }
     });
 
-    window.renderDashboardDetail = function(id) {
+    document.getElementById('btnLogin').addEventListener('click', () => {
+        signInWithPopup(auth, new GoogleAuthProvider()).catch(error => alert("登入失敗：" + error.message));
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        if(confirm("確定要登出系統嗎？")) signOut(auth).then(() => window.location.reload());
+    });
+
+
+    // --- 6. 頁面初始化與視圖切換 ---
+    function initApp() {
+        const theme = localStorage.getItem('hwTheme') || 'light';
+        const color = localStorage.getItem('hwColor') || 'guild';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-color-theme', color);
+        document.getElementById('darkModeToggle').checked = theme === 'dark';
+        document.querySelectorAll('.theme-option').forEach(el => el.classList.toggle('active', el.dataset.theme === color));
+        
+        switchView('view-dashboard');
+        loadDataFromFirebase();
+        updateLabModeUI(); 
+        
+        document.getElementById('attDatePicker').value = getTaipeiDateString();
+    }
+
+    function switchView(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+        const target = document.getElementById(id);
+        if(target) { target.classList.add('show'); renderAll(); }
+    }
+
+    function onDataLoaded() {
+        populateTeacherDropdowns(); updateSubjectDropdown(); resetNewAssignmentState();
+        checkAndResetDiscipline(); renderAll(); renderChecklists(); 
+        
+        if(data.settings) document.getElementById('ipSettingsArrivalTime').value = data.settings.arrivalTime;
+    }
+
+    function renderAll() {
+        const v = document.querySelector('.view.show');
+        if(!v) return;
+        if (v.id === 'view-dashboard') renderDashboard();
+        else if (v.id === 'view-roster') { renderRosterEditor(); renderTeacherEditor(); }
+        else if (v.id === 'view-student-status') renderStudentStatus();
+        else if (v.id === 'view-attendance') initAttendanceView();
+        else if (v.id === 'view-discipline') renderDiscipline();
+        else if (v.id === 'view-checkin') renderCheckIn();
+    }
+
+    // --- 7. 晨間報到 (Check-in) 邏輯 ---
+    function renderCheckIn() {
+        const today = getTaipeiDateString();
+        // 初始化今日打卡資料，使用 status: -1 表示還沒報到
+        if (!data.attendance[today]) {
+            data.attendance[today] = data.roster.map(() => ({ status: -1, note: '' }));
+            triggerAutoSave();
+        }
+        
+        const grid = document.getElementById('checkinGrid');
+        grid.innerHTML = '';
+        const limitTime = (data.settings && data.settings.arrivalTime) ? data.settings.arrivalTime : "07:50";
+        document.getElementById('dispArrivalTime').innerText = limitTime;
+
+        data.roster.forEach((s, i) => {
+            const record = data.attendance[today][i] || { status: -1, note: '' };
+            const isCheckedIn = record.status !== -1;
+            
+            const div = document.createElement('div');
+            div.className = 'seatItem';
+            div.style.flexDirection = 'column';
+            div.style.padding = '12px 8px';
+            div.style.border = '3px solid var(--tbl-border)';
+            div.style.borderRadius = '16px';
+            div.style.cursor = isCheckedIn ? 'default' : 'pointer';
+            div.style.textAlign = 'center';
+            div.style.userSelect = 'none';
+            div.style.transition = 'all 0.2s';
+            
+            if (record.status === 0) { // 準時
+                div.style.background = '#dcfce7'; div.style.borderColor = '#22c55e'; div.style.color = '#166534';
+            } else if (record.status === 1) { // 遲到
+                div.style.background = '#ffedd5'; div.style.borderColor = '#f97316'; div.style.color = '#9a3412';
+            } else { // 未報到
+                div.style.background = 'var(--card)'; div.style.color = 'var(--text-main)';
+                div.style.boxShadow = '0 4px 0 var(--tbl-border)';
+            }
+            
+            if (isCheckedIn) div.style.transform = 'translateY(4px)';
+            
+            div.innerHTML = `
+                <div style="font-size:28px; font-weight:900; margin-bottom:4px; line-height:1;">${s.no}</div>
+                <div style="font-weight:bold; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${s.name}</div>
+                <div style="font-size:12px; margin-top:8px; font-weight:bold; background:rgba(255,255,255,0.4); border-radius:6px; padding:4px;">
+                    ${record.status === 0 ? '✔ 準時' : (record.status === 1 ? '⚠️ 遲到' : '點擊報到')}
+                </div>
+            `;
+            
+            if (!isCheckedIn) {
+                div.onmouseover = () => { div.style.filter = 'brightness(0.9)'; };
+                div.onmouseout = () => { div.style.filter = 'brightness(1)'; };
+                div.onmousedown = () => { div.style.transform = 'translateY(4px)'; div.style.boxShadow = '0 0 0 var(--tbl-border)'; };
+                div.onmouseup = () => { div.style.transform = 'translateY(0)'; div.style.boxShadow = '0 4px 0 var(--tbl-border)'; };
+                div.onclick = () => window.handleStudentCheckIn(i, limitTime);
+            }
+            grid.appendChild(div);
+        });
+    }
+
+    window.handleStudentCheckIn = function(idx, limitTime) {
+        resumeAudio();
+        const today = getTaipeiDateString();
+        const nowShort = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' });
+        
+        const isLate = nowShort > limitTime;
+        
+        data.attendance[today][idx] = {
+            status: isLate ? 1 : 0,
+            note: nowShort
+        };
+        
+        if (!isLate) {
+            changeExp(idx, 1, true); // 靜默+1
+            showToast(`✨ 早安！${data.roster[idx].name} 準時到校，獲得 1 EXP！`, "確認");
+            playSuccessSound();
+        } else {
+            showToast(`⚠️ ${data.roster[idx].name} 遲到了... 快回座位準備上課。`, "確認");
+            playTickSound();
+        }
+        
+        triggerAutoSave();
+        renderCheckIn();
+    };
+
+    document.getElementById('ipSettingsArrivalTime').addEventListener('change', (e) => {
+        if (!data.settings) data.settings = {};
+        data.settings.arrivalTime = e.target.value;
+        triggerAutoSave();
+        if (document.getElementById('view-checkin').classList.contains('show')) renderCheckIn();
+    });
+
+    // --- 8. Lab 模式與公會紀律 ---
+    let isLabMode = localStorage.getItem('guildLabMode') === 'true';
+    function updateLabModeUI() {
+        const btnNavDiscipline = document.getElementById('btnNavDiscipline');
+        const btnToggleLabMode = document.getElementById('btnToggleLabMode');
+        if (isLabMode) {
+            btnNavDiscipline.style.display = 'inline-flex';
+            btnToggleLabMode.style.background = '#9333ea'; btnToggleLabMode.style.color = '#fff';
+        } else {
+            btnNavDiscipline.style.display = 'none';
+            btnToggleLabMode.style.background = 'transparent'; btnToggleLabMode.style.color = '#9333ea';
+            if (document.getElementById('view-discipline').classList.contains('show')) switchView('view-dashboard');
+        }
+    }
+    document.getElementById('btnToggleLabMode').addEventListener('click', () => {
+        isLabMode = !isLabMode; localStorage.setItem('guildLabMode', isLabMode); updateLabModeUI();
+        showToast(isLabMode ? "🧪 實驗室模式已開啟！解鎖：公會紀律看板" : "🧪 實驗室模式已關閉。", "確認");
+    });
+
+    function checkAndResetDiscipline() {
+        const today = getTaipeiDateString();
+        if (!data.discipline || data.discipline.date !== today) {
+            data.discipline = { date: today, statuses: {} }; triggerAutoSave();
+        }
+    }
+
+    function renderDiscipline() {
+        checkAndResetDiscipline();
+        const zGreen = document.getElementById('zoneGreenGrid'); const zYellow = document.getElementById('zoneYellowGrid'); const zRed = document.getElementById('zoneRedGrid');
+        zGreen.innerHTML = ''; zYellow.innerHTML = ''; zRed.innerHTML = '';
+        data.roster.forEach((s, i) => {
+            const st = data.discipline.statuses[i] || 0;
+            const card = document.createElement('div'); card.className = 'd-student-card';
+            card.innerHTML = `
+                <div class="d-avatar" onclick="cycleTrafficLight(${i})">${s.no}</div>
+                <div class="d-info"><div class="d-name">${s.name}</div><div class="d-exp">⭐ ${s.exp || 0}</div></div>
+                <div class="d-actions">
+                    <button class="btn-exp add" onclick="changeExp(${i}, 1)">+1</button>
+                    <button class="btn-exp sub" onclick="changeExp(${i}, -1)">-1</button>
+                </div>`;
+            if (st === 0) zGreen.appendChild(card); else if (st === 1) zYellow.appendChild(card); else zRed.appendChild(card);
+        });
+    }
+
+    document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
+        let count = 0;
+        data.roster.forEach((s, i) => {
+            if ((data.discipline.statuses[i] || 0) === 0) { s.exp = (s.exp || 0) + 1; count++; }
+        });
+        if (count > 0) { playSuccessSound(); showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 EXP！`, "確認"); triggerAutoSave(); renderAll(); }
+    });
+
+    function renderChecklists() {
+        const recessItems = ['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所', '📝 訂正作業', '🎉 開心休息'];
+        const dismissalItems = ['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿與作業帶齊', '🎒 整理背包', '🚶 走廊排路隊'];
+        const buildList = (items, containerId) => {
+            document.getElementById(containerId).innerHTML = items.map((item, idx) => `
+                <div class="checklist-item" onclick="this.classList.toggle('done')">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:18px;">${idx+1}</div>
+                    ${item}
+                </div>`).join('');
+        };
+        buildList(recessItems, 'recessChecklist'); buildList(dismissalItems, 'dismissalChecklist');
+    }
+
+    // --- 9. 委託看板渲染 ---
+    function renderDashboard() {
+        const list = document.getElementById('sideAssignmentList');
+        const empty = document.getElementById('dashEmptyState');
+        const detail = document.getElementById('dashDetailPanel');
+        if(!list) return;
+
+        let assignments = (data.assignments || []).filter(a => {
+            if (a.archived) return false;
+            return (currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher) &&
+                   (currentFilter.subject === 'all' || (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject)));
+        }).sort((a,b) => a.date < b.date ? 1 : -1);
+
+        list.innerHTML = '';
+        if (assignments.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">沒有符合的委託</div>';
+            empty.style.display = 'flex'; detail.classList.remove('show'); return;
+        }
+
+        assignments.forEach(a => {
+            const el = document.createElement('div');
+            el.className = 'side-item' + (currentAssignmentId === a.id ? ' active' : '');
+            const indices = a.assignedIndices || 'all';
+            const total = indices === 'all' ? data.roster.length : indices.length;
+            const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
+
+            let hasStatus1 = false; let allStatus0 = true; let assignedCount = 0; let missingCount = 0;   
+            for (let i = 0; i < data.roster.length; i++) {
+                if (indices === 'all' || indices.includes(i)) {
+                    assignedCount++; const st = (a.statuses || [])[i] || 0;
+                    if (st === 1) hasStatus1 = true; if (st !== 0) allStatus0 = false; if (st === 0) missingCount++; 
+                }
+            }
+
+            let gradeBadge = assignedCount === 0 ? `<span style="color: #9ca3af; background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">無對象</span>` : 
+                             hasStatus1 ? `<span style="color: #ea580c; background: #ffedd5; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">未批改</span>` : 
+                             allStatus0 ? `<span style="color: #4b5563; background: #e5e7eb; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">未清點</span>` : 
+                             `<span style="color: #166534; background: #dcfce7; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">批改完</span>`;
+            let missingBadge = assignedCount > 0 ? (missingCount > 0 ? `<span style="color: #be123c; background: #ffe4e6; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">缺${missingCount}</span>` : `<span style="color: #1d4ed8; background: #dbeafe; padding: 2px 4px; border-radius: 4px; font-size: 11px; font-weight: bold;">缺0</span>`) : '';
+
+            el.innerHTML = `
+                <div class="side-item-title" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                    <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${a.title}">${a.title}</span>
+                    <div style="display: flex; gap: 4px; flex-shrink: 0;">${missingBadge} ${gradeBadge}</div>
+                </div>
+                <div class="side-item-meta muted" style="display: flex; justify-content: space-between; margin-top: 4px;">
+                    <span>${a.date}</span><span>${a.teacher}</span>
+                </div>
+                <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
+                    <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
+                        <div style="width:${progress}%; height:100%; background:${color}; transition: width 0.5s;"></div>
+                    </div>
+                    <span>${completed}/${total}</span>
+                </div>
+            `;
+
+            el.addEventListener('click', () => { currentAssignmentId = a.id; renderDashboard(); renderDashboardDetail(a.id); });
+            el.addEventListener('mouseenter', (e) => showAssignmentTooltip(e, a));
+            el.addEventListener('mousemove', moveAssignmentTooltip);
+            el.addEventListener('mouseleave', hideAssignmentTooltip);
+            list.appendChild(el);
+        });
+
+        if (currentAssignmentId && assignments.find(x=>x.id==currentAssignmentId)) renderDashboardDetail(currentAssignmentId);
+        else { empty.style.display = 'flex'; detail.classList.remove('show'); }
+    }
+
+    function renderDashboardDetail(id) {
         const a = data.assignments.find(x => x.id == id);
         if (!a) return;
         document.getElementById('dashEmptyState').style.display = 'none';
@@ -1373,10 +1405,8 @@ const firebaseConfig = {
                 });
             }
 
-            let badgeHtml = '';
-            if (oldDebts.length > 0) badgeHtml = `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>`;
+            let badgeHtml = oldDebts.length > 0 ? `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>` : '';
 
-            // ⭐ Dashboard 顯示 EXP 徽章
             div.innerHTML = `
                 <div style="position: relative; flex-shrink: 0;">
                     ${badgeHtml}
@@ -1391,371 +1421,58 @@ const firebaseConfig = {
             if(isAssigned) {
                 div.querySelector('.seat').onclick = () => window.toggleStatus(id, i);
                 const badge = div.querySelector('.debt-badge');
-                if (badge) badge.onclick = (e) => openQuickDebtMenu(e, i, oldDebts);
+                if (badge) badge.onclick = (e) => window.openQuickDebtMenu(e, i, oldDebts);
             }
             grid.appendChild(div);
         });
 
         document.getElementById('btnDeleteCurrent').onclick = () => {
-            targetAssignmentIdToDelete = id;
-            document.getElementById('deleteTargetTitle').innerText = a.title;
-            document.getElementById('deleteChoiceModal').classList.add('show');
+            targetAssignmentIdToDelete = id; document.getElementById('deleteTargetTitle').innerText = a.title; document.getElementById('deleteChoiceModal').classList.add('show');
         };
     }
 
-    window.toggleStatus = function(aid, idx) {
-        resumeAudio();
-        const a = data.assignments.find(x => x.id == aid);
-        if(!a) return;
-        let s = (a.statuses || [])[idx] || 0;
-        s = (s + 1) % 4;
-        updateStatus(aid, idx, s); // 統一呼叫 updateStatus 處理加分邏輯
-    };
-
-    function initAttendanceView() {
-        const date = document.getElementById('attDatePicker').value;
-        const btn = document.getElementById('btnSaveAttendance');
-        if (data.attendance[date]) {
-            tempAttendanceData = JSON.parse(JSON.stringify(data.attendance[date]));
-            btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 更新點名紀錄`;
-        } else {
-            tempAttendanceData = data.roster.map(() => ({ status: 0, note: '' }));
-            btn.innerHTML = `<i class="bi bi-check-lg"></i> 確認送出點名單`;
-        }
-        renderAttendanceUI();
-    }
-
-    function renderAttendanceUI() {
-        const list = document.getElementById('attendanceList');
-        const stats = [0,0,0,0,0,0];
-        tempAttendanceData.forEach(d => { if(d.status >=0 && d.status <=5) stats[d.status]++; });
-        document.getElementById('statPresent').innerText = stats[0]; document.getElementById('statLate').innerText = stats[1];
-        document.getElementById('statEarly').innerText = stats[2]; document.getElementById('statSick').innerText = stats[3];
-        document.getElementById('statOfficial').innerText = stats[4]; document.getElementById('statPersonal').innerText = stats[5];
-
-        list.innerHTML = '';
+    // --- 工具提示 (Tooltip) ---
+    const toolTipEl = document.getElementById('assignmentTooltip');
+    function showAssignmentTooltip(e, a) {
+        if (!a) return;
+        const indices = a.assignedIndices || 'all'; const missing = []; const redo = [];
         data.roster.forEach((s, i) => {
-            const r = tempAttendanceData[i];
-            const div = document.createElement('div'); div.className = 'att-card';
-            let btns = '';
-            [{id:0,l:'出席'},{id:1,l:'遲到'},{id:2,l:'早退'},{id:3,l:'病假'},{id:5,l:'事假'},{id:4,l:'公假'}].forEach(o => {
-                btns += `<button class="att-btn ${r.status===o.id?'active':''}" data-status="${o.id}" data-idx="${i}">${o.l}</button>`;
-            });
-            div.innerHTML = `<div class="att-no">${s.no}</div><div class="att-name">${s.name} ${r.note?`<span class="att-note">${r.note}</span>`:''}</div><div class="att-status-group" style="flex-wrap:wrap;">${btns}</div>`;
-            list.appendChild(div);
+            if (indices === 'all' || indices.includes(i)) {
+                const status = (a.statuses || [])[i] || 0;
+                if (status === 0) missing.push(s.no); if (status === 2) redo.push(s.no);
+            }
         });
+        if (missing.length === 0 && redo.length === 0) return;
+        let html = `<h4>${a.title}</h4><ul>`;
+        if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
+        if (missing.length) html += `<li class="t-miss">未回報：${missing.join(', ')}</li>`;
+        html += `</ul>`;
+        toolTipEl.innerHTML = html; toolTipEl.style.display = 'block'; moveAssignmentTooltip(e);
     }
 
-    document.getElementById('attendanceList').addEventListener('click', (e) => {
-        if(e.target.classList.contains('att-btn')) {
-            const idx = parseInt(e.target.dataset.idx);
-            const status = parseInt(e.target.dataset.status);
-            let note = tempAttendanceData[idx].note;
-            if (status === 2) { 
-                const time = prompt("早退時間 (例 14:00)：", getTaipeiTimeString());
-                if (time) note = `早退 ${time}`;
-            } else note = '';
-            tempAttendanceData[idx] = { status, note };
-            renderAttendanceUI();
-        }
-    });
-    
-    document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
-    document.getElementById('btnSaveAttendance').addEventListener('click', () => {
-        data.attendance[document.getElementById('attDatePicker').value] = tempAttendanceData;
-        triggerAutoSave(); alert("點名紀錄已儲存！"); initAttendanceView();
-    });
-
-    document.getElementById('btnExportAttendance').addEventListener('click', () => {
-        let csv = "\uFEFF座號,姓名,出席總計,遲到,早退,病假,事假,公假,缺席總計,";
-        const dates = Object.keys(data.attendance).sort();
-        if(!dates.length) { alert("無紀錄"); return; }
-        csv += dates.join(",") + "\n";
-        data.roster.forEach((s, idx) => {
-            let row = `${s.no},${s.name}`; let c = {0:0,1:0,2:0,3:0,4:0,5:0};
-            const ds = dates.map(d => {
-                const r = data.attendance[d][idx]; if(!r) return "-";
-                if(c[r.status]!==undefined) c[r.status]++;
-                let t = {0:"✔",1:"遲",2:"早",3:"病",4:"公",5:"事"}[r.status] || "?";
-                if(r.status===2 && r.note) t+=`(${r.note})`;
-                return t;
-            });
-            row += `,${c[0]+c[1]+c[2]},${c[1]},${c[2]},${c[3]},${c[5]},${c[4]},${c[3]+c[4]+c[5]},` + ds.join(",");
-            csv += row + "\n";
-        });
-        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
-        const a = document.createElement("a"); a.href=url; a.download="點名報表.csv"; a.click();
-    });
-
-    function renderStudentStatus() {
-        const con = document.getElementById('studentStatusContainer');
-        const title = document.getElementById('studentStatusHeaderTitle');
-        const btn = document.getElementById('btnToggleBatchMode');
-        const btnSelectAll = document.getElementById('btnBatchSelectAll');
-        
-        con.innerHTML = '';
-        
-        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
-        const clearedStudents = []; const helpStudents = [];
-        
-        data.roster.forEach((s, i) => {
-            let pendingCount = 0;
-            for (let a of activeAssigns) {
-                const indices = a.assignedIndices || 'all';
-                if (indices === 'all' || indices.includes(i)) {
-                    const st = (a.statuses || [])[i] || 0;
-                    if (st === 0 || st === 2) pendingCount++;
-                }
-            }
-            if (pendingCount === 0) clearedStudents.push(s.no);
-            if (pendingCount >= 5) helpStudents.push(s.no);
-        });
-        
-        clearedStudents.sort((a,b)=>a-b); helpStudents.sort((a,b)=>a-b);
-
-        if (!isBatchMode) { 
-            const overview = document.createElement('div'); overview.className = 'status-overview';
-            overview.innerHTML = `
-                <div class="overview-card success"><div class="overview-icon-bg"><i class="bi bi-trophy"></i></div><div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
-                    <div class="overview-nums">${clearedStudents.length > 0 ? clearedStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">💪 尚無人達成</span>'}</div>
-                </div>
-                <div class="overview-card danger"><div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div><div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (欠款≥5)</div>
-                    <div class="overview-nums">${helpStudents.length > 0 ? helpStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">✅ 全員健康</span>'}</div>
-                </div>
-            `;
-            con.appendChild(overview);
-        }
-
-        if(isBatchMode) { 
-            con.classList.add('batch-mode'); btn.classList.add('warn'); btn.innerHTML = `<i class="bi bi-x-square"></i> 取消批量`;
-            document.getElementById('btnBatchExport').style.display='inline-flex';
-            if(btnSelectAll) btnSelectAll.style.display='inline-flex'; 
-            title.innerHTML = `<i class="bi bi-check2-square"></i> 勾選匯出對象`;
-        } else { 
-            con.classList.remove('batch-mode'); btn.classList.remove('warn'); btn.innerHTML = `<i class="bi bi-check-square"></i> 批量匯出卷軸`;
-            document.getElementById('btnBatchExport').style.display='none'; 
-            if(btnSelectAll) btnSelectAll.style.display='none'; 
-            title.innerHTML = `<i class="bi bi-clipboard2-check"></i> 冒險者狀態`;
-        }
-
-        const pending = [];
-        data.roster.forEach((s, idx) => {
-            let tasks = [];
-            (data.assignments || []).forEach(a => {
-                if(a.archived) return;
-                const indices = a.assignedIndices || 'all';
-                if ((indices === 'all' || indices.includes(idx))) {
-                    const st = (a.statuses || [])[idx] || 0;
-                    if (st === 0 || st === 2) tasks.push({ id: a.id, title: a.title, status: st });
-                }
-            });
-            if (tasks.length > 0) pending.push({ idx, tasks });
-        });
-
-        if (pending.length === 0) { 
-            const happyDiv = document.createElement('div'); happyDiv.style.textAlign = 'center'; happyDiv.style.marginTop = '20px';
-            happyDiv.innerHTML = `<div style="font-size:40px;">🎉</div><div style="font-size:20px;font-weight:bold;">全員討伐成功！</div>`;
-            con.appendChild(happyDiv); return; 
-        }
-
-        const grid = document.createElement('div'); grid.className = 'student-status-grid';
-        pending.forEach(item => {
-            const s = data.roster[item.idx];
-            const div = document.createElement('div'); div.className = 'card';
-            // ⭐ 標題顯示 EXP 徽章
-            let html = `
-                <div class="student-card-header">
-                    <h2>
-                        ${isBatchMode?`<input type="checkbox" class="batch-export-checkbox" data-sidx="${item.idx}">`:''} 
-                        ${s.no}. ${s.name} 
-                        <span class="exp-badge" style="margin-left:6px;">⭐ ${s.exp||0} ${getRankHtml(s.exp||0)}</span>
-                    </h2>
-                    <button class="btn sm ghost btn-print-single" data-sidx="${item.idx}"><i class="bi bi-printer"></i></button>
-                </div>
-                <ul class="student-status-list">`;
-                
-            item.tasks.forEach(t => {
-                let pillClass = 'p-gray'; let statusText = '未回報';
-                if(t.status === 1) { pillClass = 'p-yellow'; statusText = '已回報'; }
-                else if(t.status === 2) { pillClass = 'p-orange'; statusText = '再挑戰'; }
-                html += `<li data-aid="${t.id}" data-sidx="${item.idx}" data-status="${t.status}">
-                            <span style="flex:1;">${t.title}</span> 
-                            <span class="pill ${pillClass}">${statusText}</span>
-                         </li>`;
-            });
-            div.innerHTML = html + '</ul>'; grid.appendChild(div);
-        });
-        con.appendChild(grid);
+    function moveAssignmentTooltip(e) {
+        const x = (e.clientX + 15) / APP_SCALE; const y = (e.clientY + 15) / APP_SCALE;
+        toolTipEl.style.top = y + 'px'; toolTipEl.style.left = x + 'px';
+        const rect = toolTipEl.getBoundingClientRect();
+        if((x * APP_SCALE + rect.width) > window.innerWidth) toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
+        if((y * APP_SCALE + rect.height) > window.innerHeight) toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
     }
-    
-    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.batch-export-checkbox');
-        const allChecked = Array.from(checkboxes).every(c => c.checked);
-        checkboxes.forEach(c => c.checked = !allChecked);
-    });
-    
-    document.getElementById('btnToggleKeypad').addEventListener('click', () => {
-        const kp = document.getElementById('virtualKeypad');
-        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';
-    });
+    function hideAssignmentTooltip() { toolTipEl.style.display = 'none'; }
 
-    let pickerTarget = null; 
+    // --- 10. 所有事件監聽與初始化邏輯 ---
 
-    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
-        
-        const li = e.target.closest('li'); if(!li) return;
-        const aid = li.dataset.aid; const sidx = parseInt(li.dataset.sidx);
-        const assignment = data.assignments.find(i => i.id == aid); if (!assignment) return;
-        const currentStatus = (assignment.statuses || [])[sidx] || 0;
-
-        if (currentStatus === 2) {
-            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) {
-                updateStatus(aid, sidx, 3);
-            }
-            return;
-        }
-
-        pickerTarget = { idx: sidx, aid: aid };
-        const picker = document.getElementById('statusPicker');
-        let mouseX = e.clientX; let mouseY = e.clientY;
-        picker.style.top = (mouseY + 10) + 'px'; picker.style.left = (mouseX + 10) + 'px';
-        picker.classList.add('show');
-    });
-    
-    document.addEventListener('click', (e) => {
-        const picker = document.getElementById('statusPicker');
-        if (!picker || !picker.classList.contains('show')) return;
-        if (picker.contains(e.target)) return;
-        if (e.target.closest('li[data-aid]')) return;
-        picker.classList.remove('show');
-    });
-
-    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
-        const btn = e.target.closest('.btn-print-single'); if (!btn) return; e.stopPropagation(); 
-        const sidx = parseInt(btn.dataset.sidx); const student = data.roster[sidx];
-        const printDate = new Date().toLocaleDateString('zh-TW');
-
-        const studentTasks = (data.assignments || []).filter(a => {
-            if (a.archived) return false;
-            const indices = a.assignedIndices || 'all'; return (indices === 'all' || indices.includes(sidx));
-        }).map(a => { return { title: a.title, status: (a.statuses || [])[sidx] || 0 }; });
-
-        const pendingTasks = studentTasks.filter(t => t.status !== 3);
-        pendingTasks.sort((a, b) => { const weight = { 2: 0, 0: 1, 1: 2 }; return weight[a.status] - weight[b.status]; });
-
-        const listHtml = pendingTasks.length > 0 ? pendingTasks.map(t => {
-            let statusText = ''; let rowStyle = '';
-            if(t.status === 0) statusText = '未回報'; else if(t.status === 1) statusText = '已回報';
-            else if(t.status === 2) { statusText = '再挑戰'; rowStyle = 'color: #c62828; font-weight:bold;'; } 
-            return `<li class="print-task-item" style="${rowStyle}"><span class="print-checkbox">☐</span><span class="print-task-name">${t.title}</span><span class="print-task-status">(${statusText})</span></li>`;
-        }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888; padding: 20px;">🎉 太棒了！目前沒有待辦任務！</li>';
-
-        const w = window.open('', '', 'width=900,height=800');
-        w.document.write(`<html><head><title>${student.name} - 任務卷軸</title><style>body { font-family: "Microsoft JhengHei", sans-serif; padding: 40px; background: #fff; display:flex; justify-content:center;} .print-card { border: 3px solid #5D4037; border-radius: 12px; padding: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; box-shadow: 5px 5px 0px rgba(0,0,0,0.1); } .print-header { border-bottom: 2px dashed #8B4513; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; } .print-name { font-size: 28px; font-weight: 900; color: #3E2723; } .print-title { font-size: 16px; font-weight: bold; color: #666; } .print-list { list-style: none; padding: 0; margin: 0; flex: 1; } .print-task-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dotted #ccc; font-size: 18px; } .print-checkbox { font-size: 22px; font-weight: bold; line-height: 1; } .print-task-name { font-weight: bold; flex: 1; } .print-task-status { font-size: 14px; color: #888; font-weight: normal; } .print-footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 14px; } .print-sign { font-weight: 900; color: #000; font-size: 16px; } @media print { body { padding: 0; margin: 0; display:block;} .print-card { border-width: 2px; box-shadow:none; max-width: none; width: 100%; border-radius: 0; } @page { margin: 1.5cm; } }</style></head><body><div class="print-card"><div class="print-header"><div class="print-name">${student.no}. ${student.name}</div><div class="print-title">冒險者任務卷軸</div></div><ul class="print-list">${listHtml}</ul><div class="print-footer"><div class="print-date">📅 列印日期：${printDate}</div><div class="print-sign">家長簽名：________________</div></div></div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };<\/script></body></html>`);
-        w.document.close();
-    });
-
-    window.updateStatus = function(aid, sidx, newStatus) {
-        const a = data.assignments.find(i => i.id == aid);
-        if(a) {
-            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
-            const oldStatus = a.statuses[sidx] || 0;
-            a.statuses[sidx] = newStatus;
-            
-            if (oldStatus !== 3 && newStatus === 3) {
-                changeExp(sidx, 5, true); 
-                playSuccessSound();
-                showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`);
-            } else if (oldStatus === 3 && newStatus !== 3) {
-                changeExp(sidx, -5, true); 
-                showToast(`⚠️ 取消討伐！${data.roster[sidx].name} 失去 5 EXP`);
-            }
-            
-            triggerAutoSave(); 
-            renderStudentStatus();
-            renderDashboard();   
-            if (document.getElementById('view-discipline').classList.contains('show')) {
-                renderDiscipline();
-            }
-        }
-    };
-
-    document.querySelectorAll('.status-option-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if(!pickerTarget) return;
-            const s = parseInt(btn.dataset.status);
-            updateStatus(pickerTarget.aid, pickerTarget.idx, s);
-            document.getElementById('statusPicker').classList.remove('show');
-        });
-    });
-
-    document.getElementById('btnConfirmArchive').addEventListener('click', () => {
-        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
-        if(a) { a.archived = true; triggerAutoSave(); renderDashboard(); }
-        document.getElementById('deleteChoiceModal').classList.remove('show');
-    });
-
-    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
-        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
-        if(a) {
-            const backup = JSON.stringify(a);
-            data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
-            triggerAutoSave(); renderDashboard();
-            showToast("已刪除", "復原", () => {
-                data.assignments.push(JSON.parse(backup));
-                triggerAutoSave(); renderDashboard();
-            });
-        }
-        document.getElementById('deleteChoiceModal').classList.remove('show');
-    });
-
-    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster', 'btnNavDiscipline'].forEach(id => {
+    // 新增 btnNavCheckIn
+    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster', 'btnNavDiscipline', 'btnNavCheckIn'].forEach(id => {
         document.getElementById(id).addEventListener('click', (e) => {
-            const map = {
-                'btnNavDashboard':'view-dashboard',
-                'btnNavStudentStatus':'view-student-status',
-                'btnNavRoster':'view-roster',
-                'btnNavDiscipline':'view-discipline'
+            const map = { 
+                'btnNavDashboard':'view-dashboard', 
+                'btnNavStudentStatus':'view-student-status', 
+                'btnNavRoster':'view-roster', 
+                'btnNavDiscipline':'view-discipline',
+                'btnNavCheckIn':'view-checkin'
             };
             switchView(map[e.currentTarget.id]);
         });
-    });
-
-    document.getElementById('tabBtnStudents').addEventListener('click', () => {
-        document.getElementById('tabBtnStudents').classList.add('active'); document.getElementById('tabBtnTeachers').classList.remove('active');
-        document.getElementById('roster-content-students').classList.add('show'); document.getElementById('roster-content-teachers').classList.remove('show');
-    });
-    document.getElementById('tabBtnTeachers').addEventListener('click', () => {
-        document.getElementById('tabBtnTeachers').classList.add('active'); document.getElementById('tabBtnStudents').classList.remove('active');
-        document.getElementById('roster-content-teachers').classList.add('show'); document.getElementById('roster-content-students').classList.remove('show');
-    });
-
-    document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
-    document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
-    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none');
-    
-    document.getElementById('selSubject').addEventListener('change', (e) => {
-        const sel = document.getElementById('selPresetTask'); sel.innerHTML = '<option value="">📜 常用任務...</option>';
-        if(e.target.value && data.questSettings[e.target.value]) data.questSettings[e.target.value].forEach(t => sel.add(new Option(t, t)));
-    });
-    document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
-
-    document.getElementById('btnCreate').addEventListener('click', () => {
-        let t = document.getElementById('ipTeacherSelect').value;
-        if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
-        const title = document.getElementById('ipTitle').value.trim();
-        const sub = document.getElementById('selSubject').value;
-        const d = document.getElementById('ipDate').value;
-        if(!t || !title || !d) { alert("請填寫完整"); return; }
-        if(!data.teachers.includes(t)) data.teachers.push(t);
-        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
-        data.assignments.push({ 
-            id: Date.now(), teacher: t, title, subject: sub, date: d, 
-            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) 
-        });
-        triggerAutoSave(); resetNewAssignmentState(); renderAll();
-        document.getElementById('panelNewQuest').classList.remove('show');
     });
 
     document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("全員已報？")) updateAllStatus(1); });
@@ -1763,25 +1480,117 @@ const firebaseConfig = {
     function updateAllStatus(s) {
         const a = data.assignments.find(x => x.id == currentAssignmentId);
         if(a) { 
-            const idxs = a.assignedIndices || 'all';
-            data.roster.forEach((_, i) => { if(idxs === 'all' || idxs.includes(i)) a.statuses[i] = s; });
-            triggerAutoSave(); renderDashboardDetail(currentAssignmentId);
+            const idxs = a.assignedIndices || 'all'; let changedExp = false;
+            data.roster.forEach((st, i) => { 
+                if(idxs === 'all' || idxs.includes(i)) {
+                    const oldStatus = (a.statuses || [])[i] || 0;
+                    if (oldStatus === 3 && s !== 3) { changeExp(i, -5, true); changedExp = true; }
+                    a.statuses[i] = s;
+                } 
+            });
+            if(changedExp) showToast("⚠️ 全員狀態變更，已自動收回原討伐成功的 EXP");
+            triggerAutoSave(); renderDashboardDetail(currentAssignmentId); renderDashboard();
         }
     }
-    
-    document.getElementById('rangeSize').addEventListener('input', (e) => {
-        document.documentElement.style.setProperty('--seat', `${e.target.value}px`);
-        document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`);
+
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        if(e.target.closest('.btn-print-single') || e.target.classList.contains('batch-export-checkbox')) return;
+        const li = e.target.closest('li'); if(!li) return;
+        const aid = li.dataset.aid; const sidx = parseInt(li.dataset.sidx);
+        const assignment = data.assignments.find(i => i.id == aid); if (!assignment) return;
+        const currentStatus = (assignment.statuses || [])[sidx] || 0;
+
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${assignment.title}」\n是否已完成並將狀態改為「討伐成功」？`)) updateStatus(aid, sidx, 3);
+            return;
+        }
+
+        pickerTarget = { idx: sidx, aid: aid };
+        const picker = document.getElementById('statusPicker');
+        picker.style.top = (e.clientY + 10) + 'px'; picker.style.left = (e.clientX + 10) + 'px'; picker.classList.add('show');
     });
+
+    document.querySelectorAll('.status-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if(!pickerTarget) return;
+            const s = parseInt(btn.dataset.status); updateStatus(pickerTarget.aid, pickerTarget.idx, s); document.getElementById('statusPicker').classList.remove('show');
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        const picker = document.getElementById('statusPicker');
+        if (picker && picker.classList.contains('show') && !picker.contains(e.target) && !e.target.closest('li[data-aid]')) picker.classList.remove('show');
+        
+        const menu = document.getElementById('quickDebtMenu');
+        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge') && !e.target.closest('.btn-close-debt')) {
+            menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+        }
+        
+        if (e.target.closest('.tool-close')) { const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); }
+    });
+
+    // --- 其餘次要邏輯 (建立任務、點名、設定、百寶箱) ---
+    function resetNewAssignmentState() {
+        document.getElementById('ipTitle').value = ''; document.getElementById('selSubject').value = ''; document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
+        document.getElementById('ipDate').value = getTaipeiDateString(); newAssignmentAssignedIndices = []; document.getElementById('assignStatusText').innerText = "全體冒險者";
+        const sel = document.getElementById('ipTeacherSelect'); if(sel && data.teachers && data.teachers.length > 0) { sel.value = data.teachers[0]; document.getElementById('ipTeacherCustom').style.display = 'none'; }
+    }
+    
+    function populateTeacherDropdowns() {
+        const ts = data.teachers || []; const sel = document.getElementById('ipTeacherSelect'); const fil = document.getElementById('teacherFilter');
+        if(sel) { sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>'; document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none'; }
+        if(fil) { fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join(''); fil.value = currentFilter.teacher; }
+    }
+    
+    function updateSubjectDropdown() {
+        const db = data.questSettings || defaultData.questSettings; const sel = document.getElementById('selSubject'); const fil = document.getElementById('subjectFilter');
+        if(sel) sel.innerHTML = '<option value="">📂 科目...</option>'; if(fil) fil.innerHTML = '<option value="all">📚 所有科目</option>';
+        if(db && sel && fil) Object.keys(db).forEach(s => { sel.add(new Option(s, s)); fil.add(new Option(s, s)); });
+    }
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+        let t = document.getElementById('ipTeacherSelect').value; if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
+        const title = document.getElementById('ipTitle').value.trim(); const sub = document.getElementById('selSubject').value; const d = document.getElementById('ipDate').value;
+        if(!t || !title || !d) { alert("請填寫完整"); return; }
+        if(!data.teachers.includes(t)) data.teachers.push(t);
+        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
+        data.assignments.push({ id: Date.now(), teacher: t, title, subject: sub, date: d, assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, statuses: Array(data.roster.length).fill(0) });
+        triggerAutoSave(); resetNewAssignmentState(); renderAll(); document.getElementById('panelNewQuest').classList.remove('show');
+    });
+
+    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+        if(a) {
+            const backup = JSON.stringify(a); data.assignments = data.assignments.filter(x => x.id != targetAssignmentIdToDelete);
+            triggerAutoSave(); renderDashboard();
+            showToast("已刪除", "復原", () => { data.assignments.push(JSON.parse(backup)); triggerAutoSave(); renderDashboard(); });
+        }
+        document.getElementById('deleteChoiceModal').classList.remove('show');
+    });
+    
+    document.getElementById('btnConfirmArchive').addEventListener('click', () => {
+        const a = data.assignments.find(x => x.id == targetAssignmentIdToDelete);
+        if(a) { a.archived = true; triggerAutoSave(); renderDashboard(); }
+        document.getElementById('deleteChoiceModal').classList.remove('show');
+    });
+
+    document.getElementById('tabBtnStudents').addEventListener('click', () => { document.getElementById('tabBtnStudents').classList.add('active'); document.getElementById('tabBtnTeachers').classList.remove('active'); document.getElementById('roster-content-students').classList.add('show'); document.getElementById('roster-content-teachers').classList.remove('show'); });
+    document.getElementById('tabBtnTeachers').addEventListener('click', () => { document.getElementById('tabBtnTeachers').classList.add('active'); document.getElementById('tabBtnStudents').classList.remove('active'); document.getElementById('roster-content-teachers').classList.add('show'); document.getElementById('roster-content-students').classList.remove('show'); });
+
+    document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
+    document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
+    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none');
+    document.getElementById('selSubject').addEventListener('change', (e) => { const sel = document.getElementById('selPresetTask'); sel.innerHTML = '<option value="">📜 常用任務...</option>'; if(e.target.value && data.questSettings[e.target.value]) data.questSettings[e.target.value].forEach(t => sel.add(new Option(t, t))); });
+    document.getElementById('selPresetTask').addEventListener('change', (e) => { if(e.target.value) document.getElementById('ipTitle').value = e.target.value; });
+
+    document.getElementById('rangeSize').addEventListener('input', (e) => { document.documentElement.style.setProperty('--seat', `${e.target.value}px`); document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`); });
 
     const userBadge = document.getElementById('userEmailDisplay');
     if(userBadge) {
         userBadge.addEventListener('click', () => {
-            const list = document.getElementById('adminDebtList'); list.innerHTML = '';
-            const debts = [];
+            const list = document.getElementById('adminDebtList'); list.innerHTML = ''; const debts = [];
             data.roster.forEach((s, idx) => {
-                let c = 0;
-                data.assignments.forEach(a => { if(!a.archived) { const st = (a.statuses||[])[idx]||0; if(st===0||st===2) c++; } });
+                let c = 0; data.assignments.forEach(a => { if(!a.archived) { const st = (a.statuses||[])[idx]||0; if(st===0||st===2) c++; } });
                 if(c>=5) debts.push({name: s.name, c});
             });
             if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${d.name} (${d.c})</span>`);
@@ -1790,341 +1599,147 @@ const firebaseConfig = {
         });
     }
 
-    document.getElementById('btnAdminAttendance').addEventListener('click', () => {
-        document.getElementById('adminProfileModal').classList.remove('show');
-        switchView('view-attendance');
-    });
-
+    document.getElementById('btnAdminAttendance').addEventListener('click', () => { document.getElementById('adminProfileModal').classList.remove('show'); switchView('view-attendance'); });
     document.getElementById('btnDownloadArchive').addEventListener('click', () => {
-        const arcs = data.assignments.filter(a => a.archived);
-        if(!arcs.length) { alert("無封存資料"); return; }
+        const arcs = data.assignments.filter(a => a.archived); if(!arcs.length) { alert("無封存資料"); return; }
         let csv = "\uFEFF發布日期,內容,導師," + data.roster.map(s => s.name).join(",") + "\n";
-        arcs.forEach(a => {
-            const st = a.statuses || [];
-            csv += `${a.date},"${a.title}",${a.teacher},` + data.roster.map((_, i) => ["未","交","改","完"][st[i]||0]).join(",") + "\n";
-        });
-        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
-        const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
+        arcs.forEach(a => { const st = a.statuses || []; csv += `${a.date},"${a.title}",${a.teacher},` + data.roster.map((_, i) => ["未","交","改","完"][st[i]||0]).join(",") + "\n"; });
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"})); const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
     });
 
-    document.getElementById('btnClearAssignments').addEventListener('click', () => {
-        if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { 
-            data.assignments = []; data.attendance = {}; 
-            triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
-        }
-    });
-    document.getElementById('btnResetAll').addEventListener('click', () => {
-        if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { 
-            data.roster = []; data.assignments = []; data.attendance = {}; data.discipline = null;
-            triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
-        }
-    });
+    document.getElementById('btnClearAssignments').addEventListener('click', () => { if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { data.assignments = []; data.attendance = {}; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); } });
+    document.getElementById('btnResetAll').addEventListener('click', () => { if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { data.roster = []; data.assignments = []; data.attendance = {}; data.discipline = null; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); } });
     
-    document.getElementById('btnExportJSON').addEventListener('click', () => {
-        const dataStr = JSON.stringify(data, null, 2); 
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url;
-        const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
-        a.download = `guild_backup_${dateStr}.json`;
-        a.click(); URL.revokeObjectURL(url); showToast("✅ 公會資料已成功匯出備份！", "確認");
-    });
-
+    document.getElementById('btnExportJSON').addEventListener('click', () => { const dataStr = JSON.stringify(data, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, ''); a.download = `guild_backup_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); showToast("✅ 公會資料已成功匯出備份！", "確認"); });
     document.getElementById('btnImportJSONTrigger').addEventListener('click', () => { document.getElementById('ipImportJSON').click(); });
-
     document.getElementById('ipImportJSON').addEventListener('change', (e) => {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
+        const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
         reader.onload = function(event) {
             try {
-                const importedData = JSON.parse(event.target.result);
-                if (!importedData || typeof importedData !== 'object') throw new Error("無效的檔案格式");
-                
-                if (!importedData.roster) importedData.roster = [];
-                if (!importedData.assignments) importedData.assignments = [];
-                if (!importedData.teachers) importedData.teachers = [];
-                if (!importedData.questSettings) importedData.questSettings = {};
-                if (!importedData.attendance) importedData.attendance = {};
-
-                if (confirm("⚠️ 警告：還原備份將會【完全覆蓋】目前系統內的所有資料！\n\n確定要繼續還原嗎？")) {
-                    data = importedData; triggerAutoSave(); renderAll();
-                    document.getElementById('adminProfileModal').classList.remove('show');
-                    showToast("✨ 備份資料已成功還原！", "確認");
-                }
-            } catch (error) { alert("❌ 讀取備份失敗，檔案可能已損毀或格式錯誤。\n詳細錯誤：" + error.message); } 
-            finally { e.target.value = '';  }
-        };
-        reader.readAsText(file);
+                const importedData = JSON.parse(event.target.result); if (!importedData || typeof importedData !== 'object') throw new Error("無效的檔案格式");
+                if (!importedData.roster) importedData.roster = []; if (!importedData.assignments) importedData.assignments = []; if (!importedData.teachers) importedData.teachers = []; if (!importedData.questSettings) importedData.questSettings = {}; if (!importedData.attendance) importedData.attendance = {};
+                if (confirm("⚠️ 警告：還原備份將會【完全覆蓋】目前系統內的所有資料！\n\n確定要繼續還原嗎？")) { data = importedData; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); showToast("✨ 備份資料已成功還原！", "確認"); }
+            } catch (error) { alert("❌ 讀取備份失敗，檔案可能已損毀或格式錯誤。\n詳細錯誤：" + error.message); } finally { e.target.value = ''; }
+        }; reader.readAsText(file);
     });
 
-    ['teacherFilter','subjectFilter'].forEach(id => {
-        document.getElementById(id).addEventListener('change', (e) => {
-            currentFilter[id.replace('Filter','')] = e.target.value;
-            renderDashboard(); document.getElementById('filterPanel').classList.remove('show'); document.getElementById('btnToggleFilter').classList.remove('active');
-        });
-    });
-    document.getElementById('btnClearFilter').addEventListener('click', () => {
-        currentFilter = { teacher: 'all', subject: 'all' };
-        document.getElementById('teacherFilter').value = 'all'; document.getElementById('subjectFilter').value = 'all';
-        renderDashboard(); document.getElementById('filterPanel').classList.remove('show');
-    });
+    ['teacherFilter','subjectFilter'].forEach(id => { document.getElementById(id).addEventListener('change', (e) => { currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard(); document.getElementById('filterPanel').classList.remove('show'); document.getElementById('btnToggleFilter').classList.remove('active'); }); });
+    document.getElementById('btnClearFilter').addEventListener('click', () => { currentFilter = { teacher: 'all', subject: 'all' }; document.getElementById('teacherFilter').value = 'all'; document.getElementById('subjectFilter').value = 'all'; renderDashboard(); document.getElementById('filterPanel').classList.remove('show'); });
 
-    document.getElementById('btnOpenQuestSettings').addEventListener('click', () => {
-        tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings));
-        renderQuestConfig(); document.getElementById('questSettingsModal').classList.add('show');
-    });
+    document.getElementById('btnOpenQuestSettings').addEventListener('click', () => { tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings)); renderQuestConfig(); document.getElementById('questSettingsModal').classList.add('show'); });
     function renderQuestConfig() {
         const list = document.getElementById('questConfigList'); list.innerHTML = '';
         Object.keys(tempQuestSettings).forEach(sub => {
             const div = document.createElement('div'); div.className = 'quest-config-card';
-            div.innerHTML = `
-                <div class="quest-config-header">
-                    <span class="quest-config-title">${sub}</span><button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除</button>
-                </div>
-                <div class="quest-tags">${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}</div>
-                <div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button></div>
-            `;
+            div.innerHTML = `<div class="quest-config-header"><span class="quest-config-title">${sub}</span><button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除</button></div><div class="quest-tags">${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}</div><div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button></div>`;
             list.appendChild(div);
         });
     }
-
-    const qList = document.getElementById('questConfigList');
-    qList.addEventListener('click', (e) => {
-        if(e.target.closest('.btn-del-subj')) {
-            const s = e.target.closest('.btn-del-subj').dataset.sub;
-            if(confirm(`確定要移除【${s}】科目嗎？`)) { delete tempQuestSettings[s]; renderQuestConfig(); }
-        } else if(e.target.closest('.btn-del-task')) {
-            const t = e.target.closest('.btn-del-task'); const s = t.dataset.sub; const i = parseInt(t.dataset.idx);
-            tempQuestSettings[s].splice(i, 1); renderQuestConfig();
-        } else if(e.target.closest('.btn-add-task')) {
-            const s = e.target.closest('.btn-add-task').dataset.sub; const ip = document.getElementById(`newT_${s}`);
-            if(ip.value.trim()) { tempQuestSettings[s].push(ip.value.trim()); renderQuestConfig(); }
-        }
+    document.getElementById('questConfigList').addEventListener('click', (e) => {
+        if(e.target.closest('.btn-del-subj')) { const s = e.target.closest('.btn-del-subj').dataset.sub; if(confirm(`確定要移除【${s}】科目嗎？`)) { delete tempQuestSettings[s]; renderQuestConfig(); } }
+        else if(e.target.closest('.btn-del-task')) { const t = e.target.closest('.btn-del-task'); const s = t.dataset.sub; const i = parseInt(t.dataset.idx); tempQuestSettings[s].splice(i, 1); renderQuestConfig(); }
+        else if(e.target.closest('.btn-add-task')) { const s = e.target.closest('.btn-add-task').dataset.sub; const ip = document.getElementById(`newT_${s}`); if(ip.value.trim()) { tempQuestSettings[s].push(ip.value.trim()); renderQuestConfig(); } }
     });
-
-    document.getElementById('btnAddSubject').addEventListener('click', () => {
-        const v = document.getElementById('ipNewSubject').value.trim();
-        if(v && !tempQuestSettings[v]) { tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); }
-    });
-    document.getElementById('btnSaveQuestSettings').addEventListener('click', () => {
-        data.questSettings = tempQuestSettings; triggerAutoSave(); updateSubjectDropdown();
-        document.getElementById('questSettingsModal').classList.remove('show');
-    });
+    document.getElementById('btnAddSubject').addEventListener('click', () => { const v = document.getElementById('ipNewSubject').value.trim(); if(v && !tempQuestSettings[v]) { tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); } });
+    document.getElementById('btnSaveQuestSettings').addEventListener('click', () => { data.questSettings = tempQuestSettings; triggerAutoSave(); updateSubjectDropdown(); document.getElementById('questSettingsModal').classList.remove('show'); });
     
-    document.getElementById('virtualKeypad').addEventListener('click', (e) => {
-        if(e.target.classList.contains('vk-btn')) {
-            const val = e.target.dataset.val; const ip = document.getElementById('ipTitle');
-            if (val === 'backspace') ip.value = ip.value.slice(0, -1);
-            else if (val === 'clear') ip.value = '';
-            else if (val === 'space') ip.value += ' ';
-            else ip.value += val;
-            ip.focus();
-        }
-    });
+    document.getElementById('virtualKeypad').addEventListener('click', (e) => { if(e.target.classList.contains('vk-btn')) { const val = e.target.dataset.val; const ip = document.getElementById('ipTitle'); if (val === 'backspace') ip.value = ip.value.slice(0, -1); else if (val === 'clear') ip.value = ''; else if (val === 'space') ip.value += ' '; else ip.value += val; ip.focus(); } });
 
-    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
-        if(e.target.classList.contains('theme-option')) {
-            const t = e.target.dataset.theme; document.documentElement.setAttribute('data-color-theme', t); localStorage.setItem('hwColor', t);
-            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active')); e.target.classList.add('active');
-        }
-    });
-    document.getElementById('darkModeToggle').addEventListener('change', (e) => {
-        const t = e.target.checked ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('hwTheme', t);
-    });
+    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => { if(e.target.classList.contains('theme-option')) { const t = e.target.dataset.theme; document.documentElement.setAttribute('data-color-theme', t); localStorage.setItem('hwColor', t); document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active')); e.target.classList.add('active'); } });
+    document.getElementById('darkModeToggle').addEventListener('change', (e) => { const t = e.target.checked ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('hwTheme', t); });
 
-    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
-        const div = document.getElementById('rosterEditor'); const c = div.querySelectorAll('.roster-item').length + 1;
-        const d = document.createElement('div'); d.className = 'roster-item';
-        d.innerHTML = `<input type="number" value="${c}" class="roster-no-input"><input class="roster-name-input">`;
-        div.appendChild(d);
-    });
+    document.getElementById('btnAddStudentRow').addEventListener('click', () => { const div = document.getElementById('rosterEditor'); const c = div.querySelectorAll('.roster-item').length + 1; const d = document.createElement('div'); d.className = 'roster-item'; d.innerHTML = `<input type="number" value="${c}" class="roster-no-input"><input class="roster-name-input">`; div.appendChild(d); });
     document.getElementById('btnApplyRoster').addEventListener('click', () => {
-        const r = [];
-        document.querySelectorAll('.roster-item').forEach(d => {
-            const no = parseInt(d.querySelector('.roster-no-input').value);
-            const name = d.querySelector('.roster-name-input').value.trim();
-            if(no && name) {
-                const existing = data.roster.find(x => x.no === no && x.name === name);
-                r.push({ no, name, exp: existing ? existing.exp : 0 });
-            }
-        });
-        data.roster = r; triggerAutoSave(); renderRosterEditor(); alert("已更新");
+        const r = []; document.querySelectorAll('.roster-item').forEach(d => {
+            const no = parseInt(d.querySelector('.roster-no-input').value); const name = d.querySelector('.roster-name-input').value.trim();
+            if(no && name) { const existing = data.roster.find(x => x.no === no && x.name === name); r.push({ no, name, exp: existing ? existing.exp : 0 }); }
+        }); data.roster = r; triggerAutoSave(); renderRosterEditor(); alert("已更新");
     });
-    function renderRosterEditor() {
-        const d = document.getElementById('rosterEditor'); d.innerHTML = '';
-        data.roster.forEach(s => {
-            d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"></div>`;
-        });
-    }
+    function renderRosterEditor() { const d = document.getElementById('rosterEditor'); d.innerHTML = ''; data.roster.forEach(s => { d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"></div>`; }); }
 
-    document.getElementById('btnApplyTeachers').addEventListener('click', () => {
-        const ts = []; document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) ts.push(i.value.trim()); });
-        data.teachers = [...new Set(ts)]; triggerAutoSave(); renderTeacherEditor(); alert("已更新");
-    });
-    function renderTeacherEditor() {
-        const d = document.getElementById('teacherEditor'); d.innerHTML = '';
-        data.teachers.forEach(t => {
-            const div = document.createElement('div'); div.className = 'teacher-item';
-            div.innerHTML = `<input value="${t}" class="teacher-name-input"><button class="btn warn sm btn-del-t">刪</button>`;
-            div.querySelector('.btn-del-t').onclick = () => { if(confirm("刪除?")) { data.teachers = data.teachers.filter(x=>x!==t); triggerAutoSave(); renderTeacherEditor(); }};
-            d.appendChild(div);
-        });
-    }
+    document.getElementById('btnApplyTeachers').addEventListener('click', () => { const ts = []; document.querySelectorAll('.teacher-name-input').forEach(i => { if(i.value.trim()) ts.push(i.value.trim()); }); data.teachers = [...new Set(ts)]; triggerAutoSave(); renderTeacherEditor(); alert("已更新"); });
+    function renderTeacherEditor() { const d = document.getElementById('teacherEditor'); d.innerHTML = ''; data.teachers.forEach(t => { const div = document.createElement('div'); div.className = 'teacher-item'; div.innerHTML = `<input value="${t}" class="teacher-name-input"><button class="btn warn sm btn-del-t">刪</button>`; div.querySelector('.btn-del-t').onclick = () => { if(confirm("刪除?")) { data.teachers = data.teachers.filter(x=>x!==t); triggerAutoSave(); renderTeacherEditor(); }}; d.appendChild(div); }); }
     
     document.getElementById('btnCloseRosterPaste').addEventListener('click', () => document.getElementById('detailsRosterPaste').removeAttribute('open'));
-
     document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
-        const txt = document.getElementById('taRosterPaste').value.trim(); if(!txt) return;
-        const d = document.getElementById('rosterEditor');
-        const currentInputs = Array.from(d.querySelectorAll('.roster-name-input'));
-        const currentNames = currentInputs.map(i => i.value.trim());
-        const isDefaultRoster = currentNames.length === 3 && currentNames[0] === '勇者A' && currentNames[1] === '法師B' && currentNames[2] === '弓手C';
-        
-        let isOverwrite = false;
-        if (isDefaultRoster || currentNames.length === 0) isOverwrite = true;
-        else isOverwrite = confirm("要【覆蓋】目前的冒險者名單嗎？\n\n[確定]：清除舊名單\n[取消]：將新名單附加在最後");
-
-        let c = 1; 
-        if (isOverwrite) d.innerHTML = ''; 
-        else c = d.querySelectorAll('.roster-item').length + 1; 
-
-        txt.split(/\r?\n/).forEach(n => {
-            if(n.trim()) d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; 
-        });
-        
-        document.getElementById('taRosterPaste').value = ''; document.getElementById('detailsRosterPaste').removeAttribute('open'); 
-        alert("📜 名單已載入編輯區！請點擊右下角的「儲存變更」。");
+        const txt = document.getElementById('taRosterPaste').value.trim(); if(!txt) return; const d = document.getElementById('rosterEditor'); const currentInputs = Array.from(d.querySelectorAll('.roster-name-input')); const currentNames = currentInputs.map(i => i.value.trim()); const isDefaultRoster = currentNames.length === 3 && currentNames[0] === '勇者A' && currentNames[1] === '法師B' && currentNames[2] === '弓手C';
+        let isOverwrite = (isDefaultRoster || currentNames.length === 0) ? true : confirm("要【覆蓋】目前的冒險者名單嗎？\n\n[確定]：清除舊名單\n[取消]：將新名單附加在最後");
+        let c = 1; if (isOverwrite) d.innerHTML = ''; else c = d.querySelectorAll('.roster-item').length + 1; 
+        txt.split(/\r?\n/).forEach(n => { if(n.trim()) d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; });
+        document.getElementById('taRosterPaste').value = ''; document.getElementById('detailsRosterPaste').removeAttribute('open'); alert("📜 名單已載入編輯區！請點擊右下角的「儲存變更」。");
     });
 
     document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
         const c = document.getElementById('assignStudentListContainer'); c.innerHTML = '';
-        data.roster.forEach((s, i) => {
-            const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i);
-            const l = document.createElement('label'); l.className = 'assign-student-item';
-            l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`;
-            c.appendChild(l);
-        });
+        data.roster.forEach((s, i) => { const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i); const l = document.createElement('label'); l.className = 'assign-student-item'; l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`; c.appendChild(l); });
         document.getElementById('assignStudentModal').classList.add('show');
     });
     document.getElementById('btnConfirmAssign').addEventListener('click', () => {
-        const chks = document.querySelectorAll('#assignStudentListContainer input:checked');
-        newAssignmentAssignedIndices = Array.from(chks).map(c => parseInt(c.dataset.idx));
-        document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "全體冒險者" : `已選 ${newAssignmentAssignedIndices.length} 位`;
-        document.getElementById('assignStudentModal').classList.remove('show');
+        const chks = document.querySelectorAll('#assignStudentListContainer input:checked'); newAssignmentAssignedIndices = Array.from(chks).map(c => parseInt(c.dataset.idx));
+        document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "全體冒險者" : `已選 ${newAssignmentAssignedIndices.length} 位`; document.getElementById('assignStudentModal').classList.remove('show');
     });
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
 
     document.getElementById('btnToggleBatchMode').addEventListener('click', () => { isBatchMode = !isBatchMode; renderStudentStatus(); });
 
-    document.getElementById('btnBatchExport').addEventListener('click', () => {
-        const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
-        if(!checkedBoxes.length) { alert("尚未勾選任何冒險者！"); return; }
-        const selectedIndices = Array.from(checkedBoxes).map(c => parseInt(c.dataset.sidx));
+    // ⭐ 修正卷軸匯出 (單筆列印)
+    document.getElementById('studentStatusContainer').addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-print-single'); if (!btn) return; e.stopPropagation(); 
+        const sidx = parseInt(btn.dataset.sidx); const student = data.roster[sidx]; const printDate = new Date().toLocaleDateString('zh-TW');
+        const studentTasks = (data.assignments || []).filter(a => { if (a.archived) return false; const indices = a.assignedIndices || 'all'; return (indices === 'all' || indices.includes(sidx)); }).map(a => { return { title: a.title, status: (a.statuses || [])[sidx] || 0 }; });
+        
+        // 💡 只有狀態為 0 (未回報) 與 2 (再挑戰) 的任務才會被匯出！
+        const pendingTasks = studentTasks.filter(t => t.status === 0 || t.status === 2); 
+        pendingTasks.sort((a, b) => { const weight = { 2: 0, 0: 1 }; return weight[a.status] - weight[b.status]; });
+        
+        const listHtml = pendingTasks.length > 0 ? pendingTasks.map(t => { let statusText = ''; let rowStyle = ''; if(t.status === 0) statusText = '未回報'; else if(t.status === 2) { statusText = '再挑戰'; rowStyle = 'color: #c62828; font-weight:bold;'; } return `<li class="print-task-item" style="${rowStyle}"><span class="print-checkbox">☐</span><span class="print-task-name">${t.title}</span><span class="print-task-status">(${statusText})</span></li>`; }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888; padding: 20px;">🎉 太棒了！目前沒有待辦任務！</li>';
+        const w = window.open('', '', 'width=900,height=800'); w.document.write(`<html><head><title>${student.name} - 任務卷軸</title><style>body { font-family: "Microsoft JhengHei", sans-serif; padding: 40px; background: #fff; display:flex; justify-content:center;} .print-card { border: 3px solid #5D4037; border-radius: 12px; padding: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; box-shadow: 5px 5px 0px rgba(0,0,0,0.1); } .print-header { border-bottom: 2px dashed #8B4513; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; } .print-name { font-size: 28px; font-weight: 900; color: #3E2723; } .print-title { font-size: 16px; font-weight: bold; color: #666; } .print-list { list-style: none; padding: 0; margin: 0; flex: 1; } .print-task-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dotted #ccc; font-size: 18px; } .print-checkbox { font-size: 22px; font-weight: bold; line-height: 1; } .print-task-name { font-weight: bold; flex: 1; } .print-task-status { font-size: 14px; color: #888; font-weight: normal; } .print-footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 14px; } .print-sign { font-weight: 900; color: #000; font-size: 16px; } @media print { body { padding: 0; margin: 0; display:block;} .print-card { border-width: 2px; box-shadow:none; max-width: none; width: 100%; border-radius: 0; } @page { margin: 1.5cm; } }</style></head><body><div class="print-card"><div class="print-header"><div class="print-name">${student.no}. ${student.name}</div><div class="print-title">冒險者任務卷軸</div></div><ul class="print-list">${listHtml}</ul><div class="print-footer"><div class="print-date">📅 列印日期：${printDate}</div><div class="print-sign">家長簽名：________________</div></div></div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };<\/script></body></html>`); w.document.close();
+    });
 
+    // ⭐ 修正卷軸匯出 (批量列印)
+    document.getElementById('btnBatchExport').addEventListener('click', () => {
+        const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked'); if(!checkedBoxes.length) { alert("尚未勾選任何冒險者！"); return; }
+        const selectedIndices = Array.from(checkedBoxes).map(c => parseInt(c.dataset.sidx));
         let exportList = selectedIndices.map(sidx => {
             const student = data.roster[sidx];
-            const studentTasks = (data.assignments || []).filter(a => {
-                if (a.archived) return false;
-                const indices = a.assignedIndices || 'all'; return (indices === 'all' || indices.includes(sidx));
-            }).map(a => { return { title: a.title, status: (a.statuses || [])[sidx] || 0 }; });
-
-            const pendingTasks = studentTasks.filter(t => t.status !== 3);
+            const studentTasks = (data.assignments || []).filter(a => { if (a.archived) return false; const indices = a.assignedIndices || 'all'; return (indices === 'all' || indices.includes(sidx)); }).map(a => { return { title: a.title, status: (a.statuses || [])[sidx] || 0 }; });
+            
+            // 💡 只有狀態為 0 (未回報) 與 2 (再挑戰) 的任務才會被匯出！
+            const pendingTasks = studentTasks.filter(t => t.status === 0 || t.status === 2); 
             const debtCount = studentTasks.filter(t => t.status === 0 || t.status === 2).length;
             return { name: student.name, no: student.no, tasks: pendingTasks, debtCount: debtCount };
         });
-
-        exportList.sort((a, b) => {
-            if (b.debtCount !== a.debtCount) return b.debtCount - a.debtCount; 
-            return a.no - b.no; 
-        });
-
+        exportList.sort((a, b) => { if (b.debtCount !== a.debtCount) return b.debtCount - a.debtCount; return a.no - b.no; });
         let cardsHtml = ''; const printDate = new Date().toLocaleDateString('zh-TW');
-
         exportList.forEach(student => {
-            const listItems = student.tasks.length > 0 ? student.tasks.map(t => {
-                let statusText = ''; if(t.status === 0) statusText = '未回報'; else if(t.status === 1) statusText = '已回報'; else if(t.status === 2) statusText = '再挑戰';
-                return `<li class="print-task-item"><span class="print-checkbox">☐</span><span class="print-task-name">${t.title}</span><span class="print-task-status">(${statusText})</span></li>`;
-            }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888;">🎉 太棒了！目前沒有待辦任務！</li>';
-
-            const titleStyle = student.debtCount >= 5 ? 'color: #c62828;' : 'color: #000;';
-            const debtBadge = student.debtCount > 0 ? `<span style="font-size:12px; color:#c62828; border:1px solid #c62828; padding:1px 4px; border-radius:4px; margin-left:6px;">欠 ${student.debtCount}</span>` : '';
-
-            cardsHtml += `
-                <div class="print-card"><div class="print-header"><div class="print-name" style="${titleStyle}">${student.no}. ${student.name} ${debtBadge}</div><div class="print-title">任務清單</div></div><ul class="print-list">${listItems}</ul><div class="print-footer"><div class="print-date">📅 ${printDate}</div><div class="print-sign">家長簽名：________________</div></div></div>
-            `;
+            const listItems = student.tasks.length > 0 ? student.tasks.map(t => { let statusText = ''; if(t.status === 0) statusText = '未回報'; else if(t.status === 2) statusText = '再挑戰'; return `<li class="print-task-item"><span class="print-checkbox">☐</span><span class="print-task-name">${t.title}</span><span class="print-task-status">(${statusText})</span></li>`; }).join('') : '<li class="print-task-item" style="justify-content:center; color:#888;">🎉 太棒了！目前沒有待辦任務！</li>';
+            const titleStyle = student.debtCount >= 5 ? 'color: #c62828;' : 'color: #000;'; const debtBadge = student.debtCount > 0 ? `<span style="font-size:12px; color:#c62828; border:1px solid #c62828; padding:1px 4px; border-radius:4px; margin-left:6px;">欠 ${student.debtCount}</span>` : '';
+            cardsHtml += `<div class="print-card"><div class="print-header"><div class="print-name" style="${titleStyle}">${student.no}. ${student.name} ${debtBadge}</div><div class="print-title">任務清單</div></div><ul class="print-list">${listItems}</ul><div class="print-footer"><div class="print-date">📅 ${printDate}</div><div class="print-sign">家長簽名：________________</div></div></div>`;
         });
-
-        const w = window.open('', '', 'width=900,height=800');
-        w.document.write(`<html><head><title>冒險者任務卷軸匯出</title><style>body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #fff; } .print-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } .print-card { border: 2px solid #5D4037; border-radius: 8px; padding: 12px; break-inside: avoid; display: flex; flex-direction: column; background: #fff; } .print-header { border-bottom: 2px dashed #8B4513; padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; } .print-name { font-size: 20px; font-weight: 900; } .print-title { font-size: 12px; font-weight: bold; color: #666; } .print-list { list-style: none; padding: 0; margin: 0; flex: 1; } .print-task-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 15px; } .print-checkbox { font-size: 18px; font-weight: bold; line-height: 1; } .print-task-name { font-weight: bold; flex: 1; } .print-task-status { font-size: 12px; color: #888; } .print-footer { margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 12px; } .print-sign { font-weight: 900; color: #000; font-size: 14px; } @media print { body { padding: 0; margin: 0; } .print-card { border-width: 1px; } @page { margin: 1cm; } }</style></head><body><div class="print-container">${cardsHtml}</div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };<\/script></body></html>`);
-        w.document.close();
+        const w = window.open('', '', 'width=900,height=800'); w.document.write(`<html><head><title>冒險者任務卷軸匯出</title><style>body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #fff; } .print-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } .print-card { border: 2px solid #5D4037; border-radius: 8px; padding: 12px; break-inside: avoid; display: flex; flex-direction: column; background: #fff; } .print-header { border-bottom: 2px dashed #8B4513; padding-bottom: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; } .print-name { font-size: 20px; font-weight: 900; } .print-title { font-size: 12px; font-weight: bold; color: #666; } .print-list { list-style: none; padding: 0; margin: 0; flex: 1; } .print-task-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 15px; } .print-checkbox { font-size: 18px; font-weight: bold; line-height: 1; } .print-task-name { font-weight: bold; flex: 1; } .print-task-status { font-size: 12px; color: #888; } .print-footer { margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 12px; } .print-sign { font-weight: 900; color: #000; font-size: 14px; } @media print { body { padding: 0; margin: 0; } .print-card { border-width: 1px; } @page { margin: 1cm; } }</style></head><body><div class="print-container">${cardsHtml}</div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };<\/script></body></html>`); w.document.close();
     });
 
     document.getElementById('btnToggleToolbox').addEventListener('click', function() { document.getElementById('toolboxMenu').classList.toggle('show'); this.classList.toggle('active'); });
     document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => { resetNewAssignmentState(); openTool('panelNewQuest'); });
 
-    function openTool(id) {
-        document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show'));
-        const win = document.getElementById(id); if(win) win.classList.add('show');
-        document.getElementById('toolboxMenu').classList.remove('show'); document.getElementById('btnToggleToolbox').classList.remove('active');
-    }
+    function openTool(id) { document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show')); const win = document.getElementById(id); if(win) win.classList.add('show'); document.getElementById('toolboxMenu').classList.remove('show'); document.getElementById('btnToggleToolbox').classList.remove('active'); }
     document.getElementById('btnOpenMarquee').addEventListener('click', () => openTool('panelMarquee'));
     document.getElementById('btnOpenTimer').addEventListener('click', () => openTool('panelTimer'));
     document.getElementById('btnOpenDraw').addEventListener('click', () => openTool('panelDraw'));
 
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('.tool-close')) { const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); }
-    });
-
-    document.getElementById('btnMqShow').addEventListener('click', () => {
-        const txt = document.getElementById('mqTextInput').value; const col = document.getElementById('mqColorInput').value; const sz = document.getElementById('mqSizeInput').value; const spd = document.getElementById('mqSpeedInput').value;
-        if(!txt) return; const el = document.getElementById('marqueeText'); el.innerText = txt; el.style.color = col; el.style.fontSize = sz + 'px'; el.style.animationDuration = (Math.max(10, txt.length*0.8) / spd) + 's'; document.getElementById('topMarquee').style.display = 'block';
-    });
+    document.getElementById('btnMqShow').addEventListener('click', () => { const txt = document.getElementById('mqTextInput').value; const col = document.getElementById('mqColorInput').value; const sz = document.getElementById('mqSizeInput').value; const spd = document.getElementById('mqSpeedInput').value; if(!txt) return; const el = document.getElementById('marqueeText'); el.innerText = txt; el.style.color = col; el.style.fontSize = sz + 'px'; el.style.animationDuration = (Math.max(10, txt.length*0.8) / spd) + 's'; document.getElementById('topMarquee').style.display = 'block'; });
     document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
     document.getElementById('mqSizeInput').addEventListener('input', (e) => document.getElementById('marqueeText').style.fontSize = e.target.value+'px');
 
     let timerInt = null; let timerSec = 0;
     function updateTimer() { document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; }
-    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => {
-        clearInterval(timerInt); timerInt = null; timerSec = e.target.dataset.min * 60; document.getElementById('timerInput').value = e.target.dataset.min; document.getElementById('btnTimerStart').innerText = "開始"; updateTimer();
-    }));
-    document.getElementById('btnTimerStart').addEventListener('click', (e) => {
-        resumeAudio();
-        if(timerInt) { clearInterval(timerInt); timerInt=null; e.target.innerText="繼續"; }
-        else {
-            if(timerSec === 0) { const m = parseInt(document.getElementById('timerInput').value)||0; const s = parseInt(document.getElementById('timerInputSec').value)||0; timerSec = m*60+s; }
-            if(timerSec>0) {
-                e.target.innerText="暫停";
-                timerInt = setInterval(() => {
-                    if(timerSec>0) { timerSec--; updateTimer(); }
-                    else { clearInterval(timerInt); timerInt=null; e.target.innerText="開始"; playAlarmSound(); showToast("⏰ 時間到！任務結束！", "確認"); }
-                }, 1000);
-            }
-        }
-    });
-    document.getElementById('btnTimerReset').addEventListener('click', () => {
-        clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer();
-        document.getElementById('btnTimerStart').innerText="開始"; document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value='';
-    });
+    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { clearInterval(timerInt); timerInt = null; timerSec = e.target.dataset.min * 60; document.getElementById('timerInput').value = e.target.dataset.min; document.getElementById('btnTimerStart').innerText = "開始"; updateTimer(); }));
+    document.getElementById('btnTimerStart').addEventListener('click', (e) => { resumeAudio(); if(timerInt) { clearInterval(timerInt); timerInt=null; e.target.innerText="繼續"; } else { if(timerSec === 0) { const m = parseInt(document.getElementById('timerInput').value)||0; const s = parseInt(document.getElementById('timerInputSec').value)||0; timerSec = m*60+s; } if(timerSec>0) { e.target.innerText="暫停"; timerInt = setInterval(() => { if(timerSec>0) { timerSec--; updateTimer(); } else { clearInterval(timerInt); timerInt=null; e.target.innerText="開始"; playAlarmSound(); showToast("⏰ 時間到！任務結束！", "確認"); } }, 1000); } } });
+    document.getElementById('btnTimerReset').addEventListener('click', () => { clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer(); document.getElementById('btnTimerStart').innerText="開始"; document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value=''; });
 
-    document.getElementById('btnLuckyDraw').addEventListener('click', () => {
-        resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult');
-        if (!data.roster || data.roster.length === 0) { res.innerText = "無人可抽"; return; }
-        if (btn.disabled) return; btn.disabled = true; btn.innerText = "命運轉動中...";
-        res.classList.remove('draw-winner'); res.classList.add('draw-rolling');
-        let rollCount = 0; const maxRolls = 30; let delay = 40;      
-        function roll() {
-            const randomIndex = Math.floor(Math.random() * data.roster.length); res.innerText = data.roster[randomIndex].name;
-            playTickSound(); rollCount++;
-            if (rollCount < maxRolls) {
-                if (rollCount > maxRolls * 0.8) delay += 40; else if (rollCount > maxRolls * 0.5) delay += 15; 
-                setTimeout(roll, delay);
-            } else {
-                res.classList.remove('draw-rolling'); res.classList.add('draw-winner'); 
-                playSuccessSound(); confetti(); btn.disabled = false; btn.innerText = "再次抽出冒險者";
-            }
-        }
-        roll();
-    });
+    document.getElementById('btnLuckyDraw').addEventListener('click', () => { resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult'); if (!data.roster || data.roster.length === 0) { res.innerText = "無人可抽"; return; } if (btn.disabled) return; btn.disabled = true; btn.innerText = "命運轉動中..."; res.classList.remove('draw-winner'); res.classList.add('draw-rolling'); let rollCount = 0; const maxRolls = 30; let delay = 40; function roll() { const randomIndex = Math.floor(Math.random() * data.roster.length); res.innerText = data.roster[randomIndex].name; playTickSound(); rollCount++; if (rollCount < maxRolls) { if (rollCount > maxRolls * 0.8) delay += 40; else if (rollCount > maxRolls * 0.5) delay += 15; setTimeout(roll, delay); } else { res.classList.remove('draw-rolling'); res.classList.add('draw-winner'); playSuccessSound(); confetti(); btn.disabled = false; btn.innerText = "再次抽出冒險者"; } } roll(); });
+    
   </script>
 </body>
 </html>
