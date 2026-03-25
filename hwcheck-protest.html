@@ -1047,7 +1047,8 @@
         saveTimeout = setTimeout(async () => {
             if (!currentUser) return;
             try { 
-                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data); 
+                const cleanData = JSON.parse(JSON.stringify(data)); // 👈 淨化資料，濾除 Firebase 不支援的 undefined
+                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData); 
                 updateSaveStatus('success'); 
             } catch (e) { 
                 console.error("🔥 Firebase 儲存失敗:", e);
@@ -1064,24 +1065,32 @@
             const docRef = doc(db, "users", currentUser.uid, "data", "guildData");
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                data = docSnap.data();
-                if(!data.questSettings) data.questSettings = JSON.parse(JSON.stringify(defaultData.questSettings));
-                if(!data.attendance) data.attendance = {};
-                if(!data.assignments) data.assignments = [];
-                if(!data.settings) data.settings = { arrivalTime: "07:50" };
-                if(data.roster) data.roster.forEach(r => { if(typeof r.exp === 'undefined') r.exp = 0; });
+                const loadedData = docSnap.data();
+                // 🛡️ 嚴格防呆檢查：確保所有陣列與物件存在，防止 TypeError 導致系統掛點
+                data.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
+                data.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
+                data.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
+                data.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
+                data.attendance = loadedData.attendance || {};
+                data.discipline = loadedData.discipline || null;
+                data.settings = loadedData.settings || { arrivalTime: "07:50" };
+
+                // 確保 EXP 存在
+                data.roster.forEach(r => { if(typeof r.exp === 'undefined') r.exp = 0; });
             } else {
                 data = JSON.parse(JSON.stringify(defaultData));
-                await setDoc(docRef, data);
+                await setDoc(docRef, JSON.parse(JSON.stringify(data)));
             }
             onDataLoaded();
             updateSaveStatus('success', '讀取完成');
             checkAttendanceReminder();
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
-            if(data.roster.length === 0) data = JSON.parse(JSON.stringify(defaultData));
+            // 讀取崩潰時的安全降級模式
+            if (!data || !Array.isArray(data.roster)) data = JSON.parse(JSON.stringify(defaultData));
             onDataLoaded();
-            if (error.code === 'permission-denied') updateSaveStatus('error', '權限不足 (離線模式)');
+            
+            if (error.code === 'permission-denied') updateSaveStatus('error', '權限不足 (請檢查資料庫 Rules)');
             else updateSaveStatus('error', '連線失敗 (離線模式)');
         }
     }
@@ -1150,7 +1159,9 @@
     // --- 7. 晨間報到 (Check-in) 邏輯 ---
     function renderCheckIn() {
         const today = getTaipeiDateString();
-        // 初始化今日打卡資料，使用 status: -1 表示還沒報到
+        // 防呆：確保 attendance 存在
+        if (!data.attendance) data.attendance = {};
+        
         if (!data.attendance[today]) {
             data.attendance[today] = data.roster.map(() => ({ status: -1, note: '' }));
             triggerAutoSave();
@@ -1269,7 +1280,8 @@
         const zGreen = document.getElementById('zoneGreenGrid'); const zYellow = document.getElementById('zoneYellowGrid'); const zRed = document.getElementById('zoneRedGrid');
         zGreen.innerHTML = ''; zYellow.innerHTML = ''; zRed.innerHTML = '';
         data.roster.forEach((s, i) => {
-            const st = data.discipline.statuses[i] || 0;
+            // 防呆：確保 discipline 存在
+            const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
             const card = document.createElement('div'); card.className = 'd-student-card';
             card.innerHTML = `
                 <div class="d-avatar" onclick="cycleTrafficLight(${i})">${s.no}</div>
@@ -1613,7 +1625,7 @@
     document.getElementById('btnExportJSON').addEventListener('click', () => { const dataStr = JSON.stringify(data, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, ''); a.download = `guild_backup_${dateStr}.json`; a.click(); URL.revokeObjectURL(url); showToast("✅ 公會資料已成功匯出備份！", "確認"); });
     document.getElementById('btnImportJSONTrigger').addEventListener('click', () => { document.getElementById('ipImportJSON').click(); });
     
-    // ⭐ 修正與優化：還原備份時「強制直接寫入」資料庫
+    // ⭐ 修正與優化：還原備份時「強制寫入」與「嚴格防呆」，防止 Reload 崩潰
     document.getElementById('ipImportJSON').addEventListener('change', async (e) => {
         const file = e.target.files[0]; if (!file) return; 
         const reader = new FileReader();
@@ -1622,26 +1634,29 @@
                 const importedData = JSON.parse(event.target.result); 
                 if (!importedData || typeof importedData !== 'object') throw new Error("無效的檔案格式");
                 
-                // 相容舊版本的備份檔，確保新功能欄位不會 undefined
-                if (!importedData.roster) importedData.roster = []; 
-                if (!importedData.assignments) importedData.assignments = []; 
-                if (!importedData.teachers) importedData.teachers = []; 
-                if (!importedData.questSettings) importedData.questSettings = {}; 
-                if (!importedData.attendance) importedData.attendance = {};
-                if (!importedData.settings) importedData.settings = { arrivalTime: "07:50" };
-                if (!importedData.discipline) importedData.discipline = null;
-
                 if (confirm("⚠️ 警告：還原備份將會【完全覆蓋】目前系統內的所有資料！\n\n確定要繼續還原嗎？")) { 
-                    data = importedData; 
                     
+                    // 防呆與舊版相容：確保所有核心節點都是正確的型別，避免後續 foreach 取不到值而當機
+                    data.roster = Array.isArray(importedData.roster) ? importedData.roster : defaultData.roster;
+                    data.assignments = Array.isArray(importedData.assignments) ? importedData.assignments : [];
+                    data.teachers = Array.isArray(importedData.teachers) && importedData.teachers.length > 0 ? importedData.teachers : defaultData.teachers;
+                    data.questSettings = importedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
+                    data.attendance = importedData.attendance || {};
+                    data.discipline = importedData.discipline || null;
+                    data.settings = importedData.settings || { arrivalTime: "07:50" };
+                    
+                    // 確保 EXP 存在
+                    data.roster.forEach(r => { if(typeof r.exp === 'undefined') r.exp = 0; });
+
                     updateSaveStatus('saving', '資料庫覆寫中...');
-                    // 💡 關鍵修正：不依賴 setTimeout，直接強制 await 寫入 Firebase
+                    
                     if (currentUser) {
-                        await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data);
+                        const cleanData = JSON.parse(JSON.stringify(data)); // 淨化資料，濾除 Firebase 不接受的 undefined
+                        await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData);
                         updateSaveStatus('success', '還原完成');
                     }
                     
-                    renderAll(); 
+                    onDataLoaded(); // 重新整理所有畫面與下拉選單
                     document.getElementById('adminProfileModal').classList.remove('show'); 
                     showToast("✨ 備份資料已成功還原並寫入雲端！", "確認"); 
                 }
