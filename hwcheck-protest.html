@@ -170,7 +170,7 @@
     .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
 
     /* ⭐ 新版冒險者狀態與紀律小字卡 */
-    .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding: 10px 0; }
+    .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; padding: 10px 0; }
     .d-student-card { background: #fff; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 12px; transition: transform 0.2s, box-shadow 0.2s; position: relative; display: flex; flex-direction: column; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); }
     .d-student-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); border-color: var(--primary); }
     .d-avatar { border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: #fff; cursor: pointer; border: 2px solid rgba(0,0,0,0.2); transition: transform 0.1s; flex-shrink: 0; }
@@ -179,9 +179,21 @@
     .batch-exp-toolbar { display: none; background: var(--card); border: 2px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 16px; align-items: center; gap: 10px; flex-wrap: wrap; animation: fadeIn 0.2s; }
     .batch-exp-toolbar.show { display: flex; }
 
-    /* 工具箱內的清單樣式 */
-    .tool-window .checklist-item { background: var(--card); border: 2px dashed var(--primary); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 900; cursor: pointer; }
-    .tool-window .checklist-item.done { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
+    /* 卡片內任務Hover效果 */
+    .task-item-hover { transition: background 0.2s, padding 0.2s; border-radius: 4px; }
+    .task-item-hover:hover { background: var(--tbl-hover); padding-left: 6px !important; padding-right: 4px !important; margin-left: -6px; margin-right: -4px; }
+
+    /* 狀態總覽 */
+    .status-overview { display: flex; gap: 12px; margin-bottom: 16px; }
+    .overview-card { flex: 1; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .overview-card.success { border-color: var(--success); background: #f0fdf4; }
+    .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
+    .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+    .overview-nums { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
+    .num-badge { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: bold; font-size: 22px; border: 2px solid rgba(255,255,255,0.5); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+    .overview-card.success .num-badge { background: var(--success); color: #fff; }
+    .overview-card.danger .num-badge { background: var(--danger); color: #fff; }
+    .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
 
     /* 其他介面元素 */
     .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; }
@@ -208,6 +220,8 @@
     .tool-header { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; }
     .tool-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; }
+    .tool-window .checklist-item { background: var(--card); border: 2px dashed var(--primary); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 900; cursor: pointer; }
+    .tool-window .checklist-item.done { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
 
     .marquee-container { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.85); overflow: hidden; z-index: 9999; padding: 8px 0; pointer-events: none; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
     .marquee-content { display: inline-block; white-space: nowrap; font-weight: 900; padding-left: 100%; animation: marquee-anim linear infinite; text-shadow: 2px 2px 0px #000; }
@@ -236,13 +250,16 @@
     .status-option-btn.sp-2 { background: #ffedd5; color: #9a3412; border-color: #fb923c; }
     .status-option-btn.sp-3 { background: #dcfce7; color: #166534; border-color: #4ade80; }
 
+    /* ⭐ 修復：保證紅點不會被遮擋，加上 pointer-events */
     .debt-badge { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: grid; place-items: center; border: 2px solid var(--card); z-index: 10; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s; pointer-events: auto; }
     .debt-badge:hover { transform: scale(1.2) rotate(10deg); }
 
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
     .assign-student-item:hover { background: var(--tbl-hover); }
     .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
+    .batch-exp-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
     .batch-mode .batch-export-checkbox { display: inline-block !important; }
+    .batch-exp-mode .batch-exp-checkbox { display: inline-block !important; }
 
     /* 外觀設定樣式 */
     .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
@@ -316,6 +333,7 @@
         <!-- ⭐ 按鈕名稱變更為「冒險者狀態」 -->
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
         <button class="btn ghost nav-btn" id="btnNavCheckIn" title="晨間報到"><i class="bi bi-sun"></i> <span class="nav-text">晨間報到</span></button>
+        <!-- 移除獨立的公會紀律按鈕 -->
         <button class="btn ghost nav-btn" id="btnNavRoster" title="公會名冊"><i class="bi bi-people"></i> <span class="nav-text">公會名冊</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
         
@@ -327,9 +345,11 @@
       <div class="dashboard-layout">
         <aside class="dash-sidebar">
           <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
+              <!-- ⭐ 復原：篩選條件按鈕 -->
               <button id="btnToggleFilter" class="btn ghost sm" style="flex: 1;" onclick="document.getElementById('filterPanel').classList.toggle('show');"><i class="bi bi-funnel"></i> 篩選條件</button>
               <button class="btn sm" id="btnOpenNewQuestWindowSidebar" style="flex: 0 0 auto;" title="發布新委託"><i class="bi bi-plus-lg"></i> 新增任務</button>
           </div>
+          <!-- ⭐ 復原：篩選條件面板 -->
           <div id="filterPanel" class="filter-panel">
               <div style="margin-bottom: 8px;"><select id="teacherFilter" style="width:100%; padding:6px;"><option value="all">所有導師</option></select></div>
               <div style="margin-bottom: 8px;"><select id="subjectFilter" style="width:100%; padding:6px;"><option value="all">所有科目</option></select></div>
@@ -416,6 +436,9 @@
               <input type="text" id="customExpReason" style="width:120px; padding:4px;" placeholder="輸入原因...">
               <button class="btn sm" onclick="window.applyCustomBatchExp()">套用</button>
           </div>
+          
+          <!-- ⭐ 復原：上方狀態總覽 (討伐全冠王與補血欄位) -->
+          <div id="studentStatusOverviewContainer"></div>
 
           <div id="studentStatusContainer" style="margin-top:12px;"></div>
       </div>
@@ -728,8 +751,9 @@
       </div>
   </div>
 
-  <!-- 🚨 JavaScript 核心區塊 🚨 -->
+  <!-- 🚨 完整 JavaScript 核心區塊 🚨 -->
   <script type="module">
+    // --- 1. Firebase 初始化 ---
     const firebaseConfig = {
       apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
       authDomain: "homework-hc906.firebaseapp.com",
@@ -762,7 +786,7 @@
         questSettings: { "國語": ["國語習作", "國語考卷"], "數學": ["數學習作", "數學考卷"] },
         attendance: {}, 
         discipline: null,
-        expLogs: [], // 新增：經驗值日誌
+        expLogs: [], // 經驗值日誌
         settings: { arrivalTime: "07:50", bgmId: "" }
     };
     let data = JSON.parse(JSON.stringify(defaultData)); 
@@ -782,6 +806,7 @@
         return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
     }
     
+    // 浮動時鐘
     setInterval(() => {
         const timeStr = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
         const fc = document.getElementById('fcTime');
@@ -830,10 +855,14 @@
         const target = document.getElementById(id);
         if(target) { target.classList.add('show'); renderAll(); }
         
+        // BGM 播放狀態切換
         if (id === 'view-checkin') {
             const bgmBtn = document.getElementById('btnToggleCheckinBgm');
-            if (data.settings && data.settings.bgmId) { bgmBtn.style.display = 'inline-flex'; } 
-            else { bgmBtn.style.display = 'none'; }
+            if (data.settings && data.settings.bgmId) {
+                bgmBtn.style.display = 'inline-flex';
+            } else {
+                bgmBtn.style.display = 'none';
+            }
         } else {
             stopCheckinBGM();
         }
@@ -857,7 +886,9 @@
     function playCheckinBGM() {
         const bgmId = data.settings?.bgmId?.trim();
         const container = document.getElementById('ytPlayerContainer');
-        if (bgmId) { container.innerHTML = `<iframe width="10" height="10" src="https://www.youtube.com/embed/${bgmId}?autoplay=1&loop=1&playlist=${bgmId}" frameborder="0" allow="autoplay"></iframe>`; }
+        if (bgmId) {
+            container.innerHTML = `<iframe width="10" height="10" src="https://www.youtube.com/embed/${bgmId}?autoplay=1&loop=1&playlist=${bgmId}" frameborder="0" allow="autoplay"></iframe>`;
+        }
     }
 
     function stopCheckinBGM() {
@@ -954,6 +985,7 @@
     function initApp() {
         const color = localStorage.getItem('hwColor') || 'guild';
         document.documentElement.setAttribute('data-color-theme', color);
+        
         document.querySelectorAll('.theme-option').forEach(el => {
             el.classList.toggle('active', el.dataset.theme === color);
         });
@@ -995,7 +1027,6 @@
         data.roster[sidx].exp += delta;
         if (data.roster[sidx].exp < 0) data.roster[sidx].exp = 0;
         
-        // 內建寫入日誌 (代替 Google Sheets，直接存在 Firebase，支援匯出)
         if(!data.expLogs) data.expLogs = [];
         data.expLogs.push({
             time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
@@ -1003,7 +1034,7 @@
             delta: delta > 0 ? '+' + delta : delta,
             reason: reason
         });
-        if(data.expLogs.length > 2000) data.expLogs.shift(); // 保持上限避免爆掉
+        if(data.expLogs.length > 2000) data.expLogs.shift();
         
         if (!silent) {
             playCoinSound();
@@ -1171,7 +1202,6 @@
             if(isAssigned) {
                 div.querySelector('.seat').onclick = () => window.toggleStatus(id, i);
                 const badge = div.querySelector('.debt-badge');
-                // ⭐ 修復：確保有綁定 onclick 事件
                 if (badge) badge.onclick = (e) => { e.stopPropagation(); window.openQuickDebtMenu(e, i, oldDebts); };
             }
             grid.appendChild(div);
@@ -1205,29 +1235,65 @@
         const tb = document.getElementById('batchExpToolbar');
         if (isBatchExpMode) {
             tb.classList.add('show');
-            document.getElementById('btnToggleBatchExp').innerText = '取消批次';
+            document.getElementById('btnToggleBatchExp').innerHTML = '<i class="bi bi-x-lg"></i> 取消加扣分';
             document.getElementById('btnToggleBatchExp').classList.add('warn');
         } else {
             tb.classList.remove('show');
-            document.getElementById('btnToggleBatchExp').innerHTML = '<i class="bi bi-magic"></i> 批次加扣分';
+            document.getElementById('btnToggleBatchExp').innerHTML = '<i class="bi bi-magic"></i> 加扣分模式';
             document.getElementById('btnToggleBatchExp').classList.remove('warn');
         }
 
         if (isBatchMode) {
             document.getElementById('btnBatchExport').style.display = 'inline-block';
             document.getElementById('btnBatchSelectAll').style.display = 'inline-block';
-            document.getElementById('btnToggleBatchMode').innerText = "取消批量";
+            document.getElementById('btnToggleBatchMode').innerHTML = '<i class="bi bi-x-lg"></i> 取消列印';
+            document.getElementById('btnToggleBatchMode').classList.add('warn');
         } else {
+            if (!isBatchExpMode) document.getElementById('btnBatchSelectAll').style.display = 'none';
             document.getElementById('btnBatchExport').style.display = 'none';
-            document.getElementById('btnBatchSelectAll').style.display = 'none';
             document.getElementById('btnToggleBatchMode').innerHTML = `<i class="bi bi-printer"></i> 批量列印卷軸`;
+            document.getElementById('btnToggleBatchMode').classList.remove('warn');
         }
 
         checkAndResetDiscipline();
 
+        // ⭐ 復原頂部狀態總覽
+        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        const clearedStudents = []; const helpStudents = [];
+        data.roster.forEach((s, i) => {
+            let pendingCount = 0;
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) pendingCount++;
+                }
+            }
+            if (pendingCount === 0) clearedStudents.push(s.no);
+            if (pendingCount >= 5) helpStudents.push(s.no);
+        });
+        clearedStudents.sort((a,b)=>a-b); helpStudents.sort((a,b)=>a-b);
+
+        const overviewCon = document.getElementById('studentStatusOverviewContainer');
+        if (!isBatchMode && !isBatchExpMode) { 
+            overviewCon.style.display = 'block';
+            overviewCon.innerHTML = `
+                <div class="status-overview">
+                    <div class="overview-card success"><div class="overview-icon-bg"><i class="bi bi-trophy"></i></div><div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
+                        <div class="overview-nums">${clearedStudents.length > 0 ? clearedStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">💪 尚無人達成</span>'}</div>
+                    </div>
+                    <div class="overview-card danger"><div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div><div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (欠款≥5)</div>
+                        <div class="overview-nums">${helpStudents.length > 0 ? helpStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">✅ 全員健康</span>'}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            overviewCon.style.display = 'none';
+            overviewCon.innerHTML = '';
+        }
+
         const grid = document.createElement('div');
         grid.className = 'student-status-grid';
-        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(210px, 1fr))';
         
         data.roster.forEach((s, i) => {
             const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
@@ -1247,13 +1313,13 @@
             });
             
             let tasksHtml = debts.map(t => {
-                let statusSpan = t.st === 2 ? `<span style="color:var(--danger);font-size:11px;">(再戰)</span>` : `<span style="color:#888;font-size:11px;">(未交)</span>`;
-                return `<div style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;">🔸 ${t.title} ${statusSpan}</div>`;
+                let statusSpan = t.st === 2 ? `<span class="pill p-orange" style="transform:scale(0.85); transform-origin:right center; margin:0;">再戰</span>` : `<span class="pill p-gray" style="transform:scale(0.85); transform-origin:right center; margin:0;">未交</span>`;
+                return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${t.title}">🔸 ${t.title}</span> ${statusSpan}</div>`;
             }).join('');
 
             const badgeHtml = debts.length > 0 ? `<div class="debt-badge" style="top:5px; right:0px;">${debts.length}</div>` : '';
             const printBtnHtml = (debts.length > 0 && !isBatchMode && !isBatchExpMode) ? `<button class="btn sm ghost btn-print-single" style="margin-top: 8px; width: 100%; border-radius:8px;" onclick="window.printSingleStudent(${i})"><i class="bi bi-printer"></i> 列印卷軸</button>` : '';
-            const checkboxHtml = isBatchMode ? `<input type="checkbox" class="batch-export-checkbox" data-sidx="${i}">` : isBatchExpMode ? `<input type="checkbox" class="batch-exp-checkbox" data-sidx="${i}">` : '';
+            const checkboxHtml = isBatchMode ? `<input type="checkbox" class="batch-export-checkbox" data-sidx="${i}" style="transform:scale(1.5);">` : isBatchExpMode ? `<input type="checkbox" class="batch-exp-checkbox" data-sidx="${i}" style="transform:scale(1.5);">` : '';
 
             const card = document.createElement('div');
             card.className = 'd-student-card';
@@ -1273,13 +1339,13 @@
                     ${checkboxHtml}
                 </div>
                 
-                <div style="width:100%; margin-top:10px; border-top:1px dashed #ccc; padding-top:8px;">
-                    ${tasksHtml || '<div style="color:#888; font-size:12px; text-align:center;">🎉 無欠交作業</div>'}
+                <div style="width:100%; margin-top:8px; border-top:1px solid rgba(0,0,0,0.05); padding-top:4px;">
+                    ${tasksHtml || '<div style="color:#888; font-size:12px; text-align:center; padding: 10px 0;">🎉 無欠交作業</div>'}
                 </div>
 
-                <div class="d-actions" style="margin-top:8px; display:${isBatchExpMode ? 'none' : 'flex'};">
-                    <button class="btn-exp add" style="font-size:14px; padding:6px;" onclick="window.changeExp(${i}, 1, '手動調整')">+1</button>
-                    <button class="btn-exp sub" style="font-size:14px; padding:6px;" onclick="window.changeExp(${i}, -1, '手動調整')">-1</button>
+                <div class="d-actions" style="margin-top:8px; display:${isBatchExpMode ? 'flex' : 'none'};">
+                    <button class="btn-exp add" style="font-size:14px; padding:6px;" onclick="window.changeExp(${i}, 1, '手動加分')">+1</button>
+                    <button class="btn-exp sub" style="font-size:14px; padding:6px;" onclick="window.changeExp(${i}, -1, '手動扣分')">-1</button>
                 </div>
                 ${printBtnHtml}
             `;
@@ -1294,6 +1360,25 @@
         
         con.appendChild(grid);
     }
+
+    // ⭐ 直接在字卡上點擊任務修改狀態的邏輯
+    window.toggleCardTaskStatus = function(e, aid, sidx) {
+        e.stopPropagation();
+        const a = data.assignments.find(x => x.id == aid); if(!a) return;
+        const currentStatus = a.statuses[sidx] || 0;
+        
+        if (currentStatus === 2) {
+            if (confirm(`【${data.roster[sidx].name}】的「${a.title}」\n是否已完成並改為「討伐成功」？`)) {
+                updateStatus(aid, sidx, 3);
+            }
+        } else {
+            pickerTarget = { idx: sidx, aid: aid };
+            const picker = document.getElementById('statusPicker');
+            picker.style.top = (e.clientY + 10) + 'px'; 
+            picker.style.left = (e.clientX + 10) + 'px'; 
+            picker.classList.add('show');
+        }
+    };
 
     document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
         let count = 0;
@@ -1316,6 +1401,15 @@
     document.getElementById('btnToggleBatchExp').addEventListener('click', () => { 
         isBatchExpMode = !isBatchExpMode; 
         if (isBatchExpMode) isBatchMode = false; // 互斥
+        
+        // 切換按鈕與全選按鈕的顯示狀態
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
+        if (isBatchExpMode || isBatchMode) {
+            btnSelectAll.style.display = 'inline-block';
+        } else {
+            btnSelectAll.style.display = 'none';
+        }
+        
         renderStudentStatus(); 
     });
 
@@ -1325,6 +1419,7 @@
         checked.forEach(cb => {
             const idx = parseInt(cb.dataset.sidx);
             changeExp(idx, delta, presetReason, true);
+            cb.checked = false; // 扣分完自動取消勾選
         });
         playSuccessSound();
         showToast(`✨ 已為 ${checked.length} 名學生套用：${presetReason} (${delta>0?'+'+delta:delta})`);
@@ -1403,7 +1498,7 @@
         triggerAutoSave(); renderCheckIn();
     };
 
-    // 🟢 每日點名
+    // 🟢 每日點名 (與晨間報到串聯優化)
     function initAttendanceView() {
         const date = document.getElementById('attDatePicker').value;
         if (!data.attendance[date]) {
@@ -1517,6 +1612,34 @@
 
     // --- 10. 委託事件與工具提示全區 ---
 
+    const toolTipEl = document.getElementById('assignmentTooltip');
+    window.showAssignmentTooltip = function(e, a) {
+        if (!a) return;
+        const indices = a.assignedIndices || 'all'; const missing = []; const redo = [];
+        data.roster.forEach((s, i) => {
+            if (indices === 'all' || indices.includes(i)) {
+                const status = (a.statuses || [])[i] || 0;
+                if (status === 0) missing.push(s.no); if (status === 2) redo.push(s.no);
+            }
+        });
+        if (missing.length === 0 && redo.length === 0) return;
+        let html = `<h4>${a.title}</h4><ul>`;
+        if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
+        if (missing.length) html += `<li class="t-miss">未交：${missing.join(', ')}</li>`;
+        html += `</ul>`;
+        toolTipEl.innerHTML = html; toolTipEl.style.display = 'block'; moveAssignmentTooltip(e);
+    };
+
+    window.moveAssignmentTooltip = function(e) {
+        const x = (e.clientX + 15) / APP_SCALE; const y = (e.clientY + 15) / APP_SCALE;
+        toolTipEl.style.top = y + 'px'; toolTipEl.style.left = x + 'px';
+        const rect = toolTipEl.getBoundingClientRect();
+        if((x * APP_SCALE + rect.width) > window.innerWidth) toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
+        if((y * APP_SCALE + rect.height) > window.innerHeight) toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
+    };
+    
+    window.hideAssignmentTooltip = function() { toolTipEl.style.display = 'none'; };
+
     // 🌟 公會長執務室專屬事件
     const userBadge = document.getElementById('userEmailDisplay');
     if(userBadge) {
@@ -1554,7 +1677,7 @@
         const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
     });
 
-    // ⭐ 新增：下載 EXP 異動紀錄
+    // ⭐ 下載 EXP 異動紀錄
     document.getElementById('btnDownloadExpLogs').addEventListener('click', () => {
         if(!data.expLogs || data.expLogs.length === 0) { alert("目前無任何 EXP 異動紀錄"); return; }
         let csv = "\uFEFF紀錄時間,姓名,變動,原因\n";
@@ -1590,6 +1713,24 @@
         });
     });
 
+    // ⭐ 篩選條件事件
+    ['teacherFilter','subjectFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.addEventListener('change', (e) => { 
+                currentFilter[id.replace('Filter','')] = e.target.value; 
+                renderDashboard(); 
+            });
+        }
+    });
+
+    document.getElementById('btnClearFilter').addEventListener('click', () => { 
+        currentFilter = { teacher: 'all', subject: 'all' }; 
+        document.getElementById('teacherFilter').value = 'all'; 
+        document.getElementById('subjectFilter').value = 'all'; 
+        renderDashboard(); 
+    });
+
     // ⭐ 發布新委託功能事件
     function populateTeacherDropdowns() {
         const ts = data.teachers || []; 
@@ -1598,14 +1739,27 @@
             sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>'; 
             document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none'; 
         }
+        
+        const fil = document.getElementById('teacherFilter');
+        if(fil) { 
+            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join(''); 
+            fil.value = currentFilter.teacher; 
+        }
     }
     
     function updateSubjectDropdown() {
         const db = data.questSettings || defaultData.questSettings; 
         const sel = document.getElementById('selSubject'); 
+        const fil = document.getElementById('subjectFilter');
+        
         if(sel) {
             sel.innerHTML = '<option value="">📂 科目...</option>'; 
             Object.keys(db).forEach(s => { sel.add(new Option(s, s)); });
+        }
+        if(fil) { 
+            fil.innerHTML = '<option value="all">📚 所有科目</option>';
+            Object.keys(db).forEach(s => { fil.add(new Option(s, s)); });
+            fil.value = currentFilter.subject;
         }
     }
 
@@ -1747,7 +1901,7 @@
         const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
                                       .map(a => ({ title: a.title, status: (a.statuses||[])[sidx] }));
         
-        const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:10px 0; border-bottom:1px dotted #ccc; font-size:18px;">☐ ${t.title} <span style="font-size:14px;color:#888;">(${t.status===2?'再挑戰':'未回報'})</span></li>`).join('') 
+        const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:10px 0; border-bottom:1px dotted #ccc; font-size:18px;">☐ ${t.title} <span style="font-size:14px;color:#888;">(${t.status===2?'再挑戰':'未交'})</span></li>`).join('') 
                                           : '<li style="padding:20px; color:#888;">🎉 目前沒有待辦任務！</li>';
 
         const w = window.open('', '', 'width=600,height=800');
@@ -1763,11 +1917,18 @@
     document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
         isBatchMode = !isBatchMode; 
         if (isBatchMode) isBatchExpMode = false;
+        
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
+        if (isBatchExpMode || isBatchMode) {
+            btnSelectAll.style.display = 'inline-block';
+        } else {
+            btnSelectAll.style.display = 'none';
+        }
         renderStudentStatus(); 
     });
 
     document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
-        const cbs = document.querySelectorAll('.batch-export-checkbox');
+        const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
         const allChecked = Array.from(cbs).every(c => c.checked);
         cbs.forEach(c => c.checked = !allChecked);
     });
@@ -1782,7 +1943,7 @@
             const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
                                           .map(a => ({ title: a.title, status: (a.statuses||[])[sidx] }));
             
-            const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:6px 0; border-bottom:1px dotted #ccc; font-size:15px;">☐ ${t.title} <span style="font-size:12px;color:#888;">(${t.status===2?'再挑戰':'未回報'})</span></li>`).join('') : '<li style="color:#888;">🎉 無待辦任務！</li>';
+            const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:6px 0; border-bottom:1px dotted #ccc; font-size:15px;">☐ ${t.title} <span style="font-size:12px;color:#888;">(${t.status===2?'再挑戰':'未交'})</span></li>`).join('') : '<li style="color:#888;">🎉 無待辦任務！</li>';
             
             cardsHtml += `<div style="border:2px solid #5D4037; border-radius:8px; padding:12px; break-inside:avoid; margin-bottom:15px; background:#fff;">
                 <h3 style="border-bottom:2px dashed #8B4513; margin:0 0 10px 0; padding-bottom:5px;">${student.no}. ${student.name}</h3>
@@ -1852,7 +2013,9 @@
         }
         
         const picker = document.getElementById('statusPicker');
-        if (picker && picker.classList.contains('show') && !picker.contains(e.target) && !e.target.closest('li[data-aid]') && !e.target.closest('.seat')) picker.classList.remove('show');
+        if (picker && picker.classList.contains('show') && !picker.contains(e.target) && !e.target.closest('div[onclick^="window.toggleCardTaskStatus"]')) {
+            picker.classList.remove('show');
+        }
         
         const menu = document.getElementById('quickDebtMenu');
         if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge') && !e.target.closest('.btn-close-debt')) {
