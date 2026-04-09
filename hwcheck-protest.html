@@ -1289,6 +1289,14 @@
     });
 
     // 🟢 公會紀律 (紅綠燈)
+    function checkAndResetDiscipline() {
+        const today = getTaipeiDateString();
+        if (!data.discipline || data.discipline.date !== today) { 
+            data.discipline = { date: today, statuses: {} }; 
+            triggerAutoSave(); 
+        }
+    }
+
     function renderDiscipline() {
         checkAndResetDiscipline();
         const zGreen = document.getElementById('zoneGreenGrid'); const zYellow = document.getElementById('zoneYellowGrid'); const zRed = document.getElementById('zoneRedGrid');
