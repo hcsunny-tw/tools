@@ -34,9 +34,8 @@
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
     html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
 
-    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
-
     /* 其他主題設定... */
+    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
     html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; }
     html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
     html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
@@ -74,7 +73,7 @@
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
 
-    /* ⭐ 優化：導覽列動態展開按鈕 */
+    /* ⭐ 導覽列動態展開按鈕 */
     .nav-btn { padding: 8px 14px; white-space: nowrap; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
     .nav-btn .nav-text { max-width: 0; opacity: 0; display: inline-block; transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease; vertical-align: middle; }
     .nav-btn:hover .nav-text { max-width: 150px; opacity: 1; margin-left: 6px; }
@@ -91,7 +90,6 @@
     .s2{ background:#fdba74; color:#9a3412; } .s3{ background:#86efac; color:#14532d; } 
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-    /* ⭐ EXP Badge & Titles */
     .exp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: 900; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); border: 1px solid #b45309; }
     .rank-text { font-size: 10px; opacity: 0.9; margin-left: 2px; }
 
@@ -117,7 +115,7 @@
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; display: none; justify-content: center; align-items: center; }
     .modal-overlay.show { display: flex; }
-    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
+    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
     .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
     .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
@@ -151,8 +149,6 @@
     .att-btn.active[data-status="1"] { background: #d97706; color: #fff; border-color: #d97706; }
     .att-btn.active[data-status="2"] { background: #2563eb; color: #fff; border-color: #2563eb; }
     .att-btn.active[data-status="3"] { background: var(--danger); color: #fff; border-color: var(--danger); }
-    .att-btn.active[data-status="4"] { background: #9333ea; color: #fff; border-color: #9333ea; }
-    .att-btn.active[data-status="5"] { background: #4b5563; color: #fff; border-color: #4b5563; }
     .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--tbl-alt); padding: 10px; border-radius: 8px; border: 1px solid var(--tbl-border); }
     .att-stat-item { flex: 1; text-align: center; border-right: 1px solid var(--tbl-border); }
     .att-stat-val { font-size: 20px; font-weight: 900; }
@@ -306,7 +302,6 @@
           <div class="muted">狀態循環：灰＝未接取 → 黃＝已回報 → 橘＝再挑戰 → 綠＝討伐成功</div>
         </div>
       </div>
-      <!-- ⭐ 優化：導覽按鈕改為縮放隱藏文字樣式 (nav-btn) -->
       <div class="actions">
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> 執務室</span>
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
@@ -360,7 +355,6 @@
 
     <section id="view-discipline" class="view">
         <div class="roster-tabs">
-            <!-- ⭐ 修正公會紀律分頁的按鈕事件 -->
             <button id="tabBtnTraffic" class="tab-btn active" onclick="window.switchDisciplineTab('traffic')"><i class="bi bi-stoplights"></i> 秩序看板</button>
             <button id="tabBtnRecess" class="tab-btn" onclick="window.switchDisciplineTab('recess')"><i class="bi bi-backpack"></i> 🎒 下課前準備</button>
             <button id="tabBtnDismissal" class="tab-btn" onclick="window.switchDisciplineTab('dismissal')"><i class="bi bi-door-open"></i> 🚶 放學前準備</button>
@@ -391,7 +385,6 @@
         </div>
     </section>
 
-    <!-- 💯 完整補回：冒險者狀態視圖 -->
     <section id="view-student-status" class="view">
       <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -406,7 +399,6 @@
       </div>
     </section>
 
-    <!-- 💯 完整補回：每日點名視圖 -->
     <section id="view-attendance" class="view">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
@@ -431,7 +423,6 @@
         </div>
     </section>
 
-    <!-- 💯 完整補回：公會名冊編輯視圖 -->
     <section id="view-roster" class="view">
         <div class="roster-tabs">
             <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
@@ -490,14 +481,25 @@
                   <button class="modal-close-btn">&times;</button>
               </div>
           </div>
+
+          <!-- ⭐ 完整還原：冒險者欠款名單 -->
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 20px;">
+              <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/再挑戰 > 5)</h3>
+              <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+          </div>
           
-          <!-- ⭐ 晨間報到與 BGM 設定區 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🌅 晨間報到系統設定</h3>
                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                    <div class="field" style="flex:1;"><label>🏫 規定到校時間</label><input type="time" id="ipSettingsArrivalTime" style="margin-top: 4px;"></div>
                    <div class="field" style="flex:2;"><label>🎵 播放 BGM (YouTube 影片 ID)</label><input type="text" id="ipSettingsBgmId" placeholder="例如: dQw4w9WgXcQ" style="margin-top: 4px;" title="填入 YouTube 網址 v= 後面的英數代碼"></div>
                </div>
+          </div>
+
+          <!-- ⭐ 完整還原：歷史封存與下載 -->
+          <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
+               <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
           </div>
 
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
@@ -507,6 +509,15 @@
                    <button class="btn sm ghost" id="btnImportJSONTrigger"><i class="bi bi-cloud-arrow-up-fill"></i> 還原備份</button>
                    <input type="file" id="ipImportJSON" accept=".json" style="display: none;">
                </div>
+          </div>
+          
+          <!-- ⭐ 完整還原：危險禁區 -->
+          <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
+                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button class="btn ghost warn" id="btnClearAssignments" style="justify-content:center;"><i class="bi bi-fire"></i> 銷毀所有契約 (保留名單)</button>
+                    <button class="btn warn" id="btnResetAll" style="justify-content:center;"><i class="bi bi-radioactive"></i> 另闢新公會 (全部重置)</button>
+                </div>
           </div>
           
           <div class="modal-footer" style="border-top: 2px dashed var(--tbl-border); padding-top: 16px; margin-top: 20px; justify-content: space-between;">
@@ -591,7 +602,6 @@
       <div class="tool-body"><div id="luckyDrawResult" style="font-size:24px; font-weight:900; text-align:center; color:var(--danger); min-height:60px; display:grid; place-items:center; border:2px dashed var(--accent); border-radius:8px; background:var(--bg);">???</div><button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button></div>
   </div>
 
-  <!-- 🚨 唯一且解壓縮的核心 JavaScript 區塊 🚨 -->
   <script type="module">
     // --- 1. Firebase 初始化 ---
     const firebaseConfig = {
@@ -758,9 +768,7 @@
             onDataLoaded(); updateSaveStatus('success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
-            // 🚨 強力錯誤防呆彈窗
             alert("⚠️ 資料庫連線失敗！\n\n錯誤碼：" + error.code + "\n\n如果你是剛建立 Firebase 專案，請務必去 Firestore 後台的「Rules」標籤，將規則設為允許讀寫：\n\nallow read, write: if request.auth != null;\n\n系統將暫時進入【離線測試模式】。");
-            
             data = JSON.parse(JSON.stringify(defaultData)); 
             onDataLoaded();
             updateSaveStatus('error', '連線失敗 (離線模式)');
@@ -872,7 +880,7 @@
     }
     window.getRankHtml = getRankHtml;
 
-    // --- 9. 各大頁面渲染函數 (解壓縮完整版) ---
+    // --- 9. 各大頁面渲染函數 ---
 
     // 🟢 委託看板
     function renderDashboard() {
@@ -936,7 +944,6 @@
         }
 
         data.roster.forEach((s, i) => {
-            // 找出未完成(0)跟再戰(2)的任務
             const tasks = data.assignments
                 .filter(a => !a.archived && ((a.statuses||[])[i] === 0 || (a.statuses||[])[i] === 2))
                 .map(a => ({ title: a.title, status: (a.statuses||[])[i] }));
@@ -991,25 +998,46 @@
             else if (record.status === 1) { div.style.background = '#ffedd5'; div.style.borderColor = '#f97316'; div.style.color = '#9a3412'; } 
             else { div.style.background = 'var(--card)'; }
             
-            div.innerHTML = `<div style="font-size:28px; font-weight:900;">${s.no}</div><div style="font-weight:bold; font-size:15px;">${s.name}</div><div style="font-size:12px; margin-top:8px;">${record.status === 0 ? '✔ 準時' : (record.status === 1 ? '⚠️ 遲到' : '點擊報到')}</div>`;
-            if (!isCheckedIn) div.onclick = () => {
-                resumeAudio(); 
-                const nowShort = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' });
-                const isLate = nowShort > limitTime;
-                data.attendance[today][i] = { status: isLate ? 1 : 0, note: nowShort };
-                if (!isLate) { 
-                    changeExp(i, 1, true); 
-                    showToast(`✨ ${s.name} 準時，+1 EXP`); 
-                    playSuccessSound();
-                } else { 
-                    showToast(`⚠️ ${s.name} 遲到了`); 
-                    playTickSound();
-                }
-                triggerAutoSave(); renderCheckIn();
-            };
+            if (isCheckedIn) div.style.transform = 'translateY(4px)';
+            
+            div.innerHTML = `
+                <div style="font-size:28px; font-weight:900; margin-bottom:4px; line-height:1;">${s.no}</div>
+                <div style="font-weight:bold; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${s.name}</div>
+                <div style="font-size:12px; margin-top:8px; font-weight:bold; background:rgba(255,255,255,0.4); border-radius:6px; padding:4px;">
+                    ${record.status === 0 ? '✔ 準時' : (record.status === 1 ? '⚠️ 遲到' : '點擊報到')}
+                </div>
+            `;
+            
+            if (!isCheckedIn) {
+                div.onmouseover = () => { div.style.filter = 'brightness(0.9)'; };
+                div.onmouseout = () => { div.style.filter = 'brightness(1)'; };
+                div.onmousedown = () => { div.style.transform = 'translateY(4px)'; div.style.boxShadow = '0 0 0 var(--tbl-border)'; };
+                div.onmouseup = () => { div.style.transform = 'translateY(0)'; div.style.boxShadow = '0 4px 0 var(--tbl-border)'; };
+                div.onclick = () => window.handleStudentCheckIn(i, limitTime);
+            }
             grid.appendChild(div);
         });
     }
+
+    window.handleStudentCheckIn = function(idx, limitTime) {
+        resumeAudio();
+        const today = getTaipeiDateString();
+        const nowShort = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' });
+        
+        const isLate = nowShort > limitTime;
+        data.attendance[today][idx] = { status: isLate ? 1 : 0, note: nowShort };
+        
+        if (!isLate) { 
+            changeExp(idx, 1, true); 
+            showToast(`✨ ${data.roster[idx].name} 準時，+1 EXP`); 
+            playSuccessSound();
+        } else { 
+            showToast(`⚠️ ${data.roster[idx].name} 遲到了`); 
+            playTickSound();
+        }
+        
+        triggerAutoSave(); renderCheckIn();
+    };
 
     // 🟢 每日點名
     function initAttendanceView() {
@@ -1130,7 +1158,57 @@
         buildList(['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿帶齊', '🎒 整理背包'], 'dismissalChecklist');
     }
 
-    // --- 10. 事件綁定區 ---
+    // --- 10. 事件綁定與功能對應 ---
+
+    // 🌟 完整還原：公會長執務室專屬事件
+    const userBadge = document.getElementById('userEmailDisplay');
+    if(userBadge) {
+        userBadge.addEventListener('click', () => {
+            const list = document.getElementById('adminDebtList'); 
+            if (list) {
+                list.innerHTML = ''; 
+                const debts = [];
+                data.roster.forEach((s, idx) => {
+                    let c = 0; 
+                    data.assignments.forEach(a => { 
+                        if(!a.archived) { 
+                            const st = (a.statuses||[])[idx]||0; 
+                            if(st===0||st===2) c++; 
+                        } 
+                    });
+                    if(c>=5) debts.push({name: s.name, c});
+                });
+                if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${d.name} (${d.c})</span>`);
+                else list.innerHTML = '<p style="color:var(--success)">目前無人欠款！</p>';
+            }
+            document.getElementById('adminProfileModal').classList.add('show');
+        });
+    }
+
+    document.getElementById('btnDownloadArchive').addEventListener('click', () => {
+        const arcs = data.assignments.filter(a => a.archived); 
+        if(!arcs.length) { alert("無封存資料"); return; }
+        let csv = "\uFEFF發布日期,內容,導師," + data.roster.map(s => s.name).join(",") + "\n";
+        arcs.forEach(a => { 
+            const st = a.statuses || []; 
+            csv += `${a.date},"${a.title}",${a.teacher},` + data.roster.map((_, i) => ["未","交","改","完"][st[i]||0]).join(",") + "\n"; 
+        });
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"})); 
+        const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
+    });
+
+    document.getElementById('btnClearAssignments').addEventListener('click', () => { 
+        if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { 
+            data.assignments = []; data.attendance = {}; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
+        } 
+    });
+    
+    document.getElementById('btnResetAll').addEventListener('click', () => { 
+        if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { 
+            data.roster = []; data.assignments = []; data.attendance = {}; data.discipline = null; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
+        } 
+    });
+
     ['btnNavDashboard','btnNavStudentStatus','btnNavRoster', 'btnNavDiscipline', 'btnNavCheckIn'].forEach(id => {
         document.getElementById(id).addEventListener('click', (e) => {
             const map = { 
@@ -1225,8 +1303,6 @@
         w.document.close();
     });
 
-    // 執務室與設定
-    document.getElementById('userEmailDisplay').addEventListener('click', () => document.getElementById('adminProfileModal').classList.add('show'));
     document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
     document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
     document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => document.getElementById('panelNewQuest').classList.add('show'));
