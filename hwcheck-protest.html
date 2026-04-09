@@ -40,7 +40,6 @@
     html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
     html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
     html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
-    
     html[data-color-theme='warm-cute'] { --primary: #8FA781; --accent: #D4A373; --bg: #FAEDCD; --card: #FEFAE0; --tbl-head: #E9EDC9; --tbl-alt: #FEFAE0; --tbl-hover: #E9EDC9; --tbl-border: #CCD5AE; --text-main: #582F0E; --text-light: #7F4F24; --muted: #A68A64; --shadow: 0 4px 12px rgba(88, 47, 14, 0.08); --radius: 16px; --success: #6B9080; --danger: #E5989B;}
     html[data-color-theme='warm-cute'] body { background-image: radial-gradient(#D4A373 1.5px, transparent 1.5px); background-size: 25px 25px; }
     html[data-color-theme='warm-cute'] .card { border: 2px dashed var(--tbl-border); }
@@ -73,12 +72,12 @@
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
 
-    /* ⭐ 導覽列動態展開按鈕 */
+    /* ⭐ 導覽列動態展開按鈕 (Hover才顯示文字) */
     .nav-btn { padding: 8px 14px; white-space: nowrap; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
     .nav-btn .nav-text { max-width: 0; opacity: 0; display: inline-block; transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease; vertical-align: middle; }
     .nav-btn:hover .nav-text { max-width: 150px; opacity: 1; margin-left: 6px; }
 
-    .user-badge { font-size: 12px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
+    .user-badge { font-size: 14px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
     .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
     
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(calc(var(--seat) + 70px), 1fr)); background:var(--bg); border:2px solid var(--tbl-border); border-radius:var(--radius); padding:10px; }
@@ -105,7 +104,7 @@
     @keyframes shakeBlur { 0% { transform: translateX(-2px) translateY(1px) scale(1.05); filter: blur(0.5px); } 100% { transform: translateX(2px) translateY(-1px) scale(1.05); filter: blur(1px); } }
     @keyframes popBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
     
-    .virtual-keypad { display: none; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; background: var(--tbl-alt); padding: 6px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
+    .virtual-keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; background: var(--tbl-alt); padding: 6px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
     .vk-btn { background: var(--card); border: 1px solid var(--tbl-border); border-radius: 4px; padding: 6px 2px; font-size: 12px; font-weight: bold; cursor: pointer; color: var(--text-main); text-align: center; transition: all .1s; }
     .vk-btn:hover { background: var(--primary); color: #fff; transform: translateY(-1px); }
     .vk-btn.wide { grid-column: span 2; }
@@ -115,7 +114,7 @@
     #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; display: none; justify-content: center; align-items: center; }
     .modal-overlay.show { display: flex; }
-    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
+    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
     .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
     .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
@@ -192,6 +191,7 @@
     .p-orange { background: #ffedd5; color: #9a3412; } 
     .p-green { background: #dcfce7; color: #166534; } 
 
+    /* ⭐ 工具箱大優化 */
     .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
     .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s; z-index: 5002; }
     .toolbox-toggle.active { transform: rotate(45deg); background: var(--danger); border-color: #ffcccc; }
@@ -199,7 +199,7 @@
     .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
     .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     
-    .tool-window { position: fixed; bottom: 100px; right: 90px; width: 300px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s ease; z-index: 5005; }
+    .tool-window { position: fixed; bottom: 100px; right: 90px; width: 320px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s ease; z-index: 5005; }
     .tool-window.show { display: flex; }
     .tool-header { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; }
@@ -208,6 +208,13 @@
     .marquee-container { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.85); overflow: hidden; z-index: 9999; padding: 8px 0; pointer-events: none; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
     .marquee-content { display: inline-block; white-space: nowrap; font-weight: 900; padding-left: 100%; animation: marquee-anim linear infinite; text-shadow: 2px 2px 0px #000; }
     @keyframes marquee-anim { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    .quick-marquee-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .quick-tag { background: var(--bg); border: 1px solid var(--tbl-border); padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .quick-tag:hover { background: var(--primary); color: #fff; }
+
+    .timer-display-box { font-size: 48px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; }
+
     #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
     .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
     .toast-msg { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 16px; animation: slideUpFade 0.3s ease-out; font-weight: bold; min-width: 300px; justify-content: space-between; }
@@ -302,13 +309,15 @@
           <div class="muted">狀態循環：灰＝未接取 → 黃＝已回報 → 橘＝再挑戰 → 綠＝討伐成功</div>
         </div>
       </div>
+      <!-- ⭐ 優化：導覽按鈕圖示化，滑鼠移過去才顯示文字 -->
       <div class="actions">
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> 執務室</span>
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
         <button class="btn ghost nav-btn" id="btnNavDashboard" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
         <button class="btn ghost nav-btn" id="btnNavCheckIn" title="晨間報到"><i class="bi bi-sun"></i> <span class="nav-text">晨間報到</span></button>
-        <button class="btn ghost nav-btn" id="btnNavDiscipline" title="公會紀律" style="display: none;"><i class="bi bi-stoplights"></i> <span class="nav-text">公會紀律</span></button>
+        <!-- ⭐ 移除 Lab 模式，直接常駐顯示公會紀律 -->
+        <button class="btn ghost nav-btn" id="btnNavDiscipline" title="公會紀律"><i class="bi bi-stoplights"></i> <span class="nav-text">公會紀律</span></button>
         <button class="btn ghost nav-btn" id="btnNavRoster" title="公會名冊"><i class="bi bi-people"></i> <span class="nav-text">公會名冊</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
         <div id="saveStatusIndicator" style="margin-left: 8px; font-size: 14px; display: flex; align-items: center;"><i class="bi bi-hourglass"></i></div>
@@ -346,8 +355,12 @@
     <section id="view-checkin" class="view">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2><i class="bi bi-sun"></i> 晨間報到看板</h2>
-                <div class="muted">準時到校者可獲得 1 點 EXP！ (規定時間：<span id="dispArrivalTime" style="color:var(--primary);font-weight:bold;">07:50</span>)</div>
+                <div>
+                    <h2><i class="bi bi-sun"></i> 晨間報到看板</h2>
+                    <div class="muted">準時到校者可獲得 1 點 EXP！ (規定時間：<span id="dispArrivalTime" style="color:var(--primary);font-weight:bold;">07:50</span>)</div>
+                </div>
+                <!-- ⭐ 新增手動 BGM 播放按鈕 -->
+                <button id="btnToggleCheckinBgm" class="btn ghost sm" style="display: none;"><i class="bi bi-music-note"></i> <span id="bgmBtnText">播放晨間音樂</span></button>
             </div>
             <div class="grid" id="checkinGrid" style="grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap: 16px;"></div>
         </div>
@@ -355,6 +368,7 @@
 
     <section id="view-discipline" class="view">
         <div class="roster-tabs">
+            <!-- ⭐ 修正公會紀律分頁的按鈕事件 -->
             <button id="tabBtnTraffic" class="tab-btn active" onclick="window.switchDisciplineTab('traffic')"><i class="bi bi-stoplights"></i> 秩序看板</button>
             <button id="tabBtnRecess" class="tab-btn" onclick="window.switchDisciplineTab('recess')"><i class="bi bi-backpack"></i> 🎒 下課前準備</button>
             <button id="tabBtnDismissal" class="tab-btn" onclick="window.switchDisciplineTab('dismissal')"><i class="bi bi-door-open"></i> 🚶 放學前準備</button>
@@ -463,9 +477,14 @@
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header"><h2><i class="bi bi-palette"></i> 外觀設定</h2><button class="modal-close-btn">&times;</button></div>
         <div class="field" style="margin-bottom: 20px;">
-            <div class="theme-options" id="themeOptionsContainer">
+            <label>選擇公會風格主題：</label>
+            <div class="theme-options" id="themeOptionsContainer" style="margin-top: 8px;">
                 <div class="theme-option" data-theme="guild" title="探險公會 (預設)"></div>
-                <div class="theme-option" data-theme="warm-cute" title="溫暖可愛" style="background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%); border-radius: 50%;"></div>
+                <div class="theme-option" data-theme="warm-cute" title="溫暖可愛" style="background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%);"></div>
+                <div class="theme-option" data-theme="christmas" title="聖誕節" style="background: linear-gradient(135deg, #d32f2f, #2e7d32);"></div>
+                <div class="theme-option" data-theme="blue" title="皇家藍" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);"></div>
+                <div class="theme-option" data-theme="orange" title="活力橘" style="background: linear-gradient(135deg, #f97316, #ea580c);"></div>
+                <div class="theme-option" data-theme="green" title="護眼綠" style="background: linear-gradient(135deg, #2e7d32, #66bb6a);"></div>
             </div>
         </div>
     </div>
@@ -476,18 +495,17 @@
           <div class="modal-header">
               <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
               <div style="display: flex; align-items: center; gap: 8px;">
-                  <button class="btn sm ghost" id="btnToggleLabMode" title="開啟實驗室新功能 (Beta)" style="border-color: #9333ea; color: #9333ea;"><i class="bi bi-magic"></i> 🧪 Lab</button>
                   <button class="btn sm" id="btnAdminAttendance" title="點名簿"><i class="bi bi-book"></i> 點名簿</button>
                   <button class="modal-close-btn">&times;</button>
               </div>
           </div>
 
-          <!-- ⭐ 完整還原：冒險者欠款名單 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 20px;">
               <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/再挑戰 > 5)</h3>
               <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
           </div>
           
+          <!-- ⭐ 晨間報到與 BGM 設定區 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🌅 晨間報到系統設定</h3>
                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -496,7 +514,6 @@
                </div>
           </div>
 
-          <!-- ⭐ 完整還原：歷史封存與下載 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄</h3>
                <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存紀錄 (CSV)</button>
@@ -511,7 +528,6 @@
                </div>
           </div>
           
-          <!-- ⭐ 完整還原：危險禁區 -->
           <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
                 <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -527,20 +543,64 @@
       </div>
   </div>
 
+  <!-- ⭐ 完整還原發布新委託功能 -->
   <div id="panelNewQuest" class="modal-overlay">
-      <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header"><h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2><button class="modal-close-btn">&times;</button></div>
-          <div class="field" style="margin-top:4px;"><label>內容</label><input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" /></div>
-          <div class="field" style="margin-top:4px;"><button class="btn ghost sm" id="btnOpenAssignModal">指定對象...</button><div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted);">全體冒險者</div></div>
-          <button class="btn sm" id="btnCreate" style="margin-top:16px; width:100%; justify-content:center;">確認發布</button>
+          <div class="field" style="margin-top:4px;">
+              <label style="font-size:12px;">發布導師</label>
+              <select id="ipTeacherSelect" style="padding:6px;"></select>
+              <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+              <label style="font-size:12px;">日期</label>
+              <input id="ipDate" type="date" style="padding:6px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+               <label style="font-size:12px;">內容</label>
+               <div style="display:flex; gap:4px; margin-bottom:4px;">
+                   <select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select>
+                   <select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select>
+                   <button class="btn ghost sm" id="btnOpenQuestSettings" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
+               </div>
+               <div style="display:flex; gap:4px;">
+                   <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
+                   <button class="btn sm ghost" id="btnToggleKeypad" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
+               </div>
+               <div class="virtual-keypad" id="virtualKeypad">
+                   <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
+                   <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
+                   <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
+                   <div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="~">~</div>
+                   <div class="vk-btn" data-val="L.">L</div><div class="vk-btn" data-val="P.">P</div><div class="vk-btn" data-val="U.">U</div>
+                   <div class="vk-btn" data-val="CH.">CH</div><div class="vk-btn" data-val="習作">習</div><div class="vk-btn" data-val="考卷">卷</div>
+                   <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">空白</div>
+               </div>
+          </div>
+          <div class="field" style="margin-top:12px; border-top:1px dashed var(--tbl-border); padding-top:12px;">
+              <button class="btn ghost sm" id="btnOpenAssignModal">指定派發對象...</button>
+              <div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted); font-weight:bold;">發布給：全體冒險者</div>
+          </div>
+          <button class="btn" id="btnCreate" style="margin-top:16px; width:100%; justify-content:center; font-size:16px;"><i class="bi bi-send-fill"></i> 確認發布</button>
       </div>
+  </div>
+
+  <div id="questSettingsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
+        <div class="modal-header"><h2><i class="bi bi-journal-plus"></i> 編輯任務選單</h2><button class="modal-close-btn">&times;</button></div>
+        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;"></div>
+        <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
+            <div style="display: flex; gap: 8px;"><input type="text" id="ipNewSubject" placeholder="輸入新科目名稱..." style="flex:1;"><button class="btn sm" id="btnAddSubject"><i class="bi bi-plus-lg"></i> 新增科目</button></div>
+        </div>
+        <div class="modal-footer" style="margin-top: 16px;"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button></div>
+    </div>
   </div>
 
   <div id="assignStudentModal" class="modal-overlay">
       <div class="modal-content"><div class="modal-header"><h2><i class="bi bi-person-check-fill"></i> 指派任務對象</h2><button class="modal-close-btn">&times;</button></div>
           <div class="actions" style="margin-top: 0; margin-bottom: 12px;"><button class="btn sm" id="btnAssignSelectAll">全選</button><button class="btn sm ghost" id="btnAssignDeselectAll">取消</button></div>
           <div id="assignStudentListContainer" class="assign-student-list"></div>
-          <div class="modal-footer"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnConfirmAssign">確認指派</button></div>
+          <div class="modal-footer" style="margin-top: 16px;"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnConfirmAssign">確認指派</button></div>
       </div>
   </div>
 
@@ -564,7 +624,7 @@
   
   <div id="quickDebtMenu"><div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div><div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div></div>
 
-  <!-- 工具箱 -->
+  <!-- ⭐ 優化：工具箱 (計時器/跑馬燈/抽籤) 大升級 -->
   <div class="toolbox-container">
       <div class="toolbox-menu" id="toolboxMenu">
           <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
@@ -578,8 +638,18 @@
   <div id="panelMarquee" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-broadcast"></i> 公告跑馬燈</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
-          <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:4px;">
-          <div class="actions sm" style="justify-content: flex-end;"><button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button><button class="btn sm warn" id="btnMqHide">關閉</button></div>
+          <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:8px; font-size: 16px;">
+          <!-- 快捷輸入按鈕 -->
+          <div class="quick-marquee-tags">
+              <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='⚠️ 請保持安靜，回到座位上！'">⚠️ 保持安靜</span>
+              <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='📝 請將作業交到講台前方！'">📝 準備交作業</span>
+              <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='🎒 準備放學，請將椅子靠攏！'">🎒 準備放學</span>
+              <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='🧹 請開始進行打掃工作！'">🧹 打掃時間</span>
+          </div>
+          <div class="actions sm" style="justify-content: flex-end; margin-top: 10px; border-top: 1px dashed var(--tbl-border); padding-top: 10px;">
+              <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
+              <button class="btn sm warn" id="btnMqHide">關閉</button>
+          </div>
       </div>
   </div>
 
@@ -587,19 +657,34 @@
   <div id="panelTimer" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 計時器</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
-           <div class="timer-presets" style="display:flex;gap:6px;">
-              <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1;">1分</button><button class="btn sm ghost btn-timer-preset" data-min="3" style="flex:1;">3分</button>
-              <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1;">5分</button>
+           <div id="timerDisplay" class="timer-display-box">00:00</div>
+           
+           <div class="timer-presets" style="display:flex; gap:6px; margin-bottom: 12px; justify-content: center;">
+              <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1; border-radius: 20px;">+ 1 分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1; border-radius: 20px;">+ 5 分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="10" style="flex:1; border-radius: 20px;">+ 10 分</button>
            </div>
-           <div class="timer-controls"><input type="number" id="timerInput" placeholder="分" style="width:60px; text-align:center;"><span style="font-weight:bold">:</span><input type="number" id="timerInputSec" placeholder="秒" style="width:60px; text-align:center;"><div id="timerDisplay" style="font-size:24px; font-family:monospace; font-weight:bold; margin-left:10px;">00:00</div></div>
-           <div class="actions sm" style="justify-content: flex-end;"><button class="btn sm" id="btnTimerStart">開始</button><button class="btn sm warn" id="btnTimerReset">重置</button></div>
+           
+           <div class="timer-controls" style="display: flex; gap: 8px;">
+               <input type="number" id="timerInput" placeholder="分" style="flex:1; text-align:center;">
+               <span style="font-weight:bold; align-self:center;">:</span>
+               <input type="number" id="timerInputSec" placeholder="秒" style="flex:1; text-align:center;">
+           </div>
+           
+           <div class="actions sm" style="justify-content: center; margin-top: 12px;">
+               <button class="btn" id="btnTimerStart" style="flex:2; font-size: 16px;"><i class="bi bi-play-fill"></i> 開始</button>
+               <button class="btn warn" id="btnTimerReset" style="flex:1;"><i class="bi bi-arrow-counterclockwise"></i> 重置</button>
+           </div>
       </div>
   </div>
 
   <!-- 抽籤工具 -->
   <div id="panelDraw" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-gift"></i> 幸運抽籤</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body"><div id="luckyDrawResult" style="font-size:24px; font-weight:900; text-align:center; color:var(--danger); min-height:60px; display:grid; place-items:center; border:2px dashed var(--accent); border-radius:8px; background:var(--bg);">???</div><button class="btn chest" id="btnLuckyDraw" style="width:100%">抽出一位冒險者</button></div>
+      <div class="tool-body">
+          <div id="luckyDrawResult" style="font-size:32px; font-weight:900; text-align:center; color:var(--danger); min-height:80px; display:grid; place-items:center; border:3px dashed var(--accent); border-radius:12px; background:var(--bg); margin-bottom: 10px;">???</div>
+          <button class="btn chest" id="btnLuckyDraw" style="width:100%; font-size: 16px; padding: 12px;"><i class="bi bi-dice-5-fill"></i> 抽出一位冒險者</button>
+      </div>
   </div>
 
   <script type="module">
@@ -632,6 +717,8 @@
     const defaultData = {
         roster: [ { no: 1, name: "勇者A", exp: 0 }, { no: 2, name: "法師B", exp: 0 }, { no: 3, name: "弓手C", exp: 0 } ],
         assignments: [],
+        teachers: ["公會長"],
+        questSettings: { "國語": ["國語習作", "國語考卷"], "數學": ["數學習作", "數學考卷"] },
         attendance: {}, 
         discipline: null,
         settings: { arrivalTime: "07:50", bgmId: "" }
@@ -643,6 +730,7 @@
     let newAssignmentAssignedIndices = []; 
     let isBatchMode = false;
     let targetAssignmentIdToDelete = null; 
+    let tempQuestSettings = {};
     const APP_SCALE = 1;
 
     // --- 3. 基礎工具函數 ---
@@ -699,10 +787,34 @@
         const target = document.getElementById(id);
         if(target) { target.classList.add('show'); renderAll(); }
         
-        // ⭐ BGM 播放控制
-        if(id === 'view-checkin') playCheckinBGM();
-        else stopCheckinBGM();
+        // BGM 播放狀態切換
+        if (id === 'view-checkin') {
+            const bgmBtn = document.getElementById('btnToggleCheckinBgm');
+            if (data.settings && data.settings.bgmId) {
+                bgmBtn.style.display = 'inline-flex';
+                // 我們不自動播放，而是顯示按鈕讓老師手動點擊，符合瀏覽器規範
+            } else {
+                bgmBtn.style.display = 'none';
+            }
+        } else {
+            stopCheckinBGM();
+        }
     }
+
+    let isPlayingBGM = false;
+    document.getElementById('btnToggleCheckinBgm').addEventListener('click', function() {
+        if (!isPlayingBGM) {
+            playCheckinBGM();
+            this.innerHTML = `<i class="bi bi-stop-circle"></i> 停止音樂`;
+            this.classList.add('warn');
+            isPlayingBGM = true;
+        } else {
+            stopCheckinBGM();
+            this.innerHTML = `<i class="bi bi-music-note"></i> 播放晨間音樂`;
+            this.classList.remove('warn');
+            isPlayingBGM = false;
+        }
+    });
 
     function playCheckinBGM() {
         const bgmId = data.settings?.bgmId?.trim();
@@ -714,6 +826,12 @@
 
     function stopCheckinBGM() {
         document.getElementById('ytPlayerContainer').innerHTML = '';
+        const btn = document.getElementById('btnToggleCheckinBgm');
+        if (btn) {
+            btn.innerHTML = `<i class="bi bi-music-note"></i> 播放晨間音樂`;
+            btn.classList.remove('warn');
+            isPlayingBGM = false;
+        }
     }
 
     window.switchDisciplineTab = function(tabName) {
@@ -758,6 +876,8 @@
                 const loadedData = docSnap.data();
                 data.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
                 data.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
+                data.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
+                data.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
                 data.attendance = loadedData.attendance || {};
                 data.discipline = loadedData.discipline || null;
                 data.settings = loadedData.settings || { arrivalTime: "07:50", bgmId: "" };
@@ -768,7 +888,7 @@
             onDataLoaded(); updateSaveStatus('success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
-            alert("⚠️ 資料庫連線失敗！\n\n錯誤碼：" + error.code + "\n\n如果你是剛建立 Firebase 專案，請務必去 Firestore 後台的「Rules」標籤，將規則設為允許讀寫：\n\nallow read, write: if request.auth != null;\n\n系統將暫時進入【離線測試模式】。");
+            alert("⚠️ 資料庫連線失敗！\n\n錯誤碼：" + error.code + "\n\n請去 Firestore 後台的「Rules」標籤，將規則設為：\n\nallow read, write: if request.auth != null;");
             data = JSON.parse(JSON.stringify(defaultData)); 
             onDataLoaded();
             updateSaveStatus('error', '連線失敗 (離線模式)');
@@ -781,6 +901,11 @@
             currentUser = user; 
             document.getElementById('loginOverlay').style.display = 'none'; 
             document.getElementById('mainApp').style.display = 'flex'; 
+            
+            // ⭐ 顯示使用者 Email
+            const emailDisp = document.getElementById('userEmailDisplay');
+            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> <span class="nav-text">${user.email.split('@')[0]}</span>`;
+            
             initApp();
         } else {
             document.getElementById('loginOverlay').style.display = 'flex'; 
@@ -796,9 +921,13 @@
         const color = localStorage.getItem('hwColor') || 'guild';
         document.documentElement.setAttribute('data-color-theme', color);
         
+        // 恢復主題選擇面板的勾選狀態
+        document.querySelectorAll('.theme-option').forEach(el => {
+            el.classList.toggle('active', el.dataset.theme === color);
+        });
+
         switchView('view-dashboard');
         loadDataFromFirebase();
-        updateLabModeUI(); 
     }
 
     function onDataLoaded() {
@@ -806,6 +935,9 @@
         document.getElementById('ipSettingsArrivalTime').value = data.settings.arrivalTime || "07:50";
         document.getElementById('ipSettingsBgmId').value = data.settings.bgmId || "";
         
+        populateTeacherDropdowns(); 
+        updateSubjectDropdown(); 
+        resetNewAssignmentState();
         checkAndResetDiscipline(); 
         renderAll(); 
         renderChecklists(); 
@@ -907,15 +1039,41 @@
         
         const grid = document.getElementById('dashGridContainer'); grid.innerHTML = '';
         data.roster.forEach((s, i) => {
+            const isAssigned = (a.assignedIndices === 'all') || (a.assignedIndices && a.assignedIndices.includes(i));
             const st = a.statuses[i] || 0; 
-            const div = document.createElement('div'); div.className = 'seatItem';
+            const div = document.createElement('div'); div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
+            
+            let oldDebts = [];
+            if(isAssigned) {
+                (data.assignments || []).forEach(otherA => {
+                    if (otherA.id !== a.id && !otherA.archived) {
+                        const otherIndices = otherA.assignedIndices || 'all';
+                        if (otherIndices === 'all' || otherIndices.includes(i)) {
+                            const otherSt = (otherA.statuses || [])[i] || 0;
+                            if (otherSt === 0 || otherSt === 2) oldDebts.push({ id: otherA.id, title: otherA.title, st: otherSt });
+                        }
+                    }
+                });
+            }
+
+            let badgeHtml = oldDebts.length > 0 ? `<div class="debt-badge" title="有 ${oldDebts.length} 項未完成的舊任務">${oldDebts.length}</div>` : '';
+
             div.innerHTML = `
-                <div class="seat s${st}" onclick="window.toggleStatus(${id}, ${i})">${s.no}</div>
+                <div style="position: relative; flex-shrink: 0;">
+                    ${badgeHtml}
+                    <div class="seat s${st}">${s.no}</div>
+                </div>
                 <div class="seatName">
                     <span>${s.name}</span><br>
                     <span style="font-size:10px; color:#d97706;">⭐ ${s.exp||0}</span>
                 </div>
             `;
+            
+            if(isAssigned) {
+                div.querySelector('.seat').onclick = () => window.toggleStatus(id, i);
+                const badge = div.querySelector('.debt-badge');
+                if (badge) badge.onclick = (e) => window.openQuickDebtMenu(e, i, oldDebts);
+            }
             grid.appendChild(div);
         });
 
@@ -1219,19 +1377,140 @@
         });
     });
 
-    document.getElementById('btnCreate').addEventListener('click', () => {
-        const title = document.getElementById('ipTitle').value.trim();
-        if(!title) return;
-        data.assignments.push({ id: Date.now(), title, date: getTaipeiDateString(), assignedIndices: 'all', statuses: Array(data.roster.length).fill(0) });
-        triggerAutoSave(); renderAll(); document.getElementById('panelNewQuest').classList.remove('show'); document.getElementById('ipTitle').value = '';
+    // ⭐ 完整還原：發布新委託功能事件
+    function populateTeacherDropdowns() {
+        const ts = data.teachers || []; 
+        const sel = document.getElementById('ipTeacherSelect'); 
+        if(sel) { 
+            sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>'; 
+            document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none'; 
+        }
+    }
+    
+    function updateSubjectDropdown() {
+        const db = data.questSettings || defaultData.questSettings; 
+        const sel = document.getElementById('selSubject'); 
+        if(sel) {
+            sel.innerHTML = '<option value="">📂 科目...</option>'; 
+            Object.keys(db).forEach(s => { sel.add(new Option(s, s)); });
+        }
+    }
+
+    function resetNewAssignmentState() {
+        document.getElementById('ipTitle').value = ''; 
+        document.getElementById('selSubject').value = ''; 
+        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
+        document.getElementById('ipDate').value = getTaipeiDateString(); 
+        newAssignmentAssignedIndices = []; 
+        document.getElementById('assignStatusText').innerText = "發布給：全體冒險者";
+        const sel = document.getElementById('ipTeacherSelect'); 
+        if(sel && data.teachers && data.teachers.length > 0) { 
+            sel.value = data.teachers[0]; 
+            document.getElementById('ipTeacherCustom').style.display = 'none'; 
+        }
+    }
+
+    document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => { 
+        resetNewAssignmentState(); 
+        document.getElementById('panelNewQuest').classList.add('show'); 
     });
 
-    document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("全員已報？")) updateAllStatus(1); });
-    document.getElementById('btnMarkAllOrange').addEventListener('click', () => { if(confirm("全員再戰？")) updateAllStatus(2); });
+    document.getElementById('ipTeacherSelect').addEventListener('change', (e) => {
+        document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+    });
+
+    document.getElementById('selSubject').addEventListener('change', (e) => { 
+        const sel = document.getElementById('selPresetTask'); 
+        sel.innerHTML = '<option value="">📜 常用任務...</option>'; 
+        if(e.target.value && data.questSettings[e.target.value]) {
+            data.questSettings[e.target.value].forEach(t => sel.add(new Option(t, t))); 
+        }
+    });
+
+    document.getElementById('selPresetTask').addEventListener('change', (e) => { 
+        if(e.target.value) document.getElementById('ipTitle').value = e.target.value; 
+    });
+
+    document.getElementById('btnToggleKeypad').addEventListener('click', () => { 
+        const kp = document.getElementById('virtualKeypad'); 
+        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none'; 
+    });
+
+    document.getElementById('virtualKeypad').addEventListener('click', (e) => { 
+        if(e.target.classList.contains('vk-btn')) { 
+            const val = e.target.dataset.val; const ip = document.getElementById('ipTitle'); 
+            if (val === 'backspace') ip.value = ip.value.slice(0, -1); 
+            else if (val === 'clear') ip.value = ''; 
+            else if (val === 'space') ip.value += ' '; 
+            else ip.value += val; 
+            ip.focus(); 
+        } 
+    });
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+        let t = document.getElementById('ipTeacherSelect').value; 
+        if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
+        const title = document.getElementById('ipTitle').value.trim(); 
+        const sub = document.getElementById('selSubject').value; 
+        const d = document.getElementById('ipDate').value;
+        
+        if(!t || !title || !d) { showToast("⚠️ 請填寫完整內容"); return; }
+        
+        if(!data.teachers.includes(t)) data.teachers.push(t);
+        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
+        
+        data.assignments.push({ 
+            id: Date.now(), title, teacher: t, subject: sub, date: d, 
+            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, 
+            statuses: Array(data.roster.length).fill(0) 
+        });
+        
+        triggerAutoSave(); 
+        renderAll(); 
+        document.getElementById('panelNewQuest').classList.remove('show'); 
+        showToast("✨ 新委託已發布！");
+    });
+
+    // 任務選單編輯 (⚙️ 按鈕)
+    document.getElementById('btnOpenQuestSettings').addEventListener('click', () => { 
+        tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings)); 
+        renderQuestConfig(); 
+        document.getElementById('questSettingsModal').classList.add('show'); 
+    });
+    
+    function renderQuestConfig() {
+        const list = document.getElementById('questConfigList'); list.innerHTML = '';
+        Object.keys(tempQuestSettings).forEach(sub => {
+            const div = document.createElement('div'); div.className = 'quest-config-card';
+            div.innerHTML = `<div class="quest-config-header"><span class="quest-config-title">${sub}</span><button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除</button></div><div class="quest-tags">${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}</div><div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button></div>`;
+            list.appendChild(div);
+        });
+    }
+    
+    document.getElementById('questConfigList').addEventListener('click', (e) => {
+        if(e.target.closest('.btn-del-subj')) { const s = e.target.closest('.btn-del-subj').dataset.sub; if(confirm(`確定要移除【${s}】科目嗎？`)) { delete tempQuestSettings[s]; renderQuestConfig(); } }
+        else if(e.target.closest('.btn-del-task')) { const t = e.target.closest('.btn-del-task'); const s = t.dataset.sub; const i = parseInt(t.dataset.idx); tempQuestSettings[s].splice(i, 1); renderQuestConfig(); }
+        else if(e.target.closest('.btn-add-task')) { const s = e.target.closest('.btn-add-task').dataset.sub; const ip = document.getElementById(`newT_${s}`); if(ip.value.trim()) { tempQuestSettings[s].push(ip.value.trim()); renderQuestConfig(); } }
+    });
+    
+    document.getElementById('btnAddSubject').addEventListener('click', () => { const v = document.getElementById('ipNewSubject').value.trim(); if(v && !tempQuestSettings[v]) { tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); } });
+    document.getElementById('btnSaveQuestSettings').addEventListener('click', () => { data.questSettings = tempQuestSettings; triggerAutoSave(); updateSubjectDropdown(); document.getElementById('questSettingsModal').classList.remove('show'); showToast("⚙️ 任務選單設定已儲存"); });
+
+    // 大量操作按鈕
+    document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("確認全員改為「已回報」？")) updateAllStatus(1); });
+    document.getElementById('btnMarkAllOrange').addEventListener('click', () => { if(confirm("確認全員改為「再挑戰」？")) updateAllStatus(2); });
     function updateAllStatus(s) {
         const a = data.assignments.find(x => x.id == currentAssignmentId);
         if(a) { 
-            data.roster.forEach((st, i) => { a.statuses[i] = s; });
+            const idxs = a.assignedIndices || 'all'; let changedExp = false;
+            data.roster.forEach((st, i) => { 
+                if(idxs === 'all' || idxs.includes(i)) {
+                    const oldStatus = (a.statuses || [])[i] || 0;
+                    if (oldStatus === 3 && s !== 3) { changeExp(i, -5, true); changedExp = true; }
+                    a.statuses[i] = s;
+                } 
+            });
+            if(changedExp) showToast("⚠️ 狀態變更，已自動收回原討伐成功的 EXP");
             triggerAutoSave(); renderDashboardDetail(currentAssignmentId); renderDashboard();
         }
     }
@@ -1303,10 +1582,21 @@
         w.document.close();
     });
 
+    // 🌟 完整還原：外觀設定主題切換
     document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
+    
+    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
+        if(e.target.classList.contains('theme-option')) {
+            const t = e.target.dataset.theme; 
+            document.documentElement.setAttribute('data-color-theme', t); 
+            localStorage.setItem('hwColor', t); 
+            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active')); 
+            e.target.classList.add('active'); 
+        }
+    });
+    
     document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
-    document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => document.getElementById('panelNewQuest').classList.add('show'));
-
+    
     document.getElementById('ipSettingsArrivalTime').addEventListener('change', (e) => { data.settings.arrivalTime = e.target.value; triggerAutoSave(); if (document.querySelector('.view.show').id === 'view-checkin') renderCheckIn(); });
     document.getElementById('ipSettingsBgmId').addEventListener('change', (e) => { let val = e.target.value.trim(); if(val.includes('v=')) val = val.split('v=')[1].split('&')[0]; else if(val.includes('youtu.be/')) val = val.split('youtu.be/')[1].split('?')[0]; data.settings.bgmId = val; e.target.value = val; triggerAutoSave(); showToast("🎵 BGM 設定已儲存"); });
 
@@ -1321,6 +1611,20 @@
         document.getElementById('taRosterPaste').value = ''; document.getElementById('detailsRosterPaste').removeAttribute('open'); 
         showToast("📜 名單已載入編輯區！請記得儲存");
     });
+    
+    // 指定派發對象 Modal 邏輯
+    document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
+        const c = document.getElementById('assignStudentListContainer'); c.innerHTML = '';
+        data.roster.forEach((s, i) => { const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i); const l = document.createElement('label'); l.className = 'assign-student-item'; l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`; c.appendChild(l); });
+        document.getElementById('assignStudentModal').classList.add('show');
+    });
+    document.getElementById('btnConfirmAssign').addEventListener('click', () => {
+        const chks = document.querySelectorAll('#assignStudentListContainer input:checked'); newAssignmentAssignedIndices = Array.from(chks).map(c => parseInt(c.dataset.idx));
+        document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "發布給：全體冒險者" : `發布給：已選 ${newAssignmentAssignedIndices.length} 位`; 
+        document.getElementById('assignStudentModal').classList.remove('show');
+    });
+    document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
+    document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
 
     // Toolbox (計時器、跑馬燈、抽籤)
     document.getElementById('btnToggleToolbox').addEventListener('click', function() { document.getElementById('toolboxMenu').classList.toggle('show'); this.classList.toggle('active'); });
@@ -1328,24 +1632,108 @@
     document.getElementById('btnOpenMarquee').addEventListener('click', () => openTool('panelMarquee'));
     document.getElementById('btnOpenTimer').addEventListener('click', () => openTool('panelTimer'));
     document.getElementById('btnOpenDraw').addEventListener('click', () => openTool('panelDraw'));
-    document.addEventListener('click', (e) => { if (e.target.closest('.tool-close')) { const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); } });
+    
+    // 點擊背景關閉浮窗
+    document.addEventListener('click', (e) => { 
+        if (e.target.closest('.tool-close')) { 
+            const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); 
+        }
+        
+        // 點擊背景關閉狀態選擇器
+        const picker = document.getElementById('statusPicker');
+        if (picker && picker.classList.contains('show') && !picker.contains(e.target) && !e.target.closest('li[data-aid]')) picker.classList.remove('show');
+        
+        // 點擊背景關閉欠款名單
+        const menu = document.getElementById('quickDebtMenu');
+        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge') && !e.target.closest('.btn-close-debt')) {
+            menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+        }
+    });
 
-    // 計時器邏輯
+    // 跑馬燈邏輯
+    document.getElementById('btnMqShow').addEventListener('click', () => { 
+        const txt = document.getElementById('mqTextInput').value; 
+        if(!txt) return; 
+        const el = document.getElementById('marqueeText'); 
+        el.innerText = txt; 
+        el.style.color = '#FFD700'; // 預設金色
+        el.style.fontSize = '36px'; // 預設字體加大
+        el.style.animationDuration = Math.max(10, txt.length * 0.4) + 's'; 
+        document.getElementById('topMarquee').style.display = 'block'; 
+        document.getElementById('panelMarquee').classList.remove('show'); // 播放後自動隱藏視窗
+    });
+    document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
+
+    // 計時器邏輯 (優化版)
     let timerInt = null; let timerSec = 0;
-    function updateTimer() { document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; }
-    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { clearInterval(timerInt); timerInt = null; timerSec = e.target.dataset.min * 60; document.getElementById('timerInput').value = e.target.dataset.min; document.getElementById('btnTimerStart').innerText = "開始"; updateTimer(); }));
-    document.getElementById('btnTimerStart').addEventListener('click', (e) => { resumeAudio(); if(timerInt) { clearInterval(timerInt); timerInt=null; e.target.innerText="繼續"; } else { if(timerSec === 0) { const m = parseInt(document.getElementById('timerInput').value)||0; const s = parseInt(document.getElementById('timerInputSec').value)||0; timerSec = m*60+s; } if(timerSec>0) { e.target.innerText="暫停"; timerInt = setInterval(() => { if(timerSec>0) { timerSec--; updateTimer(); } else { clearInterval(timerInt); timerInt=null; e.target.innerText="開始"; playAlarmSound(); showToast("⏰ 時間到！"); } }, 1000); } } });
-    document.getElementById('btnTimerReset').addEventListener('click', () => { clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer(); document.getElementById('btnTimerStart').innerText="開始"; document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value=''; });
+    function updateTimer() { 
+        document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; 
+    }
+    
+    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { 
+        // 改為「累加」邏輯，點 +1分、+5分 會直接加上去
+        const addMins = parseInt(e.target.dataset.min);
+        timerSec += addMins * 60;
+        updateTimer();
+    }));
+    
+    document.getElementById('btnTimerStart').addEventListener('click', (e) => { 
+        resumeAudio(); 
+        if(timerInt) { 
+            // 暫停
+            clearInterval(timerInt); timerInt=null; 
+            e.target.innerHTML=`<i class="bi bi-play-fill"></i> 繼續`; 
+            e.target.classList.remove('warn');
+        } else { 
+            // 如果輸入框有值，優先使用輸入框的值覆蓋
+            const inM = parseInt(document.getElementById('timerInput').value);
+            const inS = parseInt(document.getElementById('timerInputSec').value);
+            if (!isNaN(inM) || !isNaN(inS)) {
+                timerSec = (inM || 0) * 60 + (inS || 0);
+                document.getElementById('timerInput').value = '';
+                document.getElementById('timerInputSec').value = '';
+                updateTimer();
+            }
+            
+            if(timerSec > 0) { 
+                e.target.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; 
+                e.target.classList.add('warn');
+                timerInt = setInterval(() => { 
+                    if(timerSec > 0) { 
+                        timerSec--; updateTimer(); 
+                    } else { 
+                        clearInterval(timerInt); timerInt=null; 
+                        e.target.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
+                        e.target.classList.remove('warn');
+                        playAlarmSound(); 
+                        showToast("⏰ 時間到！", "確認"); 
+                    } 
+                }, 1000); 
+            } 
+        } 
+    });
+    
+    document.getElementById('btnTimerReset').addEventListener('click', () => { 
+        clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer(); 
+        const startBtn = document.getElementById('btnTimerStart');
+        startBtn.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
+        startBtn.classList.remove('warn');
+        document.getElementById('timerInput').value=''; 
+        document.getElementById('timerInputSec').value=''; 
+    });
 
     // 抽籤邏輯
     document.getElementById('btnLuckyDraw').addEventListener('click', () => { 
         resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult'); 
         if (!data.roster || data.roster.length === 0) return; 
-        if (btn.disabled) return; btn.disabled = true; btn.innerText = "轉動中..."; res.style.color = "var(--muted)";
-        let rollCount = 0; function roll() { 
+        if (btn.disabled) return; 
+        btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 轉動中...`; res.style.color = "var(--muted)";
+        let rollCount = 0; 
+        function roll() { 
             res.innerText = data.roster[Math.floor(Math.random() * data.roster.length)].name; playTickSound(); rollCount++; 
-            if (rollCount < 20) setTimeout(roll, 50); else { res.style.color = "var(--danger)"; playSuccessSound(); confetti(); btn.disabled = false; btn.innerText = "再次抽出"; } 
-        } roll(); 
+            if (rollCount < 20) setTimeout(roll, 50); else { res.style.color = "var(--danger)"; playSuccessSound(); confetti(); btn.disabled = false; btn.innerHTML = `<i class="bi bi-dice-5-fill"></i> 再次抽出冒險者`; } 
+        } 
+        roll(); 
     });
 
   </script>
