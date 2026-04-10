@@ -77,6 +77,7 @@
     .btn.sm{ font-size:12px; padding:4px 10px; }
     .btn.icon-only { padding: 4px 8px; font-size: 14px; }
     .btn.warn { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
     .btn:active{ transform:translateY(2px); box-shadow:none; }
 
@@ -137,6 +138,11 @@
     .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; height: calc(100vh - 120px); overflow: hidden; }
     .dash-sidebar { flex: 0 0 240px; display: flex; flex-direction: column; gap: 12px; height: 100%; overflow: hidden; }
     .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto; }
+    
+    /* 篩選條件面板 */
+    .filter-panel { display: none; background: var(--card); border: 2px solid var(--tbl-border); padding: 12px; border-radius: 8px; margin-top: 8px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .filter-panel.show { display: block; animation: popIn 0.2s ease-out; }
+    
     .side-list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; padding-right: 4px; border-top: 1px dashed var(--tbl-border); padding-top: 8px; }
     .side-item { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; }
     .side-item.active { background: var(--primary); color: #fff; border-color: var(--text-main); }
@@ -336,7 +342,7 @@
         <aside class="dash-sidebar">
           <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
               <!-- ⭐ 復原：篩選條件按鈕 (僅圖示) -->
-              <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" onclick="document.getElementById('filterPanel').classList.toggle('show');" title="篩選條件"><i class="bi bi-funnel"></i></button>
+              <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" onclick="const fp = document.getElementById('filterPanel'); const isShow = fp.classList.toggle('show'); this.classList.toggle('active', isShow); this.innerHTML = isShow ? '<i class=\'bi bi-funnel-fill\'></i>' : '<i class=\'bi bi-funnel\'></i>';" title="篩選條件"><i class="bi bi-funnel"></i></button>
               <button class="btn sm" id="btnOpenNewQuestWindowSidebar" style="flex: 1;" title="發布新委託"><i class="bi bi-plus-lg"></i> 新增任務</button>
           </div>
           <div id="filterPanel" class="filter-panel">
@@ -965,6 +971,7 @@
                 data.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
                 data.rankSettings = Array.isArray(loadedData.rankSettings) ? loadedData.rankSettings : defaultData.rankSettings;
                 
+                // 確保 EXP 與 coins 欄位存在
                 data.roster.forEach(r => { 
                     if(typeof r.exp === 'undefined') r.exp = 0; 
                     if(typeof r.coins === 'undefined') r.coins = 0; 
@@ -1305,6 +1312,11 @@
                 </div>
             `;
             
+            if(isAssigned) {
+                div.querySelector('.seat').onclick = () => window.toggleStatus(id, i);
+                const badge = div.querySelector('.debt-badge');
+                if (badge) badge.onclick = (e) => { e.stopPropagation(); window.openQuickDebtMenu(e, i, oldDebts); };
+            }
             grid.appendChild(div);
         });
 
@@ -1456,6 +1468,11 @@
                     <button class="btn sm icon-only" onclick="window.applySingleCustomCoin(${i})" style="padding:2px 6px;"><i class="bi bi-check-lg"></i></button>
                 </div>
             `;
+            
+            if(debts.length > 0 && !isBatchMode && !isBatchExpMode) {
+                const badge = card.querySelector('.debt-badge');
+                if(badge) badge.onclick = (e) => { e.stopPropagation(); window.openQuickDebtMenu(e, i, debts); };
+            }
             
             grid.appendChild(card);
         });
@@ -1993,6 +2010,7 @@
         showToast("✨ 新委託已發布！");
     });
 
+    // 任務選單編輯 (⚙️ 按鈕)
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => { 
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings)); 
         renderQuestConfig(); 
@@ -2017,6 +2035,7 @@
     document.getElementById('btnAddSubject').addEventListener('click', () => { const v = document.getElementById('ipNewSubject').value.trim(); if(v && !tempQuestSettings[v]) { tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; renderQuestConfig(); } });
     document.getElementById('btnSaveQuestSettings').addEventListener('click', () => { data.questSettings = tempQuestSettings; triggerAutoSave(); updateSubjectDropdown(); document.getElementById('questSettingsModal').classList.remove('show'); showToast("⚙️ 任務選單設定已儲存"); });
 
+    // 大量操作按鈕
     document.getElementById('btnMarkAllYellow').addEventListener('click', () => { if(confirm("確認全員改為「已回報」？")) updateAllStatus(1); });
     document.getElementById('btnMarkAllOrange').addEventListener('click', () => { if(confirm("確認全員改為「再挑戰」？")) updateAllStatus(2); });
     function updateAllStatus(s) {
@@ -2046,6 +2065,69 @@
         triggerAutoSave(); renderDashboard();
         document.getElementById('deleteChoiceModal').classList.remove('show');
         showToast("已徹底銷毀");
+    });
+
+    // 🌟 捲軸列印邏輯
+    window.printSingleStudent = function(sidx) {
+        const student = data.roster[sidx]; const printDate = new Date().toLocaleDateString('zh-TW');
+        const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
+                                      .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
+        
+        const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:10px 0; border-bottom:1px dotted #ccc; font-size:18px;">☐ [${t.date}] ${t.title} <span style="font-size:14px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') 
+                                          : '<li style="padding:20px; color:#888;">🎉 目前沒有待辦任務！</li>';
+
+        const w = window.open('', '', 'width=600,height=800');
+        w.document.write(`<html><body style="font-family:sans-serif; padding:40px;"><div style="border:3px solid #5D4037; border-radius:12px; padding:20px;">
+            <h2 style="border-bottom:2px dashed #8B4513; padding-bottom:10px;">${student.no}. ${student.name} 的任務卷軸</h2>
+            <ul style="list-style:none; padding:0; min-height:300px;">${listHtml}</ul>
+            <div style="margin-top:20px; border-top:2px solid #eee; padding-top:10px; display:flex; justify-content:space-between; font-size:14px;">
+                <span>📅 ${printDate}</span><span>家長簽名：___________</span>
+            </div></div><script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
+        w.document.close();
+    };
+
+    document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
+        isBatchMode = !isBatchMode; 
+        if (isBatchMode) isBatchExpMode = false;
+        
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
+        if (isBatchExpMode || isBatchMode) {
+            btnSelectAll.style.display = 'inline-block';
+        } else {
+            btnSelectAll.style.display = 'none';
+        }
+        renderStudentStatus(); 
+    });
+
+    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
+        const allChecked = Array.from(cbs).every(c => c.checked);
+        cbs.forEach(c => c.checked = !allChecked);
+    });
+
+    document.getElementById('btnBatchExport').addEventListener('click', () => {
+        const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
+        if(!checkedBoxes.length) { alert("請先勾選對象"); return; }
+        
+        let cardsHtml = '';
+        checkedBoxes.forEach(cb => {
+            const sidx = parseInt(cb.dataset.sidx); const student = data.roster[sidx];
+            const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
+                                          .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
+            
+            const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:6px 0; border-bottom:1px dotted #ccc; font-size:15px;">☐ [${t.date}] ${t.title} <span style="font-size:12px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') : '<li style="color:#888;">🎉 無待辦任務！</li>';
+            
+            cardsHtml += `<div style="border:2px solid #5D4037; border-radius:8px; padding:12px; break-inside:avoid; margin-bottom:15px; background:#fff;">
+                <h3 style="border-bottom:2px dashed #8B4513; margin:0 0 10px 0; padding-bottom:5px;">${student.no}. ${student.name}</h3>
+                <ul style="list-style:none; padding:0; margin:0; min-height:100px;">${listHtml}</ul>
+            </div>`;
+        });
+
+        const w = window.open('', '', 'width=900,height=800');
+        w.document.write(`<html><body style="font-family:sans-serif; background:#f4f4f4; padding:20px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">${cardsHtml}</div>
+            <script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
+        w.document.close();
     });
 
     // 🌟 外觀設定主題與夜間模式
@@ -2083,7 +2165,7 @@
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
 
-    // ⭐ 工具箱
+    // ⭐ 工具箱 (新增下課準備、放學準備)
     document.getElementById('btnToggleToolbox').addEventListener('click', function() { document.getElementById('toolboxMenu').classList.toggle('show'); this.classList.toggle('active'); });
     function openTool(id) { 
         document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show')); 
@@ -2127,7 +2209,7 @@
     });
     document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
 
-    // 計時器
+    // 計時器邏輯
     let timerInt = null; let timerSec = 0;
     function updateTimer() { 
         document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; 
