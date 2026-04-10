@@ -14,12 +14,7 @@
     .view { display: none !important; } 
     .view.show { display: block !important; animation: fadeIn .3s ease; }
     @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
-
-    /* ⭐ 修改 popIn 動畫，讓它支援我們自訂的變數縮放比例 */
-    @keyframes popIn { 
-        0% { opacity: 0; transform: scale(calc(var(--win-scale, 1) * 0.8)) translateY(10px); } 
-        100% { opacity: 1; transform: scale(var(--win-scale, 1)) translateY(0); } 
-    }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(calc(var(--win-scale, 1) * 0.8)) translateY(10px); } 100% { opacity: 1; transform: scale(var(--win-scale, 1)) translateY(0); } }
 
     :root, html[data-color-theme='guild'] {
       --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
@@ -33,7 +28,7 @@
     }
     
     html[data-color-theme='guild'] body {
-      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
     }
     html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
     html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
@@ -56,7 +51,6 @@
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:0 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     
-    /* ⭐ 固定在最上方的標題與導覽列 */
     header { 
         position: sticky; top: 0; z-index: 4000; 
         background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -227,14 +221,13 @@
     /* ⭐ 工具視窗：加上縮放與拖曳的屬性 */
     .tool-window { 
         position: fixed; 
-        /* 預設初始位置 (透過JS切換為top/left以便縮放) */
         bottom: 100px; right: 90px; 
-        width: 320px; 
+        width: 340px; 
         background: var(--card); border: 3px solid var(--primary); border-radius: 12px; 
         box-shadow: 0 8px 30px rgba(0,0,0,0.4); 
         display: none; flex-direction: column; 
         z-index: 5005;
-        transform-origin: bottom right; /* 預設縮放基準點 */
+        transform-origin: bottom right; 
         transform: scale(var(--win-scale, 1));
         --win-scale: 1;
     }
@@ -278,7 +271,7 @@
     .quick-tag { background: var(--bg); border: 1px solid var(--tbl-border); padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
     .quick-tag:hover { background: var(--primary); color: #fff; }
 
-    .timer-display-box { font-size: 48px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; text-shadow: 1px 1px 0px #fff; }
+    .timer-display-box { font-size: 52px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; text-shadow: 1px 1px 0px #fff; }
 
     /* 轉盤設定 */
     .wheel-wrapper { position: relative; width: 240px; height: 240px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
@@ -354,7 +347,7 @@
           <div class="modal-header" style="border-bottom: none; justify-content: center;"><h2 style="color: var(--danger); font-size: 24px;"><i class="bi bi-exclamation-diamond-fill"></i> 緊急任務</h2></div>
           <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">本日點名尚未完成！<br><span style="font-size: 14px; color: var(--muted);">確認冒險者安危是公會長的首要職責。</span></p>
           <button class="btn" id="btnGoToAttendance" style="width: 100%; justify-content: center; font-size: 18px;">前往點名</button>
-          <button class="btn ghost sm" style="margin-top: 10px; width: 100%; border: none;" onclick="document.getElementById('attendanceReminderModal').classList.remove('show')">稍後再說</button>
+          <button class="btn ghost sm" style="margin-top: 10px; width: 100%; border: none;" id="btnLaterAttendance">稍後再說</button>
       </div>
   </div>
 
@@ -401,7 +394,7 @@
         <aside class="dash-sidebar">
           <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
               <!-- ⭐ 復原：篩選條件按鈕 (僅圖示) -->
-              <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" onclick="const fp = document.getElementById('filterPanel'); const isShow = fp.classList.toggle('show'); this.classList.toggle('active', isShow); this.innerHTML = isShow ? '<i class=\'bi bi-funnel-fill\'></i>' : '<i class=\'bi bi-funnel\'></i>';" title="篩選條件"><i class="bi bi-funnel"></i></button>
+              <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" title="篩選條件"><i class="bi bi-funnel"></i></button>
               <button class="btn sm" id="btnOpenNewQuestWindowSidebar" style="flex: 1;" title="發布新委託"><i class="bi bi-plus-lg"></i> 新增任務</button>
           </div>
           <div id="filterPanel" class="filter-panel">
@@ -475,17 +468,17 @@
           <!-- ⭐ 批次加扣分控制列 -->
           <div id="batchExpToolbar" class="batch-exp-toolbar">
               <span style="font-weight:900; color:var(--primary);">✨ 批次給予金幣：</span>
-              <button class="btn sm ghost" onclick="window.applyBatchCoin(1, '作業優良')">+1 作業優良</button>
-              <button class="btn sm ghost" onclick="window.applyBatchCoin(3, '超級優秀')">+3 超級優秀</button>
-              <button class="btn sm ghost" onclick="window.applyBatchCoin(1, '準時')">+1 準時</button>
-              <button class="btn sm ghost warn" onclick="window.applyBatchCoin(-1, '上課吵鬧')">-1 上課吵鬧</button>
-              <button class="btn sm ghost warn" onclick="window.applyBatchCoin(-1, '未帶物品')">-1 未帶物品</button>
+              <button class="btn sm ghost" id="btnBatchReason1">+1 作業優良</button>
+              <button class="btn sm ghost" id="btnBatchReason2">+3 超級優秀</button>
+              <button class="btn sm ghost" id="btnBatchReason3">+1 準時</button>
+              <button class="btn sm ghost warn" id="btnBatchReason4">-1 上課吵鬧</button>
+              <button class="btn sm ghost warn" id="btnBatchReason5">-1 未帶物品</button>
               <div style="width: 1px; height: 20px; background: var(--tbl-border); margin: 0 8px;"></div>
               
               <div style="display: flex; gap: 4px; align-items: center;">
                   <input type="number" id="customExpVal" style="width:70px; padding:4px;" placeholder="分數">
                   <input type="text" id="customExpReason" style="width:120px; padding:4px;" placeholder="輸入原因...">
-                  <button class="btn sm" onclick="window.applyCustomBatchCoin()"><i class="bi bi-check-lg"></i> 送出</button>
+                  <button class="btn sm" id="btnApplyCustomBatchCoin"><i class="bi bi-check-lg"></i> 送出</button>
               </div>
           </div>
           
@@ -741,34 +734,34 @@
   
   <div id="quickDebtMenu"><div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div><div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div></div>
 
-  <!-- ⭐ 工具箱 (Toolbox) - 面板式選單 + 噪音計/小白板 -->
+  <!-- ⭐ 工具箱 (Toolbox) -->
   <div class="toolbox-container">
       <div class="toolbox-menu" id="toolboxMenu">
-          <div class="tb-btn" onclick="openTool('panelMarquee')">
+          <div class="tb-btn" id="btnOpenMarqueeTool">
               <i class="bi bi-broadcast text-yellow-500"></i><span>跑馬燈</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelTimer')">
+          <div class="tb-btn" id="btnOpenTimerTool">
               <i class="bi bi-hourglass-split text-blue-500"></i><span>計時器</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelStopwatch')">
+          <div class="tb-btn" id="btnOpenStopwatchTool">
               <i class="bi bi-stopwatch text-emerald-500"></i><span>碼表</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelDice')">
+          <div class="tb-btn" id="btnOpenDiceTool">
               <i class="bi bi-dice-5 text-rose-500"></i><span>骰子</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelDraw')">
+          <div class="tb-btn" id="btnOpenDrawTool">
               <i class="bi bi-gift text-purple-500"></i><span>抽籤</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelRecess')">
+          <div class="tb-btn" id="btnOpenRecessTool">
               <i class="bi bi-backpack text-orange-500"></i><span>下課準備</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelDismissal')">
+          <div class="tb-btn" id="btnOpenDismissalTool">
               <i class="bi bi-door-open text-stone-500"></i><span>放學準備</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelDecibel')">
+          <div class="tb-btn" id="btnOpenDecibelTool">
               <i class="bi bi-mic text-teal-500"></i><span>噪音計</span>
           </div>
-          <div class="tb-btn" onclick="openTool('panelWhiteboard')">
+          <div class="tb-btn" id="btnOpenWhiteboardTool">
               <i class="bi bi-easel text-sky-500"></i><span>小白板</span>
           </div>
       </div>
@@ -826,13 +819,13 @@
           <!-- 外觀設定 -->
           <div class="field mt-2 p-2 bg-stone-50 rounded-lg border border-stone-200">
               <label>外觀設定</label>
-              <div class="flex items-center gap-2 mt-1">
-                  <span class="text-sm font-bold text-stone-500">顏色</span>
-                  <input type="color" id="mqColorInput" value="#FFD700" class="w-10 h-8 p-0 border-0 rounded cursor-pointer bg-transparent">
-                  <span class="text-sm font-bold ml-2 text-stone-500">大小</span>
-                  <input type="range" id="mqSizeInput" min="20" max="100" value="48" class="w-full accent-primary">
-                  <span class="text-sm font-bold ml-2 text-stone-500">速度</span>
-                  <input type="range" id="mqSpeedInput" min="1" max="10" value="5" class="w-full accent-primary" style="direction: rtl;">
+              <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                  <span style="font-size:12px; font-weight:bold; color:var(--muted);">顏色</span>
+                  <input type="color" id="mqColorInput" value="#FFD700" style="width:40px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer; background:transparent;">
+                  <span style="font-size:12px; font-weight:bold; color:var(--muted); margin-left:8px;">大小</span>
+                  <input type="range" id="mqSizeInput" min="20" max="100" value="48" style="flex:1;">
+                  <span style="font-size:12px; font-weight:bold; color:var(--muted); margin-left:8px;">速度</span>
+                  <input type="range" id="mqSpeedInput" min="1" max="10" value="5" style="flex:1; direction:rtl;">
               </div>
           </div>
           <div class="actions sm" style="justify-content: flex-end; margin-top: 10px; border-top: 1px dashed var(--tbl-border); padding-top: 10px;">
@@ -881,43 +874,43 @@
   <div id="panelDice" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-dice-5"></i> 抽籤骰子</span><button class="tool-close">&times;</button></div>
       <div class="tool-body text-center">
-         <div class="flex justify-center gap-2 mb-2 w-full">
-            <button id="btnModeNumDice" class="btn sm active flex-1">數字骰</button>
-            <button id="btnModeLetterDice" class="btn sm ghost flex-1">字母骰</button>
+         <div style="display:flex; justify-content:center; gap:8px; margin-bottom:8px; width:100%;">
+            <button id="btnModeNumDice" class="btn sm active" style="flex:1;">數字骰</button>
+            <button id="btnModeLetterDice" class="btn sm ghost" style="flex:1;">字母骰</button>
          </div>
-         <div id="diceConfigNum" class="flex items-center gap-2 justify-center mb-4">
-            <span class="text-sm font-bold text-stone-500">範圍：</span>
-            <input type="number" id="diceMin" value="1" class="w-16 text-center py-1">
-            <span class="font-bold text-stone-400">-</span>
-            <input type="number" id="diceMax" value="30" class="w-16 text-center py-1">
+         <div id="diceConfigNum" style="display:flex; align-items:center; gap:8px; justify-content:center; margin-bottom:16px;">
+            <span style="font-size:14px; font-weight:bold; color:var(--muted);">範圍：</span>
+            <input type="number" id="diceMin" value="1" style="width:64px; text-align:center; padding:4px;">
+            <span style="font-weight:bold; color:var(--muted);">-</span>
+            <input type="number" id="diceMax" value="30" style="width:64px; text-align:center; padding:4px;">
          </div>
          <div id="diceDisplay" class="timer-display-box" style="font-size: 80px; transition: transform 0.1s;">?</div>
-         <button id="btnRollDice" class="btn chest w-full" style="font-size: 18px; padding: 12px;"><i class="bi bi-dice-5-fill"></i> 擲骰子！</button>
+         <button id="btnRollDice" class="btn chest" style="width:100%; font-size: 18px; padding: 12px;"><i class="bi bi-dice-5-fill"></i> 擲骰子！</button>
       </div>
   </div>
 
   <!-- 抽籤工具窗 (含轉盤) -->
   <div id="panelDraw" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-gift"></i> 幸運抽籤</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body flex flex-col items-center">
-         <div class="flex justify-center gap-2 mb-2 w-full">
-            <button id="btnModeDrawBasic" class="btn sm active flex-1">基本模式</button>
-            <button id="btnModeDrawWheel" class="btn sm ghost flex-1">轉盤模式</button>
+      <div class="tool-body" style="display:flex; flex-direction:column; align-items:center;">
+         <div style="display:flex; justify-content:center; gap:8px; margin-bottom:8px; width:100%;">
+            <button id="btnModeDrawBasic" class="btn sm active" style="flex:1;">基本模式</button>
+            <button id="btnModeDrawWheel" class="btn sm ghost" style="flex:1;">轉盤模式</button>
          </div>
          
          <!-- Basic Mode -->
-         <div id="drawBasicArea" class="w-full text-center mt-2">
+         <div id="drawBasicArea" style="width:100%; text-align:center; margin-top:8px;">
             <div id="luckyDrawResult" class="timer-display-box" style="font-size:32px; color:var(--danger); min-height:80px; display:grid; place-items:center; border-color:var(--accent);">???</div>
-            <button class="btn chest w-full mt-2" id="btnLuckyDraw" style="font-size: 16px; padding: 12px;"><i class="bi bi-person-fill"></i> 抽出一位冒險者</button>
+            <button class="btn chest" id="btnLuckyDraw" style="width:100%; margin-top:8px; font-size: 16px; padding: 12px;"><i class="bi bi-person-fill"></i> 抽出一位冒險者</button>
          </div>
          
          <!-- Wheel Mode -->
-         <div id="drawWheelArea" class="w-full text-center mt-4" style="display:none;">
+         <div id="drawWheelArea" style="width:100%; text-align:center; margin-top:16px; display:none;">
             <div class="wheel-wrapper">
                <div class="wheel-pointer">▼</div>
                <canvas id="wheelCanvas" width="240" height="240"></canvas>
             </div>
-            <button class="btn chest w-full mt-6" id="btnSpinWheel" style="font-size: 16px; padding: 12px;"><i class="bi bi-arrow-repeat"></i> 旋轉輪盤</button>
+            <button class="btn chest" id="btnSpinWheel" style="width:100%; margin-top:24px; font-size: 16px; padding: 12px;"><i class="bi bi-arrow-repeat"></i> 旋轉輪盤</button>
          </div>
       </div>
   </div>
@@ -940,49 +933,9 @@
 
   <!-- 🚨 JavaScript 核心區塊 🚨 -->
   <script type="module">
-    // --- 1. 基礎工具函數 ---
-    function getTaipeiDateString() { 
-        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
-    }
-    
-    function showToast(msg, actText, actCb) {
-        const c = document.getElementById('toastContainer'); 
-        const t = document.createElement('div'); t.className = 'toast-msg';
-        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : ''); 
-        c.appendChild(t); 
-        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
-        setTimeout(()=>t.remove(), 4000);
-    }
-
-    let audioCtx = null;
-    function resumeAudio() { 
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume(); 
-        return audioCtx;
-    }
-
-    function playSuccessSound() {
-        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type = 'sine'; o.frequency.setValueAtTime(523.25, ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
-        g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.5);
-    }
-    
-    function playCoinSound() {
-        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type = 'square'; o.frequency.setValueAtTime(987.77, ctx.currentTime); o.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
-        g.gain.setValueAtTime(0.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
-    }
-
-    function playTickSound() {
-        const ctx = resumeAudio(); const now = ctx.currentTime; const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type = 'triangle'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
-        g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
-    }
-
-    // --- 2. 系統變數與 Firebase 初始化 ---
+    // --------------------------------------------------------
+    // 1. Firebase Init & Config
+    // --------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
       authDomain: "homework-hc906.firebaseapp.com",
@@ -1006,6 +959,9 @@
         alert("Firebase 初始化錯誤，請檢查 Config"); 
     }
 
+    // --------------------------------------------------------
+    // 2. Global Variables & State
+    // --------------------------------------------------------
     let currentUser = null;
     const defaultData = {
         roster: [ { no: 1, name: "勇者A", exp: 0, coins: 0 }, { no: 2, name: "法師B", exp: 0, coins: 0 }, { no: 3, name: "弓手C", exp: 0, coins: 0 } ],
@@ -1024,80 +980,110 @@
         expLogs: [], 
         settings: { arrivalTime: "07:50", bgmId: "" }
     };
+    
     let data = JSON.parse(JSON.stringify(defaultData)); 
-    let saveTimeout = null;
-    let currentAssignmentId = null;
-    let pickerTarget = null;
-    let newAssignmentAssignedIndices = []; 
-    let isBatchMode = false;
-    let isBatchExpMode = false;
-    let targetAssignmentIdToDelete = null; 
-    let tempQuestSettings = {};
-    let tempRankSettings = []; 
-    let currentFilter = { teacher: 'all', subject: 'all' };
-    let lastRosterState = null; 
+    window.appData = data; 
+    
+    window.saveTimeout = null;
+    window.currentAssignmentId = null;
+    window.newAssignmentAssignedIndices = []; 
+    window.isBatchMode = false;
+    window.isBatchExpMode = false;
+    window.targetAssignmentIdToDelete = null; 
+    window.tempQuestSettings = {};
+    window.tempRankSettings = []; 
+    window.currentFilter = { teacher: 'all', subject: 'all' };
+    window.lastRosterState = null; 
     const APP_SCALE = 1;
 
-    // --- 3. 客製化稱號與經驗值系統 ---
+    // --------------------------------------------------------
+    // 3. Utility Functions
+    // --------------------------------------------------------
+    function getTaipeiDateString() { 
+        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
+    }
+    window.getTaipeiDateString = getTaipeiDateString;
+
+    function showToast(msg, actText, actCb) {
+        const c = document.getElementById('toastContainer'); 
+        const t = document.createElement('div'); t.className = 'toast-msg';
+        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : ''); 
+        c.appendChild(t); 
+        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
+        setTimeout(()=>t.remove(), 4000);
+    }
+    window.showToast = showToast;
+
+    let audioCtx = null;
+    function resumeAudio() { 
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume(); 
+        return audioCtx;
+    }
+    window.resumeAudio = resumeAudio;
+
+    function playSuccessSound() {
+        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(523.25, ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.5);
+    }
+    window.playSuccessSound = playSuccessSound;
+    
+    function playCoinSound() {
+        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'square'; o.frequency.setValueAtTime(987.77, ctx.currentTime); o.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
+    }
+    window.playCoinSound = playCoinSound;
+
+    function playTickSound() {
+        const ctx = resumeAudio(); const now = ctx.currentTime; const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+        g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
+    }
+    window.playTickSound = playTickSound;
+
     function getRankHtml(exp) {
-        const ranks = [...(data.rankSettings || defaultData.rankSettings)].sort((a,b) => b.exp - a.exp);
+        const ranks = [...(window.appData?.rankSettings || defaultData.rankSettings)].sort((a,b) => b.exp - a.exp);
         let rankName = ranks[ranks.length - 1]?.name || "新手"; 
         let rankColor = ranks[ranks.length - 1]?.color || "#9ca3af";
-        
         for (let r of ranks) {
-            if (exp >= r.exp) { 
-                rankName = r.name; 
-                rankColor = r.color; 
-                break; 
-            }
+            if (exp >= r.exp) { rankName = r.name; rankColor = r.color; break; }
         }
         return `<span class="rank-text" style="color:${rankColor}; font-weight:bold;">${rankName}</span>`;
     }
     window.getRankHtml = getRankHtml;
 
-    // --- 4. 視圖與 BGM 控制 ---
+    // --------------------------------------------------------
+    // 4. View Switching & BGM
+    // --------------------------------------------------------
     window.switchView = function(id) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
         const target = document.getElementById(id);
-        if(target) { target.classList.add('show'); renderAll(); }
+        if(target) { target.classList.add('show'); window.renderAll(); }
         
-        // BGM 播放狀態切換
         if (id === 'view-checkin') {
             const bgmBtn = document.getElementById('btnToggleCheckinBgm');
-            if (data.settings && data.settings.bgmId) {
-                bgmBtn.style.display = 'inline-flex';
-            } else {
-                bgmBtn.style.display = 'none';
-            }
+            if (window.appData.settings && window.appData.settings.bgmId) bgmBtn.style.display = 'inline-flex';
+            else bgmBtn.style.display = 'none';
         } else {
-            stopCheckinBGM();
+            window.stopCheckinBGM();
         }
     }
 
     let isPlayingBGM = false;
-    document.getElementById('btnToggleCheckinBgm').addEventListener('click', function() {
-        if (!isPlayingBGM) {
-            playCheckinBGM();
-            this.innerHTML = `<i class="bi bi-stop-circle"></i> <span id="bgmBtnText">停止音樂</span>`;
-            this.classList.add('warn');
-            isPlayingBGM = true;
-        } else {
-            stopCheckinBGM();
-            this.innerHTML = `<i class="bi bi-music-note"></i> <span id="bgmBtnText">播放晨間音樂</span>`;
-            this.classList.remove('warn');
-            isPlayingBGM = false;
-        }
-    });
-
-    function playCheckinBGM() {
-        const bgmId = data.settings?.bgmId?.trim();
+    window.playCheckinBGM = function() {
+        const bgmId = window.appData.settings?.bgmId?.trim();
         const container = document.getElementById('ytPlayerContainer');
         if (bgmId) {
             container.innerHTML = `<iframe width="10" height="10" src="https://www.youtube.com/embed/${bgmId}?autoplay=1&loop=1&playlist=${bgmId}" frameborder="0" allow="autoplay"></iframe>`;
         }
     }
 
-    function stopCheckinBGM() {
+    window.stopCheckinBGM = function() {
         document.getElementById('ytPlayerContainer').innerHTML = '';
         const btn = document.getElementById('btnToggleCheckinBgm');
         if (btn) {
@@ -1107,57 +1093,67 @@
         }
     }
 
-    // --- 5. Firebase 讀寫保護 ---
-    function updateSaveStatus(status, message = '') {
+    window.switchDisciplineTab = function(tabName) {
+        document.querySelectorAll('#view-discipline .tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#view-discipline .roster-content').forEach(c => c.classList.remove('show'));
+        
+        if(tabName === 'traffic') { document.getElementById('tabBtnTraffic').classList.add('active'); document.getElementById('content-traffic').classList.add('show'); }
+        else if(tabName === 'recess') { document.getElementById('tabBtnRecess').classList.add('active'); document.getElementById('content-recess').classList.add('show'); }
+        else if(tabName === 'dismissal') { document.getElementById('tabBtnDismissal').classList.add('active'); document.getElementById('content-dismissal').classList.add('show'); }
+    };
+
+    // --------------------------------------------------------
+    // 5. Firebase Read/Write & Auth
+    // --------------------------------------------------------
+    window.updateSaveStatus = function(status, message = '') {
         const ind = document.getElementById('saveStatusIndicator'); if(!ind) return;
         if (status === 'pending') ind.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中</span>`;
         else if (status === 'success') ind.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> 已同步</span>`;
         else ind.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
     }
 
-    function triggerAutoSave() {
-        clearTimeout(saveTimeout); 
-        updateSaveStatus('pending');
-        saveTimeout = setTimeout(async () => {
+    window.triggerAutoSave = function() {
+        clearTimeout(window.saveTimeout); 
+        window.updateSaveStatus('pending');
+        window.saveTimeout = setTimeout(async () => {
             if (!currentUser) return;
             try { 
-                const cleanData = JSON.parse(JSON.stringify(data)); 
+                const cleanData = JSON.parse(JSON.stringify(window.appData)); 
                 await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData); 
-                updateSaveStatus('success'); 
+                window.updateSaveStatus('success'); 
             } catch (e) { 
                 console.error(e);
-                updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足 (檢查Rules)' : '儲存失敗');
+                window.updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足 (檢查Rules)' : '儲存失敗');
             }
         }, 1500); 
     }
 
     async function loadDataFromFirebase() {
         if (!currentUser) return;
-        updateSaveStatus('pending', '讀取中');
+        window.updateSaveStatus('pending', '讀取中');
         try {
             const docSnap = await getDoc(doc(db, "users", currentUser.uid, "data", "guildData"));
             if (docSnap.exists()) {
                 const loadedData = docSnap.data();
-                data.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
-                data.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
-                data.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
-                data.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
-                data.attendance = loadedData.attendance || {};
-                data.discipline = loadedData.discipline || null;
-                data.settings = loadedData.settings || { arrivalTime: "07:50", bgmId: "" };
-                data.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
-                data.rankSettings = Array.isArray(loadedData.rankSettings) ? loadedData.rankSettings : defaultData.rankSettings;
+                window.appData.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
+                window.appData.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
+                window.appData.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
+                window.appData.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
+                window.appData.attendance = loadedData.attendance || {};
+                window.appData.discipline = loadedData.discipline || null;
+                window.appData.settings = loadedData.settings || { arrivalTime: "07:50", bgmId: "" };
+                window.appData.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
+                window.appData.rankSettings = Array.isArray(loadedData.rankSettings) ? loadedData.rankSettings : defaultData.rankSettings;
                 
-                // 確保 EXP 與 coins 欄位存在
-                data.roster.forEach(r => { 
+                window.appData.roster.forEach(r => { 
                     if(typeof r.exp === 'undefined') r.exp = 0; 
                     if(typeof r.coins === 'undefined') r.coins = 0; 
                 });
             } else {
-                data = JSON.parse(JSON.stringify(defaultData));
-                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data);
+                window.appData = JSON.parse(JSON.stringify(defaultData));
+                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), window.appData);
             }
-            onDataLoaded(); updateSaveStatus('success');
+            window.onDataLoaded(); window.updateSaveStatus('success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
             let errMsg = "⚠️ 資料庫連線失敗！\n\n";
@@ -1165,13 +1161,12 @@
             errMsg += "【錯誤訊息】 " + (error.message || error) + "\n\n";
             errMsg += "如果您是剛建立 Firebase 專案，請務必去 Firestore 後台點擊「Rules (規則)」，將程式碼改為以下內容並發布：\n\nallow read, write: if request.auth != null;";
             alert(errMsg);
-            data = JSON.parse(JSON.stringify(defaultData)); 
-            onDataLoaded();
-            updateSaveStatus('error', '連線失敗 (離線模式)');
+            window.appData = JSON.parse(JSON.stringify(defaultData)); 
+            window.onDataLoaded();
+            window.updateSaveStatus('error', '連線失敗 (離線模式)');
         }
     }
 
-    // --- 6. 帳號登入系統 ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user; 
@@ -1181,18 +1176,110 @@
             const emailDisp = document.getElementById('userEmailDisplay');
             if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> <span class="nav-text">${user.email.split('@')[0]}</span>`;
             
-            initApp();
+            window.initApp();
         } else {
             document.getElementById('loginOverlay').style.display = 'flex'; 
             document.getElementById('mainApp').style.display = 'none';
         }
     });
 
-    document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
-    document.getElementById('btnLogout').addEventListener('click', () => { if(confirm("確定要登出？")) signOut(auth).then(() => window.location.reload()); });
+    // --------------------------------------------------------
+    // 6. Core Logic (EXP, Coins, Status)
+    // --------------------------------------------------------
+    window.logAction = function(sidx, delta, type, reason) {
+        if(!window.appData.expLogs) window.appData.expLogs = [];
+        window.appData.expLogs.push({
+            time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+            name: window.appData.roster[sidx].name,
+            delta: delta > 0 ? '+' + delta + ' ' + type : delta + ' ' + type,
+            reason: reason
+        });
+        if(window.appData.expLogs.length > 2000) window.appData.expLogs.shift();
+    }
 
-    // --- 7. 初始化與資料載入 ---
-    function initApp() {
+    window.changeExp = function(sidx, delta, reason = '系統調整', silent = false) {
+        if (!window.appData.roster[sidx]) return;
+        const oldExp = window.appData.roster[sidx].exp || 0;
+        window.appData.roster[sidx].exp = oldExp + delta;
+        if (window.appData.roster[sidx].exp < 0) window.appData.roster[sidx].exp = 0;
+        const newExp = window.appData.roster[sidx].exp;
+        
+        window.logAction(sidx, delta, 'EXP', reason);
+        
+        if (!silent) {
+            playSuccessSound();
+            if (delta > 0) showToast(`✨ ${window.appData.roster[sidx].name} 獲得 ${delta} EXP！`);
+            else showToast(`💔 ${window.appData.roster[sidx].name} 失去 ${Math.abs(delta)} EXP...`);
+            window.triggerAutoSave(); window.renderAll();
+        }
+
+        if (delta > 0) {
+            const ranks = [...(window.appData.rankSettings || defaultData.rankSettings)].sort((a,b) => a.exp - b.exp);
+            ranks.forEach(t => {
+                if (t.exp > 0 && oldExp < t.exp && newExp >= t.exp) {
+                    if (t.reward > 0) {
+                        window.appData.roster[sidx].coins = (window.appData.roster[sidx].coins || 0) + parseInt(t.reward);
+                        window.logAction(sidx, t.reward, '金幣', `晉升 ${t.name} 獎勵`);
+                        setTimeout(() => {
+                            showToast(`🌟 恭喜 ${window.appData.roster[sidx].name} 晉升為【${t.name}】！獲得 ${t.reward} 枚金幣！`);
+                            playSuccessSound(); window.renderAll();
+                        }, 1500); 
+                    } else {
+                        setTimeout(() => {
+                            showToast(`🌟 恭喜 ${window.appData.roster[sidx].name} 晉升為【${t.name}】！`);
+                            playSuccessSound(); window.renderAll();
+                        }, 1500);
+                    }
+                }
+            });
+        }
+    }
+
+    window.changeCoin = function(sidx, delta, reason = '手動調整', silent = false) {
+        if (!window.appData.roster[sidx]) return;
+        if (typeof window.appData.roster[sidx].coins === 'undefined') window.appData.roster[sidx].coins = 0;
+        window.appData.roster[sidx].coins += delta;
+        
+        window.logAction(sidx, delta, '金幣', reason);
+        
+        if (!silent) {
+            playCoinSound();
+            if (delta > 0) showToast(`✨ ${window.appData.roster[sidx].name} ${reason} 獲得 ${delta} 金幣！`);
+            else showToast(`💔 ${window.appData.roster[sidx].name} ${reason} 失去 ${Math.abs(delta)} 金幣...`);
+            window.triggerAutoSave(); window.renderAll();
+        }
+    }
+
+    window.updateStatus = function(aid, sidx, newStatus) {
+        const a = window.appData.assignments.find(i => i.id == aid);
+        if(a) {
+            if(!a.statuses) a.statuses = Array(window.appData.roster.length).fill(0);
+            const oldStatus = a.statuses[sidx] || 0;
+            a.statuses[sidx] = newStatus;
+            
+            if (oldStatus !== 3 && newStatus === 3) {
+                window.changeExp(sidx, 5, `完成任務 [${a.title}]`, true); 
+                playSuccessSound(); showToast(`🎉 討伐成功！${window.appData.roster[sidx].name} 獲得 5 EXP`);
+            } else if (oldStatus === 3 && newStatus !== 3) {
+                window.changeExp(sidx, -5, `取消任務 [${a.title}]`, true); 
+                showToast(`⚠️ 取消討伐！${window.appData.roster[sidx].name} 收回 5 EXP`);
+            }
+            window.triggerAutoSave(); window.renderAll();
+        }
+    }
+
+    window.toggleStatus = function(aid, idx) {
+        resumeAudio();
+        const a = window.appData.assignments.find(x => x.id == aid); if(!a) return;
+        let s = (a.statuses || [])[idx] || 0;
+        s = (s + 1) % 4; 
+        window.updateStatus(aid, idx, s);
+    }
+
+    // --------------------------------------------------------
+    // 7. Rendering Functions
+    // --------------------------------------------------------
+    window.initApp = function() {
         const color = localStorage.getItem('hwColor') || 'guild';
         document.documentElement.setAttribute('data-color-theme', color);
         document.querySelectorAll('.theme-option').forEach(el => el.classList.toggle('active', el.dataset.theme === color));
@@ -1201,136 +1288,39 @@
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
         document.getElementById('darkModeToggle').checked = isDark;
 
-        switchView('view-dashboard');
+        window.switchView('view-dashboard');
         loadDataFromFirebase();
     }
 
-    function onDataLoaded() {
-        if(!data.settings) data.settings = { arrivalTime: "07:50", bgmId: "" };
-        document.getElementById('ipSettingsArrivalTime').value = data.settings.arrivalTime || "07:50";
-        document.getElementById('ipSettingsBgmId').value = data.settings.bgmId || "";
+    window.onDataLoaded = function() {
+        if(!window.appData.settings) window.appData.settings = { arrivalTime: "07:50", bgmId: "" };
+        document.getElementById('ipSettingsArrivalTime').value = window.appData.settings.arrivalTime || "07:50";
+        document.getElementById('ipSettingsBgmId').value = window.appData.settings.bgmId || "";
         
-        populateTeacherDropdowns(); 
-        updateSubjectDropdown(); 
-        resetNewAssignmentState();
-        checkAndResetDiscipline(); 
-        renderAll(); 
-        renderChecklists(); 
+        window.populateTeacherDropdowns(); 
+        window.updateSubjectDropdown(); 
+        window.resetNewAssignmentState();
+        window.checkAndResetDiscipline(); 
+        window.renderAll(); 
+        window.renderChecklists(); 
     }
 
-    function renderAll() {
+    window.renderAll = function() {
         const v = document.querySelector('.view.show'); if(!v) return;
-        if (v.id === 'view-dashboard') renderDashboard();
-        else if (v.id === 'view-student-status') renderStudentStatus();
-        else if (v.id === 'view-checkin') renderCheckIn();
-        else if (v.id === 'view-roster') renderRosterEditor();
-        else if (v.id === 'view-attendance') initAttendanceView();
+        if (v.id === 'view-dashboard') window.renderDashboard();
+        else if (v.id === 'view-student-status') window.renderStudentStatus();
+        else if (v.id === 'view-checkin') window.renderCheckIn();
+        else if (v.id === 'view-roster') window.renderRosterEditor();
+        else if (v.id === 'view-attendance') window.initAttendanceView();
     }
 
-    // --- 8. 核心加扣分與狀態邏輯 ---
-    function logAction(sidx, delta, type, reason) {
-        if(!data.expLogs) data.expLogs = [];
-        data.expLogs.push({
-            time: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
-            name: data.roster[sidx].name,
-            delta: delta > 0 ? '+' + delta + ' ' + type : delta + ' ' + type,
-            reason: reason
-        });
-        if(data.expLogs.length > 2000) data.expLogs.shift();
-    }
-
-    function changeExp(sidx, delta, reason = '系統調整', silent = false) {
-        if (!data.roster[sidx]) return;
-        const oldExp = data.roster[sidx].exp || 0;
-        data.roster[sidx].exp = oldExp + delta;
-        if (data.roster[sidx].exp < 0) data.roster[sidx].exp = 0;
-        const newExp = data.roster[sidx].exp;
-        
-        logAction(sidx, delta, 'EXP', reason);
-        
-        if (!silent) {
-            playSuccessSound();
-            if (delta > 0) showToast(`✨ ${data.roster[sidx].name} 獲得 ${delta} EXP！`);
-            else showToast(`💔 ${data.roster[sidx].name} 失去 ${Math.abs(delta)} EXP...`);
-            triggerAutoSave(); renderAll();
-        }
-
-        if (delta > 0) {
-            const ranks = [...(data.rankSettings || defaultData.rankSettings)].sort((a,b) => a.exp - b.exp);
-            ranks.forEach(t => {
-                if (t.exp > 0 && oldExp < t.exp && newExp >= t.exp) {
-                    if (t.reward > 0) {
-                        data.roster[sidx].coins = (data.roster[sidx].coins || 0) + parseInt(t.reward);
-                        logAction(sidx, t.reward, '金幣', `晉升 ${t.name} 獎勵`);
-                        setTimeout(() => {
-                            showToast(`🌟 恭喜 ${data.roster[sidx].name} 晉升為【${t.name}】！獲得 ${t.reward} 枚金幣！`);
-                            playSuccessSound(); renderAll();
-                        }, 1500); 
-                    } else {
-                        setTimeout(() => {
-                            showToast(`🌟 恭喜 ${data.roster[sidx].name} 晉升為【${t.name}】！`);
-                            playSuccessSound(); renderAll();
-                        }, 1500);
-                    }
-                }
-            });
-        }
-    }
-    window.changeExp = changeExp;
-
-    function changeCoin(sidx, delta, reason = '手動調整', silent = false) {
-        if (!data.roster[sidx]) return;
-        if (typeof data.roster[sidx].coins === 'undefined') data.roster[sidx].coins = 0;
-        data.roster[sidx].coins += delta;
-        
-        logAction(sidx, delta, '金幣', reason);
-        
-        if (!silent) {
-            playCoinSound();
-            if (delta > 0) showToast(`✨ ${data.roster[sidx].name} ${reason} 獲得 ${delta} 金幣！`);
-            else showToast(`💔 ${data.roster[sidx].name} ${reason} 失去 ${Math.abs(delta)} 金幣...`);
-            triggerAutoSave(); renderAll();
-        }
-    }
-    window.changeCoin = changeCoin;
-
-    function updateStatus(aid, sidx, newStatus) {
-        const a = data.assignments.find(i => i.id == aid);
-        if(a) {
-            if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
-            const oldStatus = a.statuses[sidx] || 0;
-            a.statuses[sidx] = newStatus;
-            
-            if (oldStatus !== 3 && newStatus === 3) {
-                changeExp(sidx, 5, `完成任務 [${a.title}]`, true); 
-                playSuccessSound(); showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`);
-            } else if (oldStatus === 3 && newStatus !== 3) {
-                changeExp(sidx, -5, `取消任務 [${a.title}]`, true); 
-                showToast(`⚠️ 取消討伐！${data.roster[sidx].name} 收回 5 EXP`);
-            }
-            triggerAutoSave(); renderAll();
-        }
-    }
-    window.updateStatus = updateStatus;
-
-    function toggleStatus(aid, idx) {
-        resumeAudio();
-        const a = data.assignments.find(x => x.id == aid); if(!a) return;
-        let s = (a.statuses || [])[idx] || 0;
-        s = (s + 1) % 4; 
-        updateStatus(aid, idx, s);
-    }
-    window.toggleStatus = toggleStatus;
-
-    // --- 9. 各大頁面渲染函數 ---
-
-    function renderDashboard() {
+    window.renderDashboard = function() {
         const list = document.getElementById('sideAssignmentList'); list.innerHTML = '';
         
-        let assignments = data.assignments.filter(a => {
+        let assignments = window.appData.assignments.filter(a => {
             if (a.archived) return false;
-            const matchT = currentFilter.teacher === 'all' || a.teacher === currentFilter.teacher;
-            const matchS = currentFilter.subject === 'all' || (a.subject ? a.subject === currentFilter.subject : a.title.includes(currentFilter.subject));
+            const matchT = window.currentFilter.teacher === 'all' || a.teacher === window.currentFilter.teacher;
+            const matchS = window.currentFilter.subject === 'all' || (a.subject ? a.subject === window.currentFilter.subject : a.title.includes(window.currentFilter.subject));
             return matchT && matchS;
         }).sort((a,b) => a.date < b.date ? 1 : -1);
 
@@ -1343,16 +1333,16 @@
 
         assignments.forEach(a => {
             const el = document.createElement('div'); 
-            el.className = 'side-item' + (currentAssignmentId === a.id ? ' active' : '');
+            el.className = 'side-item' + (window.currentAssignmentId === a.id ? ' active' : '');
             
             const indices = a.assignedIndices || 'all';
-            const total = indices === 'all' ? data.roster.length : indices.length;
+            const total = indices === 'all' ? window.appData.roster.length : indices.length;
             const completed = (a.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
             const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
             const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
 
             let hasStatus1 = false; let allStatus0 = true; let assignedCount = 0; let missingCount = 0;   
-            for (let i = 0; i < data.roster.length; i++) {
+            for (let i = 0; i < window.appData.roster.length; i++) {
                 if (indices === 'all' || indices.includes(i)) {
                     assignedCount++; const st = (a.statuses || [])[i] || 0;
                     if (st === 1) hasStatus1 = true; if (st !== 0) allStatus0 = false; if (st === 0 || st === 2) missingCount++; 
@@ -1385,13 +1375,13 @@
             el.onmouseleave = () => window.hideAssignmentTooltip();
             el.onmousemove = (e) => window.moveAssignmentTooltip(e);
 
-            el.onclick = () => { currentAssignmentId = a.id; renderDashboardDetail(a.id); renderDashboard(); };
+            el.onclick = () => { window.currentAssignmentId = a.id; window.renderDashboardDetail(a.id); window.renderDashboard(); };
             list.appendChild(el);
         });
-        if(assignments.length > 0 && !currentAssignmentId) {
-            currentAssignmentId = assignments[0].id;
+        if(assignments.length > 0 && !window.currentAssignmentId) {
+            window.currentAssignmentId = assignments[0].id;
         }
-        if(currentAssignmentId) renderDashboardDetail(currentAssignmentId);
+        if(window.currentAssignmentId) window.renderDashboardDetail(window.currentAssignmentId);
     }
 
     window.openQuickDebtMenu = function(e, sidx, oldDebtsString) {
@@ -1409,7 +1399,7 @@
         
         menu.dataset.currentSidx = studentId;
         const list = document.getElementById('quickDebtList');
-        const student = data.roster[sidx];
+        const student = window.appData.roster[sidx];
 
         document.getElementById('quickDebtTitle').innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1444,8 +1434,8 @@
         menu.style.left = x + 'px'; menu.style.top = y + 'px';
     };
 
-    function renderDashboardDetail(id) {
-        const a = data.assignments.find(x => x.id == id); if (!a) return;
+    window.renderDashboardDetail = function(id) {
+        const a = window.appData.assignments.find(x => x.id == id); if (!a) return;
         document.getElementById('dashEmptyState').style.display = 'none';
         document.getElementById('dashDetailPanel').classList.add('show');
         document.getElementById('dashDetailTitle').innerHTML = `
@@ -1455,14 +1445,14 @@
         `;
         
         const grid = document.getElementById('dashGridContainer'); grid.innerHTML = '';
-        data.roster.forEach((s, i) => {
+        window.appData.roster.forEach((s, i) => {
             const isAssigned = (a.assignedIndices === 'all') || (a.assignedIndices && a.assignedIndices.includes(i));
             const st = a.statuses[i] || 0; 
             const div = document.createElement('div'); div.className = `seatItem ${!isAssigned ? 'not-assigned' : ''}`;
             
             let oldDebts = [];
             if(isAssigned) {
-                (data.assignments || []).forEach(otherA => {
+                (window.appData.assignments || []).forEach(otherA => {
                     if (otherA.id !== a.id && !otherA.archived) {
                         const otherIndices = otherA.assignedIndices || 'all';
                         if (otherIndices === 'all' || otherIndices.includes(i)) {
@@ -1485,37 +1475,22 @@
                     <span style="font-size:10px; color:var(--muted);">⭐ ${s.exp||0} 💰 ${s.coins||0}</span>
                 </div>
             `;
-            
             grid.appendChild(div);
         });
 
         document.getElementById('btnDeleteCurrent').onclick = () => {
-            targetAssignmentIdToDelete = id; 
+            window.targetAssignmentIdToDelete = id; 
             document.getElementById('deleteTargetTitle').innerText = a.title; 
             document.getElementById('deleteChoiceModal').classList.add('show');
         };
     }
 
-    document.getElementById('rangeSize').addEventListener('input', (e) => { 
-        document.documentElement.style.setProperty('--seat', `${e.target.value}px`); 
-        document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`); 
-    });
-
-    // 🟢 冒險者狀態與紀律
-    function checkAndResetDiscipline() {
-        const today = getTaipeiDateString();
-        if (!data.discipline || data.discipline.date !== today) { 
-            data.discipline = { date: today, statuses: {} }; 
-            triggerAutoSave(); 
-        }
-    }
-
-    function renderStudentStatus() {
+    window.renderStudentStatus = function() {
         const con = document.getElementById('studentStatusContainer'); 
         con.innerHTML = '';
         
         const tb = document.getElementById('batchExpToolbar');
-        if (isBatchExpMode) {
+        if (window.isBatchExpMode) {
             tb.classList.add('show');
             document.getElementById('btnToggleBatchExp').innerHTML = '<i class="bi bi-x-lg"></i> 取消加扣分';
             document.getElementById('btnToggleBatchExp').classList.add('warn');
@@ -1525,23 +1500,23 @@
             document.getElementById('btnToggleBatchExp').classList.remove('warn');
         }
 
-        if (isBatchMode) {
+        if (window.isBatchMode) {
             document.getElementById('btnBatchExport').style.display = 'inline-block';
             document.getElementById('btnBatchSelectAll').style.display = 'inline-block';
             document.getElementById('btnToggleBatchMode').innerHTML = '<i class="bi bi-x-lg"></i> 取消列印';
             document.getElementById('btnToggleBatchMode').classList.add('warn');
         } else {
-            if (!isBatchExpMode) document.getElementById('btnBatchSelectAll').style.display = 'none';
+            if (!window.isBatchExpMode) document.getElementById('btnBatchSelectAll').style.display = 'none';
             document.getElementById('btnBatchExport').style.display = 'none';
             document.getElementById('btnToggleBatchMode').innerHTML = `<i class="bi bi-printer"></i> 批量列印卷軸`;
             document.getElementById('btnToggleBatchMode').classList.remove('warn');
         }
 
-        checkAndResetDiscipline();
+        window.checkAndResetDiscipline();
 
-        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        const activeAssigns = (window.appData.assignments || []).filter(a => !a.archived);
         const clearedStudents = []; const helpStudents = [];
-        data.roster.forEach((s, i) => {
+        window.appData.roster.forEach((s, i) => {
             let pendingCount = 0;
             for (let a of activeAssigns) {
                 const indices = a.assignedIndices || 'all';
@@ -1556,7 +1531,7 @@
         clearedStudents.sort((a,b)=>a-b); helpStudents.sort((a,b)=>a-b);
 
         const overviewCon = document.getElementById('studentStatusOverviewContainer');
-        if (!isBatchMode && !isBatchExpMode) { 
+        if (!window.isBatchMode && !window.isBatchExpMode) { 
             overviewCon.style.display = 'block';
             overviewCon.innerHTML = `
                 <div class="status-overview">
@@ -1576,12 +1551,12 @@
         const grid = document.createElement('div');
         grid.className = 'student-status-grid';
         
-        data.roster.forEach((s, i) => {
-            const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
+        window.appData.roster.forEach((s, i) => {
+            const st = (window.appData.discipline && window.appData.discipline.statuses) ? (window.appData.discipline.statuses[i] || 0) : 0;
             const avatarBg = st === 0 ? '#22c55e' : st === 1 ? '#eab308' : '#ef4444';
             
             let debts = [];
-            data.assignments.forEach(a => {
+            window.appData.assignments.forEach(a => {
                 if(!a.archived) {
                     const indices = a.assignedIndices || 'all';
                     if(indices === 'all' || indices.includes(i)) {
@@ -1600,8 +1575,8 @@
 
             const badgeHtml = debts.length > 0 ? `<div class="debt-badge" style="top:5px; right:0px;" onclick="window.openQuickDebtMenu(event, ${i}, '${encodeURIComponent(JSON.stringify(debts))}')">${debts.length}</div>` : '';
             
-            const printBtnHtml = (debts.length > 0 && !isBatchMode && !isBatchExpMode) ? `<i class="bi bi-printer" style="position:absolute; top:12px; right:12px; cursor:pointer; color:var(--muted); font-size:16px; padding:4px; transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="window.printSingleStudent(${i})" title="列印卷軸"></i>` : '';
-            const checkboxHtml = isBatchMode ? `<input type="checkbox" class="batch-export-checkbox" data-sidx="${i}" style="position:absolute; top:12px; right:12px; transform:scale(1.5);">` : isBatchExpMode ? `<input type="checkbox" class="batch-exp-checkbox" data-sidx="${i}" style="position:absolute; top:12px; right:12px; transform:scale(1.5);">` : '';
+            const printBtnHtml = (debts.length > 0 && !window.isBatchMode && !window.isBatchExpMode) ? `<i class="bi bi-printer" style="position:absolute; top:12px; right:12px; cursor:pointer; color:var(--muted); font-size:16px; padding:4px; transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="window.printSingleStudent(${i})" title="列印卷軸"></i>` : '';
+            const checkboxHtml = window.isBatchMode ? `<input type="checkbox" class="batch-export-checkbox" data-sidx="${i}" style="position:absolute; top:12px; right:12px; transform:scale(1.5);">` : window.isBatchExpMode ? `<input type="checkbox" class="batch-exp-checkbox" data-sidx="${i}" style="position:absolute; top:12px; right:12px; transform:scale(1.5);">` : '';
 
             const card = document.createElement('div');
             card.className = 'd-student-card';
@@ -1618,7 +1593,7 @@
                     </div>
                     <div style="flex:1; min-width:0; padding-right:20px;">
                         <div style="font-weight:900; font-size:16px; display:flex; align-items:baseline; gap:4px; flex-wrap:wrap;">
-                            ${s.name} ${getRankHtml(s.exp||0)}
+                            ${s.name} ${window.getRankHtml(s.exp||0)}
                         </div>
                         <div style="font-size:12px; margin-top:2px; font-weight:bold; color:var(--muted);">
                             ⭐ ${s.exp||0} &nbsp;|&nbsp; 💰 ${s.coins||0}
@@ -1630,7 +1605,7 @@
                     ${tasksHtml || '<div style="color:#888; font-size:12px; text-align:center; padding: 10px 0;">🎉 無欠交作業</div>'}
                 </div>
 
-                <div style="display:${isBatchExpMode ? 'flex' : 'none'}; width:100%; align-items:center; gap:4px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--tbl-border);">
+                <div style="display:${window.isBatchExpMode ? 'flex' : 'none'}; width:100%; align-items:center; gap:4px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--tbl-border);">
                     <button class="btn sm warn ghost icon-only" onclick="window.changeCoin(${i}, -1, '手動扣款')" style="padding:2px 6px;">-1</button>
                     <input type="number" id="scCoinInput_${i}" style="width:40px; padding:2px; text-align:center; font-size:12px;" placeholder="$$">
                     <button class="btn sm ghost icon-only" onclick="window.changeCoin(${i}, 1, '手動獎勵')" style="padding:2px 6px;">+1</button>
@@ -1644,25 +1619,17 @@
         con.appendChild(grid);
     }
 
-    window.applySingleCustomCoin = function(idx) {
-        const val = parseInt(document.getElementById(`scCoinInput_${idx}`).value);
-        if(!isNaN(val) && val !== 0) {
-            window.changeCoin(idx, val, '手動調整');
-            document.getElementById(`scCoinInput_${idx}`).value = '';
-        }
-    };
-
     window.toggleCardTaskStatus = function(e, aid, sidx) {
         e.stopPropagation();
-        const a = data.assignments.find(x => x.id == aid); if(!a) return;
+        const a = window.appData.assignments.find(x => x.id == aid); if(!a) return;
         const currentStatus = a.statuses[sidx] || 0;
         
         if (currentStatus === 2) {
-            if (confirm(`【${data.roster[sidx].name}】的「${a.title}」\n是否已完成並改為「討伐成功」？`)) {
-                updateStatus(aid, sidx, 3);
+            if (confirm(`【${window.appData.roster[sidx].name}】的「${a.title}」\n是否已完成並改為「討伐成功」？`)) {
+                window.updateStatus(aid, sidx, 3);
             }
         } else {
-            pickerTarget = { idx: sidx, aid: aid };
+            window.pickerTarget = { idx: sidx, aid: aid };
             const picker = document.getElementById('statusPicker');
             picker.style.top = (e.clientY + 10) + 'px'; 
             picker.style.left = (e.clientX + 10) + 'px'; 
@@ -1670,57 +1637,45 @@
         }
     };
 
-    document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
-        let count = 0;
-        lastRosterState = JSON.stringify(data.roster);
-        
-        data.roster.forEach((s, i) => {
-            if (((data.discipline.statuses || {})[i] || 0) === 0) { 
-                changeCoin(i, 1, '綠燈區獎勵', true); 
-                count++; 
-            }
-        });
-        if (count > 0) { 
-            playSuccessSound(); 
-            triggerAutoSave(); 
-            renderAll(); 
-            showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
-                if(lastRosterState) {
-                    data.roster = JSON.parse(lastRosterState);
-                    triggerAutoSave();
-                    renderAll();
-                    showToast("已復原全體加分操作！");
-                }
-            });
-        }
-    });
-
     window.cycleTrafficLight = function(sidx) { 
-        data.discipline.statuses[sidx] = ((data.discipline.statuses[sidx] || 0) + 1) % 3; 
-        triggerAutoSave(); 
-        renderStudentStatus(); 
+        window.appData.discipline.statuses[sidx] = ((window.appData.discipline.statuses[sidx] || 0) + 1) % 3; 
+        window.triggerAutoSave(); 
+        window.renderStudentStatus(); 
     };
 
-    document.getElementById('btnToggleBatchExp').addEventListener('click', () => { 
-        isBatchExpMode = !isBatchExpMode; 
-        if (isBatchExpMode) isBatchMode = false; 
-        const btnSelectAll = document.getElementById('btnBatchSelectAll');
-        if (isBatchExpMode || isBatchMode) { btnSelectAll.style.display = 'inline-block'; } 
-        else { btnSelectAll.style.display = 'none'; }
-        renderStudentStatus(); 
-    });
+    window.applyBatchExp = function(delta, presetReason) {
+        const checked = document.querySelectorAll('.batch-exp-checkbox:checked');
+        if (!checked.length) { alert("請先勾選學生！"); return; }
+        checked.forEach(cb => {
+            const idx = parseInt(cb.dataset.sidx);
+            window.changeExp(idx, delta, presetReason, true);
+            cb.checked = false; 
+        });
+        window.playSuccessSound();
+        window.showToast(`✨ 已為 ${checked.length} 名學生套用：${presetReason} (${delta>0?'+'+delta:delta} EXP)`);
+        window.triggerAutoSave(); window.renderAll();
+    };
+
+    window.applyCustomBatchExp = function() {
+        const val = parseInt(document.getElementById('customExpVal').value);
+        const reason = document.getElementById('customExpReason').value || '自訂調整';
+        if (isNaN(val)) { alert("請輸入分數"); return; }
+        window.applyBatchExp(val, reason);
+        document.getElementById('customExpVal').value = '';
+        document.getElementById('customExpReason').value = '';
+    };
 
     window.applyBatchCoin = function(delta, presetReason) {
         const checked = document.querySelectorAll('.batch-exp-checkbox:checked');
         if (!checked.length) { alert("請先勾選學生！"); return; }
         checked.forEach(cb => {
             const idx = parseInt(cb.dataset.sidx);
-            changeCoin(idx, delta, presetReason, true);
+            window.changeCoin(idx, delta, presetReason, true);
             cb.checked = false; 
         });
-        playSuccessSound();
-        showToast(`✨ 已為 ${checked.length} 名學生套用：${presetReason} (${delta>0?'+'+delta:delta} 金幣)`);
-        triggerAutoSave(); renderAll();
+        window.playSuccessSound();
+        window.showToast(`✨ 已為 ${checked.length} 名學生套用：${presetReason} (${delta>0?'+'+delta:delta} 金幣)`);
+        window.triggerAutoSave(); window.renderAll();
     };
 
     window.applyCustomBatchCoin = function() {
@@ -1732,170 +1687,17 @@
         document.getElementById('customExpReason').value = '';
     };
 
-    // 🟢 晨間報到
-    function renderCheckIn() {
-        const today = getTaipeiDateString();
-        if (!data.attendance[today]) { 
-            data.attendance[today] = data.roster.map(() => ({ status: -1, note: '' })); 
-            triggerAutoSave(); 
+    window.applySingleCustomCoin = function(idx) {
+        const val = parseInt(document.getElementById(`scCoinInput_${idx}`).value);
+        if(!isNaN(val) && val !== 0) {
+            window.changeCoin(idx, val, '手動調整');
+            document.getElementById(`scCoinInput_${idx}`).value = '';
         }
-        
-        const grid = document.getElementById('checkinGrid'); grid.innerHTML = '';
-        const limitTime = data.settings.arrivalTime || "07:50"; 
-        document.getElementById('dispArrivalTime').innerText = limitTime;
-
-        data.roster.forEach((s, i) => {
-            const record = data.attendance[today][i] || { status: -1, note: '' };
-            const isCheckedIn = record.status !== -1;
-            const div = document.createElement('div'); div.className = 'seatItem';
-            div.style.flexDirection = 'column'; div.style.padding = '12px 8px'; div.style.border = '3px solid var(--tbl-border)'; div.style.borderRadius = '16px'; div.style.cursor = isCheckedIn ? 'default' : 'pointer'; div.style.textAlign = 'center'; div.style.userSelect = 'none';
-            
-            if (record.status === 0) { div.style.background = '#dcfce7'; div.style.borderColor = '#22c55e'; div.style.color = '#166534'; } 
-            else if (record.status === 1) { div.style.background = '#ffedd5'; div.style.borderColor = '#f97316'; div.style.color = '#9a3412'; } 
-            else { div.style.background = 'var(--card)'; }
-            
-            if (isCheckedIn) div.style.transform = 'translateY(4px)';
-            
-            div.innerHTML = `
-                <div style="font-size:28px; font-weight:900; margin-bottom:4px; line-height:1;">${s.no}</div>
-                <div style="font-weight:bold; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${s.name}</div>
-                <div style="font-size:12px; margin-top:8px; font-weight:bold; background:rgba(255,255,255,0.4); border-radius:6px; padding:4px;">
-                    ${record.status === 0 ? '✔ 準時' : (record.status === 1 ? '⚠️ 遲到' : '點擊報到')}
-                </div>
-            `;
-            
-            if (!isCheckedIn) {
-                div.onmouseover = () => { div.style.filter = 'brightness(0.9)'; };
-                div.onmouseout = () => { div.style.filter = 'brightness(1)'; };
-                div.onmousedown = () => { div.style.transform = 'translateY(4px)'; div.style.boxShadow = '0 0 0 var(--tbl-border)'; };
-                div.onmouseup = () => { div.style.transform = 'translateY(0)'; div.style.boxShadow = '0 4px 0 var(--tbl-border)'; };
-                div.onclick = () => window.handleStudentCheckIn(i, limitTime);
-            }
-            grid.appendChild(div);
-        });
-    }
-
-    window.handleStudentCheckIn = function(idx, limitTime) {
-        resumeAudio();
-        const today = getTaipeiDateString();
-        const nowShort = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' });
-        
-        const isLate = nowShort > limitTime;
-        data.attendance[today][idx] = { status: isLate ? 1 : 0, note: nowShort };
-        
-        if (!isLate) { 
-            changeCoin(idx, 1, '準時報到', true); 
-            showToast(`✨ ${data.roster[idx].name} 準時，+1 金幣`); 
-            playSuccessSound();
-        } else { 
-            showToast(`⚠️ ${data.roster[idx].name} 遲到了`); 
-            playTickSound();
-        }
-        
-        triggerAutoSave(); renderCheckIn();
     };
 
-    // 🟢 每日點名
-    function initAttendanceView() {
-        const date = document.getElementById('attDatePicker').value;
-        if (!data.attendance[date]) {
-            data.attendance[date] = data.roster.map(() => ({ status: 0, note: '' }));
-        }
-        renderAttendanceUI();
-    }
-
-    function renderAttendanceUI() {
-        const date = document.getElementById('attDatePicker').value;
-        const currentData = data.attendance[date];
-        const list = document.getElementById('attendanceList');
-        list.innerHTML = '';
-        
-        let stats = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0};
-
-        data.roster.forEach((s, i) => {
-            const r = currentData[i] || { status: 0, note: '' };
-            if(stats[r.status] !== undefined) stats[r.status]++;
-            
-            const div = document.createElement('div'); div.className = 'att-card';
-            let btns = '';
-            [{id:0,l:'出席'},{id:1,l:'遲到'},{id:2,l:'早退'},{id:3,l:'病假'},{id:5,l:'事假'},{id:4,l:'公假'}].forEach(o => {
-                btns += `<button class="att-btn ${r.status===o.id?'active':''}" onclick="window.setAttStatus('${date}', ${i}, ${o.id})">${o.l}</button>`;
-            });
-            
-            let noteHtml = '';
-            if (r.note) {
-                let isTime = /^\d{2}:\d{2}$/.test(r.note);
-                let noteColor = isTime ? '#1d4ed8' : 'var(--danger)';
-                let noteBg = isTime ? '#dbeafe' : '#fee2e2';
-                let noteBorder = isTime ? '#bfdbfe' : '#fecaca';
-                let noteIcon = isTime ? 'bi-clock' : 'bi-pencil';
-                noteHtml = `<span class="att-note" style="display:inline-block; background:${noteBg}; color:${noteColor}; border-color:${noteBorder}; padding: 4px 8px; border-radius: 12px;"><i class="bi ${noteIcon}"></i> ${r.note}</span>`;
-            }
-
-            div.innerHTML = `<div class="att-no">${s.no}</div><div class="att-name">${s.name} ${noteHtml}</div><div style="display:flex; flex-wrap:wrap; gap:4px;">${btns}</div>`;
-            list.appendChild(div);
-        });
-
-        document.getElementById('statPresent').innerText = stats[0];
-        document.getElementById('statLate').innerText = stats[1];
-        document.getElementById('statEarly').innerText = stats[2];
-        document.getElementById('statSick').innerText = stats[3];
-        document.getElementById('statPersonal').innerText = stats[5];
-        document.getElementById('statOfficial').innerText = stats[4];
-    }
-
-    window.setAttStatus = function(date, idx, status) {
-        let note = '';
-        if (status === 2 || status === 3) {
-            const t = prompt("請輸入備註 (例如：發燒、14:00 早退)：");
-            if (t) note = t;
-        }
-        data.attendance[date][idx] = { status, note };
-        triggerAutoSave();
-        renderAttendanceUI();
-    };
-
-    document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
-    document.getElementById('btnSaveAttendance').addEventListener('click', () => { showToast("點名已儲存同步！"); triggerAutoSave(); });
-    
-    document.getElementById('btnAdminAttendance').addEventListener('click', () => { 
-        document.getElementById('adminProfileModal').classList.remove('show'); 
-        document.getElementById('attDatePicker').value = getTaipeiDateString(); 
-        switchView('view-attendance'); 
-    });
-
-    // 🟢 公會名冊編輯
-    function renderRosterEditor() {
-        const d = document.getElementById('rosterEditor'); d.innerHTML = '';
-        data.roster.forEach(s => {
-            d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"></div>`;
-        });
-    }
-
-    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
-        const div = document.getElementById('rosterEditor'); const c = div.querySelectorAll('.roster-item').length + 1;
-        const d = document.createElement('div'); d.className = 'roster-item';
-        d.innerHTML = `<input type="number" value="${c}" class="roster-no-input"><input class="roster-name-input">`;
-        div.appendChild(d);
-    });
-
-    document.getElementById('btnApplyRoster').addEventListener('click', () => {
-        const r = [];
-        document.querySelectorAll('.roster-item').forEach(d => {
-            const no = parseInt(d.querySelector('.roster-no-input').value);
-            const name = d.querySelector('.roster-name-input').value.trim();
-            if(no && name) {
-                const existing = data.roster.find(x => x.no === no && x.name === name);
-                r.push({ no, name, exp: existing ? existing.exp : 0, coins: existing ? existing.coins : 0 });
-            }
-        });
-        data.roster = r; triggerAutoSave(); showToast("✅ 名單已更新");
-    });
-
-    // 🌟 捲軸列印邏輯
     window.printSingleStudent = function(sidx) {
-        const student = data.roster[sidx]; const printDate = new Date().toLocaleDateString('zh-TW');
-        const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
+        const student = window.appData.roster[sidx]; const printDate = new Date().toLocaleDateString('zh-TW');
+        const tasks = window.appData.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
                                       .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
         
         const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:10px 0; border-bottom:1px dotted #ccc; font-size:18px;">☐ [${t.date}] ${t.title} <span style="font-size:14px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') 
@@ -1911,449 +1713,538 @@
         w.document.close();
     };
 
-    document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
-        isBatchMode = !isBatchMode; 
-        if (isBatchMode) isBatchExpMode = false;
-        
-        const btnSelectAll = document.getElementById('btnBatchSelectAll');
-        if (isBatchExpMode || isBatchMode) {
-            btnSelectAll.style.display = 'inline-block';
-        } else {
-            btnSelectAll.style.display = 'none';
-        }
-        renderStudentStatus(); 
-    });
+    window.showAssignmentTooltip = function(e, a) {
+        if (!a) return;
+        const indices = a.assignedIndices || 'all'; const missing = []; const redo = [];
+        window.appData.roster.forEach((s, i) => {
+            if (indices === 'all' || indices.includes(i)) {
+                const status = (a.statuses || [])[i] || 0;
+                if (status === 0) missing.push(s.no); if (status === 2) redo.push(s.no);
+            }
+        });
+        if (missing.length === 0 && redo.length === 0) return;
+        let html = `<h4>${a.title}</h4><ul>`;
+        if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
+        if (missing.length) html += `<li class="t-miss">未交：${missing.join(', ')}</li>`;
+        html += `</ul>`;
+        const toolTipEl = document.getElementById('assignmentTooltip');
+        toolTipEl.innerHTML = html; toolTipEl.style.display = 'block'; window.moveAssignmentTooltip(e);
+    };
 
-    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
-        const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
-        const allChecked = Array.from(cbs).every(c => c.checked);
-        cbs.forEach(c => c.checked = !allChecked);
-    });
+    window.moveAssignmentTooltip = function(e) {
+        const toolTipEl = document.getElementById('assignmentTooltip');
+        const x = (e.clientX + 15) / APP_SCALE; const y = (e.clientY + 15) / APP_SCALE;
+        toolTipEl.style.top = y + 'px'; toolTipEl.style.left = x + 'px';
+        const rect = toolTipEl.getBoundingClientRect();
+        if((x * APP_SCALE + rect.width) > window.innerWidth) toolTipEl.style.left = ((e.clientX - rect.width - 10) / APP_SCALE) + 'px';
+        if((y * APP_SCALE + rect.height) > window.innerHeight) toolTipEl.style.top = ((e.clientY - rect.height - 10) / APP_SCALE) + 'px';
+    };
+    
+    window.hideAssignmentTooltip = function() { document.getElementById('assignmentTooltip').style.display = 'none'; };
 
-    document.getElementById('btnBatchExport').addEventListener('click', () => {
-        const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
-        if(!checkedBoxes.length) { alert("請先勾選對象"); return; }
-        
-        let cardsHtml = '';
-        checkedBoxes.forEach(cb => {
-            const sidx = parseInt(cb.dataset.sidx); const student = data.roster[sidx];
-            const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
-                                          .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
+    // --------------------------------------------------------
+    // 8. 初始化事件監聽 (DOM Events)
+    // --------------------------------------------------------
+    function bindEvents() {
+        document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
+            let count = 0;
+            window.lastRosterState = JSON.stringify(window.appData.roster);
             
-            const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:6px 0; border-bottom:1px dotted #ccc; font-size:15px;">☐ [${t.date}] ${t.title} <span style="font-size:12px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') : '<li style="color:#888;">🎉 無待辦任務！</li>';
-            
-            cardsHtml += `<div style="border:2px solid #5D4037; border-radius:8px; padding:12px; break-inside:avoid; margin-bottom:15px; background:#fff;">
-                <h3 style="border-bottom:2px dashed #8B4513; margin:0 0 10px 0; padding-bottom:5px;">${student.no}. ${student.name}</h3>
-                <ul style="list-style:none; padding:0; margin:0; min-height:100px;">${listHtml}</ul>
-            </div>`;
+            window.appData.roster.forEach((s, i) => {
+                if (((window.appData.discipline.statuses || {})[i] || 0) === 0) { 
+                    window.changeCoin(i, 1, '綠燈區獎勵', true); 
+                    count++; 
+                }
+            });
+            if (count > 0) { 
+                playSuccessSound(); 
+                window.triggerAutoSave(); 
+                window.renderAll(); 
+                showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
+                    if(window.lastRosterState) {
+                        window.appData.roster = JSON.parse(window.lastRosterState);
+                        window.triggerAutoSave();
+                        window.renderAll();
+                        showToast("已復原全體加分操作！");
+                    }
+                });
+            }
         });
 
-        const w = window.open('', '', 'width=900,height=800');
-        w.document.write(`<html><body style="font-family:sans-serif; background:#f4f4f4; padding:20px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">${cardsHtml}</div>
-            <script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
-        w.document.close();
-    });
-
-    // 🌟 外觀設定主題與夜間模式
-    document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
-    
-    document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
-        if(e.target.classList.contains('theme-option')) {
-            const t = e.target.dataset.theme; 
-            document.documentElement.setAttribute('data-color-theme', t); 
-            localStorage.setItem('hwColor', t); 
-            document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active')); 
-            e.target.classList.add('active'); 
-        }
-    });
-
-    document.getElementById('darkModeToggle').addEventListener('change', (e) => { 
-        const t = e.target.checked ? 'dark' : 'light'; 
-        document.documentElement.setAttribute('data-theme', t); 
-        localStorage.setItem('hwTheme', t); 
-    });
-    
-    document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
-    
-    // 派發對象 Modal 邏輯
-    document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
-        const c = document.getElementById('assignStudentListContainer'); c.innerHTML = '';
-        data.roster.forEach((s, i) => { const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i); const l = document.createElement('label'); l.className = 'assign-student-item'; l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`; c.appendChild(l); });
-        document.getElementById('assignStudentModal').classList.add('show');
-    });
-    document.getElementById('btnConfirmAssign').addEventListener('click', () => {
-        const chks = document.querySelectorAll('#assignStudentListContainer input:checked'); newAssignmentAssignedIndices = Array.from(chks).map(c => parseInt(c.dataset.idx));
-        document.getElementById('assignStatusText').innerText = newAssignmentAssignedIndices.length === data.roster.length ? "發布給：全體冒險者" : `發布給：已選 ${newAssignmentAssignedIndices.length} 位`; 
-        document.getElementById('assignStudentModal').classList.remove('show');
-    });
-    document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
-    document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
-
-    // ⭐ 工具箱 (Toolbox) 初始化與視窗縮放/拖曳邏輯
-    document.getElementById('btnToggleToolbox').addEventListener('click', function() { 
-        const menu = document.getElementById('toolboxMenu');
-        menu.classList.toggle('show'); 
-        this.classList.toggle('active'); 
-    });
-    
-    window.openTool = function(id) { 
-        document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show')); 
-        const win = document.getElementById(id); if(win) win.classList.add('show'); 
-        document.getElementById('toolboxMenu').classList.remove('show'); document.getElementById('btnToggleToolbox').classList.remove('active'); 
-        
-        if (id === 'panelDraw' && document.getElementById('btnModeDrawWheel').classList.contains('active')) {
-            drawWheel();
-        }
-        if (id === 'panelWhiteboard') {
-            initWhiteboard();
-        }
-    }
-    
-    document.addEventListener('click', (e) => { 
-        if (e.target.closest('.tool-close')) { 
-            const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); 
-        }
-        
-        const picker = document.getElementById('statusPicker');
-        if (picker && picker.classList.contains('show') && !picker.contains(e.target) && !e.target.closest('div[onclick^="window.toggleCardTaskStatus"]')) {
-            picker.classList.remove('show');
-        }
-        
-        const menu = document.getElementById('quickDebtMenu');
-        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge') && !e.target.closest('.btn-close-debt')) {
-            menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
-        }
-    });
-
-    // 🚀 工具箱視窗：拖曳移動與雙箭頭縮放邏輯
-    document.querySelectorAll('.tool-window').forEach(win => {
-        // 1. 新增右下角縮放把手
-        const resizeHandle = document.createElement('div');
-        resizeHandle.className = 'resize-handle';
-        resizeHandle.innerHTML = '<i class="bi bi-arrows-angle-expand"></i>';
-        win.appendChild(resizeHandle);
-
-        let isResizing = false;
-        let startX, startScale, baseWidth;
-
-        const doResize = (e) => {
-            if (!isResizing) return;
-            e.preventDefault();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const dx = clientX - startX;
-            let newScale = startScale + (dx / baseWidth);
-            newScale = Math.max(0.6, Math.min(newScale, 2.5)); // 限制縮放比例 0.6 ~ 2.5倍
-            win.style.setProperty('--win-scale', newScale);
-        };
-
-        const stopResize = () => {
-            isResizing = false;
-            document.removeEventListener('mousemove', doResize);
-            document.removeEventListener('mouseup', stopResize);
-            document.removeEventListener('touchmove', doResize);
-            document.removeEventListener('touchend', stopResize);
-        };
-
-        const startResize = (e) => {
-            e.preventDefault();
-            isResizing = true;
-            startScale = parseFloat(win.style.getPropertyValue('--win-scale')) || 1;
-            baseWidth = win.offsetWidth;
-            
-            // 將定位切換為 top/left 才能正確向右下縮放追蹤滑鼠，避免跳動
-            if (win.style.bottom || !win.style.top) {
-                const rect = win.getBoundingClientRect();
-                win.style.bottom = 'auto';
-                win.style.right = 'auto';
-                win.style.top = rect.top + 'px';
-                win.style.left = rect.left + 'px';
-                win.style.transformOrigin = 'top left';
-            }
-            
-            startX = e.touches ? e.touches[0].clientX : e.clientX;
-            
-            document.addEventListener('mousemove', doResize, { passive: false });
-            document.addEventListener('mouseup', stopResize);
-            document.addEventListener('touchmove', doResize, { passive: false });
-            document.addEventListener('touchend', stopResize);
-        };
-
-        resizeHandle.addEventListener('mousedown', startResize);
-        resizeHandle.addEventListener('touchstart', startResize, { passive: false });
-
-        // 2. 標題列拖曳移動邏輯
-        const header = win.querySelector('.tool-header');
-        let isMoving = false;
-        let moveStartX, moveStartY, initialTop, initialLeft;
-
-        const doMove = (e) => {
-            if (!isMoving) return;
-            e.preventDefault();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const dx = clientX - moveStartX;
-            const dy = clientY - moveStartY;
-            win.style.top = (initialTop + dy) + 'px';
-            win.style.left = (initialLeft + dx) + 'px';
-        };
-
-        const stopMove = () => {
-            isMoving = false;
-            document.removeEventListener('mousemove', doMove);
-            document.removeEventListener('mouseup', stopMove);
-            document.removeEventListener('touchmove', doMove);
-            document.removeEventListener('touchend', stopMove);
-        };
-
-        header.addEventListener('mousedown', (e) => {
-            if(e.target.closest('.tool-close')) return;
-            e.preventDefault();
-            isMoving = true;
-            const rect = win.getBoundingClientRect();
-            if (win.style.bottom || !win.style.top) {
-                win.style.bottom = 'auto';
-                win.style.right = 'auto';
-                win.style.transformOrigin = 'top left';
-            }
-            initialTop = rect.top;
-            initialLeft = rect.left;
-            win.style.top = initialTop + 'px';
-            win.style.left = initialLeft + 'px';
-            
-            moveStartX = e.touches ? e.touches[0].clientX : e.clientX;
-            moveStartY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            document.addEventListener('mousemove', doMove, { passive: false });
-            document.addEventListener('mouseup', stopMove);
+        document.getElementById('btnToggleBatchExp').addEventListener('click', () => { 
+            window.isBatchExpMode = !window.isBatchExpMode; 
+            if (window.isBatchExpMode) window.isBatchMode = false; 
+            const btnSelectAll = document.getElementById('btnBatchSelectAll');
+            if (window.isBatchExpMode || window.isBatchMode) { btnSelectAll.style.display = 'inline-block'; } 
+            else { btnSelectAll.style.display = 'none'; }
+            window.renderStudentStatus(); 
         });
-        
-        header.addEventListener('touchstart', (e) => {
-            if(e.target.closest('.tool-close')) return;
-            e.preventDefault();
-            isMoving = true;
-            const rect = win.getBoundingClientRect();
-            if (win.style.bottom || !win.style.top) {
-                win.style.bottom = 'auto';
-                win.style.right = 'auto';
-                win.style.transformOrigin = 'top left';
-            }
-            initialTop = rect.top;
-            initialLeft = rect.left;
-            win.style.top = initialTop + 'px';
-            win.style.left = initialLeft + 'px';
-            
-            moveStartX = e.touches[0].clientX;
-            moveStartY = e.touches[0].clientY;
-            
-            document.addEventListener('touchmove', doMove, { passive: false });
-            document.addEventListener('touchend', stopMove);
-        }, { passive: false });
-    });
 
-    // 跑馬燈
-    document.getElementById('btnMqShow').addEventListener('click', () => { 
-        const txt = document.getElementById('mqTextInput').value; 
-        if(!txt) return; 
-        const el = document.getElementById('marqueeText'); 
-        el.innerText = txt; 
-        el.style.color = document.getElementById('mqColorInput').value;
-        el.style.fontSize = document.getElementById('mqSizeInput').value + 'px';
-        const spd = parseInt(document.getElementById('mqSpeedInput').value); 
-        const duration = Math.max(2, (20 - spd * 1.5)); 
-        el.style.animationDuration = duration + 's'; 
-        
-        document.getElementById('topMarquee').style.display = 'block'; 
-        document.getElementById('panelMarquee').classList.remove('show'); 
-    });
-    document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
-
-    // 計時器邏輯
-    let timerInt = null; let timerSec = 0;
-    function updateTimer() { 
-        document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; 
-    }
-    
-    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { 
-        const addMins = parseInt(e.target.dataset.min);
-        timerSec += addMins * 60;
-        updateTimer();
-    }));
-    
-    document.getElementById('btnTimerStart').addEventListener('click', (e) => { 
-        resumeAudio(); 
-        if(timerInt) { 
-            clearInterval(timerInt); timerInt=null; 
-            e.target.innerHTML=`<i class="bi bi-play-fill"></i> 繼續`; 
-            e.target.classList.remove('warn');
-        } else { 
-            const inM = parseInt(document.getElementById('timerInput').value);
-            const inS = parseInt(document.getElementById('timerInputSec').value);
-            if (!isNaN(inM) || !isNaN(inS)) {
-                timerSec = (inM || 0) * 60 + (inS || 0);
-                document.getElementById('timerInput').value = '';
-                document.getElementById('timerInputSec').value = '';
-                updateTimer();
-            }
+        document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
+            window.isBatchMode = !window.isBatchMode; 
+            if (window.isBatchMode) window.isBatchExpMode = false;
             
-            if(timerSec > 0) { 
-                e.target.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; 
-                e.target.classList.add('warn');
-                timerInt = setInterval(() => { 
-                    if(timerSec > 0) { 
-                        timerSec--; updateTimer(); 
-                    } else { 
-                        clearInterval(timerInt); timerInt=null; 
-                        e.target.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
-                        e.target.classList.remove('warn');
-                        playAlarmSound(); 
-                        showToast("⏰ 時間到！"); 
-                    } 
-                }, 1000); 
+            const btnSelectAll = document.getElementById('btnBatchSelectAll');
+            if (window.isBatchExpMode || window.isBatchMode) {
+                btnSelectAll.style.display = 'inline-block';
+            } else {
+                btnSelectAll.style.display = 'none';
+            }
+            window.renderStudentStatus(); 
+        });
+
+        document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+            const cbs = document.querySelectorAll(window.isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
+            const allChecked = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !allChecked);
+        });
+
+        document.getElementById('btnBatchExport').addEventListener('click', () => {
+            const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
+            if(!checkedBoxes.length) { alert("請先勾選對象"); return; }
+            
+            let cardsHtml = '';
+            checkedBoxes.forEach(cb => {
+                const sidx = parseInt(cb.dataset.sidx); const student = window.appData.roster[sidx];
+                const tasks = window.appData.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
+                                              .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
+                
+                const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:6px 0; border-bottom:1px dotted #ccc; font-size:15px;">☐ [${t.date}] ${t.title} <span style="font-size:12px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') : '<li style="color:#888;">🎉 無待辦任務！</li>';
+                
+                cardsHtml += `<div style="border:2px solid #5D4037; border-radius:8px; padding:12px; break-inside:avoid; margin-bottom:15px; background:#fff;">
+                    <h3 style="border-bottom:2px dashed #8B4513; margin:0 0 10px 0; padding-bottom:5px;">${student.no}. ${student.name}</h3>
+                    <ul style="list-style:none; padding:0; margin:0; min-height:100px;">${listHtml}</ul>
+                </div>`;
+            });
+
+            const w = window.open('', '', 'width=900,height=800');
+            w.document.write(`<html><body style="font-family:sans-serif; background:#f4f4f4; padding:20px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">${cardsHtml}</div>
+                <script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
+            w.document.close();
+        });
+
+        const userBadge = document.getElementById('userEmailDisplay');
+        if(userBadge) {
+            userBadge.addEventListener('click', () => {
+                const list = document.getElementById('adminDebtList'); 
+                if (list) {
+                    list.innerHTML = ''; 
+                    const debts = [];
+                    window.appData.roster.forEach((s, idx) => {
+                        let c = 0; 
+                        window.appData.assignments.forEach(a => { 
+                            if(!a.archived) { 
+                                const st = (a.statuses||[])[idx]||0; 
+                                if(st===0||st===2) c++; 
+                            } 
+                        });
+                        if(c>=5) debts.push({name: s.name, c});
+                    });
+                    if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${d.name} (${d.c})</span>`);
+                    else list.innerHTML = '<p style="color:var(--success)">目前無人欠款！</p>';
+                }
+                document.getElementById('adminProfileModal').classList.add('show');
+            });
+        }
+
+        document.getElementById('btnDownloadArchive').addEventListener('click', () => {
+            const arcs = window.appData.assignments.filter(a => a.archived); 
+            if(!arcs.length) { alert("無封存資料"); return; }
+            let csv = "\uFEFF發布日期,內容,導師," + window.appData.roster.map(s => s.name).join(",") + "\n";
+            arcs.forEach(a => { 
+                const st = a.statuses || []; 
+                csv += `${a.date},"${a.title}",${a.teacher},` + window.appData.roster.map((_, i) => ["未","交","改","完"][st[i]||0]).join(",") + "\n"; 
+            });
+            const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"})); 
+            const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
+        });
+
+        document.getElementById('btnDownloadExpLogs').addEventListener('click', () => {
+            if(!window.appData.expLogs || window.appData.expLogs.length === 0) { alert("目前無任何 加扣分 異動紀錄"); return; }
+            let csv = "\uFEFF紀錄時間,姓名,變動,原因\n";
+            window.appData.expLogs.forEach(log => {
+                csv += `"${log.time}","${log.name}","${log.delta}","${log.reason}"\n`;
+            });
+            const url = URL.createObjectURL(new Blob([csv], {type:"text/csv"})); 
+            const el = document.createElement("a"); el.href=url; el.download="加扣分_異動紀錄.csv"; el.click();
+        });
+
+        document.getElementById('btnClearAssignments').addEventListener('click', () => { 
+            if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { 
+                window.appData.assignments = []; window.appData.attendance = {}; window.triggerAutoSave(); window.renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
             } 
-        } 
-    });
-    
-    document.getElementById('btnTimerReset').addEventListener('click', () => { 
-        clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer(); 
-        const startBtn = document.getElementById('btnTimerStart');
-        startBtn.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
-        startBtn.classList.remove('warn');
-        document.getElementById('timerInput').value=''; 
-        document.getElementById('timerInputSec').value=''; 
-    });
-
-    // 碼表邏輯
-    let swInterval = null; let swTime = 0; let swLastTick = 0;
-    function updateSwDisplay() {
-        let ms = Math.floor((swTime % 1000) / 10);
-        let s = Math.floor((swTime / 1000) % 60);
-        let m = Math.floor(swTime / 60000);
-        document.getElementById('stopwatchDisplay').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
-    }
-    
-    document.getElementById('btnSwStart').addEventListener('click', (e) => {
-        if(swInterval) {
-            clearInterval(swInterval); swInterval = null;
-            e.target.innerHTML = '<i class="bi bi-play-fill"></i> 繼續'; e.target.classList.remove('warn');
-        } else {
-            swLastTick = Date.now();
-            swInterval = setInterval(() => {
-                let now = Date.now(); swTime += (now - swLastTick); swLastTick = now; updateSwDisplay();
-            }, 10);
-            e.target.innerHTML = '<i class="bi bi-pause-fill"></i> 暫停'; e.target.classList.add('warn');
-        }
-    });
-    
-    document.getElementById('btnSwReset').addEventListener('click', () => {
-        clearInterval(swInterval); swInterval = null; swTime = 0; updateSwDisplay();
-        const startBtn = document.getElementById('btnSwStart');
-        startBtn.innerHTML = '<i class="bi bi-play-fill"></i> 開始'; startBtn.classList.remove('warn');
-    });
-
-    // 骰子邏輯 (數字 / 字母)
-    let isNumDice = true;
-    document.getElementById('btnModeNumDice').addEventListener('click', function() {
-        isNumDice = true; this.classList.add('active'); this.classList.remove('ghost');
-        const altBtn = document.getElementById('btnModeLetterDice'); altBtn.classList.add('ghost'); altBtn.classList.remove('active');
-        document.getElementById('diceConfigNum').style.display = 'flex';
-    });
-    document.getElementById('btnModeLetterDice').addEventListener('click', function() {
-        isNumDice = false; this.classList.add('active'); this.classList.remove('ghost');
-        const altBtn = document.getElementById('btnModeNumDice'); altBtn.classList.add('ghost'); altBtn.classList.remove('active');
-        document.getElementById('diceConfigNum').style.display = 'none';
-    });
-    
-    document.getElementById('btnRollDice').addEventListener('click', () => {
-        resumeAudio(); let rolls = 0; let btn = document.getElementById('btnRollDice'); let disp = document.getElementById('diceDisplay');
-        btn.disabled = true;
-        let min = parseInt(document.getElementById('diceMin').value) || 1; let max = parseInt(document.getElementById('diceMax').value) || 30;
+        });
         
-        let rollInt = setInterval(() => {
-            playTickSound();
-            if(isNumDice) disp.innerText = Math.floor(Math.random()*(max-min+1))+min;
-            else disp.innerText = String.fromCharCode(65 + Math.floor(Math.random() * 26)); 
-            rolls++;
-            if(rolls > 15) {
-                clearInterval(rollInt); playSuccessSound(); disp.style.transform = 'scale(1.2)';
-                setTimeout(()=>disp.style.transform = 'scale(1)', 200); btn.disabled = false;
+        document.getElementById('btnResetAll').addEventListener('click', () => { 
+            if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { 
+                window.appData.roster = []; window.appData.assignments = []; window.appData.attendance = {}; window.appData.discipline = null; window.appData.expLogs = []; window.triggerAutoSave(); window.renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
+            } 
+        });
+
+        document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
+        
+        document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
+            if(e.target.classList.contains('theme-option')) {
+                const t = e.target.dataset.theme; 
+                document.documentElement.setAttribute('data-color-theme', t); 
+                localStorage.setItem('hwColor', t); 
+                document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active')); 
+                e.target.classList.add('active'); 
             }
-        }, 50);
+        });
+
+        document.getElementById('darkModeToggle').addEventListener('change', (e) => { 
+            const t = e.target.checked ? 'dark' : 'light'; 
+            document.documentElement.setAttribute('data-theme', t); 
+            localStorage.setItem('hwTheme', t); 
+        });
+        
+        document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
+        
+        document.getElementById('ipSettingsArrivalTime').addEventListener('change', (e) => { window.appData.settings.arrivalTime = e.target.value; window.triggerAutoSave(); if (document.querySelector('.view.show').id === 'view-checkin') window.renderCheckIn(); });
+        document.getElementById('ipSettingsBgmId').addEventListener('change', (e) => { let val = e.target.value.trim(); if(val.includes('v=')) val = val.split('v=')[1].split('&')[0]; else if(val.includes('youtu.be/')) val = val.split('youtu.be/')[1].split('?')[0]; window.appData.settings.bgmId = val; e.target.value = val; window.triggerAutoSave(); showToast("🎵 BGM 設定已儲存"); });
+
+        document.getElementById('btnOpenRankSettings').addEventListener('click', () => {
+            window.tempRankSettings = JSON.parse(JSON.stringify(window.appData.rankSettings || defaultData.rankSettings));
+            window.renderRankSettingsUI();
+            document.getElementById('adminProfileModal').classList.remove('show');
+            document.getElementById('rankSettingsModal').classList.add('show');
+        });
+
+        window.renderRankSettingsUI = function() {
+            const list = document.getElementById('rankConfigList');
+            list.innerHTML = '';
+            window.tempRankSettings.sort((a,b) => b.exp - a.exp).forEach((r, i) => {
+                const div = document.createElement('div');
+                div.style.cssText = "display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--tbl-border); padding:8px 12px; border-radius:8px; margin-bottom:8px;";
+                div.innerHTML = `
+                    <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <label style="font-size:12px; white-space:nowrap; margin:0; width:50px;">EXP ≥</label>
+                            <input type="number" class="ip-rank-exp" data-idx="${i}" value="${r.exp}" style="width:70px; padding:4px;">
+                            <label style="font-size:12px; white-space:nowrap; margin:0; width:40px;">稱號</label>
+                            <input type="text" class="ip-rank-name" data-idx="${i}" value="${r.name}" style="flex:1; min-width:100px; padding:4px;">
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <label style="font-size:12px; white-space:nowrap; margin:0; width:50px;">獎勵金幣</label>
+                            <input type="number" class="ip-rank-reward" data-idx="${i}" value="${r.reward||0}" style="width:70px; padding:4px;">
+                            <label style="font-size:12px; white-space:nowrap; margin:0; width:40px;">顏色</label>
+                            <input type="color" class="ip-rank-color" data-idx="${i}" value="${r.color}" style="width:40px; height:28px; padding:0; cursor:pointer;">
+                        </div>
+                    </div>
+                    <button class="btn sm warn ghost icon-only btn-del-rank" data-idx="${i}"><i class="bi bi-trash"></i></button>
+                `;
+                list.appendChild(div);
+            });
+        };
+
+        document.getElementById('rankConfigList').addEventListener('input', (e) => {
+            if(e.target.tagName !== 'INPUT') return;
+            const idx = parseInt(e.target.dataset.idx);
+            if(e.target.classList.contains('ip-rank-exp')) window.tempRankSettings[idx].exp = parseInt(e.target.value) || 0;
+            if(e.target.classList.contains('ip-rank-name')) window.tempRankSettings[idx].name = e.target.value;
+            if(e.target.classList.contains('ip-rank-reward')) window.tempRankSettings[idx].reward = parseInt(e.target.value) || 0;
+            if(e.target.classList.contains('ip-rank-color')) window.tempRankSettings[idx].color = e.target.value;
+        });
+
+        document.getElementById('rankConfigList').addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-del-rank');
+            if(btn) {
+                const idx = parseInt(btn.dataset.idx);
+                window.tempRankSettings.splice(idx, 1);
+                window.renderRankSettingsUI();
+            }
+        });
+
+        document.getElementById('btnAddRank').addEventListener('click', () => {
+            window.tempRankSettings.push({ exp: 0, name: "新稱號", color: "#333333", reward: 0 });
+            window.renderRankSettingsUI();
+        });
+
+        document.getElementById('btnSaveRankSettings').addEventListener('click', () => {
+            window.appData.rankSettings = window.tempRankSettings;
+            window.triggerAutoSave();
+            document.getElementById('rankSettingsModal').classList.remove('show');
+            showToast("🏆 階級稱號設定已儲存");
+            window.renderAll();
+        });
+
+        // Toolbox general
+        document.getElementById('btnToggleToolbox')?.addEventListener('click', function() { 
+            const menu = document.getElementById('toolboxMenu');
+            menu.classList.toggle('show'); 
+            this.classList.toggle('active'); 
+        });
+        
+        window.openTool = function(id) { 
+            document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show')); 
+            const win = document.getElementById(id); if(win) win.classList.add('show'); 
+            document.getElementById('toolboxMenu').classList.remove('show'); document.getElementById('btnToggleToolbox').classList.remove('active'); 
+            
+            if (id === 'panelDraw' && document.getElementById('btnModeDrawWheel').classList.contains('active')) {
+                window.drawWheel();
+            }
+            if (id === 'panelWhiteboard') {
+                window.initWhiteboard();
+            }
+        }
+        
+        document.addEventListener('click', (e) => { 
+            if (e.target.closest('.tool-close')) { 
+                const win = e.target.closest('.tool-window'); if (win) win.classList.remove('show'); 
+            }
+            
+            const picker = document.getElementById('statusPicker');
+            if (picker && picker.classList.contains('show') && !picker.contains(e.target) && !e.target.closest('div[onclick^="window.toggleCardTaskStatus"]')) {
+                picker.classList.remove('show');
+            }
+            
+            const menu = document.getElementById('quickDebtMenu');
+            if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge') && !e.target.closest('.btn-close-debt')) {
+                menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+            }
+        });
+        
+        // --- 視窗縮放與拖曳邏輯 ---
+        document.querySelectorAll('.tool-window').forEach(win => {
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            resizeHandle.innerHTML = '<i class="bi bi-arrows-angle-expand"></i>';
+            win.appendChild(resizeHandle);
+
+            let isResizing = false;
+            let startX, startScale, baseWidth;
+
+            const doResize = (e) => {
+                if (!isResizing) return;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const dx = clientX - startX;
+                let newScale = startScale + (dx / baseWidth);
+                newScale = Math.max(0.6, Math.min(newScale, 2.5)); 
+                win.style.setProperty('--win-scale', newScale);
+            };
+
+            const stopResize = () => {
+                isResizing = false;
+                document.removeEventListener('mousemove', doResize);
+                document.removeEventListener('mouseup', stopResize);
+                document.removeEventListener('touchmove', doResize);
+                document.removeEventListener('touchend', stopResize);
+            };
+
+            const startResize = (e) => {
+                e.preventDefault();
+                isResizing = true;
+                startScale = parseFloat(win.style.getPropertyValue('--win-scale')) || 1;
+                baseWidth = win.offsetWidth;
+                
+                if (win.style.bottom || !win.style.top) {
+                    const rect = win.getBoundingClientRect();
+                    win.style.bottom = 'auto';
+                    win.style.right = 'auto';
+                    win.style.top = rect.top + 'px';
+                    win.style.left = rect.left + 'px';
+                    win.style.transformOrigin = 'top left';
+                }
+                
+                startX = e.touches ? e.touches[0].clientX : e.clientX;
+                
+                document.addEventListener('mousemove', doResize, { passive: false });
+                document.addEventListener('mouseup', stopResize);
+                document.addEventListener('touchmove', doResize, { passive: false });
+                document.addEventListener('touchend', stopResize);
+            };
+
+            resizeHandle.addEventListener('mousedown', startResize);
+            resizeHandle.addEventListener('touchstart', startResize, { passive: false });
+
+            const header = win.querySelector('.tool-header');
+            let isMoving = false;
+            let moveStartX, moveStartY, initialTop, initialLeft;
+
+            const doMove = (e) => {
+                if (!isMoving) return;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const dx = clientX - moveStartX;
+                const dy = clientY - moveStartY;
+                win.style.top = (initialTop + dy) + 'px';
+                win.style.left = (initialLeft + dx) + 'px';
+            };
+
+            const stopMove = () => {
+                isMoving = false;
+                document.removeEventListener('mousemove', doMove);
+                document.removeEventListener('mouseup', stopMove);
+                document.removeEventListener('touchmove', doMove);
+                document.removeEventListener('touchend', stopMove);
+            };
+
+            header.addEventListener('mousedown', (e) => {
+                if(e.target.closest('.tool-close')) return;
+                e.preventDefault();
+                isMoving = true;
+                const rect = win.getBoundingClientRect();
+                if (win.style.bottom || !win.style.top) {
+                    win.style.bottom = 'auto';
+                    win.style.right = 'auto';
+                    win.style.transformOrigin = 'top left';
+                }
+                initialTop = rect.top;
+                initialLeft = rect.left;
+                win.style.top = initialTop + 'px';
+                win.style.left = initialLeft + 'px';
+                
+                moveStartX = e.touches ? e.touches[0].clientX : e.clientX;
+                moveStartY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                document.addEventListener('mousemove', doMove, { passive: false });
+                document.addEventListener('mouseup', stopMove);
+            });
+            
+            header.addEventListener('touchstart', (e) => {
+                if(e.target.closest('.tool-close')) return;
+                e.preventDefault();
+                isMoving = true;
+                const rect = win.getBoundingClientRect();
+                if (win.style.bottom || !win.style.top) {
+                    win.style.bottom = 'auto';
+                    win.style.right = 'auto';
+                    win.style.transformOrigin = 'top left';
+                }
+                initialTop = rect.top;
+                initialLeft = rect.left;
+                win.style.top = initialTop + 'px';
+                win.style.left = initialLeft + 'px';
+                
+                moveStartX = e.touches[0].clientX;
+                moveStartY = e.touches[0].clientY;
+                
+                document.addEventListener('touchmove', doMove, { passive: false });
+                document.addEventListener('touchend', stopMove);
+            }, { passive: false });
+        });
+    }
+
+    // --------------------------------------------------------
+    // 9. Toolbox Logic
+    // --------------------------------------------------------
+    
+    // --- 白板邏輯 ---
+    let wbCanvas = document.getElementById('wbCanvas');
+    let wbCtx = wbCanvas.getContext('2d');
+    let isDrawing = false; let lastX = 0; let lastY = 0;
+    
+    window.initWhiteboard = function() {
+        wbCtx.lineJoin = 'round';
+        wbCtx.lineCap = 'round';
+        wbCtx.strokeStyle = '#000000';
+        wbCtx.lineWidth = 4;
+    }
+
+    function drawStart(e) {
+        isDrawing = true;
+        const rect = wbCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = wbCanvas.width / rect.width;
+        const scaleY = wbCanvas.height / rect.height;
+        lastX = (clientX - rect.left) * scaleX;
+        lastY = (clientY - rect.top) * scaleY;
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); 
+        const rect = wbCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = wbCanvas.width / rect.width;
+        const scaleY = wbCanvas.height / rect.height;
+        let currentX = (clientX - rect.left) * scaleX;
+        let currentY = (clientY - rect.top) * scaleY;
+
+        wbCtx.beginPath();
+        wbCtx.moveTo(lastX, lastY);
+        wbCtx.lineTo(currentX, currentY);
+        wbCtx.stroke();
+        
+        lastX = currentX;
+        lastY = currentY;
+    }
+
+    function drawEnd() { isDrawing = false; }
+
+    wbCanvas.addEventListener('mousedown', drawStart);
+    wbCanvas.addEventListener('mousemove', draw);
+    wbCanvas.addEventListener('mouseup', drawEnd);
+    wbCanvas.addEventListener('mouseout', drawEnd);
+    wbCanvas.addEventListener('touchstart', drawStart, { passive: false });
+    wbCanvas.addEventListener('touchmove', draw, { passive: false });
+    wbCanvas.addEventListener('touchend', drawEnd);
+
+    document.querySelectorAll('.wb-color').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.wb-color').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            wbCtx.strokeStyle = e.target.dataset.color;
+        });
     });
 
-    // 抽籤邏輯 (雙模式)
-    document.getElementById('btnModeDrawBasic').addEventListener('click', function() {
-        this.classList.add('active'); this.classList.remove('ghost');
-        document.getElementById('btnModeDrawWheel').classList.add('ghost'); document.getElementById('btnModeDrawWheel').classList.remove('active');
-        document.getElementById('drawBasicArea').style.display = 'block'; document.getElementById('drawWheelArea').style.display = 'none';
-    });
-    document.getElementById('btnModeDrawWheel').addEventListener('click', function() {
-        this.classList.add('active'); this.classList.remove('ghost');
-        document.getElementById('btnModeDrawBasic').classList.add('ghost'); document.getElementById('btnModeDrawBasic').classList.remove('active');
-        document.getElementById('drawBasicArea').style.display = 'none'; document.getElementById('drawWheelArea').style.display = 'block';
-        drawWheel(); 
-    });
+    document.getElementById('wbSize').addEventListener('input', (e) => { wbCtx.lineWidth = e.target.value; });
+    document.getElementById('wbClear').addEventListener('click', () => { wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); });
 
-    document.getElementById('btnLuckyDraw').addEventListener('click', () => { 
-        resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult'); 
-        if (!data.roster || data.roster.length === 0) return; 
-        if (btn.disabled) return; 
-        btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 轉動中...`; res.style.color = "var(--muted)";
-        let rollCount = 0; 
-        function roll() { 
-            res.innerText = data.roster[Math.floor(Math.random() * data.roster.length)].name; playTickSound(); rollCount++; 
-            if (rollCount < 20) setTimeout(roll, 50); else { res.style.color = "var(--danger)"; playSuccessSound(); confetti(); btn.disabled = false; btn.innerHTML = `<i class="bi bi-person-fill"></i> 再次抽出`; } 
-        } 
-        roll(); 
-    });
-
-    let wheelCanvas = document.getElementById('wheelCanvas'); let wheelCtx = wheelCanvas.getContext('2d'); let currentAngle = 0; let wheelSpinning = false;
+    // --- 轉盤抽籤邏輯 ---
+    let wheelCanvas = document.getElementById('wheelCanvas'); let wheelCtx = wheelCanvas ? wheelCanvas.getContext('2d') : null; 
+    let currentAngle = 0; let wheelSpinning = false;
     let wheelColors = ['#f43f5e', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899', '#14b8a6'];
     
-    function drawWheel() {
+    window.drawWheel = function() {
         if (!wheelCtx) return;
         let w = wheelCanvas.width; let h = wheelCanvas.height; let r = w/2;
         wheelCtx.clearRect(0,0,w,h);
-        if(data.roster.length === 0) {
+        if(!window.appData.roster || window.appData.roster.length === 0) {
             wheelCtx.fillStyle = '#e5e7eb'; wheelCtx.beginPath(); wheelCtx.arc(r,r,r,0,2*Math.PI); wheelCtx.fill(); return;
         }
-        let arc = 2 * Math.PI / data.roster.length;
-        for(let i=0; i<data.roster.length; i++) {
+        let arc = 2 * Math.PI / window.appData.roster.length;
+        for(let i=0; i<window.appData.roster.length; i++) {
             wheelCtx.fillStyle = wheelColors[i % wheelColors.length]; wheelCtx.beginPath(); wheelCtx.moveTo(r,r); wheelCtx.arc(r,r,r, currentAngle + i*arc, currentAngle + (i+1)*arc); wheelCtx.fill();
-            wheelCtx.save(); wheelCtx.translate(r,r); wheelCtx.rotate(currentAngle + i*arc + arc/2); wheelCtx.fillStyle = '#fff'; wheelCtx.font = 'bold 14px sans-serif'; wheelCtx.textAlign = 'right'; wheelCtx.textBaseline = 'middle'; wheelCtx.fillText(data.roster[i].name.substring(0,4), r - 10, 0); wheelCtx.restore();
+            wheelCtx.save(); wheelCtx.translate(r,r); wheelCtx.rotate(currentAngle + i*arc + arc/2); wheelCtx.fillStyle = '#fff'; wheelCtx.font = 'bold 14px sans-serif'; wheelCtx.textAlign = 'right'; wheelCtx.textBaseline = 'middle'; wheelCtx.fillText(window.appData.roster[i].name.substring(0,4), r - 10, 0); wheelCtx.restore();
         }
     }
 
-    document.getElementById('btnSpinWheel').addEventListener('click', () => {
-        if(wheelSpinning || data.roster.length === 0) return;
+    document.getElementById('btnSpinWheel')?.addEventListener('click', () => {
+        if(wheelSpinning || !window.appData.roster || window.appData.roster.length === 0) return;
         wheelSpinning = true; resumeAudio();
         let spinSpeed = Math.random() * 0.2 + 0.4; 
         
         function animateSpin() {
-            currentAngle += spinSpeed; spinSpeed *= 0.985; drawWheel();
+            currentAngle += spinSpeed; spinSpeed *= 0.985; window.drawWheel();
             if(spinSpeed > 0.05) playTickSound(); 
             if(spinSpeed > 0.002) { requestAnimationFrame(animateSpin); } 
             else {
                 wheelSpinning = false; playSuccessSound();
-                let arc = 2 * Math.PI / data.roster.length; let normalizedAngle = currentAngle % (2 * Math.PI);
+                let arc = 2 * Math.PI / window.appData.roster.length; let normalizedAngle = currentAngle % (2 * Math.PI);
                 let winningAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
                 let winnerIdx = Math.floor(winningAngle / arc);
-                showToast(`🎉 轉盤抽中了：${data.roster[winnerIdx].name}`); confetti();
+                showToast(`🎉 轉盤抽中了：${window.appData.roster[winnerIdx].name}`); confetti();
             }
         }
         animateSpin();
     });
 
-    // --- 工具：分貝偵測器 (噪音計) ---
+    // --- 噪音計邏輯 ---
     let noiseAudioCtx = null; let analyser = null; let microphone = null; let noiseAnimFrame = null; let isNoiseListening = false;
     
-    document.getElementById('btnToggleNoise').addEventListener('click', async function() {
+    document.getElementById('btnToggleNoise')?.addEventListener('click', async function() {
         const btn = this;
         const disp = document.getElementById('dbValue');
         const bar = document.getElementById('dbBar');
         
         if (isNoiseListening) {
-            // 停止
             isNoiseListening = false;
             cancelAnimationFrame(noiseAnimFrame);
             if(microphone) microphone.disconnect();
@@ -2365,7 +2256,6 @@
             return;
         }
 
-        // 啟動
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             noiseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2386,25 +2276,13 @@
                 let sum = 0;
                 for(let i = 0; i < dataArray.length; i++) { sum += dataArray[i]; }
                 let average = sum / dataArray.length;
-                
-                // 將 0-255 的數值對應為 0-100 的音量指數
                 let volumeIndex = Math.min(100, Math.round((average / 128) * 100)); 
                 disp.innerText = volumeIndex + " 音量";
                 bar.style.width = volumeIndex + '%';
-                
                 const threshold = parseInt(document.getElementById('dbThreshold').value) || 80;
-                
-                if (volumeIndex >= threshold) {
-                    bar.style.backgroundColor = '#ef4444'; // 紅色
-                    disp.style.color = '#ef4444';
-                } else if (volumeIndex >= threshold * 0.7) {
-                    bar.style.backgroundColor = '#eab308'; // 黃色
-                    disp.style.color = '#eab308';
-                } else {
-                    bar.style.backgroundColor = '#22c55e'; // 綠色
-                    disp.style.color = 'var(--text-main)';
-                }
-
+                if (volumeIndex >= threshold) { bar.style.backgroundColor = '#ef4444'; disp.style.color = '#ef4444'; } 
+                else if (volumeIndex >= threshold * 0.7) { bar.style.backgroundColor = '#eab308'; disp.style.color = '#eab308'; } 
+                else { bar.style.backgroundColor = '#22c55e'; disp.style.color = 'var(--text-main)'; }
                 noiseAnimFrame = requestAnimationFrame(updateNoiseLevel);
             }
             updateNoiseLevel();
@@ -2414,91 +2292,12 @@
             alert("⚠️ 無法存取麥克風！請確認瀏覽器有給予網站麥克風權限。");
         }
     });
-
-    document.getElementById('dbThreshold').addEventListener('input', (e) => {
+    
+    document.getElementById('dbThreshold')?.addEventListener('input', (e) => {
         document.getElementById('dbThresholdVal').innerText = e.target.value;
     });
 
-    // --- 工具：小白板 ---
-    let wbCanvas = document.getElementById('wbCanvas');
-    let wbCtx = wbCanvas.getContext('2d');
-    let isDrawing = false; let lastX = 0; let lastY = 0;
-    
-    function initWhiteboard() {
-        wbCtx.lineJoin = 'round';
-        wbCtx.lineCap = 'round';
-        wbCtx.strokeStyle = '#000000';
-        wbCtx.lineWidth = 4;
-    }
-
-    function drawStart(e) {
-        isDrawing = true;
-        const rect = wbCanvas.getBoundingClientRect();
-        // 支援觸控與滑鼠
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        // 修正 Canvas 繪製比例座標
-        const scaleX = wbCanvas.width / rect.width;
-        const scaleY = wbCanvas.height / rect.height;
-        
-        lastX = (clientX - rect.left) * scaleX;
-        lastY = (clientY - rect.top) * scaleY;
-    }
-
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault(); // 防止手機滾動
-        
-        const rect = wbCanvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        const scaleX = wbCanvas.width / rect.width;
-        const scaleY = wbCanvas.height / rect.height;
-        
-        let currentX = (clientX - rect.left) * scaleX;
-        let currentY = (clientY - rect.top) * scaleY;
-
-        wbCtx.beginPath();
-        wbCtx.moveTo(lastX, lastY);
-        wbCtx.lineTo(currentX, currentY);
-        wbCtx.stroke();
-        
-        lastX = currentX;
-        lastY = currentY;
-    }
-
-    function drawEnd() { isDrawing = false; }
-
-    // 綁定滑鼠
-    wbCanvas.addEventListener('mousedown', drawStart);
-    wbCanvas.addEventListener('mousemove', draw);
-    wbCanvas.addEventListener('mouseup', drawEnd);
-    wbCanvas.addEventListener('mouseout', drawEnd);
-    // 綁定觸控
-    wbCanvas.addEventListener('touchstart', drawStart, { passive: false });
-    wbCanvas.addEventListener('touchmove', draw, { passive: false });
-    wbCanvas.addEventListener('touchend', drawEnd);
-
-    // 顏色切換
-    document.querySelectorAll('.wb-color').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.wb-color').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            wbCtx.strokeStyle = e.target.dataset.color;
-        });
-    });
-
-    // 粗細切換
-    document.getElementById('wbSize').addEventListener('input', (e) => {
-        wbCtx.lineWidth = e.target.value;
-    });
-
-    // 清空畫布
-    document.getElementById('wbClear').addEventListener('click', () => {
-        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-    });
+    document.addEventListener('DOMContentLoaded', bindEvents);
 
   </script>
 </body>
