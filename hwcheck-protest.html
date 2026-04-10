@@ -51,6 +51,7 @@
     html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
     .wrap{ max-width:1200px; margin:0 auto; padding:0 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
     
+    /* ⭐ 固定在最上方的標題與導覽列 */
     header { 
         position: sticky; top: 0; z-index: 4000; 
         background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -101,6 +102,7 @@
     .exp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: 900; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); border: 1px solid #b45309; }
     .rank-text { font-size: 10px; opacity: 0.9; margin-left: 2px; }
 
+    /* ⭐ 委託狀態提示工具 */
     .assignment-tooltip { position: fixed; background: var(--card); border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 9999; display: none; pointer-events: none; min-width: 180px; max-width: 300px; animation: fadeIn 0.15s ease-out; }
     .assignment-tooltip h4 { margin: 0 0 8px; font-size: 18px; font-weight: 900; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
     .assignment-tooltip ul { padding: 0; margin: 0; list-style: none; font-size: 16px; font-weight: bold; line-height: 1.5; }
@@ -271,7 +273,7 @@
     .quick-tag { background: var(--bg); border: 1px solid var(--tbl-border); padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
     .quick-tag:hover { background: var(--primary); color: #fff; }
 
-    .timer-display-box { font-size: 52px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; text-shadow: 1px 1px 0px #fff; }
+    .timer-display-box { font-size: 48px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; text-shadow: 1px 1px 0px #fff; }
 
     /* 轉盤設定 */
     .wheel-wrapper { position: relative; width: 240px; height: 240px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
@@ -468,17 +470,17 @@
           <!-- ⭐ 批次加扣分控制列 -->
           <div id="batchExpToolbar" class="batch-exp-toolbar">
               <span style="font-weight:900; color:var(--primary);">✨ 批次給予金幣：</span>
-              <button class="btn sm ghost" id="btnBatchReason1">+1 作業優良</button>
-              <button class="btn sm ghost" id="btnBatchReason2">+3 超級優秀</button>
-              <button class="btn sm ghost" id="btnBatchReason3">+1 準時</button>
-              <button class="btn sm ghost warn" id="btnBatchReason4">-1 上課吵鬧</button>
-              <button class="btn sm ghost warn" id="btnBatchReason5">-1 未帶物品</button>
+              <button class="btn sm ghost" onclick="window.applyBatchCoin(1, '作業優良')">+1 作業優良</button>
+              <button class="btn sm ghost" onclick="window.applyBatchCoin(3, '超級優秀')">+3 超級優秀</button>
+              <button class="btn sm ghost" onclick="window.applyBatchCoin(1, '準時')">+1 準時</button>
+              <button class="btn sm ghost warn" onclick="window.applyBatchCoin(-1, '上課吵鬧')">-1 上課吵鬧</button>
+              <button class="btn sm ghost warn" onclick="window.applyBatchCoin(-1, '未帶物品')">-1 未帶物品</button>
               <div style="width: 1px; height: 20px; background: var(--tbl-border); margin: 0 8px;"></div>
               
               <div style="display: flex; gap: 4px; align-items: center;">
                   <input type="number" id="customExpVal" style="width:70px; padding:4px;" placeholder="分數">
                   <input type="text" id="customExpReason" style="width:120px; padding:4px;" placeholder="輸入原因...">
-                  <button class="btn sm" id="btnApplyCustomBatchCoin"><i class="bi bi-check-lg"></i> 送出</button>
+                  <button class="btn sm" onclick="window.applyCustomBatchCoin()"><i class="bi bi-check-lg"></i> 送出</button>
               </div>
           </div>
           
@@ -809,14 +811,12 @@
       <div class="tool-header"><span><i class="bi bi-broadcast"></i> 公告跑馬燈</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
           <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:8px; font-size: 16px;">
-          <!-- 快捷輸入按鈕 -->
           <div class="quick-marquee-tags">
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='⚠️ 請保持安靜，回到座位上！'">⚠️ 保持安靜</span>
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='📝 請將作業交到講台前方！'">📝 準備交作業</span>
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='🎒 準備放學，請將椅子靠攏！'">🎒 準備放學</span>
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='🧹 請開始進行打掃工作！'">🧹 打掃時間</span>
           </div>
-          <!-- 外觀設定 -->
           <div class="field mt-2 p-2 bg-stone-50 rounded-lg border border-stone-200">
               <label>外觀設定</label>
               <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
@@ -934,7 +934,90 @@
   <!-- 🚨 JavaScript 核心區塊 🚨 -->
   <script type="module">
     // --------------------------------------------------------
-    // 1. Firebase Init & Config
+    // 1. 全域與視圖控制變數
+    // --------------------------------------------------------
+    window.saveTimeout = null;
+    window.currentAssignmentId = null;
+    window.newAssignmentAssignedIndices = []; 
+    window.isBatchMode = false;
+    window.isBatchExpMode = false;
+    window.targetAssignmentIdToDelete = null; 
+    window.tempQuestSettings = {};
+    window.tempRankSettings = []; 
+    window.currentFilter = { teacher: 'all', subject: 'all' };
+    window.lastRosterState = null; 
+    const APP_SCALE = 1;
+
+    // --------------------------------------------------------
+    // 2. 基本工具與音效函數
+    // --------------------------------------------------------
+    window.getTaipeiDateString = function() { 
+        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
+    };
+
+    window.showToast = function(msg, actText, actCb) {
+        const c = document.getElementById('toastContainer'); 
+        const t = document.createElement('div'); t.className = 'toast-msg';
+        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : ''); 
+        c.appendChild(t); 
+        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
+        setTimeout(()=>t.remove(), 4000);
+    };
+
+    let audioCtx = null;
+    window.resumeAudio = function() { 
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume(); 
+        return audioCtx;
+    };
+
+    window.playSuccessSound = function() {
+        const ctx = window.resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(523.25, ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.5);
+    };
+    
+    window.playCoinSound = function() {
+        const ctx = window.resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'square'; o.frequency.setValueAtTime(987.77, ctx.currentTime); o.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
+    };
+
+    window.playTickSound = function() {
+        const ctx = window.resumeAudio(); const now = ctx.currentTime; const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+        g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
+    };
+
+    window.getRankHtml = function(exp) {
+        const defaultRanks = [
+            { exp: 100, name: "S級傳說", color: "#f43f5e", reward: 50 },
+            { exp: 50, name: "A級菁英", color: "#eab308", reward: 20 },
+            { exp: 20, name: "B級熟手", color: "#3b82f6", reward: 10 },
+            { exp: 5, name: "C級見習", color: "#22c55e", reward: 5 },
+            { exp: 0, name: "新手", color: "#9ca3af", reward: 0 }
+        ];
+        const ranks = [...(window.appData?.rankSettings || defaultRanks)].sort((a,b) => b.exp - a.exp);
+        let rankName = ranks[ranks.length - 1]?.name || "新手"; 
+        let rankColor = ranks[ranks.length - 1]?.color || "#9ca3af";
+        for (let r of ranks) {
+            if (exp >= r.exp) { rankName = r.name; rankColor = r.color; break; }
+        }
+        return `<span class="rank-text" style="color:${rankColor}; font-weight:bold;">${rankName}</span>`;
+    };
+
+    // 浮動時鐘
+    setInterval(() => {
+        const timeStr = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
+        const fc = document.getElementById('fcTime');
+        if (fc) fc.innerText = timeStr;
+    }, 1000);
+
+    // --------------------------------------------------------
+    // 3. Firebase 設定與資料同步
     // --------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
@@ -942,8 +1025,7 @@
       projectId: "homework-hc906",
       storageBucket: "homework-hc906.firebasestorage.app",
       messagingSenderId: "1051903125085",
-      appId: "1:1051903125085:web:b205f868669ea7d5c34fb4",
-      measurementId: "G-V0BEG0TVJY"
+      appId: "1:1051903125085:web:b205f868669ea7d5c34fb4"
     };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -959,11 +1041,8 @@
         alert("Firebase 初始化錯誤，請檢查 Config"); 
     }
 
-    // --------------------------------------------------------
-    // 2. Global Variables & State
-    // --------------------------------------------------------
     let currentUser = null;
-    const defaultData = {
+    const defaultDataTemplate = {
         roster: [ { no: 1, name: "勇者A", exp: 0, coins: 0 }, { no: 2, name: "法師B", exp: 0, coins: 0 }, { no: 3, name: "弓手C", exp: 0, coins: 0 } ],
         assignments: [],
         teachers: ["公會長"],
@@ -981,136 +1060,14 @@
         settings: { arrivalTime: "07:50", bgmId: "" }
     };
     
-    let data = JSON.parse(JSON.stringify(defaultData)); 
-    window.appData = data; 
-    
-    window.saveTimeout = null;
-    window.currentAssignmentId = null;
-    window.newAssignmentAssignedIndices = []; 
-    window.isBatchMode = false;
-    window.isBatchExpMode = false;
-    window.targetAssignmentIdToDelete = null; 
-    window.tempQuestSettings = {};
-    window.tempRankSettings = []; 
-    window.currentFilter = { teacher: 'all', subject: 'all' };
-    window.lastRosterState = null; 
-    const APP_SCALE = 1;
+    window.appData = JSON.parse(JSON.stringify(defaultDataTemplate)); 
 
-    // --------------------------------------------------------
-    // 3. Utility Functions
-    // --------------------------------------------------------
-    function getTaipeiDateString() { 
-        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
-    }
-    window.getTaipeiDateString = getTaipeiDateString;
-
-    function showToast(msg, actText, actCb) {
-        const c = document.getElementById('toastContainer'); 
-        const t = document.createElement('div'); t.className = 'toast-msg';
-        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : ''); 
-        c.appendChild(t); 
-        if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
-        setTimeout(()=>t.remove(), 4000);
-    }
-    window.showToast = showToast;
-
-    let audioCtx = null;
-    function resumeAudio() { 
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume(); 
-        return audioCtx;
-    }
-    window.resumeAudio = resumeAudio;
-
-    function playSuccessSound() {
-        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type = 'sine'; o.frequency.setValueAtTime(523.25, ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
-        g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.5);
-    }
-    window.playSuccessSound = playSuccessSound;
-    
-    function playCoinSound() {
-        const ctx = resumeAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type = 'square'; o.frequency.setValueAtTime(987.77, ctx.currentTime); o.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
-        g.gain.setValueAtTime(0.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
-    }
-    window.playCoinSound = playCoinSound;
-
-    function playTickSound() {
-        const ctx = resumeAudio(); const now = ctx.currentTime; const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type = 'triangle'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
-        g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
-    }
-    window.playTickSound = playTickSound;
-
-    function getRankHtml(exp) {
-        const ranks = [...(window.appData?.rankSettings || defaultData.rankSettings)].sort((a,b) => b.exp - a.exp);
-        let rankName = ranks[ranks.length - 1]?.name || "新手"; 
-        let rankColor = ranks[ranks.length - 1]?.color || "#9ca3af";
-        for (let r of ranks) {
-            if (exp >= r.exp) { rankName = r.name; rankColor = r.color; break; }
-        }
-        return `<span class="rank-text" style="color:${rankColor}; font-weight:bold;">${rankName}</span>`;
-    }
-    window.getRankHtml = getRankHtml;
-
-    // --------------------------------------------------------
-    // 4. View Switching & BGM
-    // --------------------------------------------------------
-    window.switchView = function(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
-        const target = document.getElementById(id);
-        if(target) { target.classList.add('show'); window.renderAll(); }
-        
-        if (id === 'view-checkin') {
-            const bgmBtn = document.getElementById('btnToggleCheckinBgm');
-            if (window.appData.settings && window.appData.settings.bgmId) bgmBtn.style.display = 'inline-flex';
-            else bgmBtn.style.display = 'none';
-        } else {
-            window.stopCheckinBGM();
-        }
-    }
-
-    let isPlayingBGM = false;
-    window.playCheckinBGM = function() {
-        const bgmId = window.appData.settings?.bgmId?.trim();
-        const container = document.getElementById('ytPlayerContainer');
-        if (bgmId) {
-            container.innerHTML = `<iframe width="10" height="10" src="https://www.youtube.com/embed/${bgmId}?autoplay=1&loop=1&playlist=${bgmId}" frameborder="0" allow="autoplay"></iframe>`;
-        }
-    }
-
-    window.stopCheckinBGM = function() {
-        document.getElementById('ytPlayerContainer').innerHTML = '';
-        const btn = document.getElementById('btnToggleCheckinBgm');
-        if (btn) {
-            btn.innerHTML = `<i class="bi bi-music-note"></i> <span id="bgmBtnText">播放晨間音樂</span>`;
-            btn.classList.remove('warn');
-            isPlayingBGM = false;
-        }
-    }
-
-    window.switchDisciplineTab = function(tabName) {
-        document.querySelectorAll('#view-discipline .tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#view-discipline .roster-content').forEach(c => c.classList.remove('show'));
-        
-        if(tabName === 'traffic') { document.getElementById('tabBtnTraffic').classList.add('active'); document.getElementById('content-traffic').classList.add('show'); }
-        else if(tabName === 'recess') { document.getElementById('tabBtnRecess').classList.add('active'); document.getElementById('content-recess').classList.add('show'); }
-        else if(tabName === 'dismissal') { document.getElementById('tabBtnDismissal').classList.add('active'); document.getElementById('content-dismissal').classList.add('show'); }
-    };
-
-    // --------------------------------------------------------
-    // 5. Firebase Read/Write & Auth
-    // --------------------------------------------------------
     window.updateSaveStatus = function(status, message = '') {
         const ind = document.getElementById('saveStatusIndicator'); if(!ind) return;
         if (status === 'pending') ind.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中</span>`;
         else if (status === 'success') ind.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> 已同步</span>`;
         else ind.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
-    }
+    };
 
     window.triggerAutoSave = function() {
         clearTimeout(window.saveTimeout); 
@@ -1123,10 +1080,10 @@
                 window.updateSaveStatus('success'); 
             } catch (e) { 
                 console.error(e);
-                window.updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足 (檢查Rules)' : '儲存失敗');
+                window.updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足' : '儲存失敗');
             }
         }, 1500); 
-    }
+    };
 
     async function loadDataFromFirebase() {
         if (!currentUser) return;
@@ -1135,33 +1092,29 @@
             const docSnap = await getDoc(doc(db, "users", currentUser.uid, "data", "guildData"));
             if (docSnap.exists()) {
                 const loadedData = docSnap.data();
-                window.appData.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
+                window.appData.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultDataTemplate.roster;
                 window.appData.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
-                window.appData.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
-                window.appData.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
+                window.appData.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultDataTemplate.teachers;
+                window.appData.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultDataTemplate.questSettings));
                 window.appData.attendance = loadedData.attendance || {};
                 window.appData.discipline = loadedData.discipline || null;
                 window.appData.settings = loadedData.settings || { arrivalTime: "07:50", bgmId: "" };
                 window.appData.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
-                window.appData.rankSettings = Array.isArray(loadedData.rankSettings) ? loadedData.rankSettings : defaultData.rankSettings;
+                window.appData.rankSettings = Array.isArray(loadedData.rankSettings) ? loadedData.rankSettings : defaultDataTemplate.rankSettings;
                 
                 window.appData.roster.forEach(r => { 
                     if(typeof r.exp === 'undefined') r.exp = 0; 
                     if(typeof r.coins === 'undefined') r.coins = 0; 
                 });
             } else {
-                window.appData = JSON.parse(JSON.stringify(defaultData));
+                window.appData = JSON.parse(JSON.stringify(defaultDataTemplate));
                 await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), window.appData);
             }
             window.onDataLoaded(); window.updateSaveStatus('success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
-            let errMsg = "⚠️ 資料庫連線失敗！\n\n";
-            errMsg += "【錯誤代碼】 " + (error.code || "無") + "\n";
-            errMsg += "【錯誤訊息】 " + (error.message || error) + "\n\n";
-            errMsg += "如果您是剛建立 Firebase 專案，請務必去 Firestore 後台點擊「Rules (規則)」，將程式碼改為以下內容並發布：\n\nallow read, write: if request.auth != null;";
-            alert(errMsg);
-            window.appData = JSON.parse(JSON.stringify(defaultData)); 
+            alert("⚠️ 資料庫連線失敗！\n請去 Firestore 後台的「Rules」標籤，將程式碼改為：\nallow read, write: if request.auth != null;");
+            window.appData = JSON.parse(JSON.stringify(defaultDataTemplate)); 
             window.onDataLoaded();
             window.updateSaveStatus('error', '連線失敗 (離線模式)');
         }
@@ -1184,8 +1137,89 @@
     });
 
     // --------------------------------------------------------
-    // 6. Core Logic (EXP, Coins, Status)
+    // 4. 視圖與狀態控制邏輯 (Hoisted)
     // --------------------------------------------------------
+    
+    window.switchView = function(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+        const target = document.getElementById(id);
+        if(target) { target.classList.add('show'); window.renderAll(); }
+        
+        if (id === 'view-checkin') {
+            const bgmBtn = document.getElementById('btnToggleCheckinBgm');
+            if (window.appData.settings && window.appData.settings.bgmId) bgmBtn.style.display = 'inline-flex';
+            else bgmBtn.style.display = 'none';
+        } else {
+            window.stopCheckinBGM();
+        }
+    };
+
+    window.populateTeacherDropdowns = function() {
+        const ts = window.appData.teachers || []; 
+        const sel = document.getElementById('ipTeacherSelect'); 
+        if(sel) { 
+            sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>'; 
+            document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none'; 
+        }
+        const fil = document.getElementById('teacherFilter');
+        if(fil) { 
+            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join(''); 
+            fil.value = window.currentFilter.teacher; 
+        }
+    };
+    
+    window.updateSubjectDropdown = function() {
+        const db = window.appData.questSettings || defaultDataTemplate.questSettings; 
+        const sel = document.getElementById('selSubject'); 
+        const fil = document.getElementById('subjectFilter');
+        if(sel) {
+            sel.innerHTML = '<option value="">📂 科目...</option>'; 
+            Object.keys(db).forEach(s => { sel.add(new Option(s, s)); });
+        }
+        if(fil) { 
+            fil.innerHTML = '<option value="all">📚 所有科目</option>';
+            Object.keys(db).forEach(s => { fil.add(new Option(s, s)); });
+            fil.value = window.currentFilter.subject;
+        }
+    };
+
+    window.resetNewAssignmentState = function() {
+        document.getElementById('ipTitle').value = ''; 
+        document.getElementById('selSubject').value = ''; 
+        document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
+        document.getElementById('ipDate').value = window.getTaipeiDateString(); 
+        window.newAssignmentAssignedIndices = []; 
+        document.getElementById('assignStatusText').innerText = "發布給：全體冒險者";
+        const sel = document.getElementById('ipTeacherSelect'); 
+        if(sel && window.appData.teachers && window.appData.teachers.length > 0) { 
+            sel.value = window.appData.teachers[0]; 
+            document.getElementById('ipTeacherCustom').style.display = 'none'; 
+        }
+    };
+
+    window.checkAndResetDiscipline = function() {
+        const today = window.getTaipeiDateString();
+        if (!window.appData.discipline || window.appData.discipline.date !== today) { 
+            window.appData.discipline = { date: today, statuses: {} }; 
+            window.triggerAutoSave(); 
+        }
+    };
+
+    window.renderChecklists = function() {
+        const buildList = (items, cid) => { 
+            const container = document.getElementById(cid);
+            if(container) {
+                container.innerHTML = items.map((item, idx) => `
+                    <div class="checklist-item" onclick="this.classList.toggle('done')">
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:14px;">${idx+1}</div>
+                        ${item}
+                    </div>`).join(''); 
+            }
+        };
+        buildList(['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所'], 'recessChecklist'); 
+        buildList(['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿帶齊', '🎒 整理背包'], 'dismissalChecklist');
+    };
+
     window.logAction = function(sidx, delta, type, reason) {
         if(!window.appData.expLogs) window.appData.expLogs = [];
         window.appData.expLogs.push({
@@ -1195,7 +1229,7 @@
             reason: reason
         });
         if(window.appData.expLogs.length > 2000) window.appData.expLogs.shift();
-    }
+    };
 
     window.changeExp = function(sidx, delta, reason = '系統調整', silent = false) {
         if (!window.appData.roster[sidx]) return;
@@ -1207,33 +1241,33 @@
         window.logAction(sidx, delta, 'EXP', reason);
         
         if (!silent) {
-            playSuccessSound();
-            if (delta > 0) showToast(`✨ ${window.appData.roster[sidx].name} 獲得 ${delta} EXP！`);
-            else showToast(`💔 ${window.appData.roster[sidx].name} 失去 ${Math.abs(delta)} EXP...`);
+            window.playSuccessSound();
+            if (delta > 0) window.showToast(`✨ ${window.appData.roster[sidx].name} 獲得 ${delta} EXP！`);
+            else window.showToast(`💔 ${window.appData.roster[sidx].name} 失去 ${Math.abs(delta)} EXP...`);
             window.triggerAutoSave(); window.renderAll();
         }
 
         if (delta > 0) {
-            const ranks = [...(window.appData.rankSettings || defaultData.rankSettings)].sort((a,b) => a.exp - b.exp);
+            const ranks = [...(window.appData.rankSettings || defaultDataTemplate.rankSettings)].sort((a,b) => a.exp - b.exp);
             ranks.forEach(t => {
                 if (t.exp > 0 && oldExp < t.exp && newExp >= t.exp) {
                     if (t.reward > 0) {
                         window.appData.roster[sidx].coins = (window.appData.roster[sidx].coins || 0) + parseInt(t.reward);
                         window.logAction(sidx, t.reward, '金幣', `晉升 ${t.name} 獎勵`);
                         setTimeout(() => {
-                            showToast(`🌟 恭喜 ${window.appData.roster[sidx].name} 晉升為【${t.name}】！獲得 ${t.reward} 枚金幣！`);
-                            playSuccessSound(); window.renderAll();
+                            window.showToast(`🌟 恭喜 ${window.appData.roster[sidx].name} 晉升為【${t.name}】！獲得 ${t.reward} 枚金幣！`);
+                            window.playSuccessSound(); window.renderAll();
                         }, 1500); 
                     } else {
                         setTimeout(() => {
-                            showToast(`🌟 恭喜 ${window.appData.roster[sidx].name} 晉升為【${t.name}】！`);
-                            playSuccessSound(); window.renderAll();
+                            window.showToast(`🌟 恭喜 ${window.appData.roster[sidx].name} 晉升為【${t.name}】！`);
+                            window.playSuccessSound(); window.renderAll();
                         }, 1500);
                     }
                 }
             });
         }
-    }
+    };
 
     window.changeCoin = function(sidx, delta, reason = '手動調整', silent = false) {
         if (!window.appData.roster[sidx]) return;
@@ -1243,12 +1277,12 @@
         window.logAction(sidx, delta, '金幣', reason);
         
         if (!silent) {
-            playCoinSound();
-            if (delta > 0) showToast(`✨ ${window.appData.roster[sidx].name} ${reason} 獲得 ${delta} 金幣！`);
-            else showToast(`💔 ${window.appData.roster[sidx].name} ${reason} 失去 ${Math.abs(delta)} 金幣...`);
+            window.playCoinSound();
+            if (delta > 0) window.showToast(`✨ ${window.appData.roster[sidx].name} ${reason} 獲得 ${delta} 金幣！`);
+            else window.showToast(`💔 ${window.appData.roster[sidx].name} ${reason} 失去 ${Math.abs(delta)} 金幣...`);
             window.triggerAutoSave(); window.renderAll();
         }
-    }
+    };
 
     window.updateStatus = function(aid, sidx, newStatus) {
         const a = window.appData.assignments.find(i => i.id == aid);
@@ -1259,26 +1293,23 @@
             
             if (oldStatus !== 3 && newStatus === 3) {
                 window.changeExp(sidx, 5, `完成任務 [${a.title}]`, true); 
-                playSuccessSound(); showToast(`🎉 討伐成功！${window.appData.roster[sidx].name} 獲得 5 EXP`);
+                window.playSuccessSound(); window.showToast(`🎉 討伐成功！${window.appData.roster[sidx].name} 獲得 5 EXP`);
             } else if (oldStatus === 3 && newStatus !== 3) {
                 window.changeExp(sidx, -5, `取消任務 [${a.title}]`, true); 
-                showToast(`⚠️ 取消討伐！${window.appData.roster[sidx].name} 收回 5 EXP`);
+                window.showToast(`⚠️ 取消討伐！${window.appData.roster[sidx].name} 收回 5 EXP`);
             }
             window.triggerAutoSave(); window.renderAll();
         }
-    }
+    };
 
     window.toggleStatus = function(aid, idx) {
-        resumeAudio();
+        window.resumeAudio();
         const a = window.appData.assignments.find(x => x.id == aid); if(!a) return;
         let s = (a.statuses || [])[idx] || 0;
         s = (s + 1) % 4; 
         window.updateStatus(aid, idx, s);
-    }
+    };
 
-    // --------------------------------------------------------
-    // 7. Rendering Functions
-    // --------------------------------------------------------
     window.initApp = function() {
         const color = localStorage.getItem('hwColor') || 'guild';
         document.documentElement.setAttribute('data-color-theme', color);
@@ -1290,7 +1321,7 @@
 
         window.switchView('view-dashboard');
         loadDataFromFirebase();
-    }
+    };
 
     window.onDataLoaded = function() {
         if(!window.appData.settings) window.appData.settings = { arrivalTime: "07:50", bgmId: "" };
@@ -1303,7 +1334,7 @@
         window.checkAndResetDiscipline(); 
         window.renderAll(); 
         window.renderChecklists(); 
-    }
+    };
 
     window.renderAll = function() {
         const v = document.querySelector('.view.show'); if(!v) return;
@@ -1312,7 +1343,7 @@
         else if (v.id === 'view-checkin') window.renderCheckIn();
         else if (v.id === 'view-roster') window.renderRosterEditor();
         else if (v.id === 'view-attendance') window.initAttendanceView();
-    }
+    };
 
     window.renderDashboard = function() {
         const list = document.getElementById('sideAssignmentList'); list.innerHTML = '';
@@ -1382,7 +1413,7 @@
             window.currentAssignmentId = assignments[0].id;
         }
         if(window.currentAssignmentId) window.renderDashboardDetail(window.currentAssignmentId);
-    }
+    };
 
     window.openQuickDebtMenu = function(e, sidx, oldDebtsString) {
         e.stopPropagation();
@@ -1421,7 +1452,7 @@
             item.onclick = (evt) => {
                 evt.stopPropagation(); window.updateStatus(debt.id, sidx, 3);
                 menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
-                showToast(`✅ 已將「${debt.title}」標記為完成！`);
+                window.showToast(`✅ 已將「${debt.title}」標記為完成！`);
             };
             list.appendChild(item);
         });
@@ -1483,7 +1514,7 @@
             document.getElementById('deleteTargetTitle').innerText = a.title; 
             document.getElementById('deleteChoiceModal').classList.add('show');
         };
-    }
+    };
 
     window.renderStudentStatus = function() {
         const con = document.getElementById('studentStatusContainer'); 
@@ -1617,7 +1648,7 @@
         });
         
         con.appendChild(grid);
-    }
+    };
 
     window.toggleCardTaskStatus = function(e, aid, sidx) {
         e.stopPropagation();
@@ -1743,10 +1774,10 @@
     window.hideAssignmentTooltip = function() { document.getElementById('assignmentTooltip').style.display = 'none'; };
 
     // --------------------------------------------------------
-    // 8. 初始化事件監聽 (DOM Events)
+    // 10. 初始化 DOM 事件監聽區 (DOM Events Binding)
     // --------------------------------------------------------
     function bindEvents() {
-        document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
+        document.getElementById('btnGreenAllExpPlus')?.addEventListener('click', () => {
             let count = 0;
             window.lastRosterState = JSON.stringify(window.appData.roster);
             
@@ -1757,21 +1788,21 @@
                 }
             });
             if (count > 0) { 
-                playSuccessSound(); 
+                window.playSuccessSound(); 
                 window.triggerAutoSave(); 
                 window.renderAll(); 
-                showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
+                window.showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
                     if(window.lastRosterState) {
                         window.appData.roster = JSON.parse(window.lastRosterState);
                         window.triggerAutoSave();
                         window.renderAll();
-                        showToast("已復原全體加分操作！");
+                        window.showToast("已復原全體加分操作！");
                     }
                 });
             }
         });
 
-        document.getElementById('btnToggleBatchExp').addEventListener('click', () => { 
+        document.getElementById('btnToggleBatchExp')?.addEventListener('click', () => { 
             window.isBatchExpMode = !window.isBatchExpMode; 
             if (window.isBatchExpMode) window.isBatchMode = false; 
             const btnSelectAll = document.getElementById('btnBatchSelectAll');
@@ -1780,7 +1811,7 @@
             window.renderStudentStatus(); 
         });
 
-        document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
+        document.getElementById('btnToggleBatchMode')?.addEventListener('click', () => { 
             window.isBatchMode = !window.isBatchMode; 
             if (window.isBatchMode) window.isBatchExpMode = false;
             
@@ -1793,13 +1824,13 @@
             window.renderStudentStatus(); 
         });
 
-        document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        document.getElementById('btnBatchSelectAll')?.addEventListener('click', () => {
             const cbs = document.querySelectorAll(window.isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
             const allChecked = Array.from(cbs).every(c => c.checked);
             cbs.forEach(c => c.checked = !allChecked);
         });
 
-        document.getElementById('btnBatchExport').addEventListener('click', () => {
+        document.getElementById('btnBatchExport')?.addEventListener('click', () => {
             const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
             if(!checkedBoxes.length) { alert("請先勾選對象"); return; }
             
@@ -1848,7 +1879,7 @@
             });
         }
 
-        document.getElementById('btnDownloadArchive').addEventListener('click', () => {
+        document.getElementById('btnDownloadArchive')?.addEventListener('click', () => {
             const arcs = window.appData.assignments.filter(a => a.archived); 
             if(!arcs.length) { alert("無封存資料"); return; }
             let csv = "\uFEFF發布日期,內容,導師," + window.appData.roster.map(s => s.name).join(",") + "\n";
@@ -1860,7 +1891,7 @@
             const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
         });
 
-        document.getElementById('btnDownloadExpLogs').addEventListener('click', () => {
+        document.getElementById('btnDownloadExpLogs')?.addEventListener('click', () => {
             if(!window.appData.expLogs || window.appData.expLogs.length === 0) { alert("目前無任何 加扣分 異動紀錄"); return; }
             let csv = "\uFEFF紀錄時間,姓名,變動,原因\n";
             window.appData.expLogs.forEach(log => {
@@ -1870,21 +1901,21 @@
             const el = document.createElement("a"); el.href=url; el.download="加扣分_異動紀錄.csv"; el.click();
         });
 
-        document.getElementById('btnClearAssignments').addEventListener('click', () => { 
+        document.getElementById('btnClearAssignments')?.addEventListener('click', () => { 
             if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { 
                 window.appData.assignments = []; window.appData.attendance = {}; window.triggerAutoSave(); window.renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
             } 
         });
         
-        document.getElementById('btnResetAll').addEventListener('click', () => { 
+        document.getElementById('btnResetAll')?.addEventListener('click', () => { 
             if(prompt("輸入 DESTROY 以重置一切") === "DESTROY") { 
                 window.appData.roster = []; window.appData.assignments = []; window.appData.attendance = {}; window.appData.discipline = null; window.appData.expLogs = []; window.triggerAutoSave(); window.renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
             } 
         });
 
-        document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
+        document.getElementById('btnOpenSettings')?.addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
         
-        document.getElementById('themeOptionsContainer').addEventListener('click', (e) => {
+        document.getElementById('themeOptionsContainer')?.addEventListener('click', (e) => {
             if(e.target.classList.contains('theme-option')) {
                 const t = e.target.dataset.theme; 
                 document.documentElement.setAttribute('data-color-theme', t); 
@@ -1894,7 +1925,7 @@
             }
         });
 
-        document.getElementById('darkModeToggle').addEventListener('change', (e) => { 
+        document.getElementById('darkModeToggle')?.addEventListener('change', (e) => { 
             const t = e.target.checked ? 'dark' : 'light'; 
             document.documentElement.setAttribute('data-theme', t); 
             localStorage.setItem('hwTheme', t); 
@@ -1902,11 +1933,11 @@
         
         document.querySelectorAll('.modal-close-btn').forEach(b => b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('show')));
         
-        document.getElementById('ipSettingsArrivalTime').addEventListener('change', (e) => { window.appData.settings.arrivalTime = e.target.value; window.triggerAutoSave(); if (document.querySelector('.view.show').id === 'view-checkin') window.renderCheckIn(); });
-        document.getElementById('ipSettingsBgmId').addEventListener('change', (e) => { let val = e.target.value.trim(); if(val.includes('v=')) val = val.split('v=')[1].split('&')[0]; else if(val.includes('youtu.be/')) val = val.split('youtu.be/')[1].split('?')[0]; window.appData.settings.bgmId = val; e.target.value = val; window.triggerAutoSave(); showToast("🎵 BGM 設定已儲存"); });
+        document.getElementById('ipSettingsArrivalTime')?.addEventListener('change', (e) => { window.appData.settings.arrivalTime = e.target.value; window.triggerAutoSave(); if (document.querySelector('.view.show').id === 'view-checkin') window.renderCheckIn(); });
+        document.getElementById('ipSettingsBgmId')?.addEventListener('change', (e) => { let val = e.target.value.trim(); if(val.includes('v=')) val = val.split('v=')[1].split('&')[0]; else if(val.includes('youtu.be/')) val = val.split('youtu.be/')[1].split('?')[0]; window.appData.settings.bgmId = val; e.target.value = val; window.triggerAutoSave(); window.showToast("🎵 BGM 設定已儲存"); });
 
-        document.getElementById('btnOpenRankSettings').addEventListener('click', () => {
-            window.tempRankSettings = JSON.parse(JSON.stringify(window.appData.rankSettings || defaultData.rankSettings));
+        document.getElementById('btnOpenRankSettings')?.addEventListener('click', () => {
+            window.tempRankSettings = JSON.parse(JSON.stringify(window.appData.rankSettings || defaultDataTemplate.rankSettings));
             window.renderRankSettingsUI();
             document.getElementById('adminProfileModal').classList.remove('show');
             document.getElementById('rankSettingsModal').classList.add('show');
@@ -1939,7 +1970,7 @@
             });
         };
 
-        document.getElementById('rankConfigList').addEventListener('input', (e) => {
+        document.getElementById('rankConfigList')?.addEventListener('input', (e) => {
             if(e.target.tagName !== 'INPUT') return;
             const idx = parseInt(e.target.dataset.idx);
             if(e.target.classList.contains('ip-rank-exp')) window.tempRankSettings[idx].exp = parseInt(e.target.value) || 0;
@@ -1948,7 +1979,7 @@
             if(e.target.classList.contains('ip-rank-color')) window.tempRankSettings[idx].color = e.target.value;
         });
 
-        document.getElementById('rankConfigList').addEventListener('click', (e) => {
+        document.getElementById('rankConfigList')?.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-del-rank');
             if(btn) {
                 const idx = parseInt(btn.dataset.idx);
@@ -1957,16 +1988,16 @@
             }
         });
 
-        document.getElementById('btnAddRank').addEventListener('click', () => {
+        document.getElementById('btnAddRank')?.addEventListener('click', () => {
             window.tempRankSettings.push({ exp: 0, name: "新稱號", color: "#333333", reward: 0 });
             window.renderRankSettingsUI();
         });
 
-        document.getElementById('btnSaveRankSettings').addEventListener('click', () => {
+        document.getElementById('btnSaveRankSettings')?.addEventListener('click', () => {
             window.appData.rankSettings = window.tempRankSettings;
             window.triggerAutoSave();
             document.getElementById('rankSettingsModal').classList.remove('show');
-            showToast("🏆 階級稱號設定已儲存");
+            window.showToast("🏆 階級稱號設定已儲存");
             window.renderAll();
         });
 
@@ -2127,175 +2158,136 @@
                 document.addEventListener('touchend', stopMove);
             }, { passive: false });
         });
-    }
 
-    // --------------------------------------------------------
-    // 9. Toolbox Logic
-    // --------------------------------------------------------
-    
-    // --- 白板邏輯 ---
-    let wbCanvas = document.getElementById('wbCanvas');
-    let wbCtx = wbCanvas.getContext('2d');
-    let isDrawing = false; let lastX = 0; let lastY = 0;
-    
-    window.initWhiteboard = function() {
-        wbCtx.lineJoin = 'round';
-        wbCtx.lineCap = 'round';
-        wbCtx.strokeStyle = '#000000';
-        wbCtx.lineWidth = 4;
-    }
-
-    function drawStart(e) {
-        isDrawing = true;
-        const rect = wbCanvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const scaleX = wbCanvas.width / rect.width;
-        const scaleY = wbCanvas.height / rect.height;
-        lastX = (clientX - rect.left) * scaleX;
-        lastY = (clientY - rect.top) * scaleY;
-    }
-
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault(); 
-        const rect = wbCanvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const scaleX = wbCanvas.width / rect.width;
-        const scaleY = wbCanvas.height / rect.height;
-        let currentX = (clientX - rect.left) * scaleX;
-        let currentY = (clientY - rect.top) * scaleY;
-
-        wbCtx.beginPath();
-        wbCtx.moveTo(lastX, lastY);
-        wbCtx.lineTo(currentX, currentY);
-        wbCtx.stroke();
-        
-        lastX = currentX;
-        lastY = currentY;
-    }
-
-    function drawEnd() { isDrawing = false; }
-
-    wbCanvas.addEventListener('mousedown', drawStart);
-    wbCanvas.addEventListener('mousemove', draw);
-    wbCanvas.addEventListener('mouseup', drawEnd);
-    wbCanvas.addEventListener('mouseout', drawEnd);
-    wbCanvas.addEventListener('touchstart', drawStart, { passive: false });
-    wbCanvas.addEventListener('touchmove', draw, { passive: false });
-    wbCanvas.addEventListener('touchend', drawEnd);
-
-    document.querySelectorAll('.wb-color').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.wb-color').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            wbCtx.strokeStyle = e.target.dataset.color;
+        // Dashboard/Filter bindings
+        ['teacherFilter','subjectFilter'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) { el.addEventListener('change', (e) => { window.currentFilter[id.replace('Filter','')] = e.target.value; window.renderDashboard(); }); }
         });
-    });
 
-    document.getElementById('wbSize').addEventListener('input', (e) => { wbCtx.lineWidth = e.target.value; });
-    document.getElementById('wbClear').addEventListener('click', () => { wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height); });
+        document.getElementById('btnClearFilter')?.addEventListener('click', () => { 
+            window.currentFilter = { teacher: 'all', subject: 'all' }; 
+            document.getElementById('teacherFilter').value = 'all'; 
+            document.getElementById('subjectFilter').value = 'all'; 
+            window.renderDashboard(); 
+        });
 
-    // --- 轉盤抽籤邏輯 ---
-    let wheelCanvas = document.getElementById('wheelCanvas'); let wheelCtx = wheelCanvas ? wheelCanvas.getContext('2d') : null; 
-    let currentAngle = 0; let wheelSpinning = false;
-    let wheelColors = ['#f43f5e', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899', '#14b8a6'];
-    
-    window.drawWheel = function() {
-        if (!wheelCtx) return;
-        let w = wheelCanvas.width; let h = wheelCanvas.height; let r = w/2;
-        wheelCtx.clearRect(0,0,w,h);
-        if(!window.appData.roster || window.appData.roster.length === 0) {
-            wheelCtx.fillStyle = '#e5e7eb'; wheelCtx.beginPath(); wheelCtx.arc(r,r,r,0,2*Math.PI); wheelCtx.fill(); return;
-        }
-        let arc = 2 * Math.PI / window.appData.roster.length;
-        for(let i=0; i<window.appData.roster.length; i++) {
-            wheelCtx.fillStyle = wheelColors[i % wheelColors.length]; wheelCtx.beginPath(); wheelCtx.moveTo(r,r); wheelCtx.arc(r,r,r, currentAngle + i*arc, currentAngle + (i+1)*arc); wheelCtx.fill();
-            wheelCtx.save(); wheelCtx.translate(r,r); wheelCtx.rotate(currentAngle + i*arc + arc/2); wheelCtx.fillStyle = '#fff'; wheelCtx.font = 'bold 14px sans-serif'; wheelCtx.textAlign = 'right'; wheelCtx.textBaseline = 'middle'; wheelCtx.fillText(window.appData.roster[i].name.substring(0,4), r - 10, 0); wheelCtx.restore();
-        }
-    }
+        // New Quest Modal
+        document.getElementById('btnOpenNewQuestWindowSidebar')?.addEventListener('click', () => { 
+            window.resetNewAssignmentState(); 
+            document.getElementById('panelNewQuest').classList.add('show'); 
+        });
 
-    document.getElementById('btnSpinWheel')?.addEventListener('click', () => {
-        if(wheelSpinning || !window.appData.roster || window.appData.roster.length === 0) return;
-        wheelSpinning = true; resumeAudio();
-        let spinSpeed = Math.random() * 0.2 + 0.4; 
-        
-        function animateSpin() {
-            currentAngle += spinSpeed; spinSpeed *= 0.985; window.drawWheel();
-            if(spinSpeed > 0.05) playTickSound(); 
-            if(spinSpeed > 0.002) { requestAnimationFrame(animateSpin); } 
-            else {
-                wheelSpinning = false; playSuccessSound();
-                let arc = 2 * Math.PI / window.appData.roster.length; let normalizedAngle = currentAngle % (2 * Math.PI);
-                let winningAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
-                let winnerIdx = Math.floor(winningAngle / arc);
-                showToast(`🎉 轉盤抽中了：${window.appData.roster[winnerIdx].name}`); confetti();
+        document.getElementById('ipTeacherSelect')?.addEventListener('change', (e) => {
+            document.getElementById('ipTeacherCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+        });
+
+        document.getElementById('selSubject')?.addEventListener('change', (e) => { 
+            const sel = document.getElementById('selPresetTask'); 
+            sel.innerHTML = '<option value="">📜 常用任務...</option>'; 
+            if(e.target.value && window.appData.questSettings[e.target.value]) {
+                window.appData.questSettings[e.target.value].forEach(t => sel.add(new Option(t, t))); 
             }
-        }
-        animateSpin();
-    });
+        });
 
-    // --- 噪音計邏輯 ---
-    let noiseAudioCtx = null; let analyser = null; let microphone = null; let noiseAnimFrame = null; let isNoiseListening = false;
-    
-    document.getElementById('btnToggleNoise')?.addEventListener('click', async function() {
-        const btn = this;
-        const disp = document.getElementById('dbValue');
-        const bar = document.getElementById('dbBar');
+        document.getElementById('selPresetTask')?.addEventListener('change', (e) => { 
+            if(e.target.value) document.getElementById('ipTitle').value = e.target.value; 
+        });
+
+        document.getElementById('btnToggleKeypad')?.addEventListener('click', () => { 
+            const kp = document.getElementById('virtualKeypad'); 
+            kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none'; 
+        });
+
+        document.getElementById('virtualKeypad')?.addEventListener('click', (e) => { 
+            if(e.target.classList.contains('vk-btn')) { 
+                const val = e.target.dataset.val; const ip = document.getElementById('ipTitle'); 
+                if (val === 'backspace') ip.value = ip.value.slice(0, -1); 
+                else if (val === 'clear') ip.value = ''; 
+                else if (val === 'space') ip.value += ' '; 
+                else ip.value += val; 
+                ip.focus(); 
+            } 
+        });
+
+        document.getElementById('btnCreate')?.addEventListener('click', () => {
+            let t = document.getElementById('ipTeacherSelect').value; 
+            if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
+            const title = document.getElementById('ipTitle').value.trim(); 
+            const sub = document.getElementById('selSubject').value; 
+            const d = document.getElementById('ipDate').value;
+            
+            if(!t || !title || !d) { window.showToast("⚠️ 請填寫完整內容"); return; }
+            
+            if(!window.appData.teachers.includes(t)) window.appData.teachers.push(t);
+            const isAll = !window.newAssignmentAssignedIndices.length || window.newAssignmentAssignedIndices.length === window.appData.roster.length;
+            
+            window.appData.assignments.push({ 
+                id: Date.now(), title, teacher: t, subject: sub, date: d, 
+                assignedIndices: isAll ? 'all' : window.newAssignmentAssignedIndices, 
+                statuses: Array(window.appData.roster.length).fill(0) 
+            });
+            
+            window.triggerAutoSave(); 
+            window.renderAll(); 
+            document.getElementById('panelNewQuest').classList.remove('show'); 
+            window.showToast("✨ 新委託已發布！");
+        });
+
+        document.getElementById('btnOpenQuestSettings')?.addEventListener('click', () => { 
+            window.tempQuestSettings = JSON.parse(JSON.stringify(window.appData.questSettings)); 
+            window.renderQuestConfig(); 
+            document.getElementById('questSettingsModal').classList.add('show'); 
+        });
         
-        if (isNoiseListening) {
-            isNoiseListening = false;
-            cancelAnimationFrame(noiseAnimFrame);
-            if(microphone) microphone.disconnect();
-            btn.innerHTML = '<i class="bi bi-mic-fill"></i> 啟動偵測';
-            btn.classList.remove('warn');
-            disp.innerText = "0 音量";
-            bar.style.width = '0%';
-            bar.style.backgroundColor = '#22c55e';
-            return;
-        }
+        window.renderQuestConfig = function() {
+            const list = document.getElementById('questConfigList'); list.innerHTML = '';
+            Object.keys(window.tempQuestSettings).forEach(sub => {
+                const div = document.createElement('div'); div.className = 'quest-config-card';
+                div.innerHTML = `<div class="quest-config-header"><span class="quest-config-title">${sub}</span><button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除</button></div><div class="quest-tags">${window.tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}</div><div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button></div>`;
+                list.appendChild(div);
+            });
+        };
+        
+        document.getElementById('questConfigList')?.addEventListener('click', (e) => {
+            if(e.target.closest('.btn-del-subj')) { const s = e.target.closest('.btn-del-subj').dataset.sub; if(confirm(`確定要移除【${s}】科目嗎？`)) { delete window.tempQuestSettings[s]; window.renderQuestConfig(); } }
+            else if(e.target.closest('.btn-del-task')) { const t = e.target.closest('.btn-del-task'); const s = t.dataset.sub; const i = parseInt(t.dataset.idx); window.tempQuestSettings[s].splice(i, 1); window.renderQuestConfig(); }
+            else if(e.target.closest('.btn-add-task')) { const s = e.target.closest('.btn-add-task').dataset.sub; const ip = document.getElementById(`newT_${s}`); if(ip.value.trim()) { window.tempQuestSettings[s].push(ip.value.trim()); window.renderQuestConfig(); } }
+        });
+        
+        document.getElementById('btnAddSubject')?.addEventListener('click', () => { const v = document.getElementById('ipNewSubject').value.trim(); if(v && !window.tempQuestSettings[v]) { window.tempQuestSettings[v] = []; document.getElementById('ipNewSubject').value=''; window.renderQuestConfig(); } });
+        document.getElementById('btnSaveQuestSettings')?.addEventListener('click', () => { window.appData.questSettings = window.tempQuestSettings; window.triggerAutoSave(); window.updateSubjectDropdown(); document.getElementById('questSettingsModal').classList.remove('show'); window.showToast("⚙️ 任務選單設定已儲存"); });
 
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            noiseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = noiseAudioCtx.createAnalyser();
-            analyser.fftSize = 256;
-            microphone = noiseAudioCtx.createMediaStreamSource(stream);
-            microphone.connect(analyser);
-            
-            isNoiseListening = true;
-            btn.innerHTML = '<i class="bi bi-mic-mute-fill"></i> 停止偵測';
-            btn.classList.add('warn');
-            
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            
-            function updateNoiseLevel() {
-                if (!isNoiseListening) return;
-                analyser.getByteFrequencyData(dataArray);
-                let sum = 0;
-                for(let i = 0; i < dataArray.length; i++) { sum += dataArray[i]; }
-                let average = sum / dataArray.length;
-                let volumeIndex = Math.min(100, Math.round((average / 128) * 100)); 
-                disp.innerText = volumeIndex + " 音量";
-                bar.style.width = volumeIndex + '%';
-                const threshold = parseInt(document.getElementById('dbThreshold').value) || 80;
-                if (volumeIndex >= threshold) { bar.style.backgroundColor = '#ef4444'; disp.style.color = '#ef4444'; } 
-                else if (volumeIndex >= threshold * 0.7) { bar.style.backgroundColor = '#eab308'; disp.style.color = '#eab308'; } 
-                else { bar.style.backgroundColor = '#22c55e'; disp.style.color = 'var(--text-main)'; }
-                noiseAnimFrame = requestAnimationFrame(updateNoiseLevel);
-            }
-            updateNoiseLevel();
+        // Dashboard Delete/Archive Modal
+        document.getElementById('btnMarkAllYellow')?.addEventListener('click', () => { if(confirm("確認全員改為「已回報」？")) window.updateAllStatus(1); });
+        document.getElementById('btnMarkAllOrange')?.addEventListener('click', () => { if(confirm("確認全員改為「再挑戰」？")) window.updateAllStatus(2); });
 
-        } catch (err) {
-            console.error("麥克風權限錯誤:", err);
-            alert("⚠️ 無法存取麥克風！請確認瀏覽器有給予網站麥克風權限。");
-        }
-    });
-    
-    document.getElementById('dbThreshold')?.addEventListener('input', (e) => {
-        document.getElementById('dbThresholdVal').innerText = e.target.value;
-    });
+        document.getElementById('btnConfirmArchive')?.addEventListener('click', () => {
+            const a = window.appData.assignments.find(x => x.id == window.targetAssignmentIdToDelete);
+            if(a) { a.archived = true; window.triggerAutoSave(); window.renderDashboard(); }
+            document.getElementById('deleteChoiceModal').classList.remove('show');
+        });
+
+        document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
+            window.appData.assignments = window.appData.assignments.filter(x => x.id != window.targetAssignmentIdToDelete);
+            window.triggerAutoSave(); window.renderDashboard();
+            document.getElementById('deleteChoiceModal').classList.remove('show');
+            window.showToast("已徹底銷毀");
+        });
+
+        // Roster Paste Modal
+        document.getElementById('btnCloseRosterPaste')?.addEventListener('click', () => document.getElementById('detailsRosterPaste').removeAttribute('open'));
+        document.getElementById('btnLoadFromPaste')?.addEventListener('click', () => {
+            const txt = document.getElementById('taRosterPaste').value.trim(); if(!txt) return; 
+            const d = document.getElementById('rosterEditor'); 
+            let isOverwrite = confirm("要【覆蓋】目前的冒險者名單嗎？\n\n[確定]：清除舊名單\n[取消]：附加在最後");
+            let c = 1; if (isOverwrite) d.innerHTML = ''; else c = d.querySelectorAll('.roster-item').length + 1; 
+            txt.split(/\r?\n/).forEach(n => { if(n.trim()) d.innerHTML += `<div class="roster-item"><input type="number" value="${c++}" class="roster-no-input"><input value="${n.trim()}" class="roster-name-input"></div>`; });
+            document.getElementById('taRosterPaste').value = ''; document.getElementById('detailsRosterPaste').removeAttribute('open'); 
+            window.showToast("📜 名單已載入編輯區！請記得儲存");
+        });
+
+    } // end bindEvents()
 
     document.addEventListener('DOMContentLoaded', bindEvents);
 
