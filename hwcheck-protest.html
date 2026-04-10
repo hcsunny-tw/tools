@@ -14,6 +14,7 @@
     .view { display: none !important; } 
     .view.show { display: block !important; animation: fadeIn .3s ease; }
     @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
     :root, html[data-color-theme='guild'] {
       --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
@@ -204,20 +205,26 @@
     .p-orange { background: #ffedd5; color: #9a3412; } 
     .p-green { background: #dcfce7; color: #166534; } 
 
-    /* ⭐ 工具箱大優化 */
+    /* ⭐ 工具箱大優化 - 網格選單樣式 */
     .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
     .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s; z-index: 5002; }
     .toolbox-toggle.active { transform: rotate(45deg); background: var(--danger); border-color: #ffcccc; }
-    .toolbox-menu { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 5px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s; pointer-events: none; }
-    .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-    .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     
-    .tool-window { position: fixed; bottom: 100px; right: 90px; width: 320px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s ease; z-index: 5005; }
+    .toolbox-menu { display: none; grid-template-columns: repeat(3, 1fr); gap: 12px; background: var(--card); border: 3px solid var(--primary); border-radius: 16px; padding: 16px; width: 320px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); position: absolute; bottom: 80px; right: 0; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5001; }
+    .toolbox-menu.show { display: grid; }
+    
+    .tb-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); border: 2px solid var(--tbl-border); border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.2s; text-align: center; gap: 4px; }
+    .tb-btn:hover { background: var(--primary); color: #fff; transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+    .tb-btn i { font-size: 24px; line-height: 1; }
+    .tb-btn span { font-size: 12px; font-weight: bold; }
+    
+    .tool-window { position: fixed; bottom: 100px; right: 90px; width: 340px; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: none; flex-direction: column; animation: popIn 0.3s ease; z-index: 5005; }
     .tool-window.show { display: flex; }
     .tool-header { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .tool-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; opacity: 0.8; }
-    .tool-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; }
-    .tool-window .checklist-item { background: var(--card); border: 2px dashed var(--primary); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 900; cursor: pointer; }
+    .tool-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; }
+    .tool-window .checklist-item { background: var(--card); border: 2px dashed var(--primary); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 900; cursor: pointer; transition: transform 0.1s; }
+    .tool-window .checklist-item:active { transform: scale(0.95); }
     .tool-window .checklist-item.done { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
 
     .marquee-container { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.85); overflow: hidden; z-index: 9999; padding: 8px 0; pointer-events: none; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
@@ -225,10 +232,19 @@
     @keyframes marquee-anim { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
     .quick-marquee-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .quick-tag { background: var(--bg); border: 1px solid var(--tbl-border); padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .quick-tag { background: var(--bg); border: 1px solid var(--tbl-border); padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
     .quick-tag:hover { background: var(--primary); color: #fff; }
 
-    .timer-display-box { font-size: 48px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; }
+    .timer-display-box { font-size: 52px; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 2px dashed var(--tbl-border); border-radius: 12px; padding: 10px 0; margin-bottom: 10px; text-shadow: 1px 1px 0px #fff; }
+
+    /* 轉盤設定 */
+    .wheel-wrapper { position: relative; width: 240px; height: 240px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+    .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); color: var(--danger); font-size: 40px; z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+    #wheelCanvas { border-radius: 50%; border: 4px solid var(--tbl-border); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    /* 小白板 */
+    .wb-color { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.1s; }
+    .wb-color.active { border-color: var(--primary); box-shadow: 0 0 0 2px #fff inset; transform: scale(1.1); }
 
     #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
     .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
@@ -682,32 +698,77 @@
   
   <div id="quickDebtMenu"><div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div><div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div></div>
 
-  <!-- ⭐ 工具箱 -->
+  <!-- ⭐ 工具箱 (Toolbox) - 面板式選單 + 噪音計/小白板 -->
   <div class="toolbox-container">
       <div class="toolbox-menu" id="toolboxMenu">
-          <button class="fab-btn" id="btnOpenRecess" title="下課準備"><i class="bi bi-backpack"></i></button>
-          <button class="fab-btn" id="btnOpenDismissal" title="放學準備"><i class="bi bi-door-open"></i></button>
-          <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
-          <button class="fab-btn" id="btnOpenTimer" title="計時器"><i class="bi bi-stopwatch"></i></button>
-          <button class="fab-btn" id="btnOpenDraw" title="抽籤"><i class="bi bi-gift"></i></button>
+          <div class="tb-btn" onclick="openTool('panelMarquee')">
+              <i class="bi bi-broadcast text-yellow-500"></i><span>跑馬燈</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelTimer')">
+              <i class="bi bi-hourglass-split text-blue-500"></i><span>計時器</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelStopwatch')">
+              <i class="bi bi-stopwatch text-emerald-500"></i><span>碼表</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelDice')">
+              <i class="bi bi-dice-5 text-rose-500"></i><span>骰子</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelDraw')">
+              <i class="bi bi-gift text-purple-500"></i><span>抽籤</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelRecess')">
+              <i class="bi bi-backpack text-orange-500"></i><span>下課準備</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelDismissal')">
+              <i class="bi bi-door-open text-stone-500"></i><span>放學準備</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelDecibel')">
+              <i class="bi bi-mic text-teal-500"></i><span>噪音計</span>
+          </div>
+          <div class="tb-btn" onclick="openTool('panelWhiteboard')">
+              <i class="bi bi-easel text-sky-500"></i><span>小白板</span>
+          </div>
       </div>
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
   </div>
   
-  <div id="panelRecess" class="tool-window" style="width: 400px;">
-      <div class="tool-header"><span><i class="bi bi-backpack"></i> 下課前準備</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body">
-          <div id="recessChecklist" class="checklist-container" style="grid-template-columns: 1fr; margin-top: 0; gap: 8px;"></div>
+  <!-- 分貝偵測器 (噪音計) 工具窗 -->
+  <div id="panelDecibel" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-mic"></i> 分貝偵測器</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body text-center">
+         <div id="dbValue" class="timer-display-box" style="font-size:32px; transition: color 0.3s;">0 音量</div>
+         <div style="height: 24px; background: var(--tbl-alt); border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 2px solid var(--tbl-border);">
+            <div id="dbBar" style="height: 100%; width: 0%; background: #22c55e; transition: width 0.1s, background-color 0.2s;"></div>
+         </div>
+         <div class="flex items-center gap-2 mb-4 justify-center">
+             <span class="text-sm font-bold text-stone-500">警告門檻：</span>
+             <input type="range" id="dbThreshold" min="30" max="100" value="80" class="w-32 accent-rose-500">
+             <span id="dbThresholdVal" class="text-sm font-bold text-rose-500 w-8 text-left">80</span>
+         </div>
+         <button id="btnToggleNoise" class="btn w-full justify-center text-lg"><i class="bi bi-mic-fill"></i> 啟動偵測</button>
+         <p class="text-xs text-stone-400 mt-2 font-bold">需允許麥克風權限方可使用</p>
       </div>
   </div>
 
-  <div id="panelDismissal" class="tool-window" style="width: 400px;">
-      <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學前準備</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body">
-          <div id="dismissalChecklist" class="checklist-container" style="grid-template-columns: 1fr; margin-top: 0; gap: 8px;"></div>
+  <!-- 小白板 工具窗 -->
+  <div id="panelWhiteboard" class="tool-window" style="width: 360px;">
+      <div class="tool-header"><span><i class="bi bi-easel"></i> 小白板</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body" style="padding: 12px;">
+         <canvas id="wbCanvas" width="330" height="220" style="border: 2px dashed var(--tbl-border); border-radius: 8px; cursor: crosshair; background: #fff; touch-action: none; width: 100%;"></canvas>
+         <div class="flex justify-between items-center mt-3 gap-2">
+             <div class="flex gap-2">
+                 <button class="wb-color active bg-black" data-color="#000000"></button>
+                 <button class="wb-color bg-rose-500" data-color="#ef4444"></button>
+                 <button class="wb-color bg-blue-500" data-color="#3b82f6"></button>
+                 <button class="wb-color bg-emerald-500" data-color="#22c55e"></button>
+             </div>
+             <input type="range" id="wbSize" min="2" max="20" value="4" class="w-20 accent-primary">
+             <button class="btn sm ghost icon-only" id="wbClear" title="清空畫布"><i class="bi bi-trash"></i></button>
+         </div>
       </div>
   </div>
 
+  <!-- 跑馬燈工具窗 -->
   <div id="panelMarquee" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-broadcast"></i> 公告跑馬燈</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -718,6 +779,18 @@
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='🎒 準備放學，請將椅子靠攏！'">🎒 準備放學</span>
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='🧹 請開始進行打掃工作！'">🧹 打掃時間</span>
           </div>
+          <!-- 外觀設定 -->
+          <div class="field mt-2 p-2 bg-stone-50 rounded-lg border border-stone-200">
+              <label>外觀設定</label>
+              <div class="flex items-center gap-2 mt-1">
+                  <span class="text-sm font-bold text-stone-500">顏色</span>
+                  <input type="color" id="mqColorInput" value="#FFD700" class="w-10 h-8 p-0 border-0 rounded cursor-pointer bg-transparent">
+                  <span class="text-sm font-bold ml-2 text-stone-500">大小</span>
+                  <input type="range" id="mqSizeInput" min="20" max="100" value="48" class="w-full accent-primary">
+                  <span class="text-sm font-bold ml-2 text-stone-500">速度</span>
+                  <input type="range" id="mqSpeedInput" min="1" max="10" value="5" class="w-full accent-primary" style="direction: rtl;">
+              </div>
+          </div>
           <div class="actions sm" style="justify-content: flex-end; margin-top: 10px; border-top: 1px dashed var(--tbl-border); padding-top: 10px;">
               <button class="btn sm" id="btnMqShow"><i class="bi bi-play-fill"></i> 播放</button>
               <button class="btn sm warn" id="btnMqHide">關閉</button>
@@ -725,12 +798,14 @@
       </div>
   </div>
 
+  <!-- 計時器工具窗 -->
   <div id="panelTimer" class="tool-window">
-      <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 計時器</span><button class="tool-close">&times;</button></div>
+      <div class="tool-header"><span><i class="bi bi-hourglass-split"></i> 計時器</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
-           <div id="timerDisplay" class="timer-display-box">00:00</div>
+           <div id="timerDisplay" class="timer-display-box" style="color:var(--text-main);">00:00</div>
            <div class="timer-presets" style="display:flex; gap:6px; margin-bottom: 12px; justify-content: center;">
               <button class="btn sm ghost btn-timer-preset" data-min="1" style="flex:1; border-radius: 20px;">+ 1 分</button>
+              <button class="btn sm ghost btn-timer-preset" data-min="3" style="flex:1; border-radius: 20px;">+ 3 分</button>
               <button class="btn sm ghost btn-timer-preset" data-min="5" style="flex:1; border-radius: 20px;">+ 5 分</button>
               <button class="btn sm ghost btn-timer-preset" data-min="10" style="flex:1; border-radius: 20px;">+ 10 分</button>
            </div>
@@ -746,11 +821,76 @@
       </div>
   </div>
 
+  <!-- 碼表工具窗 -->
+  <div id="panelStopwatch" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 碼表</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+           <div id="stopwatchDisplay" class="timer-display-box" style="color:var(--text-main);">00:00.00</div>
+           <div class="actions sm" style="justify-content: center; margin-top: 12px;">
+               <button class="btn" id="btnSwStart" style="flex:2; font-size: 16px;"><i class="bi bi-play-fill"></i> 開始</button>
+               <button class="btn warn" id="btnSwReset" style="flex:1;"><i class="bi bi-arrow-counterclockwise"></i> 重置</button>
+           </div>
+      </div>
+  </div>
+
+  <!-- 骰子工具窗 -->
+  <div id="panelDice" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-dice-5"></i> 抽籤骰子</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body text-center">
+         <div class="flex justify-center gap-2 mb-2 w-full">
+            <button id="btnModeNumDice" class="btn sm active flex-1">數字骰</button>
+            <button id="btnModeLetterDice" class="btn sm ghost flex-1">字母骰</button>
+         </div>
+         <div id="diceConfigNum" class="flex items-center gap-2 justify-center mb-4">
+            <span class="text-sm font-bold text-stone-500">範圍：</span>
+            <input type="number" id="diceMin" value="1" class="w-16 text-center py-1">
+            <span class="font-bold text-stone-400">-</span>
+            <input type="number" id="diceMax" value="30" class="w-16 text-center py-1">
+         </div>
+         <div id="diceDisplay" class="timer-display-box" style="font-size: 80px; transition: transform 0.1s;">?</div>
+         <button id="btnRollDice" class="btn chest w-full" style="font-size: 18px; padding: 12px;"><i class="bi bi-dice-5-fill"></i> 擲骰子！</button>
+      </div>
+  </div>
+
+  <!-- 抽籤工具窗 (含轉盤) -->
   <div id="panelDraw" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-gift"></i> 幸運抽籤</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body flex flex-col items-center">
+         <div class="flex justify-center gap-2 mb-2 w-full">
+            <button id="btnModeDrawBasic" class="btn sm active flex-1">基本模式</button>
+            <button id="btnModeDrawWheel" class="btn sm ghost flex-1">轉盤模式</button>
+         </div>
+         
+         <!-- Basic Mode -->
+         <div id="drawBasicArea" class="w-full text-center mt-2">
+            <div id="luckyDrawResult" class="timer-display-box" style="font-size:32px; color:var(--danger); min-height:80px; display:grid; place-items:center; border-color:var(--accent);">???</div>
+            <button class="btn chest w-full mt-2" id="btnLuckyDraw" style="font-size: 16px; padding: 12px;"><i class="bi bi-person-fill"></i> 抽出一位冒險者</button>
+         </div>
+         
+         <!-- Wheel Mode -->
+         <div id="drawWheelArea" class="w-full text-center mt-4" style="display:none;">
+            <div class="wheel-wrapper">
+               <div class="wheel-pointer">▼</div>
+               <canvas id="wheelCanvas" width="240" height="240"></canvas>
+            </div>
+            <button class="btn chest w-full mt-6" id="btnSpinWheel" style="font-size: 16px; padding: 12px;"><i class="bi bi-arrow-repeat"></i> 旋轉輪盤</button>
+         </div>
+      </div>
+  </div>
+
+  <!-- 下課前準備工具窗 -->
+  <div id="panelRecess" class="tool-window" style="width: 400px;">
+      <div class="tool-header"><span><i class="bi bi-backpack"></i> 下課前準備</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
-          <div id="luckyDrawResult" style="font-size:32px; font-weight:900; text-align:center; color:var(--danger); min-height:80px; display:grid; place-items:center; border:3px dashed var(--accent); border-radius:12px; background:var(--bg); margin-bottom: 10px;">???</div>
-          <button class="btn chest" id="btnLuckyDraw" style="width:100%; font-size: 16px; padding: 12px;"><i class="bi bi-dice-5-fill"></i> 抽出一位冒險者</button>
+          <div id="recessChecklist" class="checklist-container" style="grid-template-columns: 1fr; margin-top: 0; gap: 8px;"></div>
+      </div>
+  </div>
+
+  <!-- 放學前準備工具窗 -->
+  <div id="panelDismissal" class="tool-window" style="width: 400px;">
+      <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學前準備</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div id="dismissalChecklist" class="checklist-container" style="grid-template-columns: 1fr; margin-top: 0; gap: 8px;"></div>
       </div>
   </div>
 
@@ -828,7 +968,6 @@
         assignments: [],
         teachers: ["公會長"],
         questSettings: { "國語": ["國語習作", "國語考卷"], "數學": ["數學習作", "數學考卷"] },
-        // ⭐ 新增：自訂階級預設值
         rankSettings: [
             { exp: 100, name: "S級傳說", color: "#f43f5e", reward: 50 },
             { exp: 50, name: "A級菁英", color: "#eab308", reward: 20 },
@@ -850,14 +989,13 @@
     let isBatchExpMode = false;
     let targetAssignmentIdToDelete = null; 
     let tempQuestSettings = {};
-    let tempRankSettings = []; // 用於編輯時的暫存
+    let tempRankSettings = []; 
     let currentFilter = { teacher: 'all', subject: 'all' };
     let lastRosterState = null; 
     const APP_SCALE = 1;
 
     // --- 3. 客製化稱號與經驗值系統 ---
     function getRankHtml(exp) {
-        // 確保依照 exp 由高到低排序，找到第一個達標的階級
         const ranks = [...(data.rankSettings || defaultData.rankSettings)].sort((a,b) => b.exp - a.exp);
         let rankName = ranks[ranks.length - 1]?.name || "新手"; 
         let rankColor = ranks[ranks.length - 1]?.color || "#9ca3af";
@@ -921,15 +1059,6 @@
         }
     }
 
-    window.switchDisciplineTab = function(tabName) {
-        document.querySelectorAll('#view-discipline .tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#view-discipline .roster-content').forEach(c => c.classList.remove('show'));
-        
-        if(tabName === 'traffic') { document.getElementById('tabBtnTraffic').classList.add('active'); document.getElementById('content-traffic').classList.add('show'); }
-        else if(tabName === 'recess') { document.getElementById('tabBtnRecess').classList.add('active'); document.getElementById('content-recess').classList.add('show'); }
-        else if(tabName === 'dismissal') { document.getElementById('tabBtnDismissal').classList.add('active'); document.getElementById('content-dismissal').classList.add('show'); }
-    };
-
     // --- 5. Firebase 讀寫保護 ---
     function updateSaveStatus(status, message = '') {
         const ind = document.getElementById('saveStatusIndicator'); if(!ind) return;
@@ -971,7 +1100,6 @@
                 data.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
                 data.rankSettings = Array.isArray(loadedData.rankSettings) ? loadedData.rankSettings : defaultData.rankSettings;
                 
-                // 確保 EXP 與 coins 欄位存在
                 data.roster.forEach(r => { 
                     if(typeof r.exp === 'undefined') r.exp = 0; 
                     if(typeof r.coins === 'undefined') r.coins = 0; 
@@ -1062,7 +1190,6 @@
         if(data.expLogs.length > 2000) data.expLogs.shift();
     }
 
-    // ⭐ 增加 EXP，自動檢查升級發放金幣
     function changeExp(sidx, delta, reason = '系統調整', silent = false) {
         if (!data.roster[sidx]) return;
         const oldExp = data.roster[sidx].exp || 0;
@@ -1080,7 +1207,7 @@
         }
 
         if (delta > 0) {
-            const ranks = [...(data.rankSettings || defaultData.rankSettings)].sort((a,b) => a.exp - b.exp); // 由低到高檢查
+            const ranks = [...(data.rankSettings || defaultData.rankSettings)].sort((a,b) => a.exp - b.exp);
             ranks.forEach(t => {
                 if (t.exp > 0 && oldExp < t.exp && newExp >= t.exp) {
                     if (t.reward > 0) {
@@ -1088,14 +1215,12 @@
                         logAction(sidx, t.reward, '金幣', `晉升 ${t.name} 獎勵`);
                         setTimeout(() => {
                             showToast(`🌟 恭喜 ${data.roster[sidx].name} 晉升為【${t.name}】！獲得 ${t.reward} 枚金幣！`);
-                            playSuccessSound();
-                            renderAll();
+                            playSuccessSound(); renderAll();
                         }, 1500); 
                     } else {
                         setTimeout(() => {
                             showToast(`🌟 恭喜 ${data.roster[sidx].name} 晉升為【${t.name}】！`);
-                            playSuccessSound();
-                            renderAll();
+                            playSuccessSound(); renderAll();
                         }, 1500);
                     }
                 }
@@ -1311,12 +1436,6 @@
                     <span style="font-size:10px; color:var(--muted);">⭐ ${s.exp||0} 💰 ${s.coins||0}</span>
                 </div>
             `;
-            
-            if(isAssigned) {
-                div.querySelector('.seat').onclick = () => window.toggleStatus(id, i);
-                const badge = div.querySelector('.debt-badge');
-                if (badge) badge.onclick = (e) => { e.stopPropagation(); window.openQuickDebtMenu(e, i, oldDebts); };
-            }
             grid.appendChild(div);
         });
 
@@ -1468,11 +1587,6 @@
                     <button class="btn sm icon-only" onclick="window.applySingleCustomCoin(${i})" style="padding:2px 6px;"><i class="bi bi-check-lg"></i></button>
                 </div>
             `;
-            
-            if(debts.length > 0 && !isBatchMode && !isBatchExpMode) {
-                const badge = card.querySelector('.debt-badge');
-                if(badge) badge.onclick = (e) => { e.stopPropagation(); window.openQuickDebtMenu(e, i, debts); };
-            }
             
             grid.appendChild(card);
         });
@@ -1789,7 +1903,6 @@
     function renderRankSettingsUI() {
         const list = document.getElementById('rankConfigList');
         list.innerHTML = '';
-        // 由高到低排序顯示
         tempRankSettings.sort((a,b) => b.exp - a.exp).forEach((r, i) => {
             const div = document.createElement('div');
             div.style.cssText = "display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--tbl-border); padding:8px 12px; border-radius:8px; margin-bottom:8px;";
@@ -1892,19 +2005,7 @@
         });
     });
 
-    ['teacherFilter','subjectFilter'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) { el.addEventListener('change', (e) => { currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard(); }); }
-    });
-
-    document.getElementById('btnClearFilter').addEventListener('click', () => { 
-        currentFilter = { teacher: 'all', subject: 'all' }; 
-        document.getElementById('teacherFilter').value = 'all'; 
-        document.getElementById('subjectFilter').value = 'all'; 
-        renderDashboard(); 
-    });
-
-    // ⭐ 發布新委託功能事件
+    // ⭐ 發布新委託與條件篩選功能事件
     function populateTeacherDropdowns() {
         const ts = data.teachers || []; 
         const sel = document.getElementById('ipTeacherSelect'); 
@@ -1934,6 +2035,18 @@
             fil.value = currentFilter.subject;
         }
     }
+
+    ['teacherFilter','subjectFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) { el.addEventListener('change', (e) => { currentFilter[id.replace('Filter','')] = e.target.value; renderDashboard(); }); }
+    });
+
+    document.getElementById('btnClearFilter').addEventListener('click', () => { 
+        currentFilter = { teacher: 'all', subject: 'all' }; 
+        document.getElementById('teacherFilter').value = 'all'; 
+        document.getElementById('subjectFilter').value = 'all'; 
+        renderDashboard(); 
+    });
 
     function resetNewAssignmentState() {
         document.getElementById('ipTitle').value = ''; 
@@ -2010,7 +2123,6 @@
         showToast("✨ 新委託已發布！");
     });
 
-    // 任務選單編輯 (⚙️ 按鈕)
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => { 
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings)); 
         renderQuestConfig(); 
@@ -2067,69 +2179,6 @@
         showToast("已徹底銷毀");
     });
 
-    // 🌟 捲軸列印邏輯
-    window.printSingleStudent = function(sidx) {
-        const student = data.roster[sidx]; const printDate = new Date().toLocaleDateString('zh-TW');
-        const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
-                                      .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
-        
-        const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:10px 0; border-bottom:1px dotted #ccc; font-size:18px;">☐ [${t.date}] ${t.title} <span style="font-size:14px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') 
-                                          : '<li style="padding:20px; color:#888;">🎉 目前沒有待辦任務！</li>';
-
-        const w = window.open('', '', 'width=600,height=800');
-        w.document.write(`<html><body style="font-family:sans-serif; padding:40px;"><div style="border:3px solid #5D4037; border-radius:12px; padding:20px;">
-            <h2 style="border-bottom:2px dashed #8B4513; padding-bottom:10px;">${student.no}. ${student.name} 的任務卷軸</h2>
-            <ul style="list-style:none; padding:0; min-height:300px;">${listHtml}</ul>
-            <div style="margin-top:20px; border-top:2px solid #eee; padding-top:10px; display:flex; justify-content:space-between; font-size:14px;">
-                <span>📅 ${printDate}</span><span>家長簽名：___________</span>
-            </div></div><script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
-        w.document.close();
-    };
-
-    document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
-        isBatchMode = !isBatchMode; 
-        if (isBatchMode) isBatchExpMode = false;
-        
-        const btnSelectAll = document.getElementById('btnBatchSelectAll');
-        if (isBatchExpMode || isBatchMode) {
-            btnSelectAll.style.display = 'inline-block';
-        } else {
-            btnSelectAll.style.display = 'none';
-        }
-        renderStudentStatus(); 
-    });
-
-    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
-        const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
-        const allChecked = Array.from(cbs).every(c => c.checked);
-        cbs.forEach(c => c.checked = !allChecked);
-    });
-
-    document.getElementById('btnBatchExport').addEventListener('click', () => {
-        const checkedBoxes = document.querySelectorAll('.batch-export-checkbox:checked');
-        if(!checkedBoxes.length) { alert("請先勾選對象"); return; }
-        
-        let cardsHtml = '';
-        checkedBoxes.forEach(cb => {
-            const sidx = parseInt(cb.dataset.sidx); const student = data.roster[sidx];
-            const tasks = data.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
-                                          .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
-            
-            const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:6px 0; border-bottom:1px dotted #ccc; font-size:15px;">☐ [${t.date}] ${t.title} <span style="font-size:12px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') : '<li style="color:#888;">🎉 無待辦任務！</li>';
-            
-            cardsHtml += `<div style="border:2px solid #5D4037; border-radius:8px; padding:12px; break-inside:avoid; margin-bottom:15px; background:#fff;">
-                <h3 style="border-bottom:2px dashed #8B4513; margin:0 0 10px 0; padding-bottom:5px;">${student.no}. ${student.name}</h3>
-                <ul style="list-style:none; padding:0; margin:0; min-height:100px;">${listHtml}</ul>
-            </div>`;
-        });
-
-        const w = window.open('', '', 'width=900,height=800');
-        w.document.write(`<html><body style="font-family:sans-serif; background:#f4f4f4; padding:20px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">${cardsHtml}</div>
-            <script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
-        w.document.close();
-    });
-
     // 🌟 外觀設定主題與夜間模式
     document.getElementById('btnOpenSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.add('show'));
     
@@ -2165,19 +2214,26 @@
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
 
-    // ⭐ 工具箱 (新增下課準備、放學準備)
-    document.getElementById('btnToggleToolbox').addEventListener('click', function() { document.getElementById('toolboxMenu').classList.toggle('show'); this.classList.toggle('active'); });
-    function openTool(id) { 
+    // ⭐ 工具箱 (新增分貝偵測器與小白板)
+    document.getElementById('btnToggleToolbox').addEventListener('click', function() { 
+        const menu = document.getElementById('toolboxMenu');
+        menu.classList.toggle('show'); 
+        this.classList.toggle('active'); 
+    });
+    
+    window.openTool = function(id) { 
         document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show')); 
         const win = document.getElementById(id); if(win) win.classList.add('show'); 
         document.getElementById('toolboxMenu').classList.remove('show'); document.getElementById('btnToggleToolbox').classList.remove('active'); 
+        
+        if (id === 'panelDraw' && document.getElementById('btnModeDrawWheel').classList.contains('active')) {
+            drawWheel();
+        }
+        
+        if (id === 'panelWhiteboard') {
+            initWhiteboard();
+        }
     }
-    
-    document.getElementById('btnOpenMarquee').addEventListener('click', () => openTool('panelMarquee'));
-    document.getElementById('btnOpenTimer').addEventListener('click', () => openTool('panelTimer'));
-    document.getElementById('btnOpenDraw').addEventListener('click', () => openTool('panelDraw'));
-    document.getElementById('btnOpenRecess').addEventListener('click', () => openTool('panelRecess'));
-    document.getElementById('btnOpenDismissal').addEventListener('click', () => openTool('panelDismissal'));
     
     document.addEventListener('click', (e) => { 
         if (e.target.closest('.tool-close')) { 
@@ -2201,9 +2257,12 @@
         if(!txt) return; 
         const el = document.getElementById('marqueeText'); 
         el.innerText = txt; 
-        el.style.color = '#FFD700';
-        el.style.fontSize = '36px';
-        el.style.animationDuration = Math.max(10, txt.length * 0.4) + 's'; 
+        el.style.color = document.getElementById('mqColorInput').value;
+        el.style.fontSize = document.getElementById('mqSizeInput').value + 'px';
+        const spd = parseInt(document.getElementById('mqSpeedInput').value); 
+        const duration = Math.max(2, (20 - spd * 1.5)); 
+        el.style.animationDuration = duration + 's'; 
+        
         document.getElementById('topMarquee').style.display = 'block'; 
         document.getElementById('panelMarquee').classList.remove('show'); 
     });
@@ -2264,7 +2323,77 @@
         document.getElementById('timerInputSec').value=''; 
     });
 
-    // 抽籤
+    // 碼表邏輯
+    let swInterval = null; let swTime = 0; let swLastTick = 0;
+    function updateSwDisplay() {
+        let ms = Math.floor((swTime % 1000) / 10);
+        let s = Math.floor((swTime / 1000) % 60);
+        let m = Math.floor(swTime / 60000);
+        document.getElementById('stopwatchDisplay').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
+    }
+    
+    document.getElementById('btnSwStart').addEventListener('click', (e) => {
+        if(swInterval) {
+            clearInterval(swInterval); swInterval = null;
+            e.target.innerHTML = '<i class="bi bi-play-fill"></i> 繼續'; e.target.classList.remove('warn');
+        } else {
+            swLastTick = Date.now();
+            swInterval = setInterval(() => {
+                let now = Date.now(); swTime += (now - swLastTick); swLastTick = now; updateSwDisplay();
+            }, 10);
+            e.target.innerHTML = '<i class="bi bi-pause-fill"></i> 暫停'; e.target.classList.add('warn');
+        }
+    });
+    
+    document.getElementById('btnSwReset').addEventListener('click', () => {
+        clearInterval(swInterval); swInterval = null; swTime = 0; updateSwDisplay();
+        const startBtn = document.getElementById('btnSwStart');
+        startBtn.innerHTML = '<i class="bi bi-play-fill"></i> 開始'; startBtn.classList.remove('warn');
+    });
+
+    // 骰子邏輯 (數字 / 字母)
+    let isNumDice = true;
+    document.getElementById('btnModeNumDice').addEventListener('click', function() {
+        isNumDice = true; this.classList.add('active'); this.classList.remove('ghost');
+        const altBtn = document.getElementById('btnModeLetterDice'); altBtn.classList.add('ghost'); altBtn.classList.remove('active');
+        document.getElementById('diceConfigNum').style.display = 'flex';
+    });
+    document.getElementById('btnModeLetterDice').addEventListener('click', function() {
+        isNumDice = false; this.classList.add('active'); this.classList.remove('ghost');
+        const altBtn = document.getElementById('btnModeNumDice'); altBtn.classList.add('ghost'); altBtn.classList.remove('active');
+        document.getElementById('diceConfigNum').style.display = 'none';
+    });
+    
+    document.getElementById('btnRollDice').addEventListener('click', () => {
+        resumeAudio(); let rolls = 0; let btn = document.getElementById('btnRollDice'); let disp = document.getElementById('diceDisplay');
+        btn.disabled = true;
+        let min = parseInt(document.getElementById('diceMin').value) || 1; let max = parseInt(document.getElementById('diceMax').value) || 30;
+        
+        let rollInt = setInterval(() => {
+            playTickSound();
+            if(isNumDice) disp.innerText = Math.floor(Math.random()*(max-min+1))+min;
+            else disp.innerText = String.fromCharCode(65 + Math.floor(Math.random() * 26)); 
+            rolls++;
+            if(rolls > 15) {
+                clearInterval(rollInt); playSuccessSound(); disp.style.transform = 'scale(1.2)';
+                setTimeout(()=>disp.style.transform = 'scale(1)', 200); btn.disabled = false;
+            }
+        }, 50);
+    });
+
+    // 抽籤邏輯 (雙模式)
+    document.getElementById('btnModeDrawBasic').addEventListener('click', function() {
+        this.classList.add('active'); this.classList.remove('ghost');
+        document.getElementById('btnModeDrawWheel').classList.add('ghost'); document.getElementById('btnModeDrawWheel').classList.remove('active');
+        document.getElementById('drawBasicArea').style.display = 'block'; document.getElementById('drawWheelArea').style.display = 'none';
+    });
+    document.getElementById('btnModeDrawWheel').addEventListener('click', function() {
+        this.classList.add('active'); this.classList.remove('ghost');
+        document.getElementById('btnModeDrawBasic').classList.add('ghost'); document.getElementById('btnModeDrawBasic').classList.remove('active');
+        document.getElementById('drawBasicArea').style.display = 'none'; document.getElementById('drawWheelArea').style.display = 'block';
+        drawWheel(); 
+    });
+
     document.getElementById('btnLuckyDraw').addEventListener('click', () => { 
         resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult'); 
         if (!data.roster || data.roster.length === 0) return; 
@@ -2273,9 +2402,202 @@
         let rollCount = 0; 
         function roll() { 
             res.innerText = data.roster[Math.floor(Math.random() * data.roster.length)].name; playTickSound(); rollCount++; 
-            if (rollCount < 20) setTimeout(roll, 50); else { res.style.color = "var(--danger)"; playSuccessSound(); confetti(); btn.disabled = false; btn.innerHTML = `<i class="bi bi-dice-5-fill"></i> 再次抽出冒險者`; } 
+            if (rollCount < 20) setTimeout(roll, 50); else { res.style.color = "var(--danger)"; playSuccessSound(); confetti(); btn.disabled = false; btn.innerHTML = `<i class="bi bi-person-fill"></i> 再次抽出`; } 
         } 
         roll(); 
+    });
+
+    let wheelCanvas = document.getElementById('wheelCanvas'); let wheelCtx = wheelCanvas.getContext('2d'); let currentAngle = 0; let wheelSpinning = false;
+    let wheelColors = ['#f43f5e', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899', '#14b8a6'];
+    
+    function drawWheel() {
+        if (!wheelCtx) return;
+        let w = wheelCanvas.width; let h = wheelCanvas.height; let r = w/2;
+        wheelCtx.clearRect(0,0,w,h);
+        if(data.roster.length === 0) {
+            wheelCtx.fillStyle = '#e5e7eb'; wheelCtx.beginPath(); wheelCtx.arc(r,r,r,0,2*Math.PI); wheelCtx.fill(); return;
+        }
+        let arc = 2 * Math.PI / data.roster.length;
+        for(let i=0; i<data.roster.length; i++) {
+            wheelCtx.fillStyle = wheelColors[i % wheelColors.length]; wheelCtx.beginPath(); wheelCtx.moveTo(r,r); wheelCtx.arc(r,r,r, currentAngle + i*arc, currentAngle + (i+1)*arc); wheelCtx.fill();
+            wheelCtx.save(); wheelCtx.translate(r,r); wheelCtx.rotate(currentAngle + i*arc + arc/2); wheelCtx.fillStyle = '#fff'; wheelCtx.font = 'bold 14px sans-serif'; wheelCtx.textAlign = 'right'; wheelCtx.textBaseline = 'middle'; wheelCtx.fillText(data.roster[i].name.substring(0,4), r - 10, 0); wheelCtx.restore();
+        }
+    }
+
+    document.getElementById('btnSpinWheel').addEventListener('click', () => {
+        if(wheelSpinning || data.roster.length === 0) return;
+        wheelSpinning = true; resumeAudio();
+        let spinSpeed = Math.random() * 0.2 + 0.4; 
+        
+        function animateSpin() {
+            currentAngle += spinSpeed; spinSpeed *= 0.985; drawWheel();
+            if(spinSpeed > 0.05) playTickSound(); 
+            if(spinSpeed > 0.002) { requestAnimationFrame(animateSpin); } 
+            else {
+                wheelSpinning = false; playSuccessSound();
+                let arc = 2 * Math.PI / data.roster.length; let normalizedAngle = currentAngle % (2 * Math.PI);
+                let winningAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
+                let winnerIdx = Math.floor(winningAngle / arc);
+                showToast(`🎉 轉盤抽中了：${data.roster[winnerIdx].name}`); confetti();
+            }
+        }
+        animateSpin();
+    });
+
+    // --- 工具：分貝偵測器 (噪音計) ---
+    let noiseAudioCtx = null; let analyser = null; let microphone = null; let noiseAnimFrame = null; let isNoiseListening = false;
+    
+    document.getElementById('btnToggleNoise').addEventListener('click', async function() {
+        const btn = this;
+        const disp = document.getElementById('dbValue');
+        const bar = document.getElementById('dbBar');
+        
+        if (isNoiseListening) {
+            // 停止
+            isNoiseListening = false;
+            cancelAnimationFrame(noiseAnimFrame);
+            if(microphone) microphone.disconnect();
+            btn.innerHTML = '<i class="bi bi-mic-fill"></i> 啟動偵測';
+            btn.classList.remove('warn');
+            disp.innerText = "0 音量";
+            bar.style.width = '0%';
+            bar.style.backgroundColor = '#22c55e';
+            return;
+        }
+
+        // 啟動
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            noiseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = noiseAudioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            microphone = noiseAudioCtx.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            
+            isNoiseListening = true;
+            btn.innerHTML = '<i class="bi bi-mic-mute-fill"></i> 停止偵測';
+            btn.classList.add('warn');
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            function updateNoiseLevel() {
+                if (!isNoiseListening) return;
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for(let i = 0; i < dataArray.length; i++) { sum += dataArray[i]; }
+                let average = sum / dataArray.length;
+                
+                // 將 0-255 的數值對應為 0-100 的音量指數
+                let volumeIndex = Math.min(100, Math.round((average / 128) * 100)); 
+                disp.innerText = volumeIndex + " 音量";
+                bar.style.width = volumeIndex + '%';
+                
+                const threshold = parseInt(document.getElementById('dbThreshold').value) || 80;
+                
+                if (volumeIndex >= threshold) {
+                    bar.style.backgroundColor = '#ef4444'; // 紅色
+                    disp.style.color = '#ef4444';
+                } else if (volumeIndex >= threshold * 0.7) {
+                    bar.style.backgroundColor = '#eab308'; // 黃色
+                    disp.style.color = '#eab308';
+                } else {
+                    bar.style.backgroundColor = '#22c55e'; // 綠色
+                    disp.style.color = 'var(--text-main)';
+                }
+
+                noiseAnimFrame = requestAnimationFrame(updateNoiseLevel);
+            }
+            updateNoiseLevel();
+
+        } catch (err) {
+            console.error("麥克風權限錯誤:", err);
+            alert("⚠️ 無法存取麥克風！請確認瀏覽器有給予網站麥克風權限。");
+        }
+    });
+
+    document.getElementById('dbThreshold').addEventListener('input', (e) => {
+        document.getElementById('dbThresholdVal').innerText = e.target.value;
+    });
+
+    // --- 工具：小白板 ---
+    let wbCanvas = document.getElementById('wbCanvas');
+    let wbCtx = wbCanvas.getContext('2d');
+    let isDrawing = false; let lastX = 0; let lastY = 0;
+    
+    function initWhiteboard() {
+        wbCtx.lineJoin = 'round';
+        wbCtx.lineCap = 'round';
+        wbCtx.strokeStyle = '#000000';
+        wbCtx.lineWidth = 4;
+    }
+
+    function drawStart(e) {
+        isDrawing = true;
+        const rect = wbCanvas.getBoundingClientRect();
+        // 支援觸控與滑鼠
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // 修正 Canvas 繪製比例座標
+        const scaleX = wbCanvas.width / rect.width;
+        const scaleY = wbCanvas.height / rect.height;
+        
+        lastX = (clientX - rect.left) * scaleX;
+        lastY = (clientY - rect.top) * scaleY;
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); // 防止手機滾動
+        
+        const rect = wbCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const scaleX = wbCanvas.width / rect.width;
+        const scaleY = wbCanvas.height / rect.height;
+        
+        let currentX = (clientX - rect.left) * scaleX;
+        let currentY = (clientY - rect.top) * scaleY;
+
+        wbCtx.beginPath();
+        wbCtx.moveTo(lastX, lastY);
+        wbCtx.lineTo(currentX, currentY);
+        wbCtx.stroke();
+        
+        lastX = currentX;
+        lastY = currentY;
+    }
+
+    function drawEnd() { isDrawing = false; }
+
+    // 綁定滑鼠
+    wbCanvas.addEventListener('mousedown', drawStart);
+    wbCanvas.addEventListener('mousemove', draw);
+    wbCanvas.addEventListener('mouseup', drawEnd);
+    wbCanvas.addEventListener('mouseout', drawEnd);
+    // 綁定觸控
+    wbCanvas.addEventListener('touchstart', drawStart, { passive: false });
+    wbCanvas.addEventListener('touchmove', draw, { passive: false });
+    wbCanvas.addEventListener('touchend', drawEnd);
+
+    // 顏色切換
+    document.querySelectorAll('.wb-color').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.wb-color').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            wbCtx.strokeStyle = e.target.dataset.color;
+        });
+    });
+
+    // 粗細切換
+    document.getElementById('wbSize').addEventListener('input', (e) => {
+        wbCtx.lineWidth = e.target.value;
+    });
+
+    // 清空畫布
+    document.getElementById('wbClear').addEventListener('click', () => {
+        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
     });
 
   </script>
