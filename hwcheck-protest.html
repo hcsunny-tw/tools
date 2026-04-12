@@ -272,6 +272,13 @@
     input:checked + .slider:before { transform: translateX(22px); }
 
     @media print { .no-print, .floating-clock { display: none !important; } }
+/* 刪除處置委託視窗專屬樣式 */
+    .delete-choice-card { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .delete-desc { background: var(--bg); border: 1px dashed var(--tbl-border); padding: 10px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+    .delete-choice-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+    .btn-archive { background: var(--success); border-color: var(--success); color: #fff; }
+    .btn-destroy { background: var(--danger); border-color: var(--danger); color: #fff; }
+    
   </style>
 </head>
 <body>
@@ -1537,7 +1544,112 @@
         document.getElementById('customExpVal').value = '';
         document.getElementById('customExpReason').value = '';
     };
+// ⭐ 產生列印卷軸 HTML 的共用函式
+    function generateScrollHTML(studentData, debts) {
+        let tasksHtml = debts.map(t => `<li style="margin-bottom: 8px;">[${t.st === 2 ? '<span style="color:#e65100;">再訂正</span>' : '<span style="color:#d32f2f;">未交</span>'}] ${t.title}</li>`).join('');
+        return `
+            <div style="border: 4px double #8B4513; padding: 20px; margin: 20px auto; border-radius: 10px; background: #FFF8DC; font-family: 'Microsoft JhengHei', sans-serif; page-break-inside: avoid; max-width: 600px;">
+                <h2 style="color: #8B0000; border-bottom: 2px dashed #CD853F; padding-bottom: 10px; text-align: center; margin-top: 0;">📜 冒險者公會 催繳卷軸</h2>
+                <h3 style="margin-top: 15px; color: #3e2723;">勇者：${studentData.no}. ${studentData.name}</h3>
+                <p style="font-weight: bold; color: #555;">您有以下委託尚未完成，請盡速處理：</p>
+                <ul style="line-height: 1.6; font-size: 16px; font-weight: bold; color: #333;">
+                    ${tasksHtml}
+                </ul>
+                <div style="margin-top: 30px; text-align: right; color: #888; font-size: 12px;">
+                    公會發布時間：${new Date().toLocaleString('zh-TW')}
+                </div>
+            </div>
+        `;
+    }
 
+    // ⭐ 單一列印功能
+    window.printSingleStudent = function(idx) {
+        const student = data.roster[idx];
+        let debts = [];
+        data.assignments.forEach(a => {
+            if(!a.archived) {
+                const indices = a.assignedIndices || 'all';
+                if(indices === 'all' || indices.includes(idx)) {
+                    const taskSt = (a.statuses||[])[idx] || 0;
+                    if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt });
+                }
+            }
+        });
+        
+        if(debts.length === 0) {
+            showToast("🎉 該名冒險者目前無欠款，無須列印！");
+            return;
+        }
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>列印催繳卷軸</title></head><body style="background: #fff; padding: 20px;">');
+        printWindow.document.write(generateScrollHTML(student, debts));
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { printWindow.print(); }, 500);
+    };
+
+    // ⭐ 批量列印模式切換
+    document.getElementById('btnToggleBatchMode').addEventListener('click', () => { 
+        isBatchMode = !isBatchMode; 
+        if (isBatchMode) isBatchExpMode = false; // 確保兩種批次模式互斥
+        
+        const btnSelectAll = document.getElementById('btnBatchSelectAll');
+        if (isBatchExpMode || isBatchMode) { btnSelectAll.style.display = 'inline-block'; } 
+        else { btnSelectAll.style.display = 'none'; }
+        
+        renderStudentStatus(); 
+    });
+
+    // ⭐ 全選 / 取消全選按鈕事件 (加扣分與列印共用)
+    document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
+        const allChecked = Array.from(cbs).every(c => c.checked);
+        cbs.forEach(c => c.checked = !allChecked);
+    });
+
+    // ⭐ 執行批量匯出列印
+    document.getElementById('btnBatchExport').addEventListener('click', () => {
+        const checked = document.querySelectorAll('.batch-export-checkbox:checked');
+        if (checked.length === 0) { 
+            alert("⚠️ 請先勾選要列印卷軸的冒險者！"); 
+            return; 
+        }
+        
+        let allHtml = '';
+        checked.forEach(cb => {
+            const idx = parseInt(cb.dataset.sidx);
+            const student = data.roster[idx];
+            let debts = [];
+            data.assignments.forEach(a => {
+                if(!a.archived) {
+                    const indices = a.assignedIndices || 'all';
+                    if(indices === 'all' || indices.includes(idx)) {
+                        const taskSt = (a.statuses||[])[idx] || 0;
+                        if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt });
+                    }
+                }
+            });
+            if(debts.length > 0) {
+                allHtml += generateScrollHTML(student, debts);
+            }
+        });
+
+        if(!allHtml) { 
+            showToast("🎉 勾選的冒險者皆無欠款！"); 
+            return; 
+        }
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>批量列印催繳卷軸</title></head><body style="background: #fff; padding: 20px;">');
+        printWindow.document.write(allHtml);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { printWindow.print(); }, 500);
+    });
+    
     // 🟢 晨間報到
     function renderCheckIn() {
         const today = getTaipeiDateString();
