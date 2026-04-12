@@ -1304,6 +1304,47 @@
         window.renderAll(); 
         window.renderChecklists(); 
     }
+    // ========================================================
+    // 補回遺失的初始化與下拉選單渲染函數
+    // ========================================================
+    window.populateTeacherDropdowns = function() {
+        const tFilter = document.getElementById('teacherFilter');
+        const ipSelect = document.getElementById('ipTeacherSelect');
+        const teachers = window.appData.teachers || ["公會長"];
+        if(tFilter) tFilter.innerHTML = '<option value="all">所有導師</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+        if(ipSelect) ipSelect.innerHTML = teachers.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自訂...</option>';
+    };
+
+    window.updateSubjectDropdown = function() {
+        const sFilter = document.getElementById('subjectFilter');
+        const sSelect = document.getElementById('selSubject');
+        const subjects = Object.keys(window.appData.questSettings || {});
+        if(sFilter) sFilter.innerHTML = '<option value="all">所有科目</option>' + subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+        if(sSelect) sSelect.innerHTML = '<option value="">📂 科目...</option>' + subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+    };
+
+    window.resetNewAssignmentState = function() {
+        if(document.getElementById('ipTitle')) document.getElementById('ipTitle').value = '';
+        if(document.getElementById('ipDate')) document.getElementById('ipDate').value = window.getTaipeiDateString();
+        window.newAssignmentAssignedIndices = 'all';
+    };
+
+    window.checkAndResetDiscipline = function() {
+        const today = window.getTaipeiDateString();
+        if(!window.appData.discipline) window.appData.discipline = { date: today, statuses: [] };
+        if(window.appData.discipline.date !== today) {
+            window.appData.discipline.date = today;
+            window.appData.discipline.statuses = Array(window.appData.roster.length).fill(0);
+            window.triggerAutoSave();
+        }
+    };
+
+    window.renderChecklists = function() {};
+    
+    // 註：這三個是其他分頁的渲染函數，為了防止切換時當機先給予空函數，若你原本有實作請換回原本的代碼
+    window.renderCheckIn = function() {};
+    window.renderRosterEditor = function() {};
+    window.initAttendanceView = function() {};
 
     window.renderAll = function() {
         const v = document.querySelector('.view.show'); if(!v) return;
