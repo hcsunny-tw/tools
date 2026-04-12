@@ -97,7 +97,7 @@
     .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
     .exp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: 900; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); border: 1px solid #b45309; }
-    .rank-text { font-size: 10px; opacity: 0.9; margin-left: 2px; }
+    .rank-text { font-size: 11px; opacity: 0.9; margin-left: 2px; }
 
     .assignment-tooltip { position: fixed; background: var(--card); border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 9999; display: none; pointer-events: none; min-width: 180px; max-width: 300px; animation: fadeIn 0.15s ease-out; }
     .assignment-tooltip h4 { margin: 0 0 8px; font-size: 18px; font-weight: 900; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
@@ -240,9 +240,11 @@
     .quick-tag:hover { background: var(--primary); color: #fff; }
 
     #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
-    .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-    .toast-msg { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 16px; animation: slideUpFade 0.3s ease-out; font-weight: bold; min-width: 300px; justify-content: space-between; }
-    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* ⭐ 優化：通知設定為右下角不擋視線 */
+    .toast-container { position: fixed; bottom: 20px; right: 20px; left: auto; transform: none; z-index: 6000; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
+    .toast-msg { background: rgba(50, 50, 50, 0.95); color: #fff; padding: 10px 16px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: bold; min-width: auto; max-width: 320px; justify-content: space-between; pointer-events: auto; font-size: 13px; border-left: 4px solid var(--primary); backdrop-filter: blur(4px); }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
 
     #quickDebtMenu { display: none; position: fixed; background: var(--card); border: 3px solid var(--danger); border-radius: 8px; padding: 12px; z-index: 20000; box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: 260px; flex-direction: column; }
     #quickDebtMenu.show { display: flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -846,10 +848,13 @@
     function showToast(msg, actText, actCb) {
         const c = document.getElementById('toastContainer'); 
         const t = document.createElement('div'); t.className = 'toast-msg';
-        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;">${actText}</button>` : ''); 
+        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;flex-shrink:0;">${actText}</button>` : ''); 
         c.appendChild(t); 
         if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
-        setTimeout(()=>t.remove(), 4000);
+        setTimeout(()=> {
+            t.style.animation = 'slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse';
+            setTimeout(()=>t.remove(), 300);
+        }, 4000);
     }
 
     let audioCtx = null;
@@ -880,13 +885,18 @@
         o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
     }
 
+    // ⭐ 修改為有 Lv 前綴的 RPG 稱號系統
     function getRankHtml(exp) {
-        let rank = "新手"; let color = "#9ca3af";
-        if (exp >= 100) { rank = "S級傳說"; color = "#f43f5e"; }
-        else if (exp >= 50) { rank = "A級菁英"; color = "#eab308"; }
-        else if (exp >= 20) { rank = "B級熟手"; color = "#3b82f6"; }
-        else if (exp >= 5) { rank = "C級見習"; color = "#22c55e"; }
-        return `<span class="rank-text" style="color:${color}; font-weight:bold;">${rank}</span>`;
+        let rank = "新手村民"; let color = "#9ca3af"; let lv = 1;
+        if (exp >= 300) { rank = "神話救世主"; color = "#9333ea"; lv = "Max"; }
+        else if (exp >= 220) { rank = "傳說大師"; color = "#f43f5e"; lv = 7; }
+        else if (exp >= 150) { rank = "史詩英雄"; color = "#ec4899"; lv = 6; }
+        else if (exp >= 100) { rank = "皇家騎士"; color = "#eab308"; lv = 5; }
+        else if (exp >= 60) { rank = "銀印勇士"; color = "#3b82f6"; lv = 4; }
+        else if (exp >= 30) { rank = "銅牌討伐者"; color = "#14b8a6"; lv = 3; }
+        else if (exp >= 10) { rank = "見習冒險者"; color = "#22c55e"; lv = 2; }
+
+        return `<span class="rank-text" style="color:${color}; font-weight:bold;">Lv.${lv} ${rank}</span>`;
     }
     window.getRankHtml = getRankHtml;
 
@@ -928,7 +938,6 @@
         discipline: null,
         expLogs: [], 
         settings: { },
-        // ⭐ 預設加扣分項目
         coinPresets: {
             plus: [ { v: 1, l: '作業優良' }, { v: 3, l: '超級優秀' }, { v: 1, l: '準時' } ],
             minus: [ { v: -1, l: '上課吵鬧' }, { v: -1, l: '未帶物品' } ]
@@ -1002,6 +1011,7 @@
                 data.roster.forEach(r => { 
                     if(typeof r.exp === 'undefined') r.exp = 0; 
                     if(typeof r.coins === 'undefined') r.coins = 0; 
+                    if(typeof r.maxExp === 'undefined') r.maxExp = r.exp; // 確保有歷史最高分紀錄
                 });
             } else {
                 data = JSON.parse(JSON.stringify(defaultData));
@@ -1060,7 +1070,7 @@
         updateSubjectDropdown(); 
         resetNewAssignmentState();
         checkAndResetDiscipline(); 
-        renderCoinDropdowns(); // ⭐ 渲染加扣分下拉選單
+        renderCoinDropdowns(); 
         renderAll(); 
         renderChecklists(); 
     }
@@ -1084,13 +1094,15 @@
         if(data.expLogs.length > 2000) data.expLogs.shift();
     }
 
-    // ⭐ 加 EXP 復原機制
+    // ⭐ 修改加 EXP 邏輯，加入歷史最高分 (maxExp) 防刷機制
     function changeExp(sidx, delta, reason = '系統調整', silent = false) {
         if (!data.roster[sidx]) return;
         const oldState = JSON.parse(JSON.stringify(data.roster[sidx]));
         const oldLogsLength = data.expLogs ? data.expLogs.length : 0;
 
         const oldExp = data.roster[sidx].exp || 0;
+        const maxExp = data.roster[sidx].maxExp || oldExp; // 抓取該生歷史最高分
+
         data.roster[sidx].exp = oldExp + delta;
         if (data.roster[sidx].exp < 0) data.roster[sidx].exp = 0;
         const newExp = data.roster[sidx].exp;
@@ -1107,21 +1119,24 @@
                     data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
                 }
                 triggerAutoSave(); renderAll();
-                showToast(`已復原 ${data.roster[sidx].name} 的 EXP 變更`);
             });
             triggerAutoSave(); renderAll();
         }
 
+        // ⭐ 防刷金幣機制：只有當新 EXP 大於門檻，且「歷史最高分」低於門檻時，才發放獎勵
         if (delta > 0) {
             const thresholds = [
-                { exp: 5, coins: 5, rank: 'C級見習' },
-                { exp: 20, coins: 10, rank: 'B級熟手' },
-                { exp: 50, coins: 20, rank: 'A級菁英' },
-                { exp: 100, coins: 50, rank: 'S級傳說' }
+                { exp: 10, coins: 5, rank: '見習冒險者 (Lv.2)' },
+                { exp: 30, coins: 10, rank: '銅牌討伐者 (Lv.3)' },
+                { exp: 60, coins: 15, rank: '銀印勇士 (Lv.4)' },
+                { exp: 100, coins: 20, rank: '皇家騎士 (Lv.5)' },
+                { exp: 150, coins: 30, rank: '史詩英雄 (Lv.6)' },
+                { exp: 220, coins: 50, rank: '傳說大師 (Lv.7)' },
+                { exp: 300, coins: 100, rank: '神話救世主 (Lv.Max)' }
             ];
             
             thresholds.forEach(t => {
-                if (oldExp < t.exp && newExp >= t.exp) {
+                if (maxExp < t.exp && newExp >= t.exp) {
                     data.roster[sidx].coins = (data.roster[sidx].coins || 0) + t.coins;
                     logAction(sidx, t.coins, '金幣', `晉升 ${t.rank} 獎勵`);
                     setTimeout(() => {
@@ -1131,11 +1146,13 @@
                     }, 1500); 
                 }
             });
+
+            // 更新歷史最高分
+            data.roster[sidx].maxExp = Math.max(maxExp, newExp);
         }
     }
     window.changeExp = changeExp;
 
-    // ⭐ 金幣復原機制
     function changeCoin(sidx, delta, reason = '手動調整', silent = false) {
         if (!data.roster[sidx]) return;
         const oldState = JSON.parse(JSON.stringify(data.roster[sidx]));
@@ -1156,20 +1173,18 @@
                     data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
                 }
                 triggerAutoSave(); renderAll();
-                showToast(`已復原 ${data.roster[sidx].name} 的金幣變更`);
             });
             triggerAutoSave(); renderAll();
         }
     }
     window.changeCoin = changeCoin;
 
-    // ⭐ 狀態更改復原機制
     function updateStatus(aid, sidx, newStatus) {
         const a = data.assignments.find(i => i.id == aid);
         if(a) {
             if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
             const oldStatus = a.statuses[sidx] || 0;
-            const oldExp = data.roster[sidx].exp || 0;
+            const oldState = JSON.parse(JSON.stringify(data.roster[sidx]));
             const oldLogsLength = data.expLogs ? data.expLogs.length : 0;
 
             a.statuses[sidx] = newStatus;
@@ -1179,17 +1194,17 @@
                 playSuccessSound(); 
                 showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`, "復原", () => {
                     a.statuses[sidx] = oldStatus;
-                    data.roster[sidx].exp = oldExp;
+                    data.roster[sidx] = oldState;
                     if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
-                    triggerAutoSave(); renderAll(); showToast("已復原任務狀態");
+                    triggerAutoSave(); renderAll(); 
                 });
             } else if (oldStatus === 3 && newStatus !== 3) {
                 changeExp(sidx, -5, `取消任務 [${a.title}]`, true); 
                 showToast(`⚠️ 取消討伐！${data.roster[sidx].name} 收回 5 EXP`, "復原", () => {
                     a.statuses[sidx] = oldStatus;
-                    data.roster[sidx].exp = oldExp;
+                    data.roster[sidx] = oldState;
                     if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
-                    triggerAutoSave(); renderAll(); showToast("已復原任務狀態");
+                    triggerAutoSave(); renderAll(); 
                 });
             } else {
                 triggerAutoSave(); renderAll();
@@ -1314,7 +1329,6 @@
             item.onclick = (evt) => {
                 evt.stopPropagation(); window.updateStatus(debt.id, sidx, 3);
                 menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
-                showToast(`✅ 已將「${debt.title}」標記為完成！`);
             };
             list.appendChild(item);
         });
@@ -1592,7 +1606,7 @@
 
     document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
         let count = 0;
-        lastRosterState = JSON.stringify(data.roster);
+        const oldRoster = JSON.parse(JSON.stringify(data.roster));
         const oldLogsLength = data.expLogs ? data.expLogs.length : 0;
         
         data.roster.forEach((s, i) => {
@@ -1606,13 +1620,11 @@
             triggerAutoSave(); 
             renderAll(); 
             showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
-                if(lastRosterState) {
-                    data.roster = JSON.parse(lastRosterState);
-                    if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
-                    triggerAutoSave();
-                    renderAll();
-                    showToast("已復原全體加分操作！");
-                }
+                data.roster = oldRoster;
+                if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
+                triggerAutoSave();
+                renderAll();
+                showToast("已復原全體加分操作！");
             });
         }
     });
@@ -1671,7 +1683,6 @@
             data.roster = oldRoster;
             if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
             triggerAutoSave(); renderAll();
-            showToast("已復原批次加扣分操作！");
         });
         triggerAutoSave(); renderAll();
     };
@@ -1979,7 +1990,7 @@
             const name = d.querySelector('.roster-name-input').value.trim();
             if(no && name) {
                 const existing = data.roster.find(x => x.no === no && x.name === name);
-                r.push({ no, name, exp: existing ? existing.exp : 0, coins: existing ? existing.coins : 0 });
+                r.push({ no, name, exp: existing ? existing.exp : 0, coins: existing ? existing.coins : 0, maxExp: existing ? existing.maxExp : 0 });
             }
         });
         data.roster = r; triggerAutoSave(); showToast("✅ 名單已更新");
@@ -2011,10 +2022,10 @@
         const isReplace = confirm("請問要「取代」現有名單嗎？\n\n[確定]：清空現有名單，完全替換\n[取消]：接續附加在現有名單最後面");
 
         if (isReplace) {
-            data.roster = lines.map((name, idx) => ({ no: idx + 1, name: name, exp: 0, coins: 0 }));
+            data.roster = lines.map((name, idx) => ({ no: idx + 1, name: name, exp: 0, coins: 0, maxExp: 0 }));
         } else {
             let startNo = data.roster.length > 0 ? Math.max(...data.roster.map(s => s.no)) + 1 : 1;
-            const newRoster = lines.map((name, idx) => ({ no: startNo + idx, name: name, exp: 0, coins: 0 }));
+            const newRoster = lines.map((name, idx) => ({ no: startNo + idx, name: name, exp: 0, coins: 0, maxExp: 0 }));
             data.roster = data.roster.concat(newRoster);
         }
 
