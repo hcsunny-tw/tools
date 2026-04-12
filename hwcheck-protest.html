@@ -356,9 +356,12 @@
   <div id="loginOverlay">
       <div id="loginBox">
           <div class="logo" style="margin: 0 auto 20px; width: 80px; height: 80px; font-size: 40px;">🛡️</div>
-          <h1>冒險者公會 (ProT版) 登入</h1>
-          <p class="muted">請出示您的公會長證件 (Google 帳號)</p>
-          <button id="btnLogin" class="btn" style="font-size: 18px; padding: 12px 24px; width: 100%; justify-content: center;"><i class="bi bi-google"></i> 使用 Google 登入</button>
+          <h1>冒險者公會 (ProT版)</h1>
+          <p class="muted mb-4">請出示您的公會長證件 (Google 帳號)</p>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+              <button id="btnLogin" class="btn" style="font-size: 16px; padding: 10px 24px; justify-content: center;"><i class="bi bi-google"></i> 使用 Google 登入</button>
+              <button class="btn ghost" onclick="window.bypassLogin()" style="font-size: 14px; padding: 8px 24px; justify-content: center;"><i class="bi bi-person-bounding-box"></i> 訪客試用 (不需登入)</button>
+          </div>
       </div>
   </div>
 
@@ -593,12 +596,14 @@
               <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
           </div>
           
+          <!-- ⭐ 階級與經驗值設定 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🏆 階級稱號與獎勵設定</h3>
                <div class="muted mb-2" style="font-size:12px;">自訂經驗值達標的稱號，與升級時自動發放的金幣獎勵。</div>
                <button class="btn sm secondary" onclick="window.openRankSettings()"><i class="bi bi-award"></i> 編輯階級稱號</button>
           </div>
           
+          <!-- 晨間報到與 BGM 設定區 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🌅 晨間報到系統設定</h3>
                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -607,6 +612,7 @@
                </div>
           </div>
 
+          <!-- EXP 歷史紀錄下載 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄與 加扣分日誌</h3>
                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -667,7 +673,7 @@
           <div class="field" style="margin-top:4px;">
                <label style="font-size:12px;">內容</label>
                <div style="display:flex; gap:4px; margin-bottom:4px;">
-                   <select id="selSubject" style="padding:6px; flex:1;" onchange="window.handleSubjectSelect(this.value)"><option value="">📂 科目...</option></select>
+                   <select id="selSubject" style="padding:6px; flex:1;" onchange="if(this.value && window.appData.questSettings[this.value]) { const sel=document.getElementById('selPresetTask'); sel.innerHTML='<option value=\'\'>📜 常用...</option>'; window.appData.questSettings[this.value].forEach(t=>sel.add(new Option(t,t))); }"><option value="">📂 科目...</option></select>
                    <select id="selPresetTask" style="padding:6px; flex:1.5;" onchange="if(this.value) document.getElementById('ipTitle').value = this.value;"><option value="">📜 常用...</option></select>
                    <button class="btn ghost sm" onclick="window.openQuestSettings()" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
                </div>
@@ -675,7 +681,7 @@
                    <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
                    <button class="btn sm ghost" onclick="const kp = document.getElementById('virtualKeypad'); kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none';" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
                </div>
-               <div class="virtual-keypad" id="virtualKeypad" onclick="if(event.target.classList.contains('vk-btn')) window.handleKeypadClick(event.target.dataset.val)">
+               <div class="virtual-keypad" id="virtualKeypad" onclick="if(event.target.classList.contains('vk-btn')) { const val = event.target.dataset.val; const ip = document.getElementById('ipTitle'); if (val === 'backspace') ip.value = ip.value.slice(0, -1); else if (val === 'clear') ip.value = ''; else if (val === 'space') ip.value += ' '; else ip.value += val; ip.focus(); }">
                    <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
                    <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
                    <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
@@ -873,8 +879,8 @@
       <div class="tool-header"><span><i class="bi bi-dice-5"></i> 抽籤骰子</span><button class="tool-close">&times;</button></div>
       <div class="tool-body text-center">
          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:8px; width:100%;">
-            <button id="btnModeNumDice" class="btn sm active" style="flex:1;" onclick="window.setDiceMode(true)">數字骰</button>
-            <button id="btnModeLetterDice" class="btn sm ghost" style="flex:1;" onclick="window.setDiceMode(false)">字母骰</button>
+            <button id="btnModeNumDice" class="btn sm active" style="flex:1;" onclick="window.setDiceMode(true, this)">數字骰</button>
+            <button id="btnModeLetterDice" class="btn sm ghost" style="flex:1;" onclick="window.setDiceMode(false, this)">字母骰</button>
          </div>
          <div id="diceConfigNum" style="display:flex; align-items:center; gap:8px; justify-content:center; margin-bottom:16px;">
             <span style="font-size:14px; font-weight:bold; color:var(--muted);">範圍：</span>
@@ -913,22 +919,7 @@
       </div>
   </div>
 
-  <!-- 下課前準備工具窗 -->
-  <div id="panelRecess" class="tool-window" style="width: 400px;">
-      <div class="tool-header"><span><i class="bi bi-backpack"></i> 下課前準備</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body">
-          <div id="recessChecklist" class="checklist-container" style="grid-template-columns: 1fr; margin-top: 0; gap: 8px;"></div>
-      </div>
-  </div>
-
-  <!-- 放學前準備工具窗 -->
-  <div id="panelDismissal" class="tool-window" style="width: 400px;">
-      <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學前準備</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body">
-          <div id="dismissalChecklist" class="checklist-container" style="grid-template-columns: 1fr; margin-top: 0; gap: 8px;"></div>
-      </div>
-  </div>
-
+  <!-- 🚨 JavaScript 核心區塊 🚨 -->
   <script type="module">
     // --------------------------------------------------------
     // 全域變數定義 (防止任何 is not defined 錯誤)
@@ -1003,7 +994,12 @@
         clearTimeout(window.saveTimeout); 
         window.updateSaveStatus('pending');
         window.saveTimeout = setTimeout(async () => {
-            if (!currentUser) return;
+            if (!currentUser) {
+                // 如果沒有登入，就儲存在本地端 (訪客模式)
+                localStorage.setItem('guildData_offline', JSON.stringify(window.appData));
+                window.updateSaveStatus('success', '已儲存 (單機)');
+                return;
+            }
             try { 
                 const cleanData = JSON.parse(JSON.stringify(window.appData)); 
                 await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData); 
@@ -1015,7 +1011,15 @@
     };
 
     window.loadDataFromFirebase = async function() {
-        if (!currentUser) return;
+        if (!currentUser) {
+            // 離線訪客模式載入
+            const local = localStorage.getItem('guildData_offline');
+            if(local) window.appData = JSON.parse(local);
+            else window.appData = JSON.parse(JSON.stringify(defaultDataTemplate));
+            window.onDataLoaded();
+            window.updateSaveStatus('success', '單機模式');
+            return;
+        }
         window.updateSaveStatus('pending', '讀取中');
         try {
             const docSnap = await getDoc(doc(db, "users", currentUser.uid, "data", "guildData"));
@@ -1041,8 +1045,11 @@
             }
             window.onDataLoaded(); window.updateSaveStatus('success');
         } catch (error) {
-            alert("⚠️ 資料庫連線失敗！請確定 Firebase Rules 已經設定！");
-            window.appData = JSON.parse(JSON.stringify(defaultDataTemplate)); 
+            console.error("🔥 Firebase 讀取失敗:", error);
+            window.showToast("⚠️ Firebase 連線失敗，已切換至離線單機模式。");
+            const local = localStorage.getItem('guildData_offline');
+            if(local) window.appData = JSON.parse(local);
+            else window.appData = JSON.parse(JSON.stringify(defaultDataTemplate)); 
             window.onDataLoaded();
             window.updateSaveStatus('error', '離線模式');
         }
@@ -1057,10 +1064,16 @@
             if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> <span class="nav-text">${user.email.split('@')[0]}</span>`;
             window.initApp();
         } else {
+            currentUser = null;
             document.getElementById('loginOverlay').style.display = 'flex'; 
             document.getElementById('mainApp').style.display = 'none';
         }
     });
+
+    const btnLogin = document.getElementById('btnLogin');
+    if(btnLogin) {
+        btnLogin.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    }
 
     window.logoutUser = function() {
         signOut(auth).then(() => window.location.reload());
@@ -1133,7 +1146,7 @@
         }
 
         if (delta > 0) {
-            const ranks = [...(window.appData.rankSettings || defaultDataTemplate.rankSettings)].sort((a,b) => a.exp - b.exp);
+            const ranks = [...(window.appData.rankSettings || defaultDataTemplate.rankSettings)].sort((a,b) => a.exp - b.exp); // 由低到高檢查
             ranks.forEach(t => {
                 if (t.exp > 0 && oldExp < t.exp && newExp >= t.exp) {
                     if (t.reward > 0) {
@@ -1176,6 +1189,7 @@
             const oldStatus = a.statuses[sidx] || 0;
             a.statuses[sidx] = newStatus;
             
+            // ⭐ 解任務給的是 EXP
             if (oldStatus !== 3 && newStatus === 3) {
                 window.changeExp(sidx, 5, `完成任務 [${a.title}]`, true); 
                 window.playSuccessSound(); window.showToast(`🎉 討伐成功！${window.appData.roster[sidx].name} 獲得 5 EXP`);
@@ -1288,6 +1302,56 @@
             window.currentAssignmentId = assignments[0].id;
         }
         if(window.currentAssignmentId) window.renderDashboardDetail(window.currentAssignmentId);
+    };
+
+    window.openQuickDebtMenu = function(e, sidx, oldDebtsString) {
+        e.stopPropagation();
+        
+        let oldDebts = [];
+        try { oldDebts = JSON.parse(decodeURIComponent(oldDebtsString)); } catch(err) {}
+
+        const menu = document.getElementById('quickDebtMenu');
+        const studentId = String(sidx);
+        
+        if (menu.classList.contains('show') && menu.dataset.currentSidx === studentId) {
+            menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = ""; return;
+        }
+        
+        menu.dataset.currentSidx = studentId;
+        const list = document.getElementById('quickDebtList');
+        const student = window.appData.roster[sidx];
+
+        document.getElementById('quickDebtTitle').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>【${student.name}】待清舊帳</span>
+                <i class="bi bi-x-circle-fill btn-close-debt" style="cursor: pointer; font-size: 18px; color: var(--danger);"></i>
+            </div>
+        `;
+        list.innerHTML = '';
+        
+        oldDebts.forEach(debt => {
+            const item = document.createElement('div'); item.className = 'quick-debt-item';
+            const stLbl = debt.st === 2 ? '<span style="color:#c62828; font-size:11px;">(再訂正)</span>' : '<span style="color:#888; font-size:11px;">(未交)</span>';
+            
+            item.innerHTML = `
+                <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:bold;" title="${debt.title}">${debt.title} ${stLbl}</div>
+                <button class="btn sm" style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--primary); color: #fff;"><i class="bi bi-check-lg"></i> 完成</button>
+            `;
+            
+            item.onclick = (evt) => {
+                evt.stopPropagation(); window.updateStatus(debt.id, sidx, 3);
+                menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = "";
+                window.showToast(`✅ 已將「${debt.title}」標記為完成！`);
+            };
+            list.appendChild(item);
+        });
+
+        menu.style.display = ''; menu.classList.add('show'); 
+        let x = e.clientX + 10; let y = e.clientY + 10;
+        const rect = menu.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 10;
+        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 10;
+        menu.style.left = x + 'px'; menu.style.top = y + 'px';
     };
 
     window.renderDashboardDetail = function(id) {
@@ -1513,53 +1577,32 @@
         }
     };
 
-    window.rewardGreenAll = function() {
-        let count = 0;
-        window.lastRosterState = JSON.stringify(window.appData.roster);
-        
-        window.appData.roster.forEach((s, i) => {
-            if (((window.appData.discipline.statuses || {})[i] || 0) === 0) { 
-                window.changeCoin(i, 1, '綠燈區獎勵', true); 
-                count++; 
-            }
+    window.cycleTrafficLight = function(sidx) { 
+        window.appData.discipline.statuses[sidx] = ((window.appData.discipline.statuses[sidx] || 0) + 1) % 3; 
+        window.triggerAutoSave(); 
+        window.renderStudentStatus(); 
+    };
+
+    window.applyBatchExp = function(delta, presetReason) {
+        const checked = document.querySelectorAll('.batch-exp-checkbox:checked');
+        if (!checked.length) { alert("請先勾選學生！"); return; }
+        checked.forEach(cb => {
+            const idx = parseInt(cb.dataset.sidx);
+            window.changeExp(idx, delta, presetReason, true);
+            cb.checked = false; 
         });
-        if (count > 0) { 
-            window.playSuccessSound(); 
-            window.triggerAutoSave(); 
-            window.renderAll(); 
-            window.showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
-                if(window.lastRosterState) {
-                    window.appData.roster = JSON.parse(window.lastRosterState);
-                    window.triggerAutoSave();
-                    window.renderAll();
-                    window.showToast("已復原全體加分操作！");
-                }
-            });
-        }
+        window.playSuccessSound();
+        window.showToast(`✨ 已為 ${checked.length} 名學生套用：${presetReason} (${delta>0?'+'+delta:delta} EXP)`);
+        window.triggerAutoSave(); window.renderAll();
     };
 
-    window.toggleBatchExpMode = function() { 
-        window.isBatchExpMode = !window.isBatchExpMode; 
-        if (window.isBatchExpMode) window.isBatchMode = false; 
-        const btnSelectAll = document.getElementById('btnBatchSelectAll');
-        if (window.isBatchExpMode || window.isBatchMode) { btnSelectAll.style.display = 'inline-block'; } 
-        else { btnSelectAll.style.display = 'none'; }
-        window.renderStudentStatus(); 
-    };
-
-    window.toggleBatchPrintMode = function() { 
-        window.isBatchMode = !window.isBatchMode; 
-        if (window.isBatchMode) window.isBatchExpMode = false; 
-        const btnSelectAll = document.getElementById('btnBatchSelectAll');
-        if (window.isBatchExpMode || window.isBatchMode) { btnSelectAll.style.display = 'inline-block'; } 
-        else { btnSelectAll.style.display = 'none'; }
-        window.renderStudentStatus(); 
-    };
-
-    window.selectAllBatch = function() {
-        const cbs = document.querySelectorAll(window.isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
-        const allChecked = Array.from(cbs).every(c => c.checked);
-        cbs.forEach(c => c.checked = !allChecked);
+    window.applyCustomBatchExp = function() {
+        const val = parseInt(document.getElementById('customExpVal').value);
+        const reason = document.getElementById('customExpReason').value || '自訂調整';
+        if (isNaN(val)) { alert("請輸入分數"); return; }
+        window.applyBatchExp(val, reason);
+        document.getElementById('customExpVal').value = '';
+        document.getElementById('customExpReason').value = '';
     };
 
     window.applyBatchCoin = function(delta, presetReason) {
@@ -1590,6 +1633,24 @@
             window.changeCoin(idx, val, '手動調整');
             document.getElementById(`scCoinInput_${idx}`).value = '';
         }
+    };
+
+    window.printSingleStudent = function(sidx) {
+        const student = window.appData.roster[sidx]; const printDate = new Date().toLocaleDateString('zh-TW');
+        const tasks = window.appData.assignments.filter(a => !a.archived && ((a.statuses||[])[sidx] === 0 || (a.statuses||[])[sidx] === 2))
+                                      .map(a => ({ title: a.title, status: (a.statuses||[])[sidx], date: a.date }));
+        
+        const listHtml = tasks.length > 0 ? tasks.map(t => `<li style="padding:10px 0; border-bottom:1px dotted #ccc; font-size:18px;">☐ [${t.date}] ${t.title} <span style="font-size:14px;color:#888;">(${t.status===2?'再訂正':'未交'})</span></li>`).join('') 
+                                          : '<li style="padding:20px; color:#888;">🎉 目前沒有待辦任務！</li>';
+
+        const w = window.open('', '', 'width=600,height=800');
+        w.document.write(`<html><body style="font-family:sans-serif; padding:40px;"><div style="border:3px solid #5D4037; border-radius:12px; padding:20px;">
+            <h2 style="border-bottom:2px dashed #8B4513; padding-bottom:10px;">${student.no}. ${student.name} 的任務卷軸</h2>
+            <ul style="list-style:none; padding:0; min-height:300px;">${listHtml}</ul>
+            <div style="margin-top:20px; border-top:2px solid #eee; padding-top:10px; display:flex; justify-content:space-between; font-size:14px;">
+                <span>📅 ${printDate}</span><span>家長簽名：___________</span>
+            </div></div><script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
+        w.document.close();
     };
 
     window.exportBatchPrint = function() {
