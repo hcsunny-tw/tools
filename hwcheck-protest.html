@@ -270,7 +270,21 @@
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(22px); }
+/* ⭐ 排序工具列 */
+    .sort-toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; background: var(--bg); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--tbl-border); flex-wrap: wrap; }
+    .sort-btn { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: var(--card); border: 1px solid var(--tbl-border); cursor: pointer; transition: all 0.2s; color: var(--text-main); }
+    .sort-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .sort-btn:hover:not(.active) { background: var(--tbl-hover); }
 
+    /* ⭐ 批量選取卡片特效 */
+    .d-student-card.selectable { cursor: pointer; transition: all 0.2s; border: 2px dashed var(--tbl-border); }
+    .d-student-card.selectable:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
+    .d-student-card.selected { background-color: #fffaf0; border: 3px solid var(--primary); transform: scale(1.02); box-shadow: 0 4px 15px rgba(139, 69, 19, 0.25); }
+    .d-student-card.selected::after { content: '✔'; position: absolute; top: 8px; right: 8px; font-size: 24px; color: var(--primary); font-weight: 900; text-shadow: 1px 1px 0px #fff; z-index: 10; pointer-events: none; }
+    
+    /* 隱藏原生 Checkbox */
+    .batch-export-checkbox, .batch-exp-checkbox { display: none !important; }
+    
     @media print { .no-print, .floating-clock { display: none !important; } }
 /* 刪除處置委託視窗專屬樣式 */
     .delete-choice-card { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
@@ -845,6 +859,8 @@
     let tempQuestSettings = {};
     let currentFilter = { teacher: 'all', subject: 'all' };
     let lastRosterState = null; 
+    let currentSortBy = 'no'; // 'no', 'exp', 'coins', 'debts'
+    let currentSortAsc = true;
     const APP_SCALE = 1;
     
     // 浮動時鐘
@@ -1316,6 +1332,16 @@
         }
     }
 
+window.setSort = function(by) {
+        if (currentSortBy === by) currentSortAsc = !currentSortAsc;
+        else { currentSortBy = by; currentSortAsc = true; }
+        renderStudentStatus();
+    }
+    window.toggleSortDirection = function() {
+        currentSortAsc = !currentSortAsc;
+        renderStudentStatus();
+    }
+
     function renderStudentStatus() {
         const con = document.getElementById('studentStatusContainer'); 
         con.innerHTML = '';
@@ -1345,7 +1371,7 @@
 
         checkAndResetDiscipline();
 
-        // ⭐ 復原頂部狀態總覽
+        // 狀態總覽
         const activeAssigns = (data.assignments || []).filter(a => !a.archived);
         const clearedStudents = []; const helpStudents = [];
         data.roster.forEach((s, i) => {
@@ -1380,27 +1406,55 @@
             overviewCon.innerHTML = '';
         }
 
-        const grid = document.createElement('div');
-        grid.className = 'student-status-grid';
-        
-        data.roster.forEach((s, i) => {
-            const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
-            const avatarBg = st === 0 ? '#22c55e' : st === 1 ? '#eab308' : '#ef4444';
-            
+        // ⭐ 繪製排序工具列
+        con.innerHTML += `
+            <div class="sort-toolbar">
+                <span style="font-weight:900; color:var(--text-main); font-size: 14px;"><i class="bi bi-funnel-fill"></i> 排序方式：</span>
+                <button class="sort-btn ${currentSortBy === 'no' ? 'active' : ''}" onclick="window.setSort('no')">座號</button>
+                <button class="sort-btn ${currentSortBy === 'exp' ? 'active' : ''}" onclick="window.setSort('exp')">等級(EXP)</button>
+                <button class="sort-btn ${currentSortBy === 'coins' ? 'active' : ''}" onclick="window.setSort('coins')">金錢</button>
+                <button class="sort-btn ${currentSortBy === 'debts' ? 'active' : ''}" onclick="window.setSort('debts')">欠交任務數</button>
+                <button class="btn sm ghost" onclick="window.toggleSortDirection()" style="margin-left:auto; padding: 4px 10px;">
+                    <i class="bi bi-sort-${currentSortAsc ? 'numeric-down' : 'numeric-up-alt'}"></i> ${currentSortAsc ? '由小到大' : '由大到小'}
+                </button>
+            </div>
+        `;
+
+        // ⭐ 資料預處理與排序
+        let studentDataList = data.roster.map((s, i) => {
             let debts = [];
             data.assignments.forEach(a => {
                 if(!a.archived) {
                     const indices = a.assignedIndices || 'all';
                     if(indices === 'all' || indices.includes(i)) {
                         const taskSt = (a.statuses||[])[i] || 0;
-                        if(taskSt === 0 || taskSt === 2) {
-                            debts.push({ id: a.id, title: a.title, st: taskSt });
-                        }
+                        if(taskSt === 0 || taskSt === 2) debts.push({ id: a.id, title: a.title, st: taskSt, date: a.date });
                     }
                 }
             });
+            return { s: s, i: i, debts: debts, debtCount: debts.length };
+        });
+
+        studentDataList.sort((a, b) => {
+            let valA, valB;
+            if (currentSortBy === 'no') { valA = a.s.no; valB = b.s.no; }
+            else if (currentSortBy === 'exp') { valA = a.s.exp || 0; valB = b.s.exp || 0; }
+            else if (currentSortBy === 'coins') { valA = a.s.coins || 0; valB = b.s.coins || 0; }
+            else if (currentSortBy === 'debts') { valA = a.debtCount; valB = b.debtCount; }
             
-            // ⭐ 將卡片內的任務變成可直接點擊修改狀態
+            if (valA < valB) return currentSortAsc ? -1 : 1;
+            if (valA > valB) return currentSortAsc ? 1 : -1;
+            return a.s.no - b.s.no; // 次要排序依座號
+        });
+
+        const grid = document.createElement('div');
+        grid.className = 'student-status-grid';
+        
+        studentDataList.forEach(item => {
+            const { s, i, debts } = item;
+            const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
+            const avatarBg = st === 0 ? '#22c55e' : st === 1 ? '#eab308' : '#ef4444';
+            
             let tasksHtml = debts.map(t => {
                 let statusSpan = t.st === 2 ? `<span class="pill p-orange" style="transform:scale(0.85); transform-origin:right center; margin:0;">再訂正</span>` : `<span class="pill p-gray" style="transform:scale(0.85); transform-origin:right center; margin:0;">未交</span>`;
                 return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${t.title}">🔸 ${t.title}</span> ${statusSpan}</div>`;
@@ -1409,10 +1463,14 @@
             const badgeHtml = debts.length > 0 ? `<div class="debt-badge" style="top:5px; right:0px;" onclick="window.openQuickDebtMenu(event, ${i}, '${encodeURIComponent(JSON.stringify(debts))}')">${debts.length}</div>` : '';
             
             const printBtnHtml = (debts.length > 0 && !isBatchMode && !isBatchExpMode) ? `<i class="bi bi-printer" style="position:absolute; top:12px; right:12px; cursor:pointer; color:var(--muted); font-size:16px; padding:4px; transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'" onclick="window.printSingleStudent(${i})" title="列印卷軸"></i>` : '';
-            const checkboxHtml = isBatchMode ? `<input type="checkbox" class="batch-export-checkbox" data-sidx="${i}" style="position:absolute; top:12px; right:12px; transform:scale(1.5);">` : isBatchExpMode ? `<input type="checkbox" class="batch-exp-checkbox" data-sidx="${i}" style="position:absolute; top:12px; right:12px; transform:scale(1.5);">` : '';
+            
+            // 隱藏的實體 checkbox，用於取值
+            const checkboxTypeClass = isBatchMode ? 'batch-export-checkbox' : 'batch-exp-checkbox';
+            const checkboxHtml = (isBatchMode || isBatchExpMode) ? `<input type="checkbox" class="${checkboxTypeClass}" data-sidx="${i}">` : '';
 
             const card = document.createElement('div');
-            card.className = 'd-student-card';
+            // ⭐ 判斷是否加上可選取的 Class
+            card.className = 'd-student-card' + ((isBatchMode || isBatchExpMode) ? ' selectable' : '');
             card.style.alignItems = 'flex-start';
             card.style.textAlign = 'left';
             
@@ -1446,6 +1504,18 @@
                 </div>
             `;
             
+            // ⭐ 點擊整張卡片觸發勾選邏輯
+            if (isBatchMode || isBatchExpMode) {
+                card.onclick = (e) => {
+                    // 避免點擊到內部按鈕或輸入框時也觸發選取
+                    if (e.target.closest('.btn') || e.target.closest('.debt-badge') || e.target.closest('.d-avatar') || e.target.tagName.toLowerCase() === 'input') return;
+                    
+                    card.classList.toggle('selected');
+                    const cb = card.querySelector('.' + checkboxTypeClass);
+                    if (cb) cb.checked = card.classList.contains('selected');
+                };
+            }
+
             grid.appendChild(card);
         });
         
@@ -1544,19 +1614,41 @@
         document.getElementById('customExpVal').value = '';
         document.getElementById('customExpReason').value = '';
     };
-// ⭐ 產生列印卷軸 HTML 的共用函式
+// ⭐ 產生列印卷軸 HTML 的共用函式 (優化版：簡單、清晰、具備勾選框)
     function generateScrollHTML(studentData, debts) {
-        let tasksHtml = debts.map(t => `<li style="margin-bottom: 8px;">[${t.st === 2 ? '<span style="color:#e65100;">再訂正</span>' : '<span style="color:#d32f2f;">未交</span>'}] ${t.title}</li>`).join('');
+        const printTime = new Date().toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        
+        let tasksHtml = debts.map(t => {
+            let statusText = t.st === 2 ? '<span style="color:#e65100;">需再訂正</span>' : '<span style="color:#d32f2f;">尚未繳交</span>';
+            let dateText = t.date ? t.date : '無日期';
+            return `
+                <div style="display: flex; align-items: center; border-bottom: 1px solid #ccc; padding: 12px 0;">
+                    <div style="width: 24px; height: 24px; border: 2px solid #333; margin-right: 15px; border-radius: 4px; flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 18px; font-weight: bold; color: #222;">${t.title}</div>
+                        <div style="font-size: 14px; color: #555; margin-top: 6px;">📅 發布日期：${dateText} &nbsp;|&nbsp; ⚠️ 狀態：${statusText}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
         return `
-            <div style="border: 4px double #8B4513; padding: 20px; margin: 20px auto; border-radius: 10px; background: #FFF8DC; font-family: 'Microsoft JhengHei', sans-serif; page-break-inside: avoid; max-width: 600px;">
-                <h2 style="color: #8B0000; border-bottom: 2px dashed #CD853F; padding-bottom: 10px; text-align: center; margin-top: 0;">📜 冒險者公會 催繳卷軸</h2>
-                <h3 style="margin-top: 15px; color: #3e2723;">勇者：${studentData.no}. ${studentData.name}</h3>
-                <p style="font-weight: bold; color: #555;">您有以下委託尚未完成，請盡速處理：</p>
-                <ul style="line-height: 1.6; font-size: 16px; font-weight: bold; color: #333;">
+            <div style="border: 2px solid #000; padding: 30px; margin: 20px auto; border-radius: 8px; background: #fff; font-family: 'Microsoft JhengHei', sans-serif; page-break-inside: avoid; max-width: 700px;">
+                <div style="text-align: center; border-bottom: 3px double #000; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h1 style="margin: 0; font-size: 26px; letter-spacing: 2px; color: #000;">📜 任務單</h1>
+                    <div style="color: #666; font-size: 12px; margin-top: 8px;">列印時間：${printTime}</div>
+                </div>
+                
+                <h2 style="margin: 0 0 20px 0; font-size: 22px; color: #333;">學生姓名：<span style="border-bottom: 2px solid #000; padding: 0 20px;">${studentData.no}. ${studentData.name}</span></h2>
+                
+                <div style="margin-bottom: 40px;">
+                    <p style="font-weight: bold; color: #333; font-size: 16px;">以下任務尚未完成，請完成後於左側方框打勾：</p>
                     ${tasksHtml}
-                </ul>
-                <div style="margin-top: 30px; text-align: right; color: #888; font-size: 12px;">
-                    公會發布時間：${new Date().toLocaleString('zh-TW')}
+                </div>
+                
+                <div style="margin-top: 40px; display: flex; justify-content: flex-end; align-items: flex-end;">
+                    <div style="font-size: 18px; font-weight: bold;">家長簽名：</div>
+                    <div style="border-bottom: 2px solid #000; width: 200px; margin-left: 10px;"></div>
                 </div>
             </div>
         `;
@@ -1602,20 +1694,65 @@
         renderStudentStatus(); 
     });
 
-    // ⭐ 全選 / 取消全選按鈕事件 (加扣分與列印共用)
+// ⭐ 全選 / 取消全選按鈕事件 (同步更新卡片外觀)
     document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
+        const cards = document.querySelectorAll('.d-student-card.selectable');
         const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
         const allChecked = Array.from(cbs).every(c => c.checked);
+        
         cbs.forEach(c => c.checked = !allChecked);
+        cards.forEach(card => {
+            if (!allChecked) card.classList.add('selected');
+            else card.classList.remove('selected');
+        });
     });
 
-    // ⭐ 執行批量匯出列印
+    // ⭐ 執行批量匯出列印 (依照積欠數量多到少排序)
     document.getElementById('btnBatchExport').addEventListener('click', () => {
         const checked = document.querySelectorAll('.batch-export-checkbox:checked');
         if (checked.length === 0) { 
-            alert("⚠️ 請先勾選要列印卷軸的冒險者！"); 
+            alert("⚠️ 請先點選小卡，選取要列印卷軸的冒險者！"); 
             return; 
         }
+        
+        let printQueue = [];
+        
+        checked.forEach(cb => {
+            const idx = parseInt(cb.dataset.sidx);
+            const student = data.roster[idx];
+            let debts = [];
+            data.assignments.forEach(a => {
+                if(!a.archived) {
+                    const indices = a.assignedIndices || 'all';
+                    if(indices === 'all' || indices.includes(idx)) {
+                        const taskSt = (a.statuses||[])[idx] || 0;
+                        if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt, date: a.date });
+                    }
+                }
+            });
+            if(debts.length > 0) {
+                printQueue.push({ student: student, debts: debts, count: debts.length });
+            }
+        });
+
+        // ⭐ 按欠款數量排序 (由大到小排序，方便列印後裁切歸類)
+        printQueue.sort((a, b) => b.count - a.count);
+
+        let allHtml = printQueue.map(item => generateScrollHTML(item.student, item.debts)).join('<div style="page-break-after: always;"></div>');
+
+        if(!allHtml) { 
+            showToast("🎉 勾選的冒險者皆無欠款！"); 
+            return; 
+        }
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>批量列印任務單</title></head><body style="background: #f4f4f4; padding: 20px;">');
+        printWindow.document.write(allHtml);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { printWindow.print(); }, 500);
+    });
         
         let allHtml = '';
         checked.forEach(cb => {
