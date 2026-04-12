@@ -1810,6 +1810,44 @@
         data.roster = r; triggerAutoSave(); showToast("✅ 名單已更新");
     });
 
+    // ⭐ 大量貼上名單邏輯
+    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
+        const text = document.getElementById('taRosterPaste').value.trim();
+        if (!text) {
+            showToast("⚠️ 請先在文字框內貼上名單！");
+            return;
+        }
+        
+        // 將文字依換行符號切割，並過濾掉空白行
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        
+        const isReplace = confirm("請問要「取代」現有名單嗎？\n\n[確定]：清空現有名單，完全替換\n[取消]：接續附加在現有名單最後面");
+        
+        if (isReplace) {
+            // 完全取代：建立全新陣列
+            data.roster = lines.map((name, idx) => ({ no: idx + 1, name: name, exp: 0, coins: 0 }));
+        } else {
+            // 附加：計算目前的最後一號，接著往下排
+            let startNo = data.roster.length > 0 ? Math.max(...data.roster.map(s => s.no)) + 1 : 1;
+            const newRoster = lines.map((name, idx) => ({ no: startNo + idx, name: name, exp: 0, coins: 0 }));
+            data.roster = data.roster.concat(newRoster);
+        }
+        
+        // 清空文字框並關閉下拉選單
+        document.getElementById('taRosterPaste').value = '';
+        document.getElementById('detailsRosterPaste').removeAttribute('open');
+        
+        // 重新渲染畫面並觸發存檔
+        renderRosterEditor();
+        triggerAutoSave();
+        showToast("✅ 名單已成功匯入並自動儲存！");
+    });
+
+    // ⭐ 關閉大量貼上名單的浮動小視窗
+    document.getElementById('btnCloseRosterPaste').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('detailsRosterPaste').removeAttribute('open');
+    });
     function renderChecklists() {
         const buildList = (items, cid) => { 
             const container = document.getElementById(cid);
