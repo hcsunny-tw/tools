@@ -307,6 +307,28 @@
     
     /* 隱藏原生 Checkbox */
     .batch-export-checkbox, .batch-exp-checkbox { display: none !important; }
+
+    /* ⭐ 優化：工具箱選單視窗 */
+    .toolbox-menu { position: absolute; bottom: 75px; right: 0; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 300px; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; transform-origin: bottom right; z-index: 5001; }
+    .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+    .toolbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .toolbox-btn { display: flex; align-items: center; gap: 8px; padding: 10px; background: var(--bg); border: 2px solid var(--tbl-border); border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--text-main); transition: all 0.2s; font-size: 13px; text-decoration: none; justify-content: flex-start; }
+    .toolbox-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-2px); }
+    .toolbox-btn i { font-size: 18px; }
+
+    /* ⭐ 優化：側邊欄篩選器預設隱藏 */
+    .filter-panel { display: none; background: var(--card); border: 2px dashed var(--tbl-border); padding: 10px; border-radius: 8px; margin-bottom: 12px; }
+    .filter-panel.show { display: block; animation: fadeIn 0.2s ease; }
+
+    /* ⭐ 優化：虛擬鍵盤排版 (左數字/右功能) */
+    .vk-container { display: flex; gap: 12px; margin-top: 8px; background: var(--tbl-alt); padding: 12px; border-radius: 8px; border: 1px dashed var(--tbl-border); }
+    .vk-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; }
+    .vk-actions { display: flex; flex-direction: column; gap: 6px; width: 110px; }
+    .vk-btn { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px 4px; font-size: 16px; font-weight: 900; cursor: pointer; color: var(--text-main); text-align: center; transition: all .1s; box-shadow: 0 3px 0 var(--tbl-border); user-select: none; display: grid; place-items: center; }
+    .vk-btn:active { transform: translateY(3px); box-shadow: none; background: var(--tbl-hover); }
+    .vk-btn.danger { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; box-shadow: 0 3px 0 #fca5a5; }
+    .vk-btn.danger:active { background: #fecaca; box-shadow: none; }
+    .vk-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   </style>
 </head>
 <body>
@@ -361,8 +383,8 @@
 
     <section id="view-dashboard" class="view show">
       <div class="dashboard-layout">
-        <aside class="dash-sidebar">
-          <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
+       <aside class="dash-sidebar">
+          <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 8px;">
               <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" onclick="document.getElementById('filterPanel').classList.toggle('show');" title="篩選條件"><i class="bi bi-funnel"></i></button>
               <button class="btn sm" id="btnOpenNewQuestWindowSidebar" style="flex: 1;" title="發布新委託"><i class="bi bi-plus-lg"></i> 新增任務</button>
           </div>
@@ -380,16 +402,16 @@
           </div>
           <div id="dashDetailPanel">
              <div class="assignment-bar" style="border-bottom: 2px solid var(--tbl-border); padding-bottom:12px; margin-bottom:12px;">
-                <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:8px;"></div>
-                <div class="actions" style="margin-top:8px; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:8px;"></div>
+                    <div class="field" style="display: flex; flex-direction: row; align-items: center; gap: 8px; margin: 0;">
+                        <label style="margin:0; color:var(--muted);"><i class="bi bi-zoom-in"></i> 顯示比例</label>
+                        <input type="range" id="rangeSize" min="40" max="100" value="56" style="padding: 0; width: 120px;">
+                    </div>
+                </div>
+                <div class="actions" style="margin-top:12px; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <button class="btn sm ghost" id="btnMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
                     <button class="btn sm ghost" id="btnMarkAllOrange"><i class="bi bi-exclamation-circle-fill"></i> 全員再戰</button>
-                    <div class="legend" style="font-size:12px;">
-                        <span><span class="dot s0"></span> 未接</span>
-                        <span><span class="dot s1"></span> 已報</span>
-                        <span><span class="dot s2"></span> 挑戰</span>
-                        <span><span class="dot s3"></span> 成功</span>
-                    </div>
                     <button class="btn sm warn ghost" id="btnDeleteCurrent" style="margin-left:auto;"><i class="bi bi-trash3"></i> 刪除</button>
                 </div>
             </div>
@@ -611,14 +633,22 @@
                    <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
                    <button class="btn sm ghost" id="btnToggleKeypad" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
                </div>
-               <div class="virtual-keypad" id="virtualKeypad">
-                   <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
-                   <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
-                   <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
-                   <div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="~">~</div>
-                   <div class="vk-btn" data-val="L.">L</div><div class="vk-btn" data-val="P.">P</div><div class="vk-btn" data-val="U.">U</div>
-                   <div class="vk-btn" data-val="CH.">CH</div><div class="vk-btn" data-val="習作">習</div><div class="vk-btn" data-val="考卷">卷</div>
-                   <div class="vk-btn wide" data-val="backspace">⌫</div><div class="vk-btn wide" data-val="clear">CLR</div><div class="vk-btn wide" data-val="space">空白</div>
+            <div class="vk-container" id="virtualKeypad" style="display:none;">
+                   <div class="vk-numpad">
+                       <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
+                       <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
+                       <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
+                       <div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="~">~</div>
+                   </div>
+                   <div class="vk-actions">
+                       <div class="vk-btn danger" data-val="backspace"><i class="bi bi-backspace-fill"></i></div>
+                       <div class="vk-grid-2">
+                           <div class="vk-btn" data-val="P." style="font-size:14px; padding:8px 2px;">P</div><div class="vk-btn" data-val="L." style="font-size:14px; padding:8px 2px;">L</div>
+                           <div class="vk-btn" data-val="U." style="font-size:14px; padding:8px 2px;">U</div><div class="vk-btn" data-val="CH." style="font-size:12px; padding:8px 2px;">CH</div>
+                           <div class="vk-btn" data-val="習作" style="font-size:13px; padding:8px 2px;">習</div><div class="vk-btn" data-val="考卷" style="font-size:13px; padding:8px 2px;">卷</div>
+                       </div>
+                       <div class="vk-btn" data-val="space" style="font-size:14px;">空白</div>
+                   </div>
                </div>
           </div>
           <div class="field" style="margin-top:12px; border-top:1px dashed var(--tbl-border); padding-top:12px;">
@@ -670,15 +700,14 @@
 
 <div class="toolbox-container">
       <div class="toolbox-menu" id="toolboxMenu">
-          <button class="fab-btn" id="btnOpenStopwatch" title="碼表"><i class="bi bi-clock-history"></i></button>
-          <button class="fab-btn" id="btnOpenTimer" title="計時器"><i class="bi bi-stopwatch"></i></button>
-          <button class="fab-btn" id="btnOpenNumDice" title="數字骰"><i class="bi bi-123"></i></button>
-          <button class="fab-btn" id="btnOpenAlphaDice" title="字母骰"><i class="bi bi-alphabet"></i></button>
-          <button class="fab-btn" id="btnOpenDraw" title="抽籤"><i class="bi bi-gift"></i></button>
-          <button class="fab-btn" id="btnOpenMarquee" title="跑馬燈"><i class="bi bi-broadcast"></i></button>
-          <button class="fab-btn" id="btnOpenDecibel" title="分貝偵測"><i class="bi bi-mic"></i></button>
-          <button class="fab-btn" id="btnOpenRecess" title="下課準備"><i class="bi bi-backpack"></i></button>
-          <button class="fab-btn" id="btnOpenDismissal" title="放學準備"><i class="bi bi-door-open"></i></button>
+          <h3 style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary); border-bottom: 2px dashed var(--tbl-border); padding-bottom: 8px;"><i class="bi bi-tools"></i> 實用小工具</h3>
+          <div class="toolbox-grid">
+              <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
+              <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
+              <button class="toolbox-btn" id="btnOpenMarquee"><i class="bi bi-broadcast"></i> 跑馬燈</button>
+              <button class="toolbox-btn" id="btnOpenTimer"><i class="bi bi-stopwatch"></i> 計時器</button>
+              <button class="toolbox-btn" id="btnOpenDraw"><i class="bi bi-gift"></i> 抽籤轉盤</button>
+          </div>
       </div>
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
   </div>
@@ -2163,7 +2192,7 @@
 
     document.getElementById('btnToggleKeypad').addEventListener('click', () => { 
         const kp = document.getElementById('virtualKeypad'); 
-        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'grid' : 'none'; 
+        kp.style.display = kp.style.display === 'none' || kp.style.display === '' ? 'flex' : 'none'; 
     });
 
     document.getElementById('virtualKeypad').addEventListener('click', (e) => { 
@@ -2499,7 +2528,20 @@
             } catch(err) { alert('無法取得麥克風權限！'); }
         }
     });
-
+// ⭐ 修復公會名冊頁籤點擊無反應問題
+    document.getElementById('tabBtnStudents').addEventListener('click', (e) => {
+        e.target.classList.add('active');
+        document.getElementById('tabBtnTeachers').classList.remove('active');
+        document.getElementById('roster-content-students').classList.add('show');
+        document.getElementById('roster-content-teachers').classList.remove('show');
+    });
+    
+    document.getElementById('tabBtnTeachers').addEventListener('click', (e) => {
+        e.target.classList.add('active');
+        document.getElementById('tabBtnStudents').classList.remove('active');
+        document.getElementById('roster-content-teachers').classList.add('show');
+        document.getElementById('roster-content-students').classList.remove('show');
+    });
   </script>
 </body>
 </html>
