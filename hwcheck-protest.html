@@ -241,7 +241,6 @@
     .status-option-btn.sp-2 { background: #ffedd5; color: #9a3412; border-color: #fb923c; }
     .status-option-btn.sp-3 { background: #dcfce7; color: #166534; border-color: #4ade80; }
 
-    /* ⭐ 修復：保證紅點不會被遮擋，加上 pointer-events */
     .debt-badge { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: grid; place-items: center; border: 2px solid var(--card); z-index: 10; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s; pointer-events: auto; }
     .debt-badge:hover { transform: scale(1.2) rotate(10deg); }
 
@@ -275,12 +274,6 @@
     .delete-choice-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
     .btn-archive { background: var(--success); border-color: var(--success); color: #fff; }
     .btn-destroy { background: var(--danger); border-color: var(--danger); color: #fff; }
-
-    /* ⭐ 排序工具列 */
-    .sort-toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; background: var(--bg); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--tbl-border); flex-wrap: wrap; }
-    .sort-btn { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: var(--card); border: 1px solid var(--tbl-border); cursor: pointer; transition: all 0.2s; color: var(--text-main); }
-    .sort-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    .sort-btn:hover:not(.active) { background: var(--tbl-hover); }
 
     /* ⭐ 批量選取卡片特效 */
     .d-student-card.selectable { cursor: pointer; transition: all 0.2s; border: 2px dashed var(--tbl-border); }
@@ -407,7 +400,21 @@
     <section id="view-student-status" class="view">
       <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-              <h2 id="studentStatusHeaderTitle" style="margin:0;"><i class="bi bi-clipboard2-check"></i> 冒險者狀態</h2>
+              
+              <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+                  <h2 id="studentStatusHeaderTitle" style="margin:0;"><i class="bi bi-clipboard2-check"></i> 冒險者狀態</h2>
+                  <div style="display:flex; align-items:center; gap:4px; background:var(--bg); border:1px dashed var(--tbl-border); padding:4px 10px; border-radius:8px;">
+                      <span style="font-size:13px; font-weight:900; color:var(--text-main);"><i class="bi bi-funnel-fill"></i> 排序</span>
+                      <select id="selStudentSort" style="border:none; background:transparent; font-weight:900; font-size:14px; padding:2px; outline:none; color:var(--primary); cursor:pointer;">
+                          <option value="no">座號</option>
+                          <option value="exp">等級 (EXP)</option>
+                          <option value="coins">金幣</option>
+                          <option value="debts">欠交任務數</option>
+                      </select>
+                      <button class="btn sm ghost icon-only" id="btnSortDirection" style="border:none; background:transparent; color:var(--text-main); padding:2px 6px;" title="切換正/反序"><i class="bi bi-sort-numeric-down"></i></button>
+                  </div>
+              </div>
+
               <div class="actions" style="margin:0;">
                   <button class="btn sm" id="btnGreenAllExpPlus" style="background:#16a34a; border-color:#15803d;"><i class="bi bi-stars"></i> 綠燈全體 +1</button>
                   <button class="btn sm secondary" id="btnToggleBatchExp"><i class="bi bi-magic"></i> 加扣分模式</button>
@@ -788,6 +795,7 @@
     }
     window.getRankHtml = getRankHtml;
 
+    // ⭐ 排序全域變數
     let currentSortBy = 'no'; // 'no', 'exp', 'coins', 'debts'
     let currentSortAsc = true;
 
@@ -853,14 +861,10 @@
         const target = document.getElementById(id);
         if(target) { target.classList.add('show'); renderAll(); }
         
-        // BGM 播放狀態切換
         if (id === 'view-checkin') {
             const bgmBtn = document.getElementById('btnToggleCheckinBgm');
-            if (data.settings && data.settings.bgmId) {
-                bgmBtn.style.display = 'inline-flex';
-            } else {
-                bgmBtn.style.display = 'none';
-            }
+            if (data.settings && data.settings.bgmId) bgmBtn.style.display = 'inline-flex';
+            else bgmBtn.style.display = 'none';
         } else {
             stopCheckinBGM();
         }
@@ -884,9 +888,7 @@
     function playCheckinBGM() {
         const bgmId = data.settings?.bgmId?.trim();
         const container = document.getElementById('ytPlayerContainer');
-        if (bgmId) {
-            container.innerHTML = `<iframe width="10" height="10" src="https://www.youtube.com/embed/${bgmId}?autoplay=1&loop=1&playlist=${bgmId}" frameborder="0" allow="autoplay"></iframe>`;
-        }
+        if (bgmId) container.innerHTML = `<iframe width="10" height="10" src="https://www.youtube.com/embed/${bgmId}?autoplay=1&loop=1&playlist=${bgmId}" frameborder="0" allow="autoplay"></iframe>`;
     }
 
     function stopCheckinBGM() {
@@ -939,7 +941,6 @@
                 data.settings = loadedData.settings || { arrivalTime: "07:50", bgmId: "" };
                 data.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
                 
-                // 確保 EXP 與 coins 欄位存在
                 data.roster.forEach(r => { 
                     if(typeof r.exp === 'undefined') r.exp = 0; 
                     if(typeof r.coins === 'undefined') r.coins = 0; 
@@ -952,10 +953,7 @@
             onDataLoaded(); updateSaveStatus('success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
-            let errMsg = "⚠️ 資料庫連線失敗！\n\n";
-            errMsg += "【錯誤代碼】 " + (error.code || "無") + "\n";
-            errMsg += "【錯誤訊息】 " + (error.message || error) + "\n\n";
-            errMsg += "如果您是剛建立 Firebase 專案，請務必去 Firestore 後台點擊「Rules (規則)」，將程式碼改為以下內容並發布：\n\nallow read, write: if request.auth != null;";
+            let errMsg = "⚠️ 資料庫連線失敗！\n\n【錯誤代碼】 " + (error.code || "無") + "\n【錯誤訊息】 " + (error.message || error) + "\n\n如果您是剛建立 Firebase 專案，請務必去 Firestore 後台點擊「Rules (規則)」，將程式碼改為：\nallow read, write: if request.auth != null;";
             alert(errMsg);
             data = JSON.parse(JSON.stringify(defaultData)); 
             onDataLoaded();
@@ -1019,9 +1017,8 @@
         else if (v.id === 'view-attendance') initAttendanceView();
     }
 
-    // --- 8. 核心加扣分與狀態邏輯 (⭐ EXP 與 Coins 雙軌制) ---
+    // --- 8. 核心加扣分與狀態邏輯 ---
     
-    // 共用日誌系統
     function logAction(sidx, delta, type, reason) {
         if(!data.expLogs) data.expLogs = [];
         data.expLogs.push({
@@ -1033,7 +1030,6 @@
         if(data.expLogs.length > 2000) data.expLogs.shift();
     }
 
-    // ⭐ 增加 EXP (通常來自完成任務) - 滿額自動換算成錢幣獎勵
     function changeExp(sidx, delta, reason = '系統調整', silent = false) {
         if (!data.roster[sidx]) return;
         const oldExp = data.roster[sidx].exp || 0;
@@ -1050,7 +1046,6 @@
             triggerAutoSave(); renderAll();
         }
 
-        // 升級發放金幣獎勵
         if (delta > 0) {
             const thresholds = [
                 { exp: 5, coins: 5, rank: 'C級見習' },
@@ -1074,7 +1069,6 @@
     }
     window.changeExp = changeExp;
 
-    // ⭐ 增加金幣 (來自日常行為表現加扣分)
     function changeCoin(sidx, delta, reason = '手動調整', silent = false) {
         if (!data.roster[sidx]) return;
         if (typeof data.roster[sidx].coins === 'undefined') data.roster[sidx].coins = 0;
@@ -1098,7 +1092,6 @@
             const oldStatus = a.statuses[sidx] || 0;
             a.statuses[sidx] = newStatus;
             
-            // ⭐ 解任務給的是 EXP
             if (oldStatus !== 3 && newStatus === 3) {
                 changeExp(sidx, 5, `完成任務 [${a.title}]`, true); 
                 playSuccessSound(); showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`);
@@ -1300,7 +1293,7 @@
         document.documentElement.style.setProperty('--seat-font', `${Math.max(10, Math.floor(e.target.value * 0.3))}px`); 
     });
 
-    // 🟢 冒險者狀態與紀律 (大翻新：一列五個小字卡)
+    // 🟢 冒險者狀態與紀律
     function checkAndResetDiscipline() {
         const today = getTaipeiDateString();
         if (!data.discipline || data.discipline.date !== today) { 
@@ -1309,16 +1302,20 @@
         }
     }
 
-    window.setSort = function(by) {
-        if (currentSortBy === by) currentSortAsc = !currentSortAsc;
-        else { currentSortBy = by; currentSortAsc = true; }
+    // ⭐ 排序選單事件綁定
+    document.getElementById('selStudentSort').addEventListener('change', (e) => {
+        currentSortBy = e.target.value;
+        currentSortAsc = true;
+        document.getElementById('btnSortDirection').innerHTML = '<i class="bi bi-sort-numeric-down"></i>';
         renderStudentStatus();
-    }
-    
-    window.toggleSortDirection = function() {
+    });
+
+    document.getElementById('btnSortDirection').addEventListener('click', (e) => {
         currentSortAsc = !currentSortAsc;
+        const isNum = currentSortBy === 'no' || currentSortBy === 'exp' || currentSortBy === 'coins' || currentSortBy === 'debts';
+        e.currentTarget.innerHTML = `<i class="bi bi-sort-${isNum ? (currentSortAsc?'numeric-down':'numeric-up-alt') : (currentSortAsc?'down':'up')}"></i>`;
         renderStudentStatus();
-    }
+    });
 
     function renderStudentStatus() {
         const con = document.getElementById('studentStatusContainer'); 
@@ -1384,20 +1381,6 @@
             overviewCon.innerHTML = '';
         }
 
-        // ⭐ 繪製排序工具列
-        con.innerHTML += `
-            <div class="sort-toolbar">
-                <span style="font-weight:900; color:var(--text-main); font-size: 14px;"><i class="bi bi-funnel-fill"></i> 排序方式：</span>
-                <button class="sort-btn ${currentSortBy === 'no' ? 'active' : ''}" onclick="window.setSort('no')">座號</button>
-                <button class="sort-btn ${currentSortBy === 'exp' ? 'active' : ''}" onclick="window.setSort('exp')">等級(EXP)</button>
-                <button class="sort-btn ${currentSortBy === 'coins' ? 'active' : ''}" onclick="window.setSort('coins')">金錢</button>
-                <button class="sort-btn ${currentSortBy === 'debts' ? 'active' : ''}" onclick="window.setSort('debts')">欠交任務數</button>
-                <button class="btn sm ghost" onclick="window.toggleSortDirection()" style="margin-left:auto; padding: 4px 10px;">
-                    <i class="bi bi-sort-${currentSortAsc ? 'numeric-down' : 'numeric-up-alt'}"></i> ${currentSortAsc ? '由小到大' : '由大到小'}
-                </button>
-            </div>
-        `;
-
         // ⭐ 資料預處理與排序
         let studentDataList = data.roster.map((s, i) => {
             let debts = [];
@@ -1447,7 +1430,6 @@
             const checkboxHtml = (isBatchMode || isBatchExpMode) ? `<input type="checkbox" class="${checkboxTypeClass}" data-sidx="${i}">` : '';
 
             const card = document.createElement('div');
-            // ⭐ 判斷是否加上可選取的 Class
             card.className = 'd-student-card' + ((isBatchMode || isBatchExpMode) ? ' selectable' : '');
             card.style.alignItems = 'flex-start';
             card.style.textAlign = 'left';
@@ -1482,12 +1464,9 @@
                 </div>
             `;
             
-            // ⭐ 點擊整張卡片觸發勾選邏輯
             if (isBatchMode || isBatchExpMode) {
                 card.onclick = (e) => {
-                    // 避免點擊到內部按鈕或輸入框時也觸發選取
                     if (e.target.closest('.btn') || e.target.closest('.debt-badge') || e.target.closest('.d-avatar') || e.target.tagName.toLowerCase() === 'input') return;
-                    
                     card.classList.toggle('selected');
                     const cb = card.querySelector('.' + checkboxTypeClass);
                     if (cb) cb.checked = card.classList.contains('selected');
@@ -1508,7 +1487,6 @@
         }
     };
 
-    // ⭐ 直接在字卡上點擊任務修改狀態的邏輯
     window.toggleCardTaskStatus = function(e, aid, sidx) {
         e.stopPropagation();
         const a = data.assignments.find(x => x.id == aid); if(!a) return;
@@ -1527,7 +1505,6 @@
         }
     };
 
-    // ⭐ 復原功能 (防誤觸設計)
     document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
         let count = 0;
         lastRosterState = JSON.stringify(data.roster);
@@ -1593,47 +1570,41 @@
         document.getElementById('customExpReason').value = '';
     };
 
-    // ⭐ 產生列印卷軸 HTML 的共用函式 (優化版：簡單、清晰、具備勾選框)
+    // ⭐ 產生列印卷軸 HTML 的共用函式 (極簡省紙版)
     function generateScrollHTML(studentData, debts) {
-        const printTime = new Date().toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-        
         let tasksHtml = debts.map(t => {
-            let statusText = t.st === 2 ? '<span style="color:#e65100;">需再訂正</span>' : '<span style="color:#d32f2f;">尚未繳交</span>';
+            let statusText = t.st === 2 ? '需再訂正' : '尚未繳交';
             let dateText = t.date ? t.date : '無日期';
+            let statusColor = t.st === 2 ? '#e65100' : '#d32f2f';
             return `
-                <div style="display: flex; align-items: center; border-bottom: 1px solid #ccc; padding: 12px 0;">
-                    <div style="width: 24px; height: 24px; border: 2px solid #333; margin-right: 15px; border-radius: 4px; flex-shrink: 0;"></div>
-                    <div style="flex: 1;">
-                        <div style="font-size: 18px; font-weight: bold; color: #222;">${t.title}</div>
-                        <div style="font-size: 14px; color: #555; margin-top: 6px;">📅 發布日期：${dateText} &nbsp;|&nbsp; ⚠️ 狀態：${statusText}</div>
+                <div style="display: flex; align-items: flex-start; border-bottom: 1px dashed #ccc; padding: 6px 0; font-size: 14px; line-height: 1.4;">
+                    <div style="width: 14px; height: 14px; border: 1.5px solid #333; margin-right: 8px; border-radius: 3px; flex-shrink: 0; margin-top: 2px;"></div>
+                    <div style="flex: 1; font-weight: bold; color: #222;">
+                        ${t.title} <span style="color:#666; font-size: 12px; font-weight: normal;">(${dateText})</span> <span style="color:${statusColor}; margin-left: 4px;">${statusText}</span>
                     </div>
                 </div>
             `;
         }).join('');
 
         return `
-            <div style="border: 2px solid #000; padding: 30px; margin: 20px auto; border-radius: 8px; background: #fff; font-family: 'Microsoft JhengHei', sans-serif; page-break-inside: avoid; max-width: 700px;">
-                <div style="text-align: center; border-bottom: 3px double #000; padding-bottom: 15px; margin-bottom: 20px;">
-                    <h1 style="margin: 0; font-size: 26px; letter-spacing: 2px; color: #000;">📜 任務單</h1>
-                    <div style="color: #666; font-size: 12px; margin-top: 8px;">列印時間：${printTime}</div>
-                </div>
+            <div style="border: 2px dashed #888; padding: 15px; border-radius: 8px; background: #fff; font-family: 'Microsoft JhengHei', sans-serif; page-break-inside: avoid; width: 100%; box-sizing: border-box; position: relative;">
+                <h2 style="margin: 0 0 10px 0; font-size: 18px; color: #000; border-bottom: 2px solid #000; padding-bottom: 5px; text-align: center;">
+                    ${studentData.name} 的任務單
+                </h2>
                 
-                <h2 style="margin: 0 0 20px 0; font-size: 22px; color: #333;">學生姓名：<span style="border-bottom: 2px solid #000; padding: 0 20px;">${studentData.no}. ${studentData.name}</span></h2>
-                
-                <div style="margin-bottom: 40px;">
-                    <p style="font-weight: bold; color: #333; font-size: 16px;">以下任務尚未完成，請完成後於左側方框打勾：</p>
+                <div style="margin-bottom: 15px;">
                     ${tasksHtml}
                 </div>
                 
-                <div style="margin-top: 40px; display: flex; justify-content: flex-end; align-items: flex-end;">
-                    <div style="font-size: 18px; font-weight: bold;">家長簽名：</div>
-                    <div style="border-bottom: 2px solid #000; width: 200px; margin-left: 10px;"></div>
+                <div style="display: flex; justify-content: flex-end; align-items: flex-end; margin-top: 15px;">
+                    <div style="font-size: 14px; font-weight: bold;">家長簽名：</div>
+                    <div style="border-bottom: 1px solid #000; width: 120px; margin-left: 5px;"></div>
                 </div>
             </div>
         `;
     }
 
-    // ⭐ 單一列印功能
+    // ⭐ 單一列印功能 (套用極簡排版)
     window.printSingleStudent = function(idx) {
         const student = data.roster[idx];
         let debts = [];
@@ -1653,9 +1624,19 @@
         }
 
         const printWindow = window.open('', '_blank');
-        printWindow.document.write('<html><head><title>列印催繳卷軸</title></head><body style="background: #fff; padding: 20px;">');
-        printWindow.document.write(generateScrollHTML(student, debts));
-        printWindow.document.write('</body></html>');
+        printWindow.document.write(`
+            <html><head><title>列印任務單</title>
+            <style>
+                @page { size: A4; margin: 10mm; }
+                body { margin: 0; padding: 20px; background: #fff; display: flex; justify-content: center; }
+                .single-container { width: 100%; max-width: 400px; }
+            </style>
+            </head><body>
+            <div class="single-container">
+                ${generateScrollHTML(student, debts)}
+            </div>
+            </body></html>
+        `);
         printWindow.document.close();
         printWindow.focus();
         setTimeout(() => { printWindow.print(); }, 500);
@@ -1686,7 +1667,7 @@
         });
     });
 
-    // ⭐ 執行批量匯出列印 (依照積欠數量多到少排序)
+    // ⭐ 執行批量匯出列印 (依照積欠數量多到少排序，使用 Grid 雙欄排版)
     document.getElementById('btnBatchExport').addEventListener('click', () => {
         const checked = document.querySelectorAll('.batch-export-checkbox:checked');
         if (checked.length === 0) { 
@@ -1717,7 +1698,7 @@
         // ⭐ 按欠款數量排序 (由大到小排序，方便列印後裁切歸類)
         printQueue.sort((a, b) => b.count - a.count);
 
-        let allHtml = printQueue.map(item => generateScrollHTML(item.student, item.debts)).join('<div style="page-break-after: always;"></div>');
+        let allHtml = printQueue.map(item => generateScrollHTML(item.student, item.debts)).join('');
 
         if(!allHtml) { 
             showToast("🎉 勾選的冒險者皆無欠款！"); 
@@ -1725,9 +1706,22 @@
         }
 
         const printWindow = window.open('', '_blank');
-        printWindow.document.write('<html><head><title>批量列印任務單</title></head><body style="background: #f4f4f4; padding: 20px;">');
-        printWindow.document.write(allHtml);
-        printWindow.document.write('</body></html>');
+        printWindow.document.write(`
+            <html><head><title>批量列印任務單</title>
+            <style>
+                @page { size: A4; margin: 10mm; }
+                body { margin: 0; padding: 0; background: #fff; font-family: "Microsoft JhengHei", sans-serif; }
+                /* ⭐ 雙欄網格排版，節省紙張空間 */
+                .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+                /* 手機預覽時單欄顯示 */
+                @media (max-width: 600px) { .print-grid { grid-template-columns: 1fr; } }
+            </style>
+            </head><body>
+            <div class="print-grid">
+                ${allHtml}
+            </div>
+            </body></html>
+        `);
         printWindow.document.close();
         printWindow.focus();
         setTimeout(() => { printWindow.print(); }, 500);
@@ -1934,7 +1928,6 @@
         showToast("✅ 名單已成功匯入並自動儲存！");
     });
 
-    // ⭐ 關閉大量貼上名單的浮動小視窗
     document.getElementById('btnCloseRosterPaste').addEventListener('click', (e) => {
         e.preventDefault();
         document.getElementById('detailsRosterPaste').removeAttribute('open');
@@ -2017,7 +2010,6 @@
         const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
     });
 
-    // ⭐ 下載 EXP 異動紀錄
     document.getElementById('btnDownloadExpLogs').addEventListener('click', () => {
         if(!data.expLogs || data.expLogs.length === 0) { alert("目前無任何 EXP 異動紀錄"); return; }
         let csv = "\uFEFF紀錄時間,姓名,變動,原因\n";
@@ -2178,7 +2170,7 @@
         showToast("✨ 新委託已發布！");
     });
 
-    // 任務選單編輯 (⚙️ 按鈕)
+    // 任務選單編輯
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => { 
         tempQuestSettings = JSON.parse(JSON.stringify(data.questSettings)); 
         renderQuestConfig(); 
@@ -2270,7 +2262,7 @@
     document.getElementById('btnAssignSelectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=true));
     document.getElementById('btnAssignDeselectAll').addEventListener('click', () => document.querySelectorAll('#assignStudentListContainer input').forEach(c => c.checked=false));
 
-    // ⭐ 工具箱 (新增下課準備、放學準備)
+    // ⭐ 工具箱
     document.getElementById('btnToggleToolbox').addEventListener('click', function() { document.getElementById('toolboxMenu').classList.toggle('show'); this.classList.toggle('active'); });
     function openTool(id) { 
         document.querySelectorAll('.tool-window').forEach(w => w.classList.remove('show')); 
@@ -2352,7 +2344,7 @@
                         clearInterval(timerInt); timerInt=null; 
                         e.target.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
                         e.target.classList.remove('warn');
-                        playAlarmSound(); 
+                        playSuccessSound(); 
                         showToast("⏰ 時間到！"); 
                     } 
                 }, 1000); 
