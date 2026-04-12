@@ -247,10 +247,6 @@
 
     .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
     .assign-student-item:hover { background: var(--tbl-hover); }
-    .batch-export-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
-    .batch-exp-checkbox { width: 18px !important; height: 18px !important; margin-right: 8px; accent-color: var(--primary); display: none !important; }
-    .batch-mode .batch-export-checkbox { display: inline-block !important; }
-    .batch-exp-mode .batch-exp-checkbox { display: inline-block !important; }
 
     /* 外觀設定樣式 */
     .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
@@ -270,7 +266,17 @@
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(22px); }
-/* ⭐ 排序工具列 */
+
+    @media print { .no-print, .floating-clock { display: none !important; } }
+    
+    /* 刪除處置委託視窗專屬樣式 */
+    .delete-choice-card { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .delete-desc { background: var(--bg); border: 1px dashed var(--tbl-border); padding: 10px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+    .delete-choice-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+    .btn-archive { background: var(--success); border-color: var(--success); color: #fff; }
+    .btn-destroy { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+    /* ⭐ 排序工具列 */
     .sort-toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; background: var(--bg); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--tbl-border); flex-wrap: wrap; }
     .sort-btn { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: var(--card); border: 1px solid var(--tbl-border); cursor: pointer; transition: all 0.2s; color: var(--text-main); }
     .sort-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -284,15 +290,6 @@
     
     /* 隱藏原生 Checkbox */
     .batch-export-checkbox, .batch-exp-checkbox { display: none !important; }
-    
-    @media print { .no-print, .floating-clock { display: none !important; } }
-/* 刪除處置委託視窗專屬樣式 */
-    .delete-choice-card { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-    .delete-desc { background: var(--bg); border: 1px dashed var(--tbl-border); padding: 10px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
-    .delete-choice-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
-    .btn-archive { background: var(--success); border-color: var(--success); color: #fff; }
-    .btn-destroy { background: var(--danger); border-color: var(--danger); color: #fff; }
-    
   </style>
 </head>
 <body>
@@ -302,7 +299,6 @@
   <div id="toastContainer" class="toast-container"></div>
   <div id="assignmentTooltip" class="assignment-tooltip"></div>
   
-  <!-- YouTube BGM 隱藏容器 -->
   <div id="ytPlayerContainer" style="display:none;"></div>
 
   <div id="attendanceReminderModal" class="modal-overlay">
@@ -324,12 +320,10 @@
   </div>
 
   <div class="wrap no-print" style="display:none; flex-direction:column;" id="mainApp">
-    <!-- ⭐ 固定頁首 (Sticky Header) -->
     <header>
       <div class="brand">
         <div class="logo"><i class="bi bi-shield-shaded"></i></div>
         <div>
-          <!-- ⭐ 浮動時鐘移至標題旁邊 -->
           <h1>
               冒險者公會 
               <span style="font-size: 14px; background: var(--tbl-head); color: var(--primary); padding: 2px 6px; border-radius: 4px; vertical-align: middle;">ProT版</span>
@@ -342,7 +336,6 @@
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> <span class="nav-text">執務室</span></span>
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理 (多裝置同步時使用)"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
         <button class="btn ghost nav-btn" id="btnNavDashboard" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
-        <!-- ⭐ 按鈕名稱變更為「冒險者狀態」 -->
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
         <button class="btn ghost nav-btn" id="btnNavCheckIn" title="晨間報到"><i class="bi bi-sun"></i> <span class="nav-text">晨間報到</span></button>
         <button class="btn ghost nav-btn" id="btnNavRoster" title="公會名冊"><i class="bi bi-people"></i> <span class="nav-text">公會名冊</span></button>
@@ -356,7 +349,6 @@
       <div class="dashboard-layout">
         <aside class="dash-sidebar">
           <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 0;">
-              <!-- ⭐ 復原：篩選條件按鈕 (僅圖示) -->
               <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" onclick="document.getElementById('filterPanel').classList.toggle('show');" title="篩選條件"><i class="bi bi-funnel"></i></button>
               <button class="btn sm" id="btnOpenNewQuestWindowSidebar" style="flex: 1;" title="發布新委託"><i class="bi bi-plus-lg"></i> 新增任務</button>
           </div>
@@ -406,20 +398,17 @@
                     <h2><i class="bi bi-sun"></i> 晨間報到看板</h2>
                     <div class="muted">準時到校者可獲得 1 枚金幣！ (規定時間：<span id="dispArrivalTime" style="color:var(--primary);font-weight:bold;">07:50</span>)</div>
                 </div>
-                <!-- 手動 BGM 播放按鈕 -->
                 <button id="btnToggleCheckinBgm" class="btn ghost sm" style="display: none;"><i class="bi bi-music-note"></i> <span id="bgmBtnText">播放晨間音樂</span></button>
             </div>
             <div class="grid" id="checkinGrid" style="grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap: 16px;"></div>
         </div>
     </section>
 
-    <!-- ⭐ 大翻新：冒險者狀態與紀律合併成「一列5個左右的小字卡」與「批次給分系統」 -->
     <section id="view-student-status" class="view">
       <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
               <h2 id="studentStatusHeaderTitle" style="margin:0;"><i class="bi bi-clipboard2-check"></i> 冒險者狀態</h2>
               <div class="actions" style="margin:0;">
-                  <!-- 全體+1 按鈕與批次按鈕 -->
                   <button class="btn sm" id="btnGreenAllExpPlus" style="background:#16a34a; border-color:#15803d;"><i class="bi bi-stars"></i> 綠燈全體 +1</button>
                   <button class="btn sm secondary" id="btnToggleBatchExp"><i class="bi bi-magic"></i> 加扣分模式</button>
                   <button class="btn sm secondary ghost" id="btnToggleBatchMode"><i class="bi bi-printer"></i> 批量列印卷軸</button>
@@ -428,7 +417,6 @@
               </div>
           </div>
           
-          <!-- ⭐ 批次加扣分控制列 -->
           <div id="batchExpToolbar" class="batch-exp-toolbar">
               <span style="font-weight:900; color:var(--primary);">✨ 批次給予金幣：</span>
               <button class="btn sm ghost" onclick="window.applyBatchCoin(1, '作業優良')">+1 作業優良</button>
@@ -445,7 +433,6 @@
               </div>
           </div>
           
-          <!-- ⭐ 復原：上方狀態總覽 (討伐全冠王與補血欄位) -->
           <div id="studentStatusOverviewContainer"></div>
 
           <div id="studentStatusContainer" style="margin-top:12px;"></div>
@@ -511,7 +498,6 @@
     <footer class="app-footer">Created by HCSunny & Abby</footer>
   </div>
 
-  <!-- Settings & Admin Modals -->
   <div id="settingsModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header"><h2><i class="bi bi-palette"></i> 外觀設定</h2><button class="modal-close-btn">&times;</button></div>
@@ -555,7 +541,6 @@
               <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
           </div>
           
-          <!-- 晨間報到與 BGM 設定區 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🌅 晨間報到系統設定</h3>
                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -564,7 +549,6 @@
                </div>
           </div>
 
-          <!-- ⭐ 新增：EXP 歷史紀錄下載 -->
           <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄與 加扣分日誌</h3>
                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -677,7 +661,6 @@
   
   <div id="quickDebtMenu"><div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div><div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div></div>
 
-  <!-- ⭐ 工具箱 (新增下課與放學準備按鈕) -->
   <div class="toolbox-container">
       <div class="toolbox-menu" id="toolboxMenu">
           <button class="fab-btn" id="btnOpenRecess" title="下課準備"><i class="bi bi-backpack"></i></button>
@@ -689,7 +672,6 @@
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
   </div>
   
-  <!-- 下課前準備工具窗 -->
   <div id="panelRecess" class="tool-window" style="width: 400px;">
       <div class="tool-header"><span><i class="bi bi-backpack"></i> 下課前準備</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -697,7 +679,6 @@
       </div>
   </div>
 
-  <!-- 放學前準備工具窗 -->
   <div id="panelDismissal" class="tool-window" style="width: 400px;">
       <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學前準備</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -705,12 +686,10 @@
       </div>
   </div>
 
-  <!-- 跑馬燈工具 -->
   <div id="panelMarquee" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-broadcast"></i> 公告跑馬燈</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
           <input type="text" id="mqTextInput" placeholder="輸入公告內容..." style="margin-bottom:8px; font-size: 16px;">
-          <!-- 快捷輸入按鈕 -->
           <div class="quick-marquee-tags">
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='⚠️ 請保持安靜，回到座位上！'">⚠️ 保持安靜</span>
               <span class="quick-tag" onclick="document.getElementById('mqTextInput').value='📝 請將作業交到講台前方！'">📝 準備交作業</span>
@@ -724,7 +703,6 @@
       </div>
   </div>
 
-  <!-- 計時器工具 -->
   <div id="panelTimer" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 計時器</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -749,7 +727,6 @@
       </div>
   </div>
 
-  <!-- 抽籤工具 -->
   <div id="panelDraw" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-gift"></i> 幸運抽籤</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -758,7 +735,6 @@
       </div>
   </div>
 
-  <!-- 🚨 JavaScript 核心區塊 🚨 -->
   <script type="module">
     // 將會用到的全域工具宣告於最上方
     function getTaipeiDateString() { 
@@ -812,6 +788,9 @@
     }
     window.getRankHtml = getRankHtml;
 
+    let currentSortBy = 'no'; // 'no', 'exp', 'coins', 'debts'
+    let currentSortAsc = true;
+
     // --- 1. Firebase 初始化 ---
     const firebaseConfig = {
       apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
@@ -859,8 +838,6 @@
     let tempQuestSettings = {};
     let currentFilter = { teacher: 'all', subject: 'all' };
     let lastRosterState = null; 
-    let currentSortBy = 'no'; // 'no', 'exp', 'coins', 'debts'
-    let currentSortAsc = true;
     const APP_SCALE = 1;
     
     // 浮動時鐘
@@ -1332,11 +1309,12 @@
         }
     }
 
-window.setSort = function(by) {
+    window.setSort = function(by) {
         if (currentSortBy === by) currentSortAsc = !currentSortAsc;
         else { currentSortBy = by; currentSortAsc = true; }
         renderStudentStatus();
     }
+    
     window.toggleSortDirection = function() {
         currentSortAsc = !currentSortAsc;
         renderStudentStatus();
@@ -1614,7 +1592,8 @@ window.setSort = function(by) {
         document.getElementById('customExpVal').value = '';
         document.getElementById('customExpReason').value = '';
     };
-// ⭐ 產生列印卷軸 HTML 的共用函式 (優化版：簡單、清晰、具備勾選框)
+
+    // ⭐ 產生列印卷軸 HTML 的共用函式 (優化版：簡單、清晰、具備勾選框)
     function generateScrollHTML(studentData, debts) {
         const printTime = new Date().toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         
@@ -1663,7 +1642,7 @@ window.setSort = function(by) {
                 const indices = a.assignedIndices || 'all';
                 if(indices === 'all' || indices.includes(idx)) {
                     const taskSt = (a.statuses||[])[idx] || 0;
-                    if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt });
+                    if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt, date: a.date });
                 }
             }
         });
@@ -1694,7 +1673,7 @@ window.setSort = function(by) {
         renderStudentStatus(); 
     });
 
-// ⭐ 全選 / 取消全選按鈕事件 (同步更新卡片外觀)
+    // ⭐ 全選 / 取消全選按鈕事件 (同步更新卡片外觀)
     document.getElementById('btnBatchSelectAll').addEventListener('click', () => {
         const cards = document.querySelectorAll('.d-student-card.selectable');
         const cbs = document.querySelectorAll(isBatchMode ? '.batch-export-checkbox' : '.batch-exp-checkbox');
@@ -1747,39 +1726,6 @@ window.setSort = function(by) {
 
         const printWindow = window.open('', '_blank');
         printWindow.document.write('<html><head><title>批量列印任務單</title></head><body style="background: #f4f4f4; padding: 20px;">');
-        printWindow.document.write(allHtml);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => { printWindow.print(); }, 500);
-    });
-        
-        let allHtml = '';
-        checked.forEach(cb => {
-            const idx = parseInt(cb.dataset.sidx);
-            const student = data.roster[idx];
-            let debts = [];
-            data.assignments.forEach(a => {
-                if(!a.archived) {
-                    const indices = a.assignedIndices || 'all';
-                    if(indices === 'all' || indices.includes(idx)) {
-                        const taskSt = (a.statuses||[])[idx] || 0;
-                        if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt });
-                    }
-                }
-            });
-            if(debts.length > 0) {
-                allHtml += generateScrollHTML(student, debts);
-            }
-        });
-
-        if(!allHtml) { 
-            showToast("🎉 勾選的冒險者皆無欠款！"); 
-            return; 
-        }
-
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write('<html><head><title>批量列印催繳卷軸</title></head><body style="background: #fff; padding: 20px;">');
         printWindow.document.write(allHtml);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
@@ -1947,44 +1893,6 @@ window.setSort = function(by) {
         data.roster = r; triggerAutoSave(); showToast("✅ 名單已更新");
     });
 
-    // ⭐ 大量貼上名單邏輯
-    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
-        const text = document.getElementById('taRosterPaste').value.trim();
-        if (!text) {
-            showToast("⚠️ 請先在文字框內貼上名單！");
-            return;
-        }
-        
-        // 將文字依換行符號切割，並過濾掉空白行
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-        
-        const isReplace = confirm("請問要「取代」現有名單嗎？\n\n[確定]：清空現有名單，完全替換\n[取消]：接續附加在現有名單最後面");
-        
-        if (isReplace) {
-            // 完全取代：建立全新陣列
-            data.roster = lines.map((name, idx) => ({ no: idx + 1, name: name, exp: 0, coins: 0 }));
-        } else {
-            // 附加：計算目前的最後一號，接著往下排
-            let startNo = data.roster.length > 0 ? Math.max(...data.roster.map(s => s.no)) + 1 : 1;
-            const newRoster = lines.map((name, idx) => ({ no: startNo + idx, name: name, exp: 0, coins: 0 }));
-            data.roster = data.roster.concat(newRoster);
-        }
-        
-        // 清空文字框並關閉下拉選單
-        document.getElementById('taRosterPaste').value = '';
-        document.getElementById('detailsRosterPaste').removeAttribute('open');
-        
-        // 重新渲染畫面並觸發存檔
-        renderRosterEditor();
-        triggerAutoSave();
-        showToast("✅ 名單已成功匯入並自動儲存！");
-    });
-
-    // ⭐ 關閉大量貼上名單的浮動小視窗
-    document.getElementById('btnCloseRosterPaste').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('detailsRosterPaste').removeAttribute('open');
-    });
     function renderChecklists() {
         const buildList = (items, cid) => { 
             const container = document.getElementById(cid);
@@ -1999,6 +1907,38 @@ window.setSort = function(by) {
         buildList(['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所'], 'recessChecklist'); 
         buildList(['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿帶齊', '🎒 整理背包'], 'dismissalChecklist');
     }
+
+    // ⭐ 大量貼上名單邏輯
+    document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
+        const text = document.getElementById('taRosterPaste').value.trim();
+        if (!text) {
+            showToast("⚠️ 請先在文字框內貼上名單！");
+            return;
+        }
+
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        const isReplace = confirm("請問要「取代」現有名單嗎？\n\n[確定]：清空現有名單，完全替換\n[取消]：接續附加在現有名單最後面");
+
+        if (isReplace) {
+            data.roster = lines.map((name, idx) => ({ no: idx + 1, name: name, exp: 0, coins: 0 }));
+        } else {
+            let startNo = data.roster.length > 0 ? Math.max(...data.roster.map(s => s.no)) + 1 : 1;
+            const newRoster = lines.map((name, idx) => ({ no: startNo + idx, name: name, exp: 0, coins: 0 }));
+            data.roster = data.roster.concat(newRoster);
+        }
+
+        document.getElementById('taRosterPaste').value = '';
+        document.getElementById('detailsRosterPaste').removeAttribute('open');
+        renderRosterEditor();
+        triggerAutoSave();
+        showToast("✅ 名單已成功匯入並自動儲存！");
+    });
+
+    // ⭐ 關閉大量貼上名單的浮動小視窗
+    document.getElementById('btnCloseRosterPaste').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('detailsRosterPaste').removeAttribute('open');
+    });
 
     window.editAssignmentTitle = function(id) {
         const a = data.assignments.find(x => x.id == id);
