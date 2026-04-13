@@ -146,10 +146,13 @@
     .att-no { font-weight: 900; width: 40px; text-align: center; font-size: 18px; color: var(--primary); }
     .att-name { flex: 1; font-weight: bold; font-size: 16px; display: flex; align-items: center; }
     .att-btn { border: 1px solid var(--tbl-border); background: #fff; color: var(--muted); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; min-width: 60px; }
-    .att-btn.active[data-status="0"] { background: var(--success); color: #fff; border-color: var(--success); }
-    .att-btn.active[data-status="1"] { background: #d97706; color: #fff; border-color: #d97706; }
-    .att-btn.active[data-status="2"] { background: #2563eb; color: #fff; border-color: #2563eb; }
-    .att-btn.active[data-status="3"] { background: var(--danger); color: #fff; border-color: var(--danger); }
+/* 各狀態啟動時的顏色 */
+    .att-btn.active[data-status="0"] { background: var(--success) !important; color: #fff !important; border-color: var(--success); }
+    .att-btn.active[data-status="1"] { background: #d97706 !important; color: #fff !important; border-color: #d97706; } /* 遲到 */
+    .att-btn.active[data-status="2"] { background: #2563eb !important; color: #fff !important; border-color: #2563eb; } /* 早退 */
+    .att-btn.active[data-status="3"] { background: var(--danger) !important; color: #fff !important; border-color: var(--danger); } /* 病假 */
+    .att-btn.active[data-status="4"] { background: #6b21a8 !important; color: #fff !important; border-color: #6b21a8; } /* 公假 - 新增 */
+    .att-btn.active[data-status="5"] { background: #4b5563 !important; color: #fff !important; border-color: #4b5563; } /* 事假 - 新增 */
     .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--tbl-alt); padding: 10px; border-radius: 8px; border: 1px solid var(--tbl-border); }
     .att-stat-item { flex: 1; text-align: center; border-right: 1px solid var(--tbl-border); }
     .att-stat-val { font-size: 20px; font-weight: 900; }
@@ -216,9 +219,39 @@
     .tool-btn.ghost { background: transparent; color: var(--text-main); border: 2px dashed var(--tbl-border); }
     .tool-input { font-size: 4.5cqi; padding: 2cqi; border-radius: 1.5cqi; border: 2px solid var(--tbl-border); width: 100%; font-family: "Courier New", monospace; text-align: center; font-weight: bold; }
     
-    /* 專屬工具特效 */
-    .dice-box { font-size: 30cqi; font-weight: 900; text-align: center; height: 40cqi; display: grid; place-items: center; background: #fff; border: 1cqi dashed var(--primary); border-radius: 4cqi; margin: 2cqi 0; color: var(--danger); box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
-    .dice-rolling { animation: shakeBlur 0.1s infinite alternate; color: var(--muted); transform: scale(1.05); border-color: var(--muted); }
+    /* 專屬工具特效 (3D 實體骰子) */
+    .dice-container { height: 40cqi; display: grid; place-items: center; perspective: 1000px; margin: 2cqi 0; }
+    .real-dice { width: 22cqi; height: 22cqi; background: #fff; border-radius: 3cqi; box-shadow: inset 0 0 15px rgba(0,0,0,0.1), 0 4px 0 #cbd5e1, 0 10px 15px rgba(0,0,0,0.2); display: grid; padding: 3cqi; box-sizing: border-box; transform-style: preserve-3d; color: var(--text-main); }
+    .real-dice.rolling { animation: diceRollAnim 0.3s infinite linear; }
+    @keyframes diceRollAnim {
+        0% { transform: rotateX(0deg) rotateY(0deg) translateY(0); }
+        25% { transform: rotateX(90deg) rotateY(45deg) translateY(-4cqi); }
+        50% { transform: rotateX(180deg) rotateY(90deg) translateY(0); }
+        75% { transform: rotateX(270deg) rotateY(135deg) translateY(-2cqi); }
+        100% { transform: rotateX(360deg) rotateY(180deg) translateY(0); }
+    }
+    
+    /* 骰子點數排版 (CSS Grid 魔法) */
+    .dice-dot { background: #1f2937; border-radius: 50%; width: 100%; height: 100%; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+    .df-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; place-items: center; }
+    .df-1 .dice-dot { width: 45%; height: 45%; background: var(--danger); box-shadow: inset 0 2px 4px rgba(150,0,0,0.8); } /* 1點是紅色的 */
+    .df-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; padding: 15%; gap: 15%; }
+    .df-2 .dice-dot:nth-child(1) { align-self: start; justify-self: start; }
+    .df-2 .dice-dot:nth-child(2) { align-self: end; justify-self: end; grid-column: 2; grid-row: 2; }
+    .df-3 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 5%; }
+    .df-3 .dice-dot:nth-child(1) { align-self: start; justify-self: start; }
+    .df-3 .dice-dot:nth-child(2) { grid-column: 2; grid-row: 2; }
+    .df-3 .dice-dot:nth-child(3) { grid-column: 3; grid-row: 3; align-self: end; justify-self: end; }
+    .df-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20%; padding: 5%; }
+    .df-5 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 5%; }
+    .df-5 .dice-dot:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .df-5 .dice-dot:nth-child(2) { grid-column: 3; grid-row: 1; }
+    .df-5 .dice-dot:nth-child(3) { grid-column: 2; grid-row: 2; }
+    .df-5 .dice-dot:nth-child(4) { grid-column: 1; grid-row: 3; }
+    .df-5 .dice-dot:nth-child(5) { grid-column: 3; grid-row: 3; }
+    .df-6 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 15%; padding: 0 5%; }
+    .dice-text { font-size: 12cqi; font-weight: 900; color: var(--danger); display: grid; place-items: center; width: 100%; height: 100%; text-shadow: 1px 1px 0 #fff; }
+
     .decibel-bar-container { width: 100%; height: 8cqi; background: rgba(0,0,0,0.1); border-radius: 4cqi; overflow: hidden; margin-top: 2cqi; border: 2px solid var(--tbl-border); position: relative; }
     .decibel-bar { height: 100%; width: 0%; background: var(--success); transition: width 0.1s, background-color 0.1s; }
     .decibel-text { position: absolute; width: 100%; text-align: center; font-size: 4cqi; font-weight: 900; line-height: 8cqi; color: #333; top: 0; left: 0; mix-blend-mode: overlay; }
@@ -784,15 +817,25 @@
       </div>
   </div>
 
-  <div id="panelNumDice" class="tool-window">
+<div id="panelNumDice" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-123"></i> 數字骰</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
-          <div id="numDiceResult" class="dice-box">?</div>
+          <div class="dice-container" id="numDiceContainer"><div class="real-dice"><div class="dice-text">?</div></div></div>
+          
           <div style="display:flex; gap:2cqi; align-items:center;">
               <span style="white-space:nowrap; font-weight:bold;">範圍：</span>
               <input type="number" id="diceMin" class="tool-input" value="1"> - <input type="number" id="diceMax" class="tool-input" value="6">
           </div>
           <button class="tool-btn" id="btnRollNumDice" style="margin-top:auto;"><i class="bi bi-dice-5-fill"></i> 擲骰子</button>
+      </div>
+  </div>
+
+  <div id="panelAlphaDice" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-alphabet"></i> 字母骰</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div class="dice-container" id="alphaDiceContainer"><div class="real-dice"><div class="dice-text">?</div></div></div>
+          
+          <button class="tool-btn" id="btnRollAlphaDice" style="margin-top:auto;"><i class="bi bi-dice-5-fill"></i> 擲字母</button>
       </div>
   </div>
 
@@ -883,6 +926,23 @@
         o.type = 'triangle'; o.frequency.setValueAtTime(800, now); o.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
         g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
         o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
+    }
+    function playDiceRattleSound() {
+        const ctx = resumeAudio();
+        // 利用波形與頻率變化，模擬幾顆骰子在木盒/塑膠盤碰撞的喀啦聲
+        for (let i = 0; i < 6; i++) {
+            setTimeout(() => {
+                if (ctx.state === 'suspended') return;
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.type = 'square'; // 方波帶有較重的敲擊感
+                o.frequency.setValueAtTime(150 + Math.random() * 100, ctx.currentTime);
+                o.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+                g.gain.setValueAtTime(0.3, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+                o.connect(g); g.connect(ctx.destination); 
+                o.start(); o.stop(ctx.currentTime + 0.03);
+            }, i * 60 + Math.random() * 20); // 錯開時間產生連續滾動感
+        }
     }
 
     // ⭐ 修改為有 Lv 前綴的 RPG 稱號系統
@@ -1461,15 +1521,39 @@ function updateStatus(aid, sidx, newStatus) {
     });
 
     document.getElementById('btnSortDirection').addEventListener('click', (e) => {
-        currentSortAsc = !currentSortAsc;
-        const isNum = currentSortBy === 'no' || currentSortBy === 'exp' || currentSortBy === 'coins' || currentSortBy === 'debts';
-        e.currentTarget.innerHTML = `<i class="bi bi-sort-${isNum ? (currentSortAsc?'numeric-down':'numeric-up-alt') : (currentSortAsc?'down':'up')}"></i>`;
-        renderStudentStatus();
+    currentSortAsc = !currentSortAsc;
+    const isNum = currentSortBy === 'no' || currentSortBy === 'exp' || currentSortBy === 'coins' || currentSortBy === 'debts';
+    e.currentTarget.innerHTML = `<i class="bi bi-sort-${isNum ? (currentSortAsc?'numeric-down':'numeric-up-alt') : (currentSortAsc?'down':'up')}"></i>`;
+    renderStudentStatus();
     });
 
-    function renderStudentStatus() {
+    // ⭐ 第4步加在這裡：定義隱藏按鈕的切換功能
+    window.toggleHideZeroDebt = function() {
+    hideZeroDebt = !hideZeroDebt;
+    renderStudentStatus();
+    }
+
+function renderStudentStatus() {
         const con = document.getElementById('studentStatusContainer'); 
-        con.innerHTML = '';
+       // ⭐ 繪製排序工具列 (加入過濾按鈕)
+        con.innerHTML += `
+            <div class="sort-toolbar">
+                <span style="font-weight:900; color:var(--text-main); font-size: 14px;"><i class="bi bi-funnel-fill"></i> 排序：</span>
+                <button class="sort-btn ${currentSortBy === 'no' ? 'active' : ''}" onclick="window.setSort('no')">座號</button>
+                <button class="sort-btn ${currentSortBy === 'debts' ? 'active' : ''}" onclick="window.setSort('debts')">欠項</button>
+                <button class="sort-btn ${currentSortBy === 'coins' ? 'active' : ''}" onclick="window.setSort('coins')">金錢</button>
+                
+                <div style="width: 1px; height: 20px; background: var(--tbl-border); margin: 0 4px;"></div>
+                
+                <button class="btn sm ${hideZeroDebt ? '' : 'ghost'}" onclick="window.toggleHideZeroDebt()" style="padding: 4px 10px;">
+                    <i class="bi bi-eye${hideZeroDebt ? '-slash' : ''}"></i> ${hideZeroDebt ? '隱藏無欠項' : '顯示全員'}
+                </button>
+
+                <button class="btn sm ghost" onclick="window.toggleSortDirection()" style="margin-left:auto; padding: 4px 10px;">
+                    <i class="bi bi-sort-${currentSortAsc ? 'numeric-down' : 'numeric-up-alt'}"></i>
+                </button>
+            </div>
+        `;
         
         const tb = document.getElementById('batchExpToolbar');
         if (isBatchExpMode) {
@@ -1550,14 +1634,19 @@ function updateStatus(aid, sidx, newStatus) {
             else if (currentSortBy === 'exp') { valA = a.s.exp || 0; valB = b.s.exp || 0; }
             else if (currentSortBy === 'coins') { valA = a.s.coins || 0; valB = b.s.coins || 0; }
             else if (currentSortBy === 'debts') { valA = a.debtCount; valB = b.debtCount; }
-            
-            if (valA < valB) return currentSortAsc ? -1 : 1;
-            if (valA > valB) return currentSortAsc ? 1 : -1;
-            return a.s.no - b.s.no; 
-        });
 
-        const grid = document.createElement('div');
-        grid.className = 'student-status-grid';
+        if (valA < valB) return currentSortAsc ? -1 : 1;
+        if (valA > valB) return currentSortAsc ? 1 : -1;
+        return a.s.no - b.s.no; 
+    });
+
+    // ⭐ 過濾掉沒欠作業的學生 (第3步加在這裡！)
+    if (hideZeroDebt) {
+        studentDataList = studentDataList.filter(item => item.debtCount > 0);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'student-status-grid';
         
         studentDataList.forEach(item => {
             const { s, i, debts } = item;
@@ -1892,53 +1981,45 @@ function updateStatus(aid, sidx, newStatus) {
         setTimeout(() => { printWindow.print(); }, 500);
     });
     
-// ⭐ 優化：點名簿初始化 (自動發放今日出席金幣)
-    function initAttendanceView() {
+function initAttendanceView() {
         const date = document.getElementById('attDatePicker').value;
         if (!data.attendance[date]) {
-            // 如果是新的一天，預設全員出席 (status: 0)
+            // ⭐ 第一次點名：全員預設出席並發放 1 金幣
             data.attendance[date] = data.roster.map(() => ({ status: 0, note: '' }));
-            
-            // 💡 自動為全班發放出席金幣 (+1)
-            data.roster.forEach((s, i) => {
-                changeCoin(i, 1, '今日出席獎勵', true); // 使用 silent 模式避免彈出 30 個通知
+            data.roster.forEach((_, i) => {
+                changeCoin(i, 1, '今日出席獎勵', true); // 使用 silent 模式避免彈出太多通知
             });
-            
-            showToast("📅 已開啟今日點名簿，全員預設出席並發放 1 枚金幣！");
+            showToast("📅 已開啟今日點名，全員預設出席並獲得 1 💰");
             triggerAutoSave();
         }
         renderAttendanceUI();
     }
 
-// ⭐ 優化：點名狀態切換 (病假、公假不扣款)
     window.setAttStatus = function(date, idx, newStatus) {
         const oldStatus = data.attendance[date][idx].status;
-        if (oldStatus === newStatus) return; // 狀態沒變就不處理
+        if (oldStatus === newStatus) return;
 
-        let note = '';
-        if (newStatus === 2 || newStatus === 3 || newStatus === 5) {
-            const t = prompt("請輸入備註 (例如：發燒、事由)：");
-            if (t) note = t;
+        // 💰 自動收回/補發邏輯
+        if (oldStatus === 0 && newStatus !== 0) {
+            // 從出席變更為其他：扣回金幣
+            const studentName = data.roster[idx].name;
+            changeCoin(idx, -1, `收回出席金幣 (${studentName})`, false);
+        } else if (oldStatus !== 0 && newStatus === 0) {
+            // 從其他變回出席：補發金幣
+            changeCoin(idx, 1, '恢復出席', false);
         }
 
-        // 💰 自動獎勵/扣款邏輯
-        // 定義【不扣款狀態】：0(出席)、3(病假)、4(公假)
-        const noPenaltyStatuses = [0, 3, 4]; 
-        const wasNoPenalty = noPenaltyStatuses.includes(oldStatus);
-        const isNoPenalty = noPenaltyStatuses.includes(newStatus);
-
-        if (wasNoPenalty && !isNoPenalty) {
-            // 從「不扣款狀態」改為「遲到/早退/事假」：收回金幣
-            changeCoin(idx, -1, '出缺席扣款', false);
-        } else if (!wasNoPenalty && isNoPenalty) {
-            // 從「遲到/早退/事假」改回「不扣款狀態」：補發金幣
-            changeCoin(idx, 1, '恢復出席', false);
+        let note = '';
+        if ([1, 2, 3, 5].includes(newStatus)) {
+            const t = prompt("請輸入時間或備註 (例如：08:10 到、14:00 早退)：");
+            if (t) note = t;
         }
 
         data.attendance[date][idx] = { status: newStatus, note: note };
         triggerAutoSave();
         renderAttendanceUI();
     };
+
     function renderAttendanceUI() {
         const date = document.getElementById('attDatePicker').value;
         const currentData = data.attendance[date];
@@ -2656,18 +2737,48 @@ function updateStatus(aid, sidx, newStatus) {
         const btn = document.getElementById('btnSwStart'); btn.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; btn.classList.remove('warn');
     });
 
-    function rollDiceBox(boxId, getResultFn) {
-        resumeAudio(); const box = document.getElementById(boxId); box.classList.add('dice-rolling');
-        let count = 0;
-        const intv = setInterval(() => { box.innerText = getResultFn(true); playTickSound(); count++; if(count > 15) { clearInterval(intv); box.classList.remove('dice-rolling'); box.innerText = getResultFn(false); playSuccessSound(); } }, 50);
+// ⭐ 產生真實骰子點數 HTML 的判斷
+    function getDiceHtml(val) {
+        // 如果是 1 到 6 的數字，顯示真實的點數 (Dots)
+        if (typeof val === 'number' && val >= 1 && val <= 6) {
+            let dots = '';
+            for(let i = 0; i < val; i++) dots += '<div class="dice-dot"></div>';
+            return `<div class="real-dice df-${val}">${dots}</div>`;
+        }
+        // 如果是字母或大於 6 的數字，顯示文字
+        return `<div class="real-dice"><div class="dice-text">${val}</div></div>`;
     }
+
+    // ⭐ 觸發 3D 滾動與音效
+    function rollDiceBox(containerId, getResultFn) {
+        resumeAudio(); 
+        const container = document.getElementById(containerId);
+        playDiceRattleSound(); // 播放專屬喀啦音效
+        
+        let count = 0;
+        const intv = setInterval(() => { 
+            // 隨機變換骰子面並加上 rolling 動畫
+            container.innerHTML = getDiceHtml(getResultFn(true));
+            container.querySelector('.real-dice').classList.add('rolling');
+            
+            count++; 
+            if(count > 12) { 
+                clearInterval(intv); 
+                // 停在最終結果，移除動畫
+                container.innerHTML = getDiceHtml(getResultFn(false));
+                playSuccessSound(); 
+            } 
+        }, 80);
+    }
+
     document.getElementById('btnRollNumDice').addEventListener('click', () => {
         const min = parseInt(document.getElementById('diceMin').value) || 1;
         const max = parseInt(document.getElementById('diceMax').value) || 6;
-        rollDiceBox('numDiceResult', () => Math.floor(Math.random() * (max - min + 1)) + min);
+        rollDiceBox('numDiceContainer', () => Math.floor(Math.random() * (max - min + 1)) + min);
     });
+    
     document.getElementById('btnRollAlphaDice').addEventListener('click', () => {
-        rollDiceBox('alphaDiceResult', () => String.fromCharCode(65 + Math.floor(Math.random() * 26)));
+        rollDiceBox('alphaDiceContainer', () => String.fromCharCode(65 + Math.floor(Math.random() * 26)));
     });
 
     document.getElementById('tabBasicDraw').onclick = () => { document.getElementById('tabBasicDraw').classList.add('active'); document.getElementById('tabWheelDraw').classList.remove('active'); document.getElementById('viewBasicDraw').style.display='block'; document.getElementById('viewWheelDraw').style.display='none'; };
