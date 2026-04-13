@@ -1892,15 +1892,53 @@ function updateStatus(aid, sidx, newStatus) {
         setTimeout(() => { printWindow.print(); }, 500);
     });
     
+// ⭐ 優化：點名簿初始化 (自動發放今日出席金幣)
     function initAttendanceView() {
         const date = document.getElementById('attDatePicker').value;
         if (!data.attendance[date]) {
+            // 如果是新的一天，預設全員出席 (status: 0)
             data.attendance[date] = data.roster.map(() => ({ status: 0, note: '' }));
+            
+            // 💡 自動為全班發放出席金幣 (+1)
+            data.roster.forEach((s, i) => {
+                changeCoin(i, 1, '今日出席獎勵', true); // 使用 silent 模式避免彈出 30 個通知
+            });
+            
+            showToast("📅 已開啟今日點名簿，全員預設出席並發放 1 枚金幣！");
             triggerAutoSave();
         }
         renderAttendanceUI();
     }
 
+// ⭐ 優化：點名狀態切換 (病假、公假不扣款)
+    window.setAttStatus = function(date, idx, newStatus) {
+        const oldStatus = data.attendance[date][idx].status;
+        if (oldStatus === newStatus) return; // 狀態沒變就不處理
+
+        let note = '';
+        if (newStatus === 2 || newStatus === 3 || newStatus === 5) {
+            const t = prompt("請輸入備註 (例如：發燒、事由)：");
+            if (t) note = t;
+        }
+
+        // 💰 自動獎勵/扣款邏輯
+        // 定義【不扣款狀態】：0(出席)、3(病假)、4(公假)
+        const noPenaltyStatuses = [0, 3, 4]; 
+        const wasNoPenalty = noPenaltyStatuses.includes(oldStatus);
+        const isNoPenalty = noPenaltyStatuses.includes(newStatus);
+
+        if (wasNoPenalty && !isNoPenalty) {
+            // 從「不扣款狀態」改為「遲到/早退/事假」：收回金幣
+            changeCoin(idx, -1, '出缺席扣款', false);
+        } else if (!wasNoPenalty && isNoPenalty) {
+            // 從「遲到/早退/事假」改回「不扣款狀態」：補發金幣
+            changeCoin(idx, 1, '恢復出席', false);
+        }
+
+        data.attendance[date][idx] = { status: newStatus, note: note };
+        triggerAutoSave();
+        renderAttendanceUI();
+    };
     function renderAttendanceUI() {
         const date = document.getElementById('attDatePicker').value;
         const currentData = data.attendance[date];
