@@ -150,6 +150,8 @@
     .att-btn.active[data-status="1"] { background: #d97706; color: #fff; border-color: #d97706; }
     .att-btn.active[data-status="2"] { background: #2563eb; color: #fff; border-color: #2563eb; }
     .att-btn.active[data-status="3"] { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .att-btn.active[data-status="4"] { background: #6b21a8; color: #fff; border-color: #6b21a8; } /* 公假 - 紫色 */
+    .att-btn.active[data-status="5"] { background: #4b5563; color: #fff; border-color: #4b5563; } /* 事假 - 鐵灰色 */
     .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--tbl-alt); padding: 10px; border-radius: 8px; border: 1px solid var(--tbl-border); }
     .att-stat-item { flex: 1; text-align: center; border-right: 1px solid var(--tbl-border); }
     .att-stat-val { font-size: 20px; font-weight: 900; }
@@ -428,6 +430,8 @@
                           <option value="debts">欠交任務數</option>
                       </select>
                       <button class="btn sm ghost icon-only" id="btnSortDirection" style="border:none; background:transparent; color:var(--text-main); padding:2px 6px;" title="切換正/反序"><i class="bi bi-sort-numeric-down"></i></button>
+                     <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
+                    <button class="btn sm ghost" id="btnToggleClearStudents" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;"><i class="bi bi-eye-slash"></i> 隱藏無欠款</button>
                   </div>
               </div>
 
@@ -627,6 +631,7 @@
               <label style="font-size:12px;">日期</label>
               <input id="ipDate" type="date" style="padding:6px;">
           </div>
+        
           <div class="field" style="margin-top:4px;">
                <label style="font-size:12px;">內容</label>
                <div style="display:flex; gap:4px; margin-bottom:4px;">
@@ -1459,7 +1464,15 @@ function updateStatus(aid, sidx, newStatus) {
         document.getElementById('btnSortDirection').innerHTML = '<i class="bi bi-sort-numeric-down"></i>';
         renderStudentStatus();
     });
-
+/* 6.1.3更新 */
+let hideClearStudents = false;
+document.getElementById('btnToggleClearStudents').addEventListener('click', (e) => {
+    hideClearStudents = !hideClearStudents;
+    e.currentTarget.innerHTML = hideClearStudents ? '<i class="bi bi-eye"></i> 顯示無欠款' : '<i class="bi bi-eye-slash"></i> 隱藏無欠款';
+    e.currentTarget.style.color = hideClearStudents ? 'var(--primary)' : 'var(--muted)';
+    renderStudentStatus();
+});
+    
     document.getElementById('btnSortDirection').addEventListener('click', (e) => {
         currentSortAsc = !currentSortAsc;
         const isNum = currentSortBy === 'no' || currentSortBy === 'exp' || currentSortBy === 'coins' || currentSortBy === 'debts';
@@ -1543,7 +1556,10 @@ function updateStatus(aid, sidx, newStatus) {
             });
             return { s: s, i: i, debts: debts, debtCount: debts.length };
         });
-
+        // 👇 6.1.3加入這三行
+        if (hideClearStudents) {
+        studentDataList = studentDataList.filter(item => item.debtCount > 0);
+        }
         studentDataList.sort((a, b) => {
             let valA, valB;
             if (currentSortBy === 'no') { valA = a.s.no; valB = b.s.no; }
@@ -1954,7 +1970,32 @@ function updateStatus(aid, sidx, newStatus) {
     };
 
     document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
-    document.getElementById('btnSaveAttendance').addEventListener('click', () => { showToast("點名已儲存同步！"); triggerAutoSave(); });
+    document.getElementById('btnSaveAttendance').addEventListener('click', () => { 
+    const date = document.getElementById('attDatePicker').value;
+    const currentData = data.attendance[date];
+    
+    // 防呆：確認今天這份點名單是否已經發放過全勤獎勵
+    if (!currentData.rewarded) {
+        let rewardedCount = 0;
+        data.roster.forEach((s, i) => {
+            // status === 0 代表出席 (不包含遲到)
+            if (currentData[i] && currentData[i].status === 0) {
+                window.changeCoin(i, 1, '本日出席獎勵', true); // 如果想改加 EXP，把 changeCoin 改成 changeExp 即可
+                rewardedCount++;
+            }
+        });
+        currentData.rewarded = true; // 標記為已發放
+        
+        if (rewardedCount > 0) {
+            window.playSuccessSound();
+            setTimeout(() => window.showToast(`✨ 已自動為 ${rewardedCount} 位出席冒險者發放獎勵！`), 500);
+        }
+    }
+    
+    showToast("✅ 點名已儲存同步！"); 
+    triggerAutoSave(); 
+    renderAll();
+});
     
     document.getElementById('btnGoToAttendance').addEventListener('click', () => {
         document.getElementById('attendanceReminderModal').classList.remove('show');
