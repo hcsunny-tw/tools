@@ -1531,7 +1531,7 @@ function updateStatus(aid, sidx, newStatus) {
 let hideClearStudents = false;
 document.getElementById('btnToggleClearStudents').addEventListener('click', (e) => {
     hideClearStudents = !hideClearStudents;
-    e.currentTarget.innerHTML = hideClearStudents ? '<i class="bi bi-eye"></i> 顯示無欠款' : '<i class="bi bi-eye-slash"></i> 隱藏無欠款';
+    e.currentTarget.innerHTML = hideClearStudents ? '<i class="bi bi-eye"></i> 顯示無欠' : '<i class="bi bi-eye-slash"></i> 隱藏無欠';
     e.currentTarget.style.color = hideClearStudents ? 'var(--primary)' : 'var(--muted)';
     renderStudentStatus();
 });
