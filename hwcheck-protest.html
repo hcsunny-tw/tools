@@ -322,6 +322,69 @@
     .vk-btn.danger { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; box-shadow: 0 3px 0 #fca5a5; }
     .vk-btn.danger:active { background: #fecaca; box-shadow: none; }
     .vk-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+    /* ==========================================
+   ⭐ 編輯任務選單 (Quest Settings) 專屬樣式 
+   ========================================== */
+.quest-config-card { 
+    background: var(--card); 
+    border: 2px solid var(--tbl-border); 
+    border-radius: 8px; 
+    padding: 12px; 
+    margin-bottom: 12px; 
+    box-shadow: 2px 2px 0px rgba(93, 64, 55, 0.1);
+}
+.quest-config-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 2px dashed var(--tbl-border); 
+    padding-bottom: 8px; 
+    margin-bottom: 12px; 
+}
+.quest-config-title { 
+    font-size: 16px; 
+    font-weight: 900; 
+    color: var(--primary); 
+}
+.quest-tags { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 8px; 
+    margin-bottom: 12px; 
+}
+.quest-tag { 
+    background: var(--bg); 
+    border: 1px solid var(--tbl-border); 
+    color: var(--text-main); 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 13px; 
+    font-weight: bold; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+}
+.quest-tag .btn-del-task { 
+    color: var(--danger); 
+    cursor: pointer; 
+    transition: transform 0.2s; 
+    font-size: 14px;
+}
+.quest-tag .btn-del-task:hover { 
+    transform: scale(1.2); 
+}
+.quest-add-row { 
+    display: flex; 
+    gap: 8px; 
+    align-items: center; 
+    background: var(--bg);
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px dashed var(--tbl-border);
+}
+    
   </style>
 </head>
 <body>
