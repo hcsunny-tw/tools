@@ -519,7 +519,7 @@
         </div>
     </section>
 
-    <footer class="app-footer">Created by HCSunny & Abby</footer>
+    <footer class="app-footer">2026 @ 筱晴老師製作</footer>
   </div>
 
   <div id="settingsModal" class="modal-overlay">
@@ -2125,9 +2125,32 @@
         const el = document.createElement("a"); el.href=url; el.download="EXP_異動紀錄.csv"; el.click();
     });
 
+// ⭐ 銷毀所有契約 (加入是否清空經驗值/金幣的詢問)
     document.getElementById('btnClearAssignments').addEventListener('click', () => { 
-        if(confirm("警告：這將刪除所有任務與出缺席紀錄！")) { 
-            data.assignments = []; data.attendance = {}; triggerAutoSave(); renderAll(); document.getElementById('adminProfileModal').classList.remove('show'); 
+        if(confirm("警告：這將銷毀所有任務與出缺席紀錄！\n確定要繼續嗎？")) { 
+            
+            // 跳出第二個詢問視窗
+            const clearExp = confirm("是否要一併【清空】所有冒險者的「經驗值」與「金幣」？\n\n[確定]：連同經驗值、金幣與最高等級一起歸零\n[取消]：只刪除任務，保留現有等級與財產");
+            
+            data.assignments = []; 
+            data.attendance = {}; 
+            
+            if (clearExp) {
+                // 如果選擇確定，將全班經驗、金幣、最高分紀錄歸零
+                data.roster.forEach(s => {
+                    s.exp = 0;
+                    s.coins = 0;
+                    s.maxExp = 0; 
+                });
+                data.expLogs = []; // 清空對應的加扣分歷史紀錄
+                showToast("🔥 已銷毀契約，並將冒險者等級與金幣全部歸零！");
+            } else {
+                showToast("✨ 已銷毀契約，但為冒險者保留了目前的等級與金幣！");
+            }
+            
+            triggerAutoSave(); 
+            renderAll(); 
+            document.getElementById('adminProfileModal').classList.remove('show'); 
         } 
     });
     
