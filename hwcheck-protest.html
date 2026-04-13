@@ -1179,33 +1179,80 @@
     }
     window.changeCoin = changeCoin;
 
-    function updateStatus(aid, sidx, newStatus) {
+function updateStatus(aid, sidx, newStatus) {
         const a = data.assignments.find(i => i.id == aid);
         if(a) {
+            // ⭐ 初始化：每個任務專屬的給分記憶區
             if(!a.statuses) a.statuses = Array(data.roster.length).fill(0);
+            if(!a.earnedExp) a.earnedExp = {}; 
+
             const oldStatus = a.statuses[sidx] || 0;
             const oldState = JSON.parse(JSON.stringify(data.roster[sidx]));
             const oldLogsLength = data.expLogs ? data.expLogs.length : 0;
+            const currentEarned = a.earnedExp[sidx] || { handIn: 0, complete: 0 };
 
             a.statuses[sidx] = newStatus;
-            
-            if (oldStatus !== 3 && newStatus === 3) {
-                changeExp(sidx, 5, `完成任務 [${a.title}]`, true); 
-                playSuccessSound(); 
-                showToast(`🎉 討伐成功！${data.roster[sidx].name} 獲得 5 EXP`, "復原", () => {
-                    a.statuses[sidx] = oldStatus;
-                    data.roster[sidx] = oldState;
-                    if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
-                    triggerAutoSave(); renderAll(); 
-                });
-            } else if (oldStatus === 3 && newStatus !== 3) {
-                changeExp(sidx, -5, `取消任務 [${a.title}]`, true); 
-                showToast(`⚠️ 取消討伐！${data.roster[sidx].name} 收回 5 EXP`, "復原", () => {
-                    a.statuses[sidx] = oldStatus;
-                    data.roster[sidx] = oldState;
-                    if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
-                    triggerAutoSave(); renderAll(); 
-                });
+
+            // 計算日期差
+            const todayStr = getTaipeiDateString();
+            const isSameDay = (todayStr === a.date);
+            const d1 = new Date(a.date.replace(/-/g, '/'));
+            const d2 = new Date(todayStr.replace(/-/g, '/'));
+            const diffDays = Math.floor(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
+
+            // 計算本次操作後，該拿到的總分數
+            const newEarned = { handIn: currentEarned.handIn, complete: 0 };
+
+            // 1. 處理繳交/回報的 EXP (只要當天繳交過，就永遠保留 1 分，除非退回未接)
+            if (newStatus !== 0) {
+                if (currentEarned.handIn === 0 && isSameDay) newEarned.handIn = 1;
+            } else {
+                newEarned.handIn = 0; // 退回未接，準時分收回
+            }
+
+            // 2. 處理任務完成的 EXP
+            if (newStatus === 3) {
+                // 如果還沒拿過完成分，依日期給予；如果拿過，就保留歷史分數
+                if (currentEarned.complete === 0) newEarned.complete = (diffDays <= 1) ? 2 : 1;
+                else newEarned.complete = currentEarned.complete; 
+            }
+
+            // 3. 計算差額並派發
+            const oldTotal = currentEarned.handIn + currentEarned.complete;
+            const newTotal = newEarned.handIn + newEarned.complete;
+            const deltaExp = newTotal - oldTotal;
+
+            a.earnedExp[sidx] = newEarned; // 寫入記憶區
+
+            if (deltaExp !== 0) {
+                let reason = `更新任務 [${a.title}]`;
+                if (deltaExp > 0) {
+                    if (newEarned.complete > 0 && currentEarned.complete === 0) reason = (diffDays <= 1) ? `迅速討伐 [${a.title}]` : `完成討伐 [${a.title}]`;
+                    else reason = `準時回報 [${a.title}]`;
+                } else {
+                    reason = `任務退回 [${a.title}]`;
+                }
+
+                changeExp(sidx, deltaExp, reason, true); 
+                
+                if (deltaExp > 0) {
+                    playSuccessSound();
+                    showToast(`🎉 ${reason}！${data.roster[sidx].name} 獲得 ${deltaExp} EXP`, "復原", () => {
+                        a.statuses[sidx] = oldStatus;
+                        a.earnedExp[sidx] = currentEarned;
+                        data.roster[sidx] = oldState;
+                        if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
+                        triggerAutoSave(); renderAll();
+                    });
+                } else {
+                    showToast(`⚠️ ${reason}！${data.roster[sidx].name} 收回 ${Math.abs(deltaExp)} EXP`, "復原", () => {
+                        a.statuses[sidx] = oldStatus;
+                        a.earnedExp[sidx] = currentEarned;
+                        data.roster[sidx] = oldState;
+                        if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
+                        triggerAutoSave(); renderAll();
+                    });
+                }
             } else {
                 triggerAutoSave(); renderAll();
             }
@@ -1465,15 +1512,15 @@
         });
         clearedStudents.sort((a,b)=>a-b); helpStudents.sort((a,b)=>a-b);
 
-        const overviewCon = document.getElementById('studentStatusOverviewContainer');
+      const overviewCon = document.getElementById('studentStatusOverviewContainer');
         if (!isBatchMode && !isBatchExpMode) { 
             overviewCon.style.display = 'block';
             overviewCon.innerHTML = `
                 <div class="status-overview">
-                    <div class="overview-card success"><div class="overview-icon-bg"><i class="bi bi-trophy"></i></div><div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
+                    <div class="overview-card success" style="flex: 3;"><div class="overview-icon-bg"><i class="bi bi-trophy"></i></div><div class="overview-header"><i class="bi bi-trophy-fill"></i> 討伐全冠王 (${clearedStudents.length})</div>
                         <div class="overview-nums">${clearedStudents.length > 0 ? clearedStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">💪 尚無人達成</span>'}</div>
                     </div>
-                    <div class="overview-card danger"><div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div><div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (欠款≥5)</div>
+                    <div class="overview-card danger" style="flex: 1.8;"><div class="overview-icon-bg"><i class="bi bi-bandaid"></i></div><div class="overview-header"><i class="bi bi-bandaid-fill"></i> 需補血成員 (欠款≥5)</div>
                         <div class="overview-nums">${helpStudents.length > 0 ? helpStudents.map(n => `<span class="num-badge">${n}</span>`).join('') : '<span style="font-size:12px;opacity:0.6;">✅ 全員健康</span>'}</div>
                     </div>
                 </div>
