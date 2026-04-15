@@ -385,10 +385,10 @@
     border-radius: 6px;
     border: 1px dashed var(--tbl-border);
 }
-  /* ⭐ 頁尾優化：淨春色調與公會風格 */
+/* ⭐ 頁尾優化：淨春色調與公會風格 (精緻小巧版) */
     .app-footer {
         margin-top: auto;
-        padding: 48px 12px 32px;
+        padding: 32px 12px 20px; /* 縮小了上下的留白 */
         text-align: center;
         border-top: 2px dashed var(--primary);
         background: linear-gradient(to bottom, transparent, var(--card));
@@ -401,54 +401,51 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 6px; /* 縮小元素之間的間距 */
     }
     .footer-brand {
-        font-size: 18px;
+        font-size: 15px; /* 從 18px 縮小 */
         font-weight: 900;
         color: var(--primary);
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+    }
+    .footer-author {
+        font-size: 13px; /* 縮小作者文字 */
+        font-weight: bold;
+        margin: 0;
     }
     .footer-link {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        margin: 8px 0;
-        padding: 10px 20px;
+        gap: 6px;
+        margin: 4px 0;
+        padding: 6px 16px; /* 讓按鈕變扁、變精緻 */
         background: var(--bg);
         border: 2px solid var(--tbl-border);
-        border-radius: 25px;
+        border-radius: 20px; /* 稍微縮小圓角弧度 */
         color: var(--text-main);
         text-decoration: none;
         font-weight: 800;
-        font-size: 15px;
+        font-size: 13px; /* 從 15px 縮小 */
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         box-shadow: 2px 2px 0px var(--tbl-border);
     }
     .footer-link:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 15px rgba(139, 69, 19, 0.15);
+        transform: translateY(-3px); /* 懸浮幅度調小一點 */
+        box-shadow: 0 4px 10px rgba(139, 69, 19, 0.15);
         border-color: var(--primary);
         background: #fff;
         color: var(--primary);
     }
     .footer-link i {
-        font-size: 18px;
-    }
-    .school-info {
-        font-size: 13px;
-        font-weight: bold;
-        opacity: 0.8;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        font-size: 14px; /* 縮小按鈕內的圖示 */
     }
     .copyright {
-        font-size: 12px;
+        font-size: 11px; /* 縮小版權宣告文字 */
         opacity: 0.6;
-        margin-top: 8px;
+        margin-top: 2px;
         font-family: 'Courier New', monospace;
     }
     
@@ -653,17 +650,18 @@
         </div>
     </section>
 
-    <footer class="app-footer no-print">
+<footer class="app-footer no-print">
         <div class="footer-content">
             <div class="footer-brand">
                 <i class="bi bi-shield-check"></i> 冒險者公會管理系統
             </div>
             
-            <p style="margin: 0; font-weight: bold;">Designed & Developed by 彭彭老師 | Inspired by Teacher 靚</p>
+            <p class="footer-author">由 筱晴老師 (Qing) 悉心打造</p>
             
-            <a href="https://your-website-url.com" target="_blank" class="footer-link">
+            <a href="https://sites.google.com/view/sunnypeng/" target="_blank" class="footer-link">
                 <i class="bi bi-house-heart-fill"></i> 造訪老師的魔法小島
             </a>
+
             <div class="copyright">
                 © 2026 ADVENTURER GUILD PROJECT v6.1.3. ALL RIGHTS RESERVED.
             </div>
@@ -868,7 +866,6 @@
               <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
               <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
               <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
-              <button class="toolbox-btn" onclick="window.open('https://sites.google.com/view/sunnypeng/', '_blank')"><i class="bi bi-globe"></i> 彭彭老師網站</button>
               <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
           </div>
       </div>
