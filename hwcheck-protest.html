@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.2🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.3🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -1321,6 +1321,11 @@ function updateStatus(aid, sidx, newStatus) {
                         triggerAutoSave(); renderAll();
                     });
                 }
+                
+                // 👇 修復重點：無論 EXP 是增加還是減少，更新完資料後都必須強制讓畫面重新渲染
+                triggerAutoSave(); 
+                renderAll();
+                
             } else {
                 triggerAutoSave(); renderAll();
             }
