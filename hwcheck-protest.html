@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.3🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.4🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -385,6 +385,72 @@
     border-radius: 6px;
     border: 1px dashed var(--tbl-border);
 }
+  /* ⭐ 頁尾優化：淨春色調與公會風格 */
+    .app-footer {
+        margin-top: auto;
+        padding: 48px 12px 32px;
+        text-align: center;
+        border-top: 2px dashed var(--primary);
+        background: linear-gradient(to bottom, transparent, var(--card));
+        color: var(--text-light);
+        position: relative;
+    }
+    .footer-content {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    .footer-brand {
+        font-size: 18px;
+        font-weight: 900;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .footer-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+        padding: 10px 20px;
+        background: var(--bg);
+        border: 2px solid var(--tbl-border);
+        border-radius: 25px;
+        color: var(--text-main);
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 15px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 2px 2px 0px var(--tbl-border);
+    }
+    .footer-link:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(139, 69, 19, 0.15);
+        border-color: var(--primary);
+        background: #fff;
+        color: var(--primary);
+    }
+    .footer-link i {
+        font-size: 18px;
+    }
+    .school-info {
+        font-size: 13px;
+        font-weight: bold;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .copyright {
+        font-size: 12px;
+        opacity: 0.6;
+        margin-top: 8px;
+        font-family: 'Courier New', monospace;
+    }
     
   </style>
 </head>
@@ -587,7 +653,22 @@
         </div>
     </section>
 
-    <footer class="app-footer">2026 @ 筱晴老師製作</footer>
+    <footer class="app-footer no-print">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i class="bi bi-shield-check"></i> 冒險者公會管理系統
+            </div>
+            
+            <p style="margin: 0; font-weight: bold;">Designed & Developed by 彭彭老師 | Inspired by Teacher 靚</p>
+            
+            <a href="https://your-website-url.com" target="_blank" class="footer-link">
+                <i class="bi bi-house-heart-fill"></i> 造訪老師的魔法小島
+            </a>
+            <div class="copyright">
+                © 2026 ADVENTURER GUILD PROJECT v6.1.3. ALL RIGHTS RESERVED.
+            </div>
+        </div>
+    </footer>
   </div>
 
   <div id="settingsModal" class="modal-overlay">
@@ -786,6 +867,9 @@
               <button class="toolbox-btn" id="btnOpenDecibel"><i class="bi bi-mic"></i> 分貝偵測</button>
               <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
               <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
+              <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
+              <button class="toolbox-btn" onclick="window.open('https://sites.google.com/view/sunnypeng/', '_blank')"><i class="bi bi-globe"></i> 彭彭老師網站</button>
+              <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
           </div>
       </div>
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
@@ -801,6 +885,30 @@
       <div class="tool-body"><div id="dismissalChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div></div>
   </div>
 
+<div id="panelBGM" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-music-note-beamed"></i> 背景音樂</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <audio id="bgmPlayer" loop preload="none"></audio>
+          
+          <div style="display:flex; flex-direction:column; gap:2cqi;">
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://cdn.pixabay.com/audio/2022/10/25/audio_2db5f21226.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://cdn.pixabay.com/audio/2022/10/14/audio_9939f792bc.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:2cqi; margin-top:3cqi; background: var(--bg); padding: 2cqi; border-radius: 2cqi; border: 1px dashed var(--tbl-border);">
+              <i class="bi bi-volume-down" style="font-size: 5cqi; color: var(--muted);"></i>
+              <input type="range" id="bgmVolume" min="0" max="1" step="0.05" value="0.4" style="flex:1;">
+              <i class="bi bi-volume-up" style="font-size: 5cqi; color: var(--muted);"></i>
+          </div>
+          
+          <div style="display:flex; gap:2cqi; margin-top:auto;">
+              <button class="tool-btn" id="btnPlayBGM" style="flex:2;"><i class="bi bi-play-fill"></i> 播放</button>
+              <button class="tool-btn warn" id="btnPauseBGM" style="flex:1;"><i class="bi bi-pause-fill"></i> 暫停</button>
+          </div>
+      </div>
+  </div>
+  
   <div id="panelMarquee" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-broadcast"></i> 跑馬燈</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -2623,7 +2731,8 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         el.style.zIndex = 5006;
     }
 
-    ['panelRecess', 'panelDismissal', 'panelMarquee', 'panelTimer', 'panelStopwatch', 'panelNumDice', 'panelAlphaDice', 'panelDraw', 'panelDecibel'].forEach(id => {
+    
+  ['panelRecess', 'panelDismissal', 'panelMarquee', 'panelTimer', 'panelStopwatch', 'panelNumDice', 'panelAlphaDice', 'panelDraw', 'panelDecibel', 'panelBGM'].forEach(id => {
         const win = document.getElementById(id);
         if(!win) return;
         
@@ -2661,6 +2770,44 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
     document.getElementById('btnOpenAlphaDice').onclick = () => openTool('panelAlphaDice');
     document.getElementById('btnOpenDraw').onclick = () => { openTool('panelDraw'); renderWheel(); };
     document.getElementById('btnOpenDecibel').onclick = () => openTool('panelDecibel');
+    // 打開 BGM 視窗
+    document.getElementById('btnOpenBGM').onclick = () => openTool('panelBGM');
+
+    // BGM 控制邏輯
+    const bgmPlayer = document.getElementById('bgmPlayer');
+    const bgmVol = document.getElementById('bgmVolume');
+    
+    // 音量控制
+    if (bgmVol) {
+        bgmVol.addEventListener('input', (e) => {
+            if (bgmPlayer) bgmPlayer.volume = e.target.value;
+        });
+    }
+
+    // 切換音樂
+    window.changeBGM = function(url, btn) {
+        if (!bgmPlayer) return;
+        bgmPlayer.src = url;
+        bgmPlayer.volume = bgmVol.value;
+        bgmPlayer.play();
+        
+        // 讓按鈕亮起來，表示目前選中的音樂
+        const btns = document.querySelectorAll('#panelBGM .tool-btn.ghost');
+        btns.forEach(b => {
+            b.style.borderColor = 'var(--tbl-border)';
+            b.style.background = 'transparent';
+        });
+        btn.style.borderColor = 'var(--primary)';
+        btn.style.background = 'var(--tbl-alt)';
+    };
+
+    // 播放/暫停按鈕
+    document.getElementById('btnPlayBGM').addEventListener('click', () => {
+        if (bgmPlayer && bgmPlayer.src) bgmPlayer.play();
+    });
+    document.getElementById('btnPauseBGM').addEventListener('click', () => {
+        if (bgmPlayer) bgmPlayer.pause();
+    });
 
     document.addEventListener('click', (e) => { 
         if (e.target.closest('.tool-close')) { 
