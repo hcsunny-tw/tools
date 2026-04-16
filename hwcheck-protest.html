@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.4🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.5🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -1541,7 +1541,13 @@ function updateStatus(aid, sidx, newStatus) {
                 <i class="bi bi-x-circle-fill btn-close-debt" style="cursor: pointer; font-size: 18px; color: var(--danger);"></i>
             </div>
         `;
-        list.innerHTML = '';
+    // ⭐ 6.1.5修復 2：幫 btn-close-debt 加上 onclick 事件
+        document.getElementById('quickDebtTitle').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>【${student.name}】待清舊帳</span>
+                <i class="bi bi-x-circle-fill btn-close-debt" onclick="document.getElementById('quickDebtMenu').classList.remove('show'); document.getElementById('quickDebtMenu').dataset.currentSidx='';" style="cursor: pointer; font-size: 18px; color: var(--danger);"></i>
+            </div>
+        `;
         
         oldDebts.forEach(debt => {
             const item = document.createElement('div'); item.className = 'quick-debt-item';
@@ -2954,6 +2960,22 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         document.getElementById('roster-content-students').classList.remove('show');
         renderTeacherEditor();
     });
+
+// ⭐6.1.5 修復 1：綁定「狀態選擇器」的按鈕點擊事件
+    document.querySelectorAll('.status-option-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (pickerTarget) {
+                // 取得被點擊按鈕代表的狀態數字 (1, 2, 或 3)
+                const newStatus = parseInt(e.currentTarget.getAttribute('data-status'));
+                // 更新該名學生的任務狀態
+                window.updateStatus(pickerTarget.aid, pickerTarget.idx, newStatus);
+                // 隱藏小視窗
+                document.getElementById('statusPicker').classList.remove('show');
+                pickerTarget = null;
+            }
+        });
+    });
+    
   </script>
 </body>
 </html>
