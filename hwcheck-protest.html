@@ -1481,11 +1481,14 @@ function updateStatus(aid, sidx, newStatus) {
             const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
             const color = progress === 100 ? 'var(--success)' : 'var(--primary)';
 
-            let hasStatus1 = false; let allStatus0 = true; let assignedCount = 0; let missingCount = 0;   
+        let hasStatus1 = false; let allStatus0 = true; let assignedCount = 0; let missingCount = 0;   
             for (let i = 0; i < data.roster.length; i++) {
                 if (indices === 'all' || indices.includes(i)) {
                     assignedCount++; const st = (a.statuses || [])[i] || 0;
-                    if (st === 1) hasStatus1 = true; if (st !== 0) allStatus0 = false; if (st === 0 || st === 2) missingCount++; 
+                    if (st === 1) hasStatus1 = true; 
+                    if (st !== 0) allStatus0 = false; 
+                    // 👇 這裡改成只計算 st === 0 (灰色狀態)
+                    if (st === 0) missingCount++; 
                 }
             }
 
