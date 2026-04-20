@@ -1542,15 +1542,13 @@ function updateStatus(aid, sidx, newStatus) {
         
         menu.dataset.currentSidx = studentId;
         const list = document.getElementById('quickDebtList');
+        
+        // ⭐ 修復核心：每次打開新選單前，必須先徹底清空上一次殘留的任務清單！
+        list.innerHTML = ''; 
+        
         const student = data.roster[sidx];
 
-        document.getElementById('quickDebtTitle').innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>【${student.name}】待清舊帳</span>
-                <i class="bi bi-x-circle-fill btn-close-debt" style="cursor: pointer; font-size: 18px; color: var(--danger);"></i>
-            </div>
-        `;
-    // ⭐ 6.1.5修復 2：幫 btn-close-debt 加上 onclick 事件
+        // 這裡保留了之前幫你修復的關閉按鈕邏輯
         document.getElementById('quickDebtTitle').innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span>【${student.name}】待清舊帳</span>
