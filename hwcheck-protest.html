@@ -2392,6 +2392,72 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         const el = document.createElement("a"); el.href=url; el.download="封存.csv"; el.click();
     });
 
+    /* ============================================================
+   💾 公會資料備份與還原邏輯 (新增)
+   ============================================================ */
+
+// 1. 處理「匯出備份 (JSON)」按鈕
+document.getElementById('btnExportJSON').addEventListener('click', () => {
+    const backupData = JSON.stringify(data, null, 2);
+    const blob = new Blob([backupData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const dateStr = getTaipeiDateString();
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AdventurerGuild_Backup_${dateStr}.json`;
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    showToast("💾 備份檔案已產生並下載");
+});
+
+// 2. 處理「還原備份」按鈕點擊 (觸發隱藏的 file input)
+document.getElementById('btnImportJSONTrigger').addEventListener('click', () => {
+    document.getElementById('ipImportJSON').click();
+});
+
+// 3. 處理檔案選取後的讀取與還原
+document.getElementById('ipImportJSON').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const importedData = JSON.parse(event.target.result);
+            
+            // 基礎格式檢查：確認是否有關鍵欄位
+            if (!importedData.roster || !Array.isArray(importedData.roster)) {
+                throw new Error("格式不正確：找不到冒險者名冊資料");
+            }
+
+            if (confirm("⚠️ 注意：還原備份將會覆蓋掉目前公會的所有資料（包含等級、任務與點名紀錄）。\n\n確定要繼續嗎？")) {
+                // 更新記憶體中的資料
+                data = importedData;
+                
+                // 強制觸發存檔到 Firebase
+                triggerAutoSave();
+                
+                // 重新初始化整個 App 介面
+                onDataLoaded(); 
+                
+                showToast("✅ 資料還原成功，已同步至雲端！");
+                
+                // 關閉執務室視窗
+                document.getElementById('adminProfileModal').classList.remove('show');
+            }
+        } catch (err) {
+            console.error("還原失敗:", err);
+            alert("❌ 還原失敗：檔案內容格式錯誤或已損壞。\n" + err.message);
+        }
+        // 清空 input 讓下次選同一個檔案也能觸發 change
+        e.target.value = '';
+    };
+    reader.readAsText(file);
+});
+
+    
     document.getElementById('btnDownloadExpLogs').addEventListener('click', () => {
         if(!data.expLogs || data.expLogs.length === 0) { alert("目前無任何 EXP 異動紀錄"); return; }
         let csv = "\uFEFF紀錄時間,姓名,變動,原因\n";
