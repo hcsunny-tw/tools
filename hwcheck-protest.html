@@ -1068,11 +1068,18 @@
     // ⭐ 修改為有 Lv 前綴的 RPG 稱號系統
     function getRankHtml(exp) {
         let rank = "新手村民"; let color = "#9ca3af"; let lv = 1;
-        if (exp >= 300) { rank = "神話救世主"; color = "#9333ea"; lv = "Max"; }
-        else if (exp >= 220) { rank = "傳說大師"; color = "#f43f5e"; lv = 7; }
-        else if (exp >= 80) { rank = "銀牌高級將士"; color = "#ec4899"; lv = 6; }
+        if (exp >= 300) { rank = "金牌榮耀統帥"; color = "#9333ea"; lv = "Max"; }
+        else if (exp >= 200) { rank = "金牌高級將軍"; color = "#f43f5e"; lv = 9; }
+        else if (exp >= 170) { rank = "傳奇殿堂聖徒"; color = "#a855f7"; lv = 9; }
+        else if (exp >= 150) { rank = "金牌大師領主"; color = "#f97316"; lv = 8; }
+        else if (exp >= 120) { rank = "金牌儒將(羽扇綸巾)"; color = "#fbbf24"; lv = 7; }
+
+        // 中階稱號 (你原本的設定)
+        else if (exp >= 100) { rank = "銀牌高級將士"; color = "#ec4899"; lv = 6; }
         else if (exp >= 70) { rank = "銀牌中級騎士"; color = "#eab308"; lv = 5; }
         else if (exp >= 60) { rank = "銀牌初級勇士"; color = "#3b82f6"; lv = 4; }
+
+        // 低階稱號
         else if (exp >= 30) { rank = "銅牌討伐者"; color = "#14b8a6"; lv = 3; }
         else if (exp >= 10) { rank = "見習冒險者"; color = "#22c55e"; lv = 2; }
 
