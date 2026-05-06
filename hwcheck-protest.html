@@ -391,38 +391,56 @@
     border-radius: 6px;
     border: 1px dashed var(--tbl-border);
 }
+
 /* ==========================================
-   ⭐ 快速狀態側邊欄 (Quick Sidebar) 專屬樣式 (雙欄優化版) 
+   ⭐ 快速狀態側邊欄 (Quick Sidebar) 專屬樣式 (推擠防擋版)
    ========================================== */
+/* 讓整個網頁可以被平滑推開 */
+body {
+    transition: padding-right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+body.sidebar-open {
+    padding-right: 340px; /* 預留側邊欄的空間，畫面自動內縮 */
+}
+
+/* 確保通知訊息不會被側邊欄擋住 */
+.toast-container { z-index: 7000 !important; }
+
 .quick-sidebar {
     position: fixed;
-    top: 0; right: -280px; /* 寬度從 320px 縮窄為 280px */
-    width: 280px; height: 100vh;
+    top: 0; right: -340px;
+    width: 340px; height: 100vh;
     background: var(--card);
     border-left: 3px solid var(--primary);
-    box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.1);
     z-index: 6000;
     transition: right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex; flex-direction: column;
 }
 .quick-sidebar.show { right: 0; }
+
 .quick-sidebar-header {
     padding: 12px 16px; border-bottom: 2px dashed var(--tbl-border);
     display: flex; justify-content: space-between; align-items: center;
     background: var(--bg);
 }
+
 .quick-sidebar-list {
     flex: 1; overflow-y: auto; padding: 10px;
-    display: grid; grid-template-columns: 1fr 1fr; /* ⭐ 改為兩欄排列 */
+    display: grid; 
     gap: 6px; align-content: start;
 }
+
 .qs-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-    padding: 8px 4px; border: 2px solid var(--tbl-border);
-    border-radius: 8px; background: var(--bg);
-    transition: transform 0.2s;
+    display: flex; flex-direction: column; justify-content: center; 
+    padding: 6px 8px; border: 2px solid var(--tbl-border);
+    border-radius: 6px; background: var(--bg);
+    transition: transform 0.2s, border-color 0.2s;
 }
-.qs-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+.qs-item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+
+
+    
     
 /* ⭐ 頁尾優化：淨春色調與公會風格 (精緻小巧版) */
     .app-footer {
@@ -3079,17 +3097,19 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     });
 
 // ==========================================
-// ⭐ 快速狀態側邊欄邏輯
+// ⭐ 6.1.6快速狀態側邊欄邏輯 (動態推擠 + 智慧排版版)
 // ==========================================
 let isSidebarEditMode = false;
 
-// 1. 打開與關閉側邊欄
+// 1. 打開與關閉側邊欄 (連動 body 的 padding 推擠)
 document.getElementById('btnOpenSidebar').addEventListener('click', () => {
     document.getElementById('quickSidebar').classList.add('show');
+    document.body.classList.add('sidebar-open'); // 推開主畫面
     renderQuickSidebar();
 });
 document.getElementById('btnCloseSidebar').addEventListener('click', () => {
     document.getElementById('quickSidebar').classList.remove('show');
+    document.body.classList.remove('sidebar-open'); // 主畫面恢復
 });
 
 // 2. 切換編輯（解鎖）模式
@@ -3113,10 +3133,13 @@ document.getElementById('btnToggleSidebarEdit').addEventListener('click', (e) =>
     renderQuickSidebar();
 });
 
-// 3. 渲染側邊欄清單 (雙欄精緻版)
+// 3. 渲染側邊欄清單
 window.renderQuickSidebar = function() {
     const list = document.getElementById('quickSidebarList');
     if (!list) return;
+    
+    // ⭐ 智慧切換排版：檢視時極致雙欄 (不需滑動)，編輯時寬大單欄 (防誤觸)
+    list.style.gridTemplateColumns = isSidebarEditMode ? '1fr' : '1fr 1fr';
     list.innerHTML = '';
     
     data.roster.forEach((s, i) => {
@@ -3124,30 +3147,32 @@ window.renderQuickSidebar = function() {
         div.className = 'qs-item';
         
         div.innerHTML = `
-            <!-- 學生基本資訊 (頭像與姓名縮小並置中) -->
-            <div style="display:flex; align-items:center; gap:6px; width: 100%; justify-content: center;">
-                <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 900; display: grid; place-items: center; font-size: 12px; flex-shrink: 0;">${s.no}</div>
-                <div style="font-weight: 900; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${s.name}">${s.name}</div>
+            <!-- 標題列：座號姓名 + (僅限檢視模式才顯示的數值) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; width: 100%;">
+                <div style="font-weight:900; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <span style="color:var(--primary); margin-right:2px;">${s.no}.</span>${s.name}
+                </div>
+                <div style="display: ${isSidebarEditMode ? 'none' : 'flex'}; gap:6px; font-size:12px; font-weight:bold;">
+                    <span style="color:var(--muted);">⭐${s.exp||0}</span>
+                    <span style="color:#b45309;">💰${s.coins||0}</span>
+                </div>
             </div>
             
-            <!-- 預設檢視模式 (小字體) -->
-            <div style="display: ${isSidebarEditMode ? 'none' : 'flex'}; gap: 8px; margin-top: 2px;">
-                <span style="font-size:12px; font-weight:bold; color:var(--muted);">⭐ ${s.exp||0}</span>
-                <span style="font-size:12px; font-weight:bold; color:#b45309;">💰 ${s.coins||0}</span>
-            </div>
-            
-            <!-- 解鎖編輯模式 (重新排版，按鈕更緊湊) -->
-            <div style="display: ${isSidebarEditMode ? 'flex' : 'none'}; flex-direction: column; gap: 4px; width: 100%; padding: 0 4px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; background: var(--card); border-radius: 4px; border: 1px solid var(--tbl-border);">
-                    <button class="btn sm warn ghost icon-only" onclick="window.changeExp(${i}, -1, '速覽手動扣分')" style="border:none; padding:2px 6px; font-size:12px;">-</button>
-                    <span style="font-size:11px; font-weight:bold; color:var(--muted);">⭐ ${s.exp||0}</span>
-                    <button class="btn sm ghost icon-only" onclick="window.changeExp(${i}, 1, '速覽手動加分')" style="border:none; padding:2px 6px; font-size:12px;">+</button>
+            <!-- 編輯模式的加減操作區 (僅限解鎖後顯示，橫向排列防誤觸) -->
+            <div style="display: ${isSidebarEditMode ? 'flex' : 'none'}; gap: 8px; margin-top: 6px; width: 100%;">
+                
+                <div style="flex:1; display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:2px 4px; border-radius:4px; border:1px solid var(--tbl-border);">
+                    <button class="btn sm warn ghost icon-only" onclick="window.changeExp(${i}, -1, '速覽手動扣分')" style="border:none; padding:2px 6px; font-size:14px;">-</button>
+                    <span style="font-size:12px; font-weight:bold; color:var(--muted);">⭐ ${s.exp||0}</span>
+                    <button class="btn sm ghost icon-only" onclick="window.changeExp(${i}, 1, '速覽手動加分')" style="border:none; padding:2px 6px; font-size:14px;">+</button>
                 </div>
-                <div style="display:flex; align-items:center; justify-content:space-between; background: var(--card); border-radius: 4px; border: 1px solid var(--tbl-border);">
-                    <button class="btn sm warn ghost icon-only" onclick="window.changeCoin(${i}, -1, '速覽手動扣款')" style="border:none; padding:2px 6px; font-size:12px;">-</button>
-                    <span style="font-size:11px; font-weight:bold; color:#b45309;">💰 ${s.coins||0}</span>
-                    <button class="btn sm ghost icon-only" onclick="window.changeCoin(${i}, 1, '速覽手動加幣')" style="border:none; padding:2px 6px; font-size:12px;">+</button>
+                
+                <div style="flex:1; display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:2px 4px; border-radius:4px; border:1px solid var(--tbl-border);">
+                    <button class="btn sm warn ghost icon-only" onclick="window.changeCoin(${i}, -1, '速覽手動扣款')" style="border:none; padding:2px 6px; font-size:14px;">-</button>
+                    <span style="font-size:12px; font-weight:bold; color:#b45309;">💰 ${s.coins||0}</span>
+                    <button class="btn sm ghost icon-only" onclick="window.changeCoin(${i}, 1, '速覽手動加幣')" style="border:none; padding:2px 6px; font-size:14px;">+</button>
                 </div>
+
             </div>
         `;
         list.appendChild(div);
