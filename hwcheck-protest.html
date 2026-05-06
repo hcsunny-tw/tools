@@ -391,6 +391,40 @@
     border-radius: 6px;
     border: 1px dashed var(--tbl-border);
 }
+/* ==========================================
+   ⭐ 快速狀態側邊欄 (Quick Sidebar) 專屬樣式 
+   ========================================== */
+.quick-sidebar {
+    position: fixed;
+    top: 0; right: -320px; /* 預設隱藏在畫面外 */
+    width: 320px; height: 100vh;
+    background: var(--card);
+    border-left: 3px solid var(--primary);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+    z-index: 6000;
+    transition: right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex; flex-direction: column;
+}
+.quick-sidebar.show { right: 0; }
+.quick-sidebar-header {
+    padding: 16px; border-bottom: 2px dashed var(--tbl-border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg);
+}
+.quick-sidebar-list {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.qs-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px; border: 2px solid var(--tbl-border);
+    border-radius: 8px; background: var(--bg);
+    transition: transform 0.2s;
+}
+.qs-item:hover { border-color: var(--primary); }
+
+
+    
 /* ⭐ 頁尾優化：淨春色調與公會風格 (精緻小巧版) */
     .app-footer {
         margin-top: auto;
@@ -502,7 +536,7 @@
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
         <button class="btn ghost nav-btn" id="btnNavRoster" title="公會名冊"><i class="bi bi-people"></i> <span class="nav-text">公會名冊</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
-        
+        <button class="btn ghost nav-btn" id="btnOpenSidebar" title="快速狀態欄"><i class="bi bi-layout-sidebar-inset-reverse"></i> <span class="nav-text">速覽</span></button>
         <div id="saveStatusIndicator" style="margin-left: 8px; font-size: 14px; display: flex; align-items: center;"><i class="bi bi-hourglass"></i></div>
       </div>
     </header>
@@ -1020,6 +1054,21 @@
       </div>
   </div>
 
+<!-- ⭐ 快速狀態側邊欄 -->
+<div id="quickSidebar" class="quick-sidebar">
+    <div class="quick-sidebar-header">
+        <h3 style="margin: 0; font-size: 16px; color: var(--primary);"><i class="bi bi-list-stars"></i> 冒險者速覽</h3>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn sm ghost icon-only" id="btnToggleSidebarEdit" title="解鎖快速加扣分"><i class="bi bi-lock-fill"></i></button>
+            <button class="btn sm warn icon-only" id="btnCloseSidebar"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+    <div id="quickSidebarList" class="quick-sidebar-list">
+        <!-- 學生名單會從 JS 動態生成在這裡 -->
+    </div>
+</div>
+
+  
   <script type="module">
     function getTaipeiDateString() { 
         return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
@@ -1268,6 +1317,9 @@
         else if (v.id === 'view-student-status') renderStudentStatus();
         else if (v.id === 'view-roster') renderRosterEditor();
         else if (v.id === 'view-attendance') initAttendanceView();
+        // 👇 6.1.6加入這段：如果側邊欄是打開的狀態，就一起重新渲染它
+       if (document.getElementById('quickSidebar') && document.getElementById('quickSidebar').classList.contains('show')) {
+        window.renderQuickSidebar();
     }
 
     function logAction(sidx, delta, type, reason) {
@@ -3026,6 +3078,86 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         }
     });
 
+// ==========================================
+// ⭐ 快速狀態側邊欄邏輯
+// ==========================================
+let isSidebarEditMode = false;
+
+// 1. 打開與關閉側邊欄
+document.getElementById('btnOpenSidebar').addEventListener('click', () => {
+    document.getElementById('quickSidebar').classList.add('show');
+    renderQuickSidebar();
+});
+document.getElementById('btnCloseSidebar').addEventListener('click', () => {
+    document.getElementById('quickSidebar').classList.remove('show');
+});
+
+// 2. 切換編輯（解鎖）模式
+document.getElementById('btnToggleSidebarEdit').addEventListener('click', (e) => {
+    isSidebarEditMode = !isSidebarEditMode;
+    const btn = e.currentTarget;
+    
+    if (isSidebarEditMode) {
+        btn.innerHTML = '<i class="bi bi-unlock-fill"></i>';
+        btn.classList.remove('ghost');
+        btn.style.background = 'var(--danger)';
+        btn.style.borderColor = 'var(--danger)';
+        btn.style.color = '#fff';
+    } else {
+        btn.innerHTML = '<i class="bi bi-lock-fill"></i>';
+        btn.classList.add('ghost');
+        btn.style.background = 'transparent';
+        btn.style.borderColor = 'var(--text-light)';
+        btn.style.color = 'var(--text-main)';
+    }
+    renderQuickSidebar();
+});
+
+// 3. 渲染側邊欄清單
+window.renderQuickSidebar = function() {
+    const list = document.getElementById('quickSidebarList');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    data.roster.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'qs-item';
+        
+        div.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 900; display: grid; place-items: center; font-size: 14px;">${s.no}</div>
+                <div style="font-weight: 900; font-size: 15px;">${s.name}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                
+                <!-- 預設檢視模式 -->
+                <div style="display: ${isSidebarEditMode ? 'none' : 'flex'}; gap: 8px;">
+                    <span style="font-size:13px; font-weight:bold; color:var(--muted);">⭐ ${s.exp||0}</span>
+                    <span style="font-size:13px; font-weight:bold; color:#b45309;">💰 ${s.coins||0}</span>
+                </div>
+                
+                <!-- 解鎖編輯模式 -->
+                <div style="display: ${isSidebarEditMode ? 'flex' : 'none'}; flex-direction: column; gap: 4px;">
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <button class="btn sm warn ghost icon-only" onclick="window.changeExp(${i}, -1, '速覽手動扣分')" style="padding:0 6px; border-radius: 4px;">-</button>
+                        <span style="font-size:12px; width:36px; text-align:center; font-weight:bold; color:var(--muted);">⭐ ${s.exp||0}</span>
+                        <button class="btn sm ghost icon-only" onclick="window.changeExp(${i}, 1, '速覽手動加分')" style="padding:0 6px; border-radius: 4px;">+</button>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <button class="btn sm warn ghost icon-only" onclick="window.changeCoin(${i}, -1, '速覽手動扣款')" style="padding:0 6px; border-radius: 4px;">-</button>
+                        <span style="font-size:12px; width:36px; text-align:center; font-weight:bold; color:#b45309;">💰 ${s.coins||0}</span>
+                        <button class="btn sm ghost icon-only" onclick="window.changeCoin(${i}, 1, '速覽手動加幣')" style="padding:0 6px; border-radius: 4px;">+</button>
+                    </div>
+                </div>
+                
+            </div>
+        `;
+        list.appendChild(div);
+    });
+};
+
+
+    
     document.getElementById('tabBtnStudents').addEventListener('click', (e) => {
         e.currentTarget.classList.add('active');
         document.getElementById('tabBtnTeachers').classList.remove('active');
