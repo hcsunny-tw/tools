@@ -963,16 +963,24 @@ body.sidebar-open {
       </div>
   </div>
   
-  <div id="panelMarquee" class="tool-window">
+<div id="panelMarquee" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-broadcast"></i> 跑馬燈</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
+          <div class="quick-marquee-tags">
+              <button class="quick-tag" id="btnQuickDebtMarquee"><i class="bi bi-lightning-charge-fill"></i> 自動抓取聯絡簿未交</button>
+          </div>
+          
           <input type="text" id="mqTextInput" class="tool-input" placeholder="輸入公告內容..." style="text-align: left;">
+          
           <div style="display:flex; align-items:center; gap:3cqi;">
               <label style="flex:1;">顏色</label><input type="color" id="mqColorInput" value="#FFD700" style="flex:2; height:8cqi; padding:0; border:none; cursor:pointer;">
           </div>
+          
           <div style="display:flex; align-items:center; gap:3cqi;">
-              <label style="flex:1;">速度</label><input type="range" id="mqSpeedInput" min="5" max="40" value="15" style="flex:2;">
+              <label style="flex:1;">速度<span style="font-size:10px;color:var(--muted);display:block;">(0為靜止置中)</span></label>
+              <input type="range" id="mqSpeedInput" min="0" max="40" value="15" style="flex:2;">
           </div>
+          
           <div style="display:flex; align-items:center; gap:3cqi;">
               <label style="flex:1;">字體</label><input type="range" id="mqSizeInput" min="20" max="150" value="48" style="flex:2;">
           </div>
@@ -2988,6 +2996,9 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.debt-badge') && !e.target.closest('.btn-close-debt')) { menu.classList.remove('show'); menu.style.display = ''; menu.dataset.currentSidx = ""; }
     });
 
+// ==========================================
+    // ⭐ 跑馬燈播放與靜止邏輯
+    // ==========================================
     document.getElementById('btnMqShow').addEventListener('click', () => { 
         const txt = document.getElementById('mqTextInput').value; 
         if(!txt) return; 
@@ -2995,11 +3006,61 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         el.innerText = txt; 
         el.style.color = document.getElementById('mqColorInput').value;
         el.style.fontSize = document.getElementById('mqSizeInput').value + 'px';
-        const speed = document.getElementById('mqSpeedInput').value;
-        el.style.animationDuration = Math.max(3, 50 - speed) + 's'; 
+        
+        const speed = parseInt(document.getElementById('mqSpeedInput').value);
+        
+        // 如果速度設為 0，取消動畫並置中顯示
+        if (speed === 0) {
+            el.style.animation = 'none';
+            el.style.paddingLeft = '0';
+            el.style.width = '100%';
+            el.style.textAlign = 'center';
+        } else {
+            // 恢復原有的跑馬燈動畫
+            el.style.animation = 'marquee-anim linear infinite';
+            el.style.paddingLeft = '100%';
+            el.style.width = 'auto';
+            el.style.textAlign = 'left';
+            el.style.animationDuration = Math.max(3, 50 - speed) + 's'; 
+        }
+        
         document.getElementById('topMarquee').style.display = 'block'; 
     });
+    
     document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
+
+    // ==========================================
+    // ⭐ 自動抓取「聯絡簿」未交名單
+    // ==========================================
+    document.getElementById('btnQuickDebtMarquee').addEventListener('click', () => {
+        // 尋找標題包含「聯絡簿」且未封存的任務
+        const contactBookTask = data.assignments.find(a => !a.archived && a.title.includes('聯絡簿'));
+        
+        if (!contactBookTask) {
+            showToast('⚠️ 目前看板上沒有名為「聯絡簿」的委託單！');
+            return;
+        }
+        
+        let missingStudents = [];
+        const indices = contactBookTask.assignedIndices || 'all';
+        
+        data.roster.forEach((s, i) => {
+            if (indices === 'all' || indices.includes(i)) {
+                const st = (contactBookTask.statuses || [])[i] || 0;
+                // 狀態 0 (未交) 或 2 (再挑戰/退回) 皆視為未完成
+                if (st === 0 || st === 2) {
+                    missingStudents.push(s.no);
+                }
+            }
+        });
+        
+        const inputEl = document.getElementById('mqTextInput');
+        if (missingStudents.length === 0) {
+            inputEl.value = '🎉 全班聯絡簿皆已繳交完成！';
+        } else {
+            inputEl.value = `⚠️ 聯絡簿未交 / 待訂正：${missingStudents.join(', ')} 號，請盡速交至講台！`;
+        }
+    });
 
     let timerInt = null; let timerSec = 0;
     function updateTimer() { document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; }
