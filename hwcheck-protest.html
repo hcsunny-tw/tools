@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.6🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.7🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -1130,27 +1130,49 @@ body.sidebar-open {
         g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
         o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
     }
+    // RPG 等級與稱號統整設定
+const levelConfig = [
+    { lv: 1, exp: 0, coins: 0, rank: "新手村民", color: "#9ca3af" },
+    { lv: 2, exp: 10, coins: 5, rank: "見習冒險者", color: "#86efac" },
+    { lv: 3, exp: 30, coins: 10, rank: "銅牌討伐者", color: "#22c55e" },
+    { lv: 4, exp: 60, coins: 15, rank: "鐵印勇士", color: "#0ea5e9" },
+    { lv: 5, exp: 100, coins: 20, rank: "銀牌初級騎士", color: "#3b82f6" },
+    { lv: 6, exp: 150, coins: 30, rank: "銀牌高級將士", color: "#6366f1" },
+    { lv: 7, exp: 210, coins: 40, rank: "金牌百夫長", color: "#8b5cf6" },
+    { lv: 8, exp: 280, coins: 50, rank: "金牌大師領主", color: "#a855f7" },
+    { lv: 9, exp: 360, coins: 60, rank: "傳奇殿堂聖徒", color: "#d946ef" },
+    { lv: 10, exp: 450, coins: 75, rank: "傳奇護國將軍", color: "#ec4899" },
+    { lv: 11, exp: 550, coins: 90, rank: "史詩龍血勇者", color: "#f43f5e" },
+    { lv: 12, exp: 660, coins: 110, rank: "史詩無畏先鋒", color: "#ef4444" },
+    { lv: 13, exp: 780, coins: 130, rank: "皇家近衛統領", color: "#f97316" },
+    { lv: 14, exp: 910, coins: 155, rank: "皇家大元帥", color: "#ea580c" },
+    { lv: 15, exp: 1050, coins: 180, rank: "聖階榮耀統帥", color: "#f59e0b" },
+    { lv: 16, exp: 1200, coins: 210, rank: "聖階光芒祭司", color: "#eab308" },
+    { lv: 17, exp: 1360, coins: 250, rank: "神話破滅之刃", color: "#ca8a04" },
+    { lv: 18, exp: 1530, coins: 300, rank: "神話星辰使者", color: "#14b8a6" },
+    { lv: 19, exp: 1710, coins: 400, rank: "半神境界尊者", color: "#06b6d4" },
+    { lv: "Max", exp: 1900, coins: 500, rank: "創世神話救世主", color: "#ffd700" }
+];
 
-    // ⭐ 修改為有 Lv 前綴的 RPG 稱號系統
-    function getRankHtml(exp) {
-        let rank = "新手村民"; let color = "#9ca3af"; let lv = 1;
-        if (exp >= 300) { rank = "金牌榮耀統帥"; color = "#9333ea"; lv = "Max"; }
-        else if (exp >= 200) { rank = "金牌高級將軍"; color = "#f43f5e"; lv = 9; }
-        else if (exp >= 170) { rank = "傳奇殿堂聖徒"; color = "#a855f7"; lv = 9; }
-        else if (exp >= 150) { rank = "金牌大師領主"; color = "#f97316"; lv = 8; }
-        else if (exp >= 120) { rank = "金牌儒將(羽扇綸巾)"; color = "#fbbf24"; lv = 7; }
-
-        // 中階稱號 (你原本的設定)
-        else if (exp >= 100) { rank = "銀牌高級將士"; color = "#ec4899"; lv = 6; }
-        else if (exp >= 70) { rank = "銀牌中級騎士"; color = "#eab308"; lv = 5; }
-        else if (exp >= 60) { rank = "銀牌初級勇士"; color = "#3b82f6"; lv = 4; }
-
-        // 低階稱號
-        else if (exp >= 30) { rank = "銅牌討伐者"; color = "#14b8a6"; lv = 3; }
-        else if (exp >= 10) { rank = "見習冒險者"; color = "#22c55e"; lv = 2; }
-
-        return `<span class="rank-text" style="color:${color}; font-weight:bold;">Lv.${lv} ${rank}</span>`;
+// 自動生成升級獎勵門檻 (過濾掉Lv1)
+const thresholds = levelConfig.slice(1).map(config => ({
+    exp: config.exp,
+    coins: config.coins,
+    rank: `${config.rank} (Lv.${config.lv})`
+}));
+function getRankHtml(exp) {
+    let currentLevel = levelConfig[0];
+    
+    // 從最高等級往下找，找到符合的經驗值就套用
+    for (let i = levelConfig.length - 1; i >= 0; i--) {
+        if (exp >= levelConfig[i].exp) {
+            currentLevel = levelConfig[i];
+            break;
+        }
     }
+
+    return `<span class="rank-text" style="color:${currentLevel.color}; font-weight:bold;">Lv.${currentLevel.lv} ${currentLevel.rank}</span>`;
+}
     window.getRankHtml = getRankHtml;
 
     let currentSortBy = 'no'; 
@@ -1380,33 +1402,25 @@ body.sidebar-open {
             triggerAutoSave(); renderAll();
         }
 
-        // ⭐ 防刷金幣機制：只有當新 EXP 大於門檻，且「歷史最高分」低於門檻時，才發放獎勵
-        if (delta > 0) {
-            const thresholds = [
-                { exp: 10, coins: 5, rank: '見習冒險者 (Lv.2)' },
-                { exp: 30, coins: 10, rank: '銅牌討伐者 (Lv.3)' },
-                { exp: 60, coins: 15, rank: '銀印勇士 (Lv.4)' },
-                { exp: 100, coins: 20, rank: '皇家騎士 (Lv.5)' },
-                { exp: 150, coins: 30, rank: '史詩英雄 (Lv.6)' },
-                { exp: 220, coins: 50, rank: '傳說大師 (Lv.7)' },
-                { exp: 300, coins: 100, rank: '神話救世主 (Lv.Max)' }
-            ];
+// ⭐ 防刷金幣機制：只有當新 EXP 大於門檻，且「歷史最高分」低於門檻時，才發放獎勵
+if (delta > 0) {
+    thresholds.forEach((t) => {
+        if (maxExp < t.exp && newExp >= t.exp) {
+            data.roster[sidx].coins = (data.roster[sidx].coins || 0) + t.coins;
+            logAction(sidx, t.coins, '金幣', `晉升 ${t.rank} 獎勵`);
             
-            thresholds.forEach(t => {
-                if (maxExp < t.exp && newExp >= t.exp) {
-                    data.roster[sidx].coins = (data.roster[sidx].coins || 0) + t.coins;
-                    logAction(sidx, t.coins, '金幣', `晉升 ${t.rank} 獎勵`);
-                    setTimeout(() => {
-                        showToast(`🌟 恭喜 ${data.roster[sidx].name} 晉升為【${t.rank}】！獲得 ${t.coins} 枚金幣！`);
-                        playSuccessSound();
-                        renderAll();
-                    }, 1500); 
-                }
-            });
-
-            // 更新歷史最高分
-            data.roster[sidx].maxExp = Math.max(maxExp, newExp);
+            // 既然不會連升多級，維持你原本設定的 1500 毫秒即可
+            setTimeout(() => {
+                showToast(`🌟 恭喜 ${data.roster[sidx].name} 晉升為【${t.rank}】！獲得 ${t.coins} 枚金幣！`);
+                playSuccessSound();
+                renderAll();
+            }, 1500); 
         }
+    });
+
+    // 更新歷史最高分
+    data.roster[sidx].maxExp = Math.max(maxExp, newExp);
+    }
     }
     window.changeExp = changeExp;
 
