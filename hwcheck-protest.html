@@ -1253,28 +1253,77 @@ function getRankHtml(exp) {
         if(target) { target.classList.add('show'); renderAll(); }
     }
 
+// ==========================================
+    // ⭐ 新版：進階存檔與同步邏輯 (防爆額度版)
+    // ==========================================
     function updateSaveStatus(status, message = '') {
         const ind = document.getElementById('saveStatusIndicator'); if(!ind) return;
-        if (status === 'pending') ind.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-pencil"></i> 紀錄中</span>`;
+        if (status === 'pending' || status === 'uploading') ind.innerHTML = `<span style="color:var(--primary)"><i class="bi bi-cloud-arrow-up"></i> ${message || '處理中...'}</span>`;
+        else if (status === 'local') ind.innerHTML = `<span style="color:#ea580c" title="已存在本機，稍後自動上傳雲端"><i class="bi bi-device-hdd"></i> 待同步</span>`;
         else if (status === 'success') ind.innerHTML = `<span style="color:var(--success)"><i class="bi bi-cloud-check"></i> 已同步</span>`;
         else ind.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
     }
 
+    let isDirty = false; // 用來標記「是否有新資料還沒上傳」
+
     function triggerAutoSave() {
+        // 1. 瞬間存入瀏覽器 LocalStorage (完全免費，防斷電當機)
+        if (currentUser) {
+            localStorage.setItem(`guild_backup_${currentUser.uid}`, JSON.stringify(data));
+        }
+        
+        isDirty = true;
+        updateSaveStatus('local');
+
+        // 2. 延遲上傳雲端 (從原本的 1.5 秒改為 15 秒)
+        // 老師連續點擊加分時，計時器會一直重置，直到停手 15 秒後才整包推上 Firebase
         clearTimeout(saveTimeout); 
-        updateSaveStatus('pending');
-        saveTimeout = setTimeout(async () => {
-            if (!currentUser) return;
-            try { 
-                const cleanData = JSON.parse(JSON.stringify(data)); 
-                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData); 
-                updateSaveStatus('success'); 
-            } catch (e) { 
-                console.error(e);
-                updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足 (檢查Rules)' : '儲存失敗');
-            }
-        }, 1500); 
+        saveTimeout = setTimeout(() => {
+            syncToCloud();
+        }, 15000); 
     }
+
+    // 負責真正把資料推上 Firebase 的核心函數
+    async function syncToCloud() {
+        if (!currentUser || !isDirty) return;
+        updateSaveStatus('uploading', '雲端同步中');
+        try { 
+            const cleanData = JSON.parse(JSON.stringify(data)); 
+            await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData); 
+            isDirty = false;
+            updateSaveStatus('success'); 
+        } catch (e) { 
+            console.error(e);
+            updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足' : '儲存失敗');
+        }
+    }
+
+    // 3. 手動強制同步 (綁定右上角的重整按鈕)
+    document.getElementById('btnRefreshData').addEventListener('click', async () => {
+        const btn = document.getElementById('btnRefreshData');
+        btn.disabled = true;
+        if (isDirty) {
+            await syncToCloud(); // 有變動就上傳
+        } else {
+            await loadDataFromFirebase(); // 沒變動就當作「重新下載雲端資料」(多裝置同步用)
+        }
+        showToast("🔄 資料已與雲端同步完成");
+        btn.disabled = false;
+    });
+
+    // 4. 當老師切換分頁、縮小視窗，或準備關閉網頁時，自動把剩下的資料推上雲端
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && isDirty) {
+            syncToCloud();
+        }
+    });
+    window.addEventListener('beforeunload', (e) => {
+        if (isDirty) {
+            syncToCloud();
+            e.preventDefault();
+            e.returnValue = ''; // 觸發部分瀏覽器的「確定要離開嗎？」防護機制
+        }
+    });
 
     async function loadDataFromFirebase() {
         if (!currentUser) return;
