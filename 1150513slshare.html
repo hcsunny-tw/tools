@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拯救下班時間計畫：輕鬆無負擔的 Padlet Arcade 教學簡報</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f6f0df; 
+            color: #3e332a; 
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(162, 117, 85, 0.2);
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-btn.active {
+            background-color: #d8c29e; 
+            color: #3e332a;
+            border-color: #d8c29e;
+            font-weight: bold;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #e29578, #d8c29e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f6f0df; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d8c29e; 
+            border-radius: 4px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <header class="glass-panel sticky top-0 z-50 p-4 shadow-md border-b border-[#a2755533]">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl font-bold tracking-wider text-[#a27555] flex items-center gap-2">
+                <i class="fa-solid fa-mug-hot"></i> 拯救下班時間計畫
+            </h1>
+            <nav class="flex flex-wrap justify-center gap-2">
+                <button onclick="showSlide('slide-0')" class="nav-btn active px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">0. 登入</button>
+                <button onclick="showSlide('slide-1')" class="nav-btn px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">1. 真心話</button>
+                <button onclick="showSlide('slide-2')" class="nav-btn px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">2. 玩樂</button>
+                <button onclick="showSlide('slide-3')" class="nav-btn px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">3. 自己的課自己救</button>
+                <button onclick="showSlide('slide-4')" class="nav-btn px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">4. 大腦外包</button>
+                <button onclick="showSlide('slide-5')" class="nav-btn px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">5. 登出</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8 relative">
+        
+        <!-- Slide 0: 封面 -->
+        <section id="slide-0" class="slide active flex-col items-center justify-center text-center w-full max-w-4xl">
+            <div class="mb-6 relative animate-float">
+                <i class="fa-solid fa-battery-quarter text-6xl text-[#e29578] drop-shadow-[0_0_15px_rgba(226,149,120,0.5)]"></i>
+                <i class="fa-solid fa-arrow-right-long text-3xl mx-4 text-[#d8c29e]"></i>
+                <i class="fa-solid fa-gamepad text-6xl text-[#a27555] drop-shadow-[0_0_15px_rgba(162,117,85,0.5)]"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black mb-4 tracking-tight">
+                一分鐘，<br/><span class="gradient-text">課堂變遊樂場！</span>
+            </h1>
+            <h2 class="text-xl md:text-2xl text-[#a27555] mb-10 font-light">
+                —— 來自一位<span class="text-[#a27555] font-bold border-b border-dashed border-[#a27555]">資訊領航員</span>的生存指南 ☕
+            </h2>
+            <div class="flex gap-4">
+                <button onclick="showSlide('slide-1')" class="px-8 py-4 bg-[#a27555] hover:bg-[#b08b73] text-white rounded-lg font-bold text-lg transition transform hover:scale-105 shadow-md shadow-[#a27555/30]">
+                    開始修煉 (點擊或按右鍵) <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Slide 1: 真心話 -->
+        <section id="slide-1" class="slide flex-col w-full max-w-5xl h-full justify-center">
+            <h2 class="text-3xl font-bold mb-8 text-[#a27555] border-b border-[#d8c29e] pb-4"><i class="fa-solid fa-microphone-lines mr-2"></i> 真心話時間：為什麼我們要坐在這裡？</h2>
+            
+            <div class="glass-panel p-8 rounded-2xl mb-8 relative overflow-hidden group hover:border-[#a27555/50] transition">
+                <div class="absolute top-0 left-0 w-2 h-full bg-[#a27555]"></div>
+                <i class="fa-solid fa-quote-left text-4xl text-[#d8c29e] absolute top-4 left-6"></i>
+                <p class="text-2xl md:text-3xl font-medium leading-relaxed mt-4 mb-4 z-10 relative px-8 text-[#3e332a]">
+                    「科技的深度，在於它能多快產出答案；<br>
+                    而教學的溫度，在於我們如何運用科技，<br>
+                    讓每個學生都看見自己的進步。」
+                </p>
+                <p class="text-right text-[#a27555] italic px-8 z-10 relative text-sm">
+                    —— 某位前輩充滿智慧的箴言<br>
+                    <span class="text-[#e29578] font-bold group-hover:block hidden mt-2">（但我個人覺得，科技最大的溫度，是能幫我們減輕負擔，準時下班... 🤫）</span>
+                </p>
+            </div>
+
+            <!-- 修復跑版的 Grid 區塊 -->
+            <div class="grid md:grid-cols-2 gap-6 mt-4">
+                <div class="bg-white p-6 rounded-xl border border-[#d8c29e]">
+                    <h3 class="text-xl font-bold text-[#e29578] mb-3"><i class="fa-solid fa-face-dizzy mr-2"></i> 殘酷的現實</h3>
+                    <ul class="space-y-3 text-[#3e332a]">
+                        <li class="flex items-start"><i class="fa-solid fa-xmark mt-1 mr-2 text-[#e29578]"></i> 有溫度的課堂，通常需要「燃燒老師的肝」來設計。</li>
+                        <li class="flex items-start"><i class="fa-solid fa-xmark mt-1 mr-2 text-[#e29578]"></i> 但我們現在最缺的就是時間（還有睡眠）。</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-[#d8c29e]">
+                    <h3 class="text-xl font-bold text-green-700 mb-3"><i class="fa-solid fa-hand-sparkles mr-2"></i> 今天的承諾</h3>
+                    <ul class="space-y-3 text-[#3e332a]">
+                        <li class="flex items-start"><i class="fa-solid fa-check mt-1 mr-2 text-green-700"></i> 不談高深理論，只給能無腦套用的實戰工具。</li>
+                        <li class="flex items-start"><i class="fa-solid fa-check mt-1 mr-2 text-green-700"></i> <strong class="text-black mx-1">1 分鐘</strong> 把生硬教材變遊戲，找回上課的溫度。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center w-full">
+                <button onclick="showSlide('slide-2')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
+                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Slide 2: 玩樂 -->
+        <section id="slide-2" class="slide flex-col w-full max-w-5xl h-full justify-center">
+            <h2 class="text-3xl font-bold mb-8 text-[#a27555] border-b border-[#d8c29e] pb-4"><i class="fa-solid fa-mobile-screen-button mr-2"></i> 驚喜體驗：先來當一回學生</h2>
+            
+            <div class="flex flex-col md:flex-row gap-8 items-center bg-white rounded-2xl p-8 border border-[#d8c29e]">
+                
+                <div class="flex-1 text-center md:text-left">
+                    <h3 class="text-3xl font-black mb-4 text-[#3e332a]">全科大亂鬥挑戰！</h3>
+                    <p class="text-lg text-[#3e332a] mb-6">
+                        請各位老師拿出手機，我們來體驗一場「跨越國英數自」的配對遊戲！
+                    </p>
+                    <ul class="space-y-4 text-left inline-block text-[#3e332a]">
+                        <li class="flex items-center gap-3"><span class="bg-[#d8c29e] text-[#3e332a] px-3 py-1 rounded text-sm font-bold">必殺技 1</span> 視覺吸睛 (自動生成精美遊戲畫面)</li>
+                        <li class="flex items-center gap-3"><span class="bg-[#e4d8c5] text-[#3e332a] px-3 py-1 rounded text-sm font-bold">必殺技 2</span> 國語、自然、班規 一次滿足</li>
+                        <li class="flex items-center gap-3"><span class="bg-[#a27555] text-white px-3 py-1 rounded text-sm font-bold">必殺技 3</span>掃碼即玩，免裝 App 惹家長抱怨</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-md flex flex-col items-center justify-center w-64 h-64 relative cursor-pointer hover:scale-105 transition border-4 border-dashed border-[#d8c29e]" onclick="toggleQR()">
+                    <div id="qr-placeholder" class="text-center">
+                        <i class="fa-solid fa-qrcode text-8xl text-[#d8c29e] mb-2"></i>
+                        <p class="text-[#a27555] font-bold mt-2">點擊解鎖魔法陣</p>
+                    </div>
+                    <!-- 替換為真實上傳的 QR Code 圖片 -->
+                    <div id="qr-image" class="hidden absolute inset-0 bg-white rounded-2xl p-4 flex flex-col items-center justify-center">
+                        <img src="https://drive.google.com/uc?id=1dOJHvA7ENkATOa0cYzxyJBKwO_J1iiXS" alt="QR Code" class="w-full h-full object-contain">
+                        <p class="text-[#3e332a] font-bold mt-2 text-sm bg-[#e4d8c5] px-2 rounded">掃描開玩！</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 text-center bg-white p-4 rounded-lg border border-[#d8c29e]">
+                <p class="text-[#3e332a] text-lg">
+                    <i class="fa-solid fa-user-secret text-[#e29578] mr-2 text-xl"></i> 
+                    <strong>後台解密：</strong> 這個遊戲不用拉動畫、不用寫程式，輸入文字跟圖片，<span class="text-[#e29578] font-black text-xl mx-1">1分鐘</span>自動生成。
+                </p>
+            </div>
+
+            <div class="mt-8 flex justify-center w-full">
+                <button onclick="showSlide('slide-3')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
+                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Slide 3: 自己的課自己救 -->
+        <section id="slide-3" class="slide flex-col w-full max-w-5xl h-full justify-center">
+            <h2 class="text-3xl font-bold mb-6 text-[#a27555] border-b border-[#d8c29e] pb-4 flex justify-between items-end">
+                <span><i class="fa-solid fa-hammer mr-2"></i> 核心實戰：自己的課自己救</span>
+                
+                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg text-xl font-mono border border-[#d8c29e] shadow-inner group relative text-[#3e332a]">
+                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-[#a27555] font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap bg-white px-2 py-1 rounded">準時下班倒數</span>
+                    <i class="fa-solid fa-stopwatch text-[#a27555]"></i>
+                    <span id="timer-display" class="tracking-wider">25:00</span>
+                    <button onclick="toggleTimer()" id="timer-btn" class="ml-3 text-sm bg-[#a27555] hover:bg-[#b08b73] text-white font-bold px-3 py-1 rounded transition">衝刺</button>
+                    <button onclick="resetTimer()" class="text-sm text-[#d8c29e] hover:text-[#a27555] px-2 py-1 rounded transition"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </h2>
+
+            <!-- 修復 3 欄式設計 -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- 欄位 1 -->
+                <div class="bg-white p-6 rounded-xl border border-[#d8c29e] relative overflow-hidden group hover:border-[#a27555/50] transition text-[#3e332a]">
+                    <div class="absolute top-0 right-0 bg-[#e4d8c5] text-[#3e332a] font-bold w-10 h-10 flex items-center justify-center rounded-bl-xl z-10">1</div>
+                    <h3 class="text-xl font-bold mb-4 text-[#a27555]">挑選武器 (支援多種題型)</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-link text-[#a27555] w-5 mt-1"></i> <div><strong>配對與排序</strong><br><span class="text-sm text-[#a27555]">專治：生字配對、解題步驟排序</span></div></li>
+                        <li class="flex items-start gap-2"><i class="fa-regular fa-clone text-[#e29578] w-5 mt-1"></i> <div><strong>抽認卡與記憶圖塊</strong><br><span class="text-sm text-[#a27555]">專治：課前暖身、重點概念翻牌認讀</span></div></li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-clipboard-question text-green-700 w-5 mt-1"></i> <div><strong>多選題與填空題</strong><br><span class="text-sm text-[#a27555]">專治：檢核觀念、課後快速驗收</span></div></li>
+                    </ul>
+                </div>
+
+                <!-- 欄位 2 -->
+                <div class="bg-[#f6f0df] p-6 rounded-xl border-2 border-[#a27555] relative overflow-hidden text-[#3e332a] flex flex-col items-center">
+                    <div class="absolute top-0 right-0 bg-[#a27555] text-white font-bold w-10 h-10 flex items-center justify-center rounded-bl-xl z-10">2</div>
+                    <h3 class="text-xl font-bold mb-4 text-[#a27555] text-center w-full">實作任務 (Now!)</h3>
+                    <div class="text-center flex-grow flex flex-col justify-center">
+                        <i class="fa-solid fa-person-digging text-4xl text-[#a27555] mb-3"></i>
+                        <p class="font-bold text-md mb-2 text-[#3e332a]">請挑選明天的一堂課...</p>
+                        <p class="text-[#a27555] text-sm mb-3">（也可以直接匯入現有講義 PDF）</p>
+                        <p class="text-[#3e332a]">製作包含 <span class="bg-[#d8c29e] text-[#3e332a] px-2 py-0.5 rounded font-black mx-1">3~5</span> 題的小遊戲</p>
+                    </div>
+                    <!-- 新增：前往 Arcade 連結按鈕 -->
+                    <a href="https://arcade.padlet.com/" target="_blank" class="mt-4 w-full text-center bg-[#e29578] hover:bg-[#d98063] text-white font-bold py-2 px-4 rounded-lg shadow-md transition transform hover:-translate-y-1">
+                        <i class="fa-solid fa-rocket mr-2"></i> 前往 Padlet Arcade
+                    </a>
+                </div>
+
+                <!-- 欄位 3 -->
+                <div class="bg-white p-6 rounded-xl border border-[#d8c29e] relative overflow-hidden hover:border-[#a27555/50] transition text-[#3e332a]">
+                    <div class="absolute top-0 right-0 bg-[#e4d8c5] text-[#3e332a] font-bold w-10 h-10 flex items-center justify-center rounded-bl-xl z-10">3</div>
+                    <h3 class="text-xl font-bold mb-4 text-[#a27555]">收尾與派發</h3>
+                    <ul class="space-y-4 mt-4">
+                        <li class="border-b border-[#d8c29e] pb-3">
+                            <strong class="text-[#a27555] block mb-1"><i class="fa-solid fa-eye-slash mr-1"></i> 隱藏分數 (保護玻璃心)</strong>
+                            <span class="text-sm text-[#3e332a]">設定僅顯示前 3 名，皆大歡喜。</span>
+                        </li>
+                        <li class="pt-1">
+                            <strong class="text-green-700 block mb-1"><i class="fa-solid fa-trash-can mr-1"></i> 清除成績 (一魚多吃)</strong>
+                            <span class="text-sm text-[#3e332a]">一鍵清空排行榜，換個班繼續玩。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center w-full">
+                <button onclick="showSlide('slide-4')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
+                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Slide 4: 大腦外包 -->
+        <section id="slide-4" class="slide flex-col w-full max-w-5xl h-full justify-center">
+            <h2 class="text-3xl font-bold mb-8 text-[#a27555] border-b border-[#d8c29e] pb-4"><i class="fa-solid fa-brain mr-2"></i> 效率外掛：把大腦外包給 Gemini</h2>
+            
+            <p class="text-lg text-[#3e332a] mb-6">Padlet 會用了，但想到要「想題目」還是覺得頭很痛？<br>沒關係，<strong class="text-[#a27555]">我們直接把工作外包給 AI。</strong></p>
+
+            <div class="bg-white rounded-2xl overflow-hidden border-2 border-[#a27555] shadow-md mb-6 flex flex-col md:flex-row text-[#3e332a]">
+                <div class="bg-[#f6f0df] p-6 md:w-1/3 border-r-2 border-[#a27555] flex flex-col justify-center">
+                    <i class="fa-brands fa-google text-4xl text-[#d8c29e] mb-4"></i>
+                    <h4 class="font-bold text-xl text-[#a27555] mb-2">萬用詠唱公式</h4>
+                    <p class="text-[#a27555] text-sm leading-relaxed">只要填入<span class="text-[#e29578] mx-1">年級、科目、單元</span>，剩下的五秒鐘內它會幫你處理好。直接複製貼上，備課結束！</p>
+                </div>
+                
+                <div class="p-6 md:w-2/3 relative group bg-white">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#e29578] via-[#d8c29e] to-[#a27555]"></div>
+                    <button onclick="copyPrompt()" class="absolute top-4 right-4 bg-[#e4d8c5] hover:bg-[#d8c29e] text-[#3e332a] px-3 py-1.5 rounded transition opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center gap-2 text-sm shadow-md" id="copyBtn">
+                        <i class="fa-regular fa-copy"></i> 點我偷薪水
+                    </button>
+                    
+                    <div class="font-mono text-sm md:text-base leading-relaxed text-[#3e332a] pt-2">
+                        <span class="text-[#a27555]">我是</span> <span class="text-[#e29578] bg-[#f6f0df] px-1 rounded">[五年級]</span> <span class="text-[#a27555]">的</span> <span class="text-[#e29578] bg-[#f6f0df] px-1 rounded">[社會]</span> <span class="text-[#a27555]">老師，</span><br>
+                        <span class="text-[#3e332a]">請幫我出 5 題關於</span> <span class="text-[#e29578] bg-[#f6f0df] px-1 rounded">[台灣地形]</span> <span class="text-[#3e332a]">的配對遊戲題目。</span><br><br>
+                        <span class="text-green-700 font-bold">要求條件：</span><br>
+                        <span class="text-[#3e332a]">- 左邊是名詞或題目。</span><br>
+                        <span class="text-[#3e332a]">- 右邊是簡短的解釋或答案。</span><br>
+                        <span class="text-[#3e332a]">- 難易度需符合國小學生程度。</span><br>
+                        <span class="text-[#3e332a]">- 請用表格呈現，方便我直接複製。</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-[#d8c29e] text-[#3e332a]">
+                <div class="bg-[#d8c29e] p-3 rounded-lg text-white shadow-inner">
+                    <i class="fa-brands fa-chrome text-2xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg text-[#3e332a] mb-1">加碼彩蛋：Chrome 分頁收納術 (Tab Groups)</h4>
+                    <p class="text-sm text-[#a27555]">把 Padlet、Gemini、教務處公告打包成「群組」收合起來，還大腦一個清靜。</p>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center w-full">
+                <button onclick="showSlide('slide-5')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
+                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Slide 5: 放學囉 -->
+        <section id="slide-5" class="slide flex-col items-center justify-center text-center w-full max-w-4xl h-full">
+            <div class="relative mb-6">
+                <i class="fa-solid fa-door-open text-6xl text-[#e29578]"></i>
+                <i class="fa-solid fa-person-running text-3xl text-[#a27555] absolute bottom-0 right-[-20px]"></i>
+            </div>
+            
+            <h2 class="text-4xl md:text-5xl font-black mb-6 text-[#3e332a]">
+                讓科技成為課堂的暖陽<br><span class="text-2xl text-[#a27555] mt-4 block font-normal">（還有你準時下班的推手）</span>
+            </h2>
+            
+            <div class="bg-white p-8 rounded-2xl border border-[#d8c29e] max-w-2xl w-full mx-auto mb-8 shadow-md relative overflow-hidden text-[#3e332a]">
+                <div class="absolute -right-10 -top-10 text-9xl text-[#d8c29e]/30 opacity-50"><i class="fa-solid fa-trophy"></i></div>
+                <h3 class="text-2xl font-bold mb-6 text-[#a27555] border-b border-[#d8c29e] pb-4 relative z-10">今日成果大驗收</h3>
+                <div class="flex flex-col items-center gap-4 relative z-10">
+                    <!-- 改為 <a> 標籤，點擊直接開新分頁連到你的 Padlet 牆 -->
+                    <a href="https://padlet.com/solestn/1150513-padlet-8em01kjhvz7vsepy" target="_blank" class="bg-[#a27555] hover:bg-[#b08b73] text-white px-8 py-3 rounded-full font-black transition w-full md:w-auto shadow-lg shadow-[#a27555/20] text-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-share-nodes"></i> 誰要來分享你的大作？
+                    </a>
+                    <p class="text-[#a27555] text-sm mt-2">點擊按鈕前往分享牆，讓大家玩玩看你的心血！</p>
+                </div>
+            </div>
+
+            <p class="text-[#a27555] text-lg">感謝各位老師的參與！祝大家教學順利，平安回家！ 👋</p>
+        </section>
+
+    </main>
+
+    <div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden opacity-50">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#d8c29e]/50 blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#a27555]/10 blur-[120px]"></div>
+    </div>
+
+    <script>
+        function showSlide(slideId) {
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            const targetSlide = document.getElementById(slideId);
+            if(targetSlide) targetSlide.classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if(event && event.target) event.target.classList.add('active');
+            
+            resetTimerColors();
+        }
+
+        const slides = ['slide-0', 'slide-1', 'slide-2', 'slide-3', 'slide-4', 'slide-5'];
+        let currentSlideIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                if (currentSlideIndex < slides.length - 1) {
+                    currentSlideIndex++;
+                    updateSlideFromIndex();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlideIndex > 0) {
+                    currentSlideIndex--;
+                    updateSlideFromIndex();
+                }
+            }
+        });
+
+        function updateSlideFromIndex() {
+            const placeholderEvent = { target: document.querySelectorAll('.nav-btn')[currentSlideIndex] };
+            window.event = placeholderEvent; 
+            showSlide(slides[currentSlideIndex]);
+        }
+
+        function toggleQR() {
+            const placeholder = document.getElementById('qr-placeholder');
+            const image = document.getElementById('qr-image');
+            
+            if (placeholder.classList.contains('hidden')) {
+                placeholder.classList.remove('hidden');
+                image.classList.add('hidden');
+            } else {
+                placeholder.classList.add('hidden');
+                image.classList.remove('hidden');
+            }
+        }
+
+        function copyPrompt() {
+            const promptText = `我是 [年級] 的 [科目] 老師，請幫我出 5 題關於 [單元名稱] 的配對遊戲題目。
+要求條件：
+- 左邊是名詞或題目。
+- 右邊是簡短的解釋或答案。
+- 難易度需符合國小學生程度。
+- 請用表格呈現，方便我直接複製。`;
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = promptText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('copyBtn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 偷薪水成功';
+                btn.classList.replace('bg-[#e4d8c5]', 'bg-green-700');
+                btn.classList.replace('text-[#3e332a]', 'text-white');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.replace('bg-green-700', 'bg-[#e4d8c5]');
+                    btn.classList.replace('text-white', 'text-[#3e332a]');
+                }, 2000);
+            } catch (err) {
+                alert('複製失敗，請手動選取複製');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        let timeLeft = 25 * 60; // 25 分鐘
+        let timerInterval = null;
+        let isRunning = false;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const display = document.getElementById('timer-display');
+            if(display) {
+                display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 300) { // 剩 5 分鐘
+                    display.classList.add('text-[#e29578]', 'font-bold', 'animate-pulse');
+                } else {
+                    display.classList.remove('text-[#e29578]', 'font-bold', 'animate-pulse');
+                }
+            }
+        }
+        
+        function resetTimerColors() {
+             const display = document.getElementById('timer-display');
+             if(display) {
+                 display.classList.remove('text-[#e29578]', 'font-bold', 'animate-pulse');
+             }
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if (isRunning) {
+                clearInterval(timerInterval);
+                if(btn) {
+                    btn.innerHTML = '衝刺';
+                    btn.classList.replace('bg-red-700', 'bg-[#a27555]');
+                    btn.classList.replace('hover:bg-red-600', 'hover:bg-[#b08b73]');
+                }
+            } else {
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        if(btn) btn.innerHTML = '下班！';
+                    }
+                }, 1000);
+                if(btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-pause"></i>喘口氣';
+                    btn.classList.replace('bg-[#a27555]', 'bg-red-700');
+                    btn.classList.replace('hover:bg-[#b08b73]', 'hover:bg-red-600');
+                }
+            }
+            isRunning = !isRunning;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timeLeft = 25 * 60;
+            updateTimerDisplay();
+            resetTimerColors();
+            const btn = document.getElementById('timer-btn');
+            if(btn) {
+                btn.innerHTML = '衝刺';
+                btn.classList.remove('bg-red-700', 'hover:bg-red-600');
+                btn.classList.add('bg-[#a27555]', 'hover:bg-[#b08b73]');
+            }
+        }
+    </script>
+</body>
+</html>
