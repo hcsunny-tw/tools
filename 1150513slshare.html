@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>拯救下班時間計畫：輕鬆無負擔的 Padlet Arcade 教學簡報</title>
+    
+    <!-- 新增：網頁瀏覽器分頁的專屬可愛 Icon (遊戲搖桿) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -76,6 +80,8 @@
             <h1 class="text-xl font-bold tracking-wider text-[#a27555] flex items-center gap-2">
                 <i class="fa-solid fa-mug-hot"></i> 拯救下班時間計畫
             </h1>
+            
+            <!-- 復原：導覽列按鈕改回數字與文字，乾淨俐落 -->
             <nav class="flex flex-wrap justify-center gap-2">
                 <button onclick="showSlide('slide-0')" class="nav-btn active px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">0. 登入</button>
                 <button onclick="showSlide('slide-1')" class="nav-btn px-4 py-2 rounded-full border border-[#d8c29e] hover:bg-[#e4d8c5] transition text-sm">1. 真心話</button>
@@ -100,7 +106,7 @@
                 一分鐘，<br/><span class="gradient-text">課堂變遊樂場！</span>
             </h1>
             <h2 class="text-xl md:text-2xl text-[#a27555] mb-10 font-light">
-                —— 來自一位<span class="text-[#a27555] font-bold border-b border-dashed border-[#a27555]">資訊領航員</span>的生存指南 ☕
+                —— 筱晴老師 <span class="text-[#a27555] font-bold border-b border-dashed border-[#a27555]">2026.05.13</span> ☕
             </h2>
             <div class="flex gap-4">
                 <button onclick="showSlide('slide-1')" class="px-8 py-4 bg-[#a27555] hover:bg-[#b08b73] text-white rounded-lg font-bold text-lg transition transform hover:scale-105 shadow-md shadow-[#a27555/30]">
@@ -144,12 +150,6 @@
                     </ul>
                 </div>
             </div>
-
-            <div class="mt-8 flex justify-center w-full">
-                <button onclick="showSlide('slide-2')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
-                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
         </section>
 
         <!-- Slide 2: 玩樂 -->
@@ -177,7 +177,7 @@
                     </div>
                     <!-- 替換為真實上傳的 QR Code 圖片 -->
                     <div id="qr-image" class="hidden absolute inset-0 bg-white rounded-2xl p-4 flex flex-col items-center justify-center">
-                        <img src="https://drive.google.com/uc?id=1dOJHvA7ENkATOa0cYzxyJBKwO_J1iiXS" alt="QR Code" class="w-full h-full object-contain">
+                        <img src="下載.png" alt="QR Code" class="w-full h-full object-contain">
                         <p class="text-[#3e332a] font-bold mt-2 text-sm bg-[#e4d8c5] px-2 rounded">掃描開玩！</p>
                     </div>
                 </div>
@@ -189,12 +189,6 @@
                     <i class="fa-solid fa-user-secret text-[#e29578] mr-2 text-xl"></i> 
                     <strong>後台解密：</strong> 這個遊戲不用拉動畫、不用寫程式，輸入文字跟圖片，<span class="text-[#e29578] font-black text-xl mx-1">1分鐘</span>自動生成。
                 </p>
-            </div>
-
-            <div class="mt-8 flex justify-center w-full">
-                <button onclick="showSlide('slide-3')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
-                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
-                </button>
             </div>
         </section>
 
@@ -257,12 +251,6 @@
                     </ul>
                 </div>
             </div>
-
-            <div class="mt-8 flex justify-center w-full">
-                <button onclick="showSlide('slide-4')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
-                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
         </section>
 
         <!-- Slide 4: 大腦外包 -->
@@ -305,12 +293,6 @@
                     <p class="text-sm text-[#a27555]">把 Padlet、Gemini、教務處公告打包成「群組」收合起來，還大腦一個清靜。</p>
                 </div>
             </div>
-
-            <div class="mt-8 flex justify-center w-full">
-                <button onclick="showSlide('slide-5')" class="text-[#a27555] hover:text-white transition flex items-center gap-2 font-bold px-6 py-2 rounded-full border-2 border-[#a27555] hover:bg-[#a27555]">
-                    前往下個章節 <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
         </section>
 
         <!-- Slide 5: 放學囉 -->
@@ -330,7 +312,7 @@
                 <div class="flex flex-col items-center gap-4 relative z-10">
                     <!-- 改為 <a> 標籤，點擊直接開新分頁連到你的 Padlet 牆 -->
                     <a href="https://padlet.com/solestn/1150513-padlet-8em01kjhvz7vsepy" target="_blank" class="bg-[#a27555] hover:bg-[#b08b73] text-white px-8 py-3 rounded-full font-black transition w-full md:w-auto shadow-lg shadow-[#a27555/20] text-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-share-nodes"></i> 誰要來分享你的大作？
+                        <i class="fa-solid fa-share-nodes"></i> 快來分享你的大作！
                     </a>
                     <p class="text-[#a27555] text-sm mt-2">點擊按鈕前往分享牆，讓大家玩玩看你的心血！</p>
                 </div>
@@ -338,6 +320,11 @@
 
             <p class="text-[#a27555] text-lg">感謝各位老師的參與！祝大家教學順利，平安回家！ 👋</p>
         </section>
+
+        <!-- 右下角浮動：前往下個章節按鈕 (預設隱藏並帶有淡入動畫) -->
+        <button id="fab-next" onclick="nextSlide()" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-[#a27555] hover:bg-[#b08b73] text-white px-6 py-3 rounded-full font-bold shadow-[0_4px_15px_rgba(162,117,85,0.4)] transition-all duration-300 transform hover:-translate-y-1 z-50 flex items-center gap-2 opacity-0 pointer-events-none translate-y-4">
+            前往下個章節 <i class="fa-solid fa-arrow-right"></i>
+        </button>
 
     </main>
 
@@ -347,6 +334,9 @@
     </div>
 
     <script>
+        const slides = ['slide-0', 'slide-1', 'slide-2', 'slide-3', 'slide-4', 'slide-5'];
+        let currentSlideIndex = 0;
+
         function showSlide(slideId) {
             document.querySelectorAll('.slide').forEach(slide => {
                 slide.classList.remove('active');
@@ -354,34 +344,62 @@
             const targetSlide = document.getElementById(slideId);
             if(targetSlide) targetSlide.classList.add('active');
 
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
+            // 同步目前的索引值
+            const newIndex = slides.indexOf(slideId);
+            if (newIndex !== -1) {
+                currentSlideIndex = newIndex;
+            }
+
+            // 更新上方導覽列的選取狀態
+            document.querySelectorAll('.nav-btn').forEach((btn, index) => {
+                if(index === currentSlideIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
             });
-            if(event && event.target) event.target.classList.add('active');
             
             resetTimerColors();
+            updateFabVisibility();
         }
 
-        const slides = ['slide-0', 'slide-1', 'slide-2', 'slide-3', 'slide-4', 'slide-5'];
-        let currentSlideIndex = 0;
+        // 控制右下角浮動按鈕的顯示與隱藏
+        function updateFabVisibility() {
+            const fab = document.getElementById('fab-next');
+            if (fab) {
+                // 只在第 1, 2, 3, 4 頁顯示 (0 和 5 不顯示)
+                if (currentSlideIndex > 0 && currentSlideIndex < slides.length - 1) {
+                    fab.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                    fab.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+                } else {
+                    fab.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                    fab.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+                }
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                showSlide(slides[currentSlideIndex]);
+            }
+        }
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'Space') {
                 if (currentSlideIndex < slides.length - 1) {
                     currentSlideIndex++;
-                    updateSlideFromIndex();
+                    showSlide(slides[currentSlideIndex]);
                 }
             } else if (e.key === 'ArrowLeft') {
                 if (currentSlideIndex > 0) {
                     currentSlideIndex--;
-                    updateSlideFromIndex();
+                    showSlide(slides[currentSlideIndex]);
                 }
             }
         });
 
         function updateSlideFromIndex() {
-            const placeholderEvent = { target: document.querySelectorAll('.nav-btn')[currentSlideIndex] };
-            window.event = placeholderEvent; 
             showSlide(slides[currentSlideIndex]);
         }
 
