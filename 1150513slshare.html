@@ -417,20 +417,22 @@
         }
 
         function copyPrompt() {
-            const promptText = `我是 [年級] 的 [科目] 老師，請幫我出 5 題關於 [單元名稱] 的配對遊戲題目。
-要求條件：
-- 左邊是名詞或題目。
-- 右邊是簡短的解釋或答案。
-- 難易度需符合國小學生程度。
-- 請用表格呈現，方便我直接複製。`;
+            const promptText = `我是 [年級] 的 [科目] 老師，請幫我出 5 題關於 [單元名稱] 的配對遊戲題目。\n要求條件：\n- 左邊是名詞或題目。\n- 右邊是簡短的解釋或答案。\n- 難易度需符合國小學生程度。\n- 請用表格呈現，方便我直接複製。`;
             
             const textarea = document.createElement('textarea');
             textarea.value = promptText;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
+            
             textarea.select();
+            textarea.setSelectionRange(0, 99999);
             
             try {
-                document.execCommand('copy');
+                const successful = document.execCommand('copy');
+                if (!successful) throw new Error('Copy failed');
+                
                 const btn = document.getElementById('copyBtn');
                 const originalHtml = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> 偷薪水成功';
@@ -443,7 +445,7 @@
                     btn.classList.replace('text-white', 'text-[#3e332a]');
                 }, 2000);
             } catch (err) {
-                alert('複製失敗，請手動選取複製');
+                alert('複製失敗，請手動選取文字後複製');
             } finally {
                 document.body.removeChild(textarea);
             }
