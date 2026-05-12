@@ -200,7 +200,7 @@
                 <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg text-xl font-mono border border-[#d8c29e] shadow-inner group relative text-[#3e332a]">
                     <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-[#a27555] font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap bg-white px-2 py-1 rounded">準時下班倒數</span>
                     <i class="fa-solid fa-stopwatch text-[#a27555]"></i>
-                    <span id="timer-display" class="tracking-wider">25:00</span>
+                    <span id="timer-display" class="tracking-wider">15:00</span>
                     <button onclick="toggleTimer()" id="timer-btn" class="ml-3 text-sm bg-[#a27555] hover:bg-[#b08b73] text-white font-bold px-3 py-1 rounded transition">衝刺</button>
                     <button onclick="resetTimer()" class="text-sm text-[#d8c29e] hover:text-[#a27555] px-2 py-1 rounded transition"><i class="fa-solid fa-rotate-right"></i></button>
                 </div>
@@ -451,7 +451,7 @@
             }
         }
 
-        let timeLeft = 25 * 60; // 25 分鐘
+        let timeLeft = 15 * 60; // 15 分鐘
         let timerInterval = null;
         let isRunning = false;
 
@@ -508,7 +508,7 @@
         function resetTimer() {
             clearInterval(timerInterval);
             isRunning = false;
-            timeLeft = 25 * 60;
+            timeLeft = 15 * 60;
             updateTimerDisplay();
             resetTimerColors();
             const btn = document.getElementById('timer-btn');
