@@ -2308,6 +2308,44 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         renderAttendanceUI();
     };
 
+// ==========================================
+    // ⭐ 新增：下載點名報表 (CSV) 邏輯
+    // ==========================================
+    document.getElementById('btnExportAttendance').addEventListener('click', () => {
+        const date = document.getElementById('attDatePicker').value;
+        if (!data.attendance || !data.attendance[date]) {
+            showToast("⚠️ 找不到該日期的點名資料！");
+            return;
+        }
+
+        const currentData = data.attendance[date];
+        const statusMap = { 0: '出席', 1: '遲到', 2: '早退', 3: '病假', 4: '公假', 5: '事假' };
+        
+        // 加上 \uFEFF 確保 Excel 打開中文不會亂碼
+        let csv = "\uFEFF座號,姓名,出缺席狀態,備註\n";
+        
+        data.roster.forEach((s, i) => {
+            const r = currentData[i] || { status: 0, note: '' };
+            const statusText = statusMap[r.status] || '未記錄';
+            // 處理備註裡面如果不小心打到逗號，要用雙引號包起來防跑版
+            const noteText = r.note ? `"${r.note}"` : ""; 
+            csv += `${s.no},${s.name},${statusText},${noteText}\n`;
+        });
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `冒險者點名報表_${date}.csv`;
+        document.body.appendChild(a); // 防呆，確保某些瀏覽器能正常觸發
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showToast(`📊 成功下載 ${date} 的點名報表！`);
+    });
+
+    
     document.getElementById('attDatePicker').addEventListener('change', initAttendanceView);
     document.getElementById('btnSaveAttendance').addEventListener('click', () => { 
     const date = document.getElementById('attDatePicker').value;
