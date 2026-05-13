@@ -2309,7 +2309,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
     };
 
 // ==========================================
-    // ⭐ 優化：下載「全日期」點名總報表 (CSV)
+    // ⭐ 終極版：下載點名「統計總表」 (CSV)
     // ==========================================
     document.getElementById('btnExportAttendance').addEventListener('click', () => {
         if (!data.attendance || Object.keys(data.attendance).length === 0) {
@@ -2317,27 +2317,44 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             return;
         }
 
-        // 1. 取得所有日期並排序 (由舊到新)
         const allDates = Object.keys(data.attendance).sort();
         const statusMap = { 0: '出席', 1: '遲到', 2: '早退', 3: '病假', 4: '公假', 5: '事假' };
         
-        // 2. 準備 CSV 標頭
-        let csv = "\uFEFF日期,座號,姓名,出缺席狀態,備註\n";
-        
-        // 3. 雙重迴圈：先跑日期，再跑學生
+        // 1. 建立標題列：左側是統計欄位，右側展開所有日期
+        let csv = "\uFEFF座號,姓名,出席(天),遲到(次),早退(次),病假(天),事假(天),公假(天)";
         allDates.forEach(date => {
-            const dailyData = data.attendance[date];
-            
-            data.roster.forEach((s, i) => {
-                // 取得該生在該日期的紀錄，若無則跳過 (防錯)
-                const r = dailyData[i];
-                if (!r) return; 
+            csv += `,${date}`; 
+        });
+        csv += "\n";
 
-                const statusText = statusMap[r.status] || '未記錄';
-                const noteText = r.note ? `"${r.note.replace(/"/g, '""')}"` : ""; // 處理備註中的引號與逗號
-                
-                csv += `${date},${s.no},${s.name},${statusText},${noteText}\n`;
+        // 2. 依序處理每一位學生的資料
+        data.roster.forEach((s, i) => {
+            // 用來計算各假別總數的計數器
+            let counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+            let dailyRecords = [];
+
+            // 統計該學生每一天的狀態
+            allDates.forEach(date => {
+                const record = data.attendance[date][i];
+                if (record) {
+                    counts[record.status]++; // 統計次數加 1
+                    
+                    // 組合當日明細文字 (狀態 + 備註)
+                    let text = statusMap[record.status];
+                    if (record.note) text += ` (${record.note.replace(/"/g, '""')})`;
+                    dailyRecords.push(`"${text}"`);
+                } else {
+                    dailyRecords.push(`"-"`); // 若該日沒有該生紀錄則顯示橫槓
+                }
             });
+
+            // 3. 組合出該學生的完整一行資料 (包含統計 + 明細)
+            // 注意事假是 counts[5]，公假是 counts[4]，這裡有照老師習慣的順序排列
+            csv += `${s.no},${s.name},${counts[0]},${counts[1]},${counts[2]},${counts[3]},${counts[5]},${counts[4]}`;
+            if (dailyRecords.length > 0) {
+                csv += `,${dailyRecords.join(',')}`;
+            }
+            csv += "\n";
         });
 
         // 4. 產生檔案並下載
@@ -2345,13 +2362,13 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `冒險者全日期點名總表_${getTaipeiDateString()}.csv`;
+        a.download = `公會出缺勤統計總表_${getTaipeiDateString()}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        showToast(`📊 成功匯出 ${allDates.length} 天的完整點名紀錄！`);
+        showToast(`📊 成功匯出點名統計！共統計 ${allDates.length} 天`);
     });
 
     
