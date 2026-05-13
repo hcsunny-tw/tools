@@ -73,6 +73,18 @@
     input:focus, select:focus{ border-color:var(--primary); }
     
     .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    /* ⭐ 6.1.8優化：防止上方導覽列按鈕展開時導致換行跳動 */
+    header .actions {
+        flex-wrap: nowrap; /* 強制不換行 */
+        overflow-x: auto;  /* 寬度不夠時允許左右滑動 (手機版友善) */
+        padding-bottom: 2px;
+        /* 隱藏醜醜的滾動條，但保留滑動功能 */
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+    }
+    header .actions::-webkit-scrollbar {
+        display: none; 
+    }
     .btn{ border:2px solid var(--text-light); border-radius:6px; padding:8px 16px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--primary); color:#fff; font-size:14px; transition: all 0.2s;}
     .btn.ghost{ background:var(--card); color:var(--text-light); border:2px dashed var(--tbl-border); }
     .btn.sm{ font-size:12px; padding:4px 10px; }
@@ -1928,14 +1940,22 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
             const avatarBg = st === 0 ? '#22c55e' : st === 1 ? '#eab308' : '#ef4444';
             
-        // ⭐ 根據按鈕狀態，排序個人的欠交任務
+// ⭐ 根據按鈕狀態，排序個人的欠交任務
             let sortedDebts = [...debts];
             if (groupDebtsBySubject) {
                 sortedDebts.sort((a, b) => {
                     const subA = a.subject || '其他';
                     const subB = b.subject || '其他';
-                    if (subA !== subB) return subA.localeCompare(subB, 'zh-TW'); // 不同科目，依科目名稱排
-                    return a.date < b.date ? 1 : -1; // 同科目，依日期排
+                    
+                    // 第一關：先依「科目名稱」分類 (例如：國語、數學)
+                    if (subA !== subB) return subA.localeCompare(subB, 'zh-TW'); 
+                    
+                    // 第二關 (⭐你的最新優化)：同科目時，改為依「作業名稱」排序
+                    // 這樣所有的「習作」或「考卷」就會完美排在一起！
+                    if (a.title !== b.title) return a.title.localeCompare(b.title, 'zh-TW');
+                    
+                    // 第三關：如果連作業名稱都一模一樣，才依日期排
+                    return a.date < b.date ? 1 : -1; 
                 });
             } else {
                 sortedDebts.sort((a, b) => a.date < b.date ? 1 : -1); // 預設依日期新舊排
@@ -1948,6 +1968,8 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 
                 return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${t.title}">${subjTag}🔸 ${t.title}</span> ${statusSpan}</div>`;
             }).join('');
+
+          
 
             const badgeHtml = debts.length > 0 ? `<div class="debt-badge" style="top:5px; right:0px;" onclick="window.openQuickDebtMenu(event, ${i}, '${encodeURIComponent(JSON.stringify(debts))}')">${debts.length}</div>` : '';
             
