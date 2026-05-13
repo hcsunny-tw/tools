@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.7🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.8🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -617,7 +617,8 @@ body.sidebar-open {
                       </select>
                       <button class="btn sm ghost icon-only" id="btnSortDirection" style="border:none; background:transparent; color:var(--text-main); padding:2px 6px;" title="切換正/反序"><i class="bi bi-sort-numeric-down"></i></button>
                      <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
-                    <button class="btn sm ghost" id="btnToggleClearStudents" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;"><i class="bi bi-eye-slash"></i> </button>
+                    <button class="btn sm ghost" id="btnToggleClearStudents" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="隱藏無欠款者"><i class="bi bi-eye-slash"></i> </button>
+                    <button class="btn sm ghost" id="btnToggleDebtSort" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="任務排序切換：依日期 / 依科目"><i class="bi bi-tags"></i> </button>
                   </div>
               </div>
 
@@ -722,7 +723,7 @@ body.sidebar-open {
             </a>
 
             <div class="copyright">
-                © 2026 ADVENTURER GUILD PROJECT v6.1.7. ALL RIGHTS RESERVED.
+                © 2026 ADVENTURER GUILD PROJECT v6.1.8. ALL RIGHTS RESERVED.
             </div>
         </div>
     </footer>
@@ -1811,6 +1812,14 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
     e.currentTarget.style.color = hideClearStudents ? 'var(--primary)' : 'var(--muted)';
     renderStudentStatus();
 });
+    // ⭐ 新增：個人缺交任務「依科目排序」切換邏輯
+    let groupDebtsBySubject = false;
+    document.getElementById('btnToggleDebtSort').addEventListener('click', (e) => {
+        groupDebtsBySubject = !groupDebtsBySubject;
+        e.currentTarget.innerHTML = groupDebtsBySubject ? '<i class="bi bi-tags-fill"></i> ' : '<i class="bi bi-tags"></i> ';
+        e.currentTarget.style.color = groupDebtsBySubject ? 'var(--primary)' : 'var(--muted)';
+        renderStudentStatus();
+    });
     
     document.getElementById('btnSortDirection').addEventListener('click', (e) => {
         currentSortAsc = !currentSortAsc;
@@ -1889,7 +1898,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                     const indices = a.assignedIndices || 'all';
                     if(indices === 'all' || indices.includes(i)) {
                         const taskSt = (a.statuses||[])[i] || 0;
-                        if(taskSt === 0 || taskSt === 2) debts.push({ id: a.id, title: a.title, st: taskSt, date: a.date });
+                             if(taskSt === 0 || taskSt === 2) debts.push({ id: a.id, title: a.title, st: taskSt, date: a.date, subject: a.subject || '其他' });
                     }
                 }
             });
@@ -1919,9 +1928,25 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             const st = (data.discipline && data.discipline.statuses) ? (data.discipline.statuses[i] || 0) : 0;
             const avatarBg = st === 0 ? '#22c55e' : st === 1 ? '#eab308' : '#ef4444';
             
-            let tasksHtml = debts.map(t => {
+        // ⭐ 根據按鈕狀態，排序個人的欠交任務
+            let sortedDebts = [...debts];
+            if (groupDebtsBySubject) {
+                sortedDebts.sort((a, b) => {
+                    const subA = a.subject || '其他';
+                    const subB = b.subject || '其他';
+                    if (subA !== subB) return subA.localeCompare(subB, 'zh-TW'); // 不同科目，依科目名稱排
+                    return a.date < b.date ? 1 : -1; // 同科目，依日期排
+                });
+            } else {
+                sortedDebts.sort((a, b) => a.date < b.date ? 1 : -1); // 預設依日期新舊排
+            }
+
+            let tasksHtml = sortedDebts.map(t => {
                 let statusSpan = t.st === 2 ? `<span class="pill p-orange" style="transform:scale(0.85); transform-origin:right center; margin:0;">再訂正</span>` : `<span class="pill p-gray" style="transform:scale(0.85); transform-origin:right center; margin:0;">未交</span>`;
-                return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${t.title}">🔸 ${t.title}</span> ${statusSpan}</div>`;
+                // ⭐ 如果開啟分類模式，就在任務前面加上小小的科目標籤
+                let subjTag = groupDebtsBySubject ? `<span style="font-size:10px; background:var(--tbl-head); color:var(--primary); padding:2px 4px; border-radius:4px; margin-right:4px;">${t.subject}</span>` : '';
+                
+                return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${t.title}">${subjTag}🔸 ${t.title}</span> ${statusSpan}</div>`;
             }).join('');
 
             const badgeHtml = debts.length > 0 ? `<div class="debt-badge" style="top:5px; right:0px;" onclick="window.openQuickDebtMenu(event, ${i}, '${encodeURIComponent(JSON.stringify(debts))}')">${debts.length}</div>` : '';
