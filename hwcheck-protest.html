@@ -630,12 +630,13 @@ body.sidebar-open {
                       <button class="btn sm ghost icon-only" id="btnSortDirection" style="border:none; background:transparent; color:var(--text-main); padding:2px 6px;" title="切換正/反序"><i class="bi bi-sort-numeric-down"></i></button>
                      <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
                     <button class="btn sm ghost" id="btnToggleClearStudents" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="隱藏無欠款者"><i class="bi bi-eye-slash"></i> </button>
-                    <button class="btn sm ghost" id="btnToggleDebtSort" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="任務排序切換：依日期 / 依科目"><i class="bi bi-tags"></i> </button>
+                    <button class="btn sm ghost" id="btnToggleDebtSort" style="border:none; background:transparent; padding:2px 6px; color:var(--primary); font-weight:bold;" title="任務排序切換：依日期 / 依科目"><i class="bi bi-tags-fill"></i> </button>
                   </div>
               </div>
 
               <div class="actions" style="margin:0;">
                   <button class="btn sm" id="btnGreenAllExpPlus" style="background:#16a34a; border-color:#15803d;"><i class="bi bi-stars"></i> 綠燈全體 +1</button>
+                  <button class="btn sm" id="btnAllClearedPlus" style="background:#ca8a04; border-color:#a16207; color:#fff;"><i class="bi bi-trophy-fill"></i> 全冠王 +1</button>
                   <button class="btn sm secondary" id="btnToggleBatchExp"><i class="bi bi-magic"></i> 加扣分模式</button>
                   <button class="btn sm secondary ghost" id="btnToggleBatchMode"><i class="bi bi-printer"></i> 批量列印卷軸</button>
                   <button class="btn sm" id="btnBatchSelectAll" style="display:none;"><i class="bi bi-check-all"></i> 全選</button>
@@ -1825,7 +1826,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
     renderStudentStatus();
 });
     // ⭐ 新增：個人缺交任務「依科目排序」切換邏輯
-    let groupDebtsBySubject = false;
+    let groupDebtsBySubject = true;
     document.getElementById('btnToggleDebtSort').addEventListener('click', (e) => {
         groupDebtsBySubject = !groupDebtsBySubject;
         e.currentTarget.innerHTML = groupDebtsBySubject ? '<i class="bi bi-tags-fill"></i> ' : '<i class="bi bi-tags"></i> ';
@@ -2053,28 +2054,46 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         }
     };
 
-    document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
+// ⭐ 新增：討伐全冠王一鍵加金幣邏輯
+    document.getElementById('btnAllClearedPlus').addEventListener('click', () => {
         let count = 0;
         const oldRoster = JSON.parse(JSON.stringify(data.roster));
         const oldLogsLength = data.expLogs ? data.expLogs.length : 0;
         
+        // 抓出畫面上沒有被封存的有效任務
+        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        
         data.roster.forEach((s, i) => {
-            if (((data.discipline.statuses || {})[i] || 0) === 0) { 
-                changeCoin(i, 1, '綠燈區獎勵', true); 
+            let pendingCount = 0;
+            // 檢查該學生的每一項任務狀態
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) pendingCount++; // 0未交、2再戰 皆算欠款
+                }
+            }
+            
+            // 如果欠款數為 0，就是全冠王，發放獎勵！
+            if (pendingCount === 0) { 
+                changeCoin(i, 1, '全冠王獎勵', true); 
                 count++; 
             }
         });
+        
         if (count > 0) { 
             playSuccessSound(); 
             triggerAutoSave(); 
             renderAll(); 
-            showToast(`✨ 綠燈區全體 (${count}人) 獲得 +1 金幣！`, "復原", () => {
+            showToast(`🏆 討伐全冠王 (${count}人) 獲得 +1 金幣！`, "復原", () => {
                 data.roster = oldRoster;
                 if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
                 triggerAutoSave();
                 renderAll();
-                showToast("已復原全體加分操作！");
+                showToast("已復原全冠王加分操作！");
             });
+        } else {
+            showToast("🥺 目前還沒有人成為討伐全冠王喔！");
         }
     });
 
@@ -2145,7 +2164,9 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         document.getElementById('customExpReason').value = '';
     };
 
-    function generateScrollHTML(studentData, debts) {
+      function generateScrollHTML(studentData, debts) {
+        // ⭐ 自動依作業名稱排序 (方便老師列印後對照整疊作業簿)
+        debts.sort((a, b) => a.title.localeCompare(b.title, 'zh-TW'));
         let tasksHtml = debts.map(t => {
             let statusText = t.st === 2 ? '需再訂正' : '尚未繳交';
             let dateText = t.date ? t.date : '無日期';
