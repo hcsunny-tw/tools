@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👓 教師作業批改後台 👓</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'admin-bg': '#F0F4F8',
+                        'admin-card': '#FFFFFF',
+                        'admin-primary': '#4A5568',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .active-file { background-color: #E2E8F0; font-weight: bold; }
+        /* 讓 iframe 填滿區域 */
+        #previewArea iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body class="bg-admin-bg min-h-screen flex flex-col font-sans text-gray-800">
+
+    <!-- 頂部導覽列 -->
+    <header class="bg-admin-primary text-white p-4 shadow-md">
+        <h1 class="text-2xl font-bold flex items-center gap-2 justify-center">
+            👓 學生作業總覽 <span class="text-sm font-normal">(請勿將此頁連結給學生)</span>
+        </h1>
+    </header>
+
+    <!-- 主內容區 -->
+    <div class="flex-grow grid grid-cols-1 md:grid-cols-[300px,1fr] p-4 md:p-6 gap-6 h-[calc(100vh-64px)]">
+        
+        <!-- 左側：學生清單導覽 -->
+        <aside class="bg-admin-card p-4 rounded-2xl shadow-lg border border-gray-100 overflow-y-auto flex flex-col">
+            <h2 class="text-xl font-bold text-gray-700 mb-4 pb-2 border-b-2 border-gray-100 flex items-center gap-2">
+                📂 班級資料夾
+            </h2>
+            
+            <!-- 載入中提示 -->
+            <div id="listLoading" class="text-center py-10 text-gray-500">
+                <p class="text-4xl animate-spin mb-2">🌀</p>
+                <p>正在載入資料清單...</p>
+            </div>
+
+            <!-- 資料夾清單主體 -->
+            <ul id="folderList" class="space-y-2 text-lg flex-grow">
+                <!-- 資料夾項目會被 JavaScript 動態插入這裡 -->
+            </ul>
+
+            <button id="refreshBtn" class="w-full mt-4 bg-gray-200 hover:bg-gray-300 p-2 rounded-xl text-gray-700 font-bold">
+                🔄 重新整理清單
+            </button>
+        </aside>
+
+        <!-- 右側：預覽區域 -->
+        <main id="previewArea" class="bg-admin-card rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col relative">
+            
+            <!-- 初始未選擇狀態 -->
+            <div id="preivewEmptyState" class="absolute inset-0 flex flex-col items-center justify-center text-center p-10 bg-gray-50 z-10">
+                <span class="text-8xl mb-6">👀</span>
+                <h3 class="text-2xl font-bold text-gray-600">請從左側選擇一位學生</h3>
+                <p class="text-gray-500 mt-2">點擊學生的作業檔案即可在此處即時預覽</p>
+            </div>
+
+            <!-- 預覽標題列 (顯示當前預覽檔名) -->
+            <div id="previewHeader" class="bg-gray-100 p-3 border-b border-gray-200 text-center font-mono text-sm hidden">
+                <span id="currentFileName"></span>
+            </div>
+
+            <!-- 預覽容器 (HTML iframe 或 Scratch TurboWarp) -->
+            <div id="previewContent" class="flex-grow w-full h-full hidden relative">
+                <!-- 內容會被動態插入 -->
+            </div>
+            
+        </main>
+
+    </div>
+
+    <!-- Scratch 預覽的燈箱彈窗 (Modal) -->
+    <div id="scratchModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white w-full max-w-5xl h-[80vh] rounded-3xl shadow-2xl relative flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-orange-600">🐈 Scratch 作品預覽</h3>
+                <button id="closeModalBtn" class="text-3xl text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="flex-grow bg-black">
+                <iframe id="scratchIframe" src="" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 載入 Firebase SDK (與上傳頁相同) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+
+        // ⚠️ 請將下方的設定替換成你 Firebase 後台複製的配置 (必須與上傳頁相同)
+        const firebaseConfig = {
+            apiKey: "你的_API_KEY",
+            authDomain: "你的_PROJECT_ID.firebaseapp.com",
+            projectId: "你的_PROJECT_ID",
+            storageBucket: "你的_PROJECT_ID.appspot.com",
+            messagingSenderId: "你的_SENDER_ID",
+            appId: "你的_APP_ID"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // DOM 元素
+        const folderList = document.getElementById('folderList');
+        const listLoading = document.getElementById('listLoading');
+        const previewArea = document.getElementById('previewArea');
+        const previewContent = document.getElementById('previewContent');
+        const preivewEmptyState = document.getElementById('preivewEmptyState');
+        const previewHeader = document.getElementById('previewHeader');
+        const currentFileName = document.getElementById('currentFileName');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        const scratchModal = document.getElementById('scratchModal');
+        const scratchIframe = document.getElementById('scratchIframe');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        // 初始化：載入根目錄資料夾
+        loadRootFolders();
+
+        refreshBtn.addEventListener('click', loadRootFolders);
+        closeModalBtn.addEventListener('click', closeScratchModal);
+
+        // 函式：載入 root (projects) 下的資料夾 (即班級名稱)
+        async function loadRootFolders() {
+            folderList.innerHTML = '';
+            listLoading.classList.remove('hidden');
+            
+            try {
+                const listRef = ref(storage, 'projects');
+                const res = await listAll(listRef);
+                
+                if (res.prefixes.length === 0) {
+                    folderList.innerHTML = '<li class="text-center text-gray-500 py-4">目前還沒有上傳資料喔。</li>';
+                }
+
+                // 列出班級資料夾
+                res.prefixes.forEach((folderRef) => {
+                    const li = document.createElement('li');
+                    li.className = 'cursor-pointer hover:bg-gray-100 p-2 rounded-xl transition font-bold text-gray-700 flex items-center gap-2';
+                    li.innerHTML = `<span>📁</span> ${folderRef.name}`;
+                    li.onclick = () => loadStudentFolders(folderRef, li);
+                    folderList.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("載入失敗:", error);
+                folderList.innerHTML = '<li class="text-center text-red-500 py-4">載入清單失敗，請檢查 Rules 設定。</li>';
+            } finally {
+                listLoading.classList.add('hidden');
+            }
+        }
+
+        // 函式：載入班級下的子資料夾 (即學生座號姓名)
+        async function loadStudentFolders(classFolderRef, classLiElement) {
+            // 先清除該班級下原本可能展開的內容
+            const existingSubList = classLiElement.querySelector('ul');
+            if (existingSubList) {
+                existingSubList.remove();
+                return; //再次點擊則收合
+            }
+
+            classLiElement.innerHTML = `<span>📂</span> ${classFolderRef.name}`; //變更圖示
+
+            const subUl = document.createElement('ul');
+            subUl.className = 'ml-6 mt-2 space-y-1 border-l-2 border-gray-200 pl-2 text-base font-normal';
+            subUl.innerHTML = '<li class="text-xs text-gray-400">載入中...</li>';
+            classLiElement.appendChild(subUl);
+
+            try {
+                const res = await listAll(classFolderRef);
+                subUl.innerHTML = ''; //清除載入中
+
+                if (res.prefixes.length === 0) {
+                    subUl.innerHTML = '<li class="text-xs text-gray-400 p-1">沒有學生資料</li>';
+                }
+
+                // 列出學生資料夾
+                res.prefixes.forEach((studentFolderRef) => {
+                    const subLi = document.createElement('li');
+                    subLi.className = 'cursor-pointer hover:bg-blue-50 p-1.5 rounded-lg text-gray-600 flex items-center gap-1.5';
+                    subLi.innerHTML = `<span>👤</span> ${studentFolderRef.name}`;
+                    subLi.onclick = (e) => {
+                        e.stopPropagation(); //防止觸發父節點的收合
+                        loadStudentFiles(studentFolderRef, subLi);
+                    };
+                    subUl.appendChild(subLi);
+                });
+
+            } catch (error) {
+                console.error(error);
+                subUl.innerHTML = '<li class="text-xs text-red-400">載入失敗</li>';
+            }
+        }
+
+
+        // 函式：載入學生資料夾內的檔案
+        async function loadStudentFiles(studentFolderRef, studentLiElement) {
+            // 清除原本展開的檔案清單
+            const existingFileSubList = studentLiElement.querySelector('ul');
+            if (existingFileSubList) {
+                existingFileSubList.remove();
+                return;
+            }
+
+            const fileUl = document.createElement('ul');
+            fileUl.className = 'ml-5 mt-1 space-y-1 text-sm font-mono';
+            fileUl.innerHTML = '<li class="text-xs text-gray-400">載入檔案...</li>';
+            studentLiElement.appendChild(fileUl);
+
+            try {
+                const res = await listAll(studentFolderRef);
+                fileUl.innerHTML = ''; // 清除載入中
+
+                if (res.items.length === 0) {
+                    fileUl.innerHTML = '<li class="text-xs text-gray-400 p-1">空夾</li>';
+                }
+
+                // 列出檔案
+                res.items.forEach((fileRef) => {
+                    const fileLi = document.createElement('li');
+                    
+                    // 根據副檔名顯示不同的圖示與點擊行為
+                    if (fileRef.name.endsWith('.html')) {
+                        fileLi.className = 'cursor-pointer text-blue-600 hover:bg-blue-100 p-1 rounded transition flex items-center gap-1';
+                        fileLi.innerHTML = `<span>🌐</span> [HTM] ${fileRef.name}`;
+                        fileLi.onclick = (e) => {
+                            e.stopPropagation();
+                            setActiveFile(fileLi);
+                            previewHTML作業(fileRef);
+                        };
+                    } else if (fileRef.name.endsWith('.sb3')) {
+                        fileLi.className = 'cursor-pointer text-orange-600 hover:bg-orange-100 p-1 rounded transition flex items-center gap-1';
+                        fileLi.innerHTML = `<span>🐈</span> [SB3] ${fileRef.name}`;
+                        fileLi.onclick = (e) => {
+                            e.stopPropagation();
+                            setActiveFile(fileLi);
+                            previewScratch作業(fileRef);
+                        };
+                    } else {
+                        fileLi.className = 'text-gray-400 p-1 flex items-center gap-1';
+                        fileLi.innerHTML = `<span>📄</span> ${fileRef.name}`;
+                        fileLi.onclick = (e) => e.stopPropagation(); //非預覽檔不做事
+                    }
+                    
+                    fileUl.appendChild(fileLi);
+                });
+
+            } catch (error) {
+                console.error(error);
+                fileUl.innerHTML = '<li class="text-xs text-red-400">載入失敗</li>';
+            }
+        }
+
+        // 高亮當前點擊的檔案
+        function setActiveFile(element) {
+            // 移除所有人的 active class
+            document.querySelectorAll('#folderList li').forEach(el => el.classList.remove('active-file'));
+            // 添加到當前點擊的人
+            element.classList.add('active-file');
+        }
+
+
+        // === 預覽邏輯 ===
+
+        function showPreviewLayout(fileName) {
+            preivewEmptyState.classList.add('hidden');
+            previewHeader.classList.remove('hidden');
+            previewContent.classList.remove('hidden');
+            currentFileName.textContent = fileName;
+            previewContent.innerHTML = ''; // 清空先前的預覽內容
+        }
+
+        async function previewHTML作業(fileRef) {
+            showPreviewLayout(fileRef.name);
+            
+            // 載入提示
+            previewContent.innerHTML = '<div class="absolute inset-0 flex items-center justify-center bg-white z-20">正在讀取網頁內容...🌀</div>';
+
+            try {
+                // 獲取檔案的公開下載連結
+                const url = await getDownloadURL(fileRef);
+                
+                // 直接使用 iframe 載入該網址
+                // 注意：這需要 Firebase Rules 允許 read
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin'); //增加安全性
+                
+                // 移除載入提示，插入 iframe
+                previewContent.innerHTML = '';
+                previewContent.appendChild(iframe);
+
+            } catch (error) {
+                console.error("預覽 HTML 失敗:", error);
+                previewContent.innerHTML = `<div class="p-10 text-red-500">預覽失敗，可能是規則未開啟或檔案無法讀取。<br>${error.message}</div>`;
+            }
+        }
+
+        async function previewScratch作業(fileRef) {
+            // Scratch 我們不放在右側的小框框，改用一個大彈窗(Modal)來玩，體驗比較好。
+            showPreviewLayout(fileRef.name);
+            previewContent.innerHTML = '<div class="absolute inset-0 flex items-center justify-center bg-orange-50 z-20">正在準備 Scratch 播放器...🐈</div>';
+
+            try {
+                // 獲取檔案下載連結
+                const url = await getDownloadURL(fileRef);
+                
+                // 網址需要經過編碼才能放在 URL 參數中
+                const encodedUrl = encodeURIComponent(url);
+                
+                // 使用 TurboWarp Embed 連結
+                const turbowarpUrl = `https://turbowarp.org/embed.html?project_url=${encodedUrl}`;
+
+                // 開啟燈箱
+                openScratchModal(turbowarpUrl);
+                
+                // 右側區域顯示提示
+                previewContent.innerHTML = '<div class="absolute inset-0 flex items-center justify-center bg-orange-50 z-20">Scratch 已在視窗開啟。</div>';
+
+            } catch (error) {
+                console.error("預覽 Scratch 失敗:", error);
+                previewContent.innerHTML = `<div class="p-10 text-red-500">預覽失敗。<br>${error.message}</div>`;
+            }
+        }
+
+        function openScratchModal(url) {
+            scratchIframe.src = url;
+            scratchModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeScratchModal() {
+            scratchModal.classList.add('opacity-0', 'pointer-events-none');
+            scratchIframe.src = ''; // 停止播放
+        }
+
+    </script>
+</body>
+</html>
