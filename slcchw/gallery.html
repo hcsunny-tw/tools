@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎪 歡樂作品大廳 🎪</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gallery-bg': '#E0F2FE', // 清透天空藍
+                        'gallery-card': '#FFFFFF',
+                        'gallery-text': '#0284C7',
+                        'gallery-btn': '#38BDF8',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gallery-bg min-h-screen font-sans text-gray-700 p-4 md:p-8 relative">
+
+    <!-- 頁面標題 -->
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gallery-text drop-shadow-sm flex items-center justify-center gap-3">
+            🎪 歡樂作品大廳 🐶
+        </h1>
+        <p class="text-lg text-sky-700 mt-2">快來看看同學們做了什麼厲害的作品！🦦</p>
+        
+        <!-- 返回上傳頁的按鈕 -->
+        <a href="index.html" class="inline-block mt-4 text-sky-600 hover:text-sky-800 font-bold underline">
+            ← 回到作業上傳區
+        </a>
+    </header>
+
+    <!-- 班級選擇區 -->
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-md border-4 border-sky-200 mb-8 flex flex-col sm:flex-row items-center gap-4 justify-center">
+        <label class="text-xl font-bold text-gallery-text">你想看哪一班的作品？</label>
+        <select id="classSelector" class="p-3 rounded-xl border-2 border-sky-200 focus:outline-none focus:border-gallery-btn text-xl bg-sky-50 font-bold cursor-pointer">
+            <option value="">請選擇班級...</option>
+            <!-- 這裡的選項要跟你上傳頁面 index.html 一致 -->
+            <option value="二年甲班">二年甲班</option>
+            <option value="二年乙班">二年乙班</option>
+            <option value="三年甲班">三年甲班</option>
+        </select>
+    </div>
+
+    <!-- 載入中動畫 -->
+    <div id="loadingIndicator" class="hidden text-center py-10">
+        <div class="text-6xl animate-bounce mb-4">🦦</div>
+        <p class="text-xl font-bold text-sky-600">水豚君正在幫你搬作品過來...</p>
+    </div>
+
+    <!-- 作品卡片網格 -->
+    <div id="studentGrid" class="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        <!-- 學生卡片會動態生成在這裡 -->
+    </div>
+
+    <!-- 空白提示 -->
+    <div id="emptyState" class="hidden text-center py-10">
+        <span class="text-6xl">🍃</span>
+        <p class="text-xl font-bold text-sky-600 mt-4">這個班級還沒有人上傳作品喔！</p>
+    </div>
+
+    <!-- 作品觀賞彈窗 (Modal) -->
+    <div id="workModal" class="fixed inset-0 bg-black/85 flex flex-col items-center justify-center z-50 p-2 md:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <!-- 彈窗控制列 -->
+        <div class="w-full max-w-5xl flex justify-between items-center mb-2 px-2">
+            <h3 id="modalTitle" class="text-2xl font-bold text-white flex items-center gap-2">
+                ⭐ <span id="modalStudentName"></span> 的作品
+            </h3>
+            <button id="closeModalBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full text-xl shadow-lg transition transform hover:scale-105">
+                ❌ 關閉
+            </button>
+        </div>
+        
+        <!-- 彈窗內容區 (顯示網頁或 Scratch) -->
+        <div class="bg-white w-full max-w-5xl h-[75vh] rounded-3xl overflow-hidden shadow-2xl relative flex items-center justify-center">
+            <div id="modalLoading" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+                <span class="text-2xl font-bold text-gray-400">載入中... 🐾</span>
+            </div>
+            <iframe id="workIframe" src="" class="w-full h-full border-none z-20 relative bg-white" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+    </div>
+
+
+    <!-- 載入 Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getStorage, ref, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+
+        // ⚠️ 請替換成你的 Firebase Config
+        const firebaseConfig = {
+            apiKey: "你的_API_KEY",
+            authDomain: "你的_PROJECT_ID.firebaseapp.com",
+            projectId: "你的_PROJECT_ID",
+            storageBucket: "你的_PROJECT_ID.appspot.com",
+            messagingSenderId: "你的_SENDER_ID",
+            appId: "你的_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // DOM 元素
+        const classSelector = document.getElementById('classSelector');
+        const studentGrid = document.getElementById('studentGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const emptyState = document.getElementById('emptyState');
+        
+        const workModal = document.getElementById('workModal');
+        const workIframe = document.getElementById('workIframe');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalStudentName = document.getElementById('modalStudentName');
+        const modalLoading = document.getElementById('modalLoading');
+
+        // 隨機可愛頭像
+        const avatars = ['🐶', '🦦', '🐰', '🐹', '🐼', '🦊', '🐱', '🦁'];
+
+        // 監聽班級選擇
+        classSelector.addEventListener('change', (e) => {
+            const selectedClass = e.target.value;
+            if (selectedClass) {
+                loadClassWorks(selectedClass);
+            } else {
+                studentGrid.innerHTML = '';
+                emptyState.classList.add('hidden');
+            }
+        });
+
+        // 關閉彈窗
+        closeModalBtn.addEventListener('click', () => {
+            workModal.classList.add('opacity-0', 'pointer-events-none');
+            workIframe.src = ''; // 停止播放
+            setTimeout(() => modalLoading.classList.remove('hidden'), 300);
+        });
+
+        // 載入該班級的所有學生資料夾
+        async function loadClassWorks(className) {
+            studentGrid.innerHTML = '';
+            emptyState.classList.add('hidden');
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                const classRef = ref(storage, `projects/${className}`);
+                const res = await listAll(classRef);
+
+                if (res.prefixes.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                // 排序資料夾 (依照座號數字排序，假設資料夾名稱格式為 "5_王小明")
+                const sortedFolders = res.prefixes.sort((a, b) => {
+                    const numA = parseInt(a.name.split('_')[0]) || 0;
+                    const numB = parseInt(b.name.split('_')[0]) || 0;
+                    return numA - numB;
+                });
+
+                // 產生學生卡片
+                for (const studentFolder of sortedFolders) {
+                    // 為了畫面整潔，取得資料夾內的第一個檔案來當作代表作
+                    const filesRes = await listAll(studentFolder);
+                    if (filesRes.items.length > 0) {
+                        // 尋找 html 或 sb3 檔案
+                        const workFile = filesRes.items.find(f => f.name.endsWith('.html') || f.name.endsWith('.sb3')) || filesRes.items[0];
+                        createStudentCard(studentFolder.name, workFile);
+                    }
+                }
+
+            } catch (error) {
+                console.error("載入失敗:", error);
+                alert("讀取失敗了！請確認 Firebase 權限是否有設定正確。");
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // 建立學生作品卡片
+        function createStudentCard(folderName, fileRef) {
+            // 解析 "5_王小明" 變成 "5號 王小明"
+            const nameParts = folderName.split('_');
+            const displayName = nameParts.length > 1 ? `${nameParts[0]}號 ${nameParts[1]}` : folderName;
+            
+            const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+            const isScratch = fileRef.name.endsWith('.sb3');
+            const fileTypeTag = isScratch ? '🎮 遊戲' : '🌐 網頁';
+
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-3xl p-4 shadow-sm hover:shadow-xl border-4 border-transparent hover:border-gallery-btn transition transform hover:-translate-y-2 cursor-pointer flex flex-col items-center text-center group';
+            
+            card.innerHTML = `
+                <div class="text-6xl mb-2 group-hover:animate-bounce">${randomAvatar}</div>
+                <h3 class="font-bold text-xl text-gray-800 mb-1">${displayName}</h3>
+                <span class="bg-sky-100 text-sky-700 text-sm font-bold py-1 px-3 rounded-full mt-2">${fileTypeTag}</span>
+            `;
+
+            // 點擊卡片開啟作品
+            card.addEventListener('click', () => openWork(displayName, fileRef));
+            
+            studentGrid.appendChild(card);
+        }
+
+        // 開啟作品彈窗
+        async function openWork(studentName, fileRef) {
+            modalStudentName.textContent = studentName;
+            workModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalLoading.classList.remove('hidden');
+
+            try {
+                const url = await getDownloadURL(fileRef);
+                
+                if (fileRef.name.endsWith('.sb3')) {
+                    // Scratch 作品
+                    const encodedUrl = encodeURIComponent(url);
+                    workIframe.src = `https://turbowarp.org/embed.html?project_url=${encodedUrl}&autoplay=true`;
+                } else {
+                    // HTML 網頁作品
+                    workIframe.src = url;
+                }
+
+                // 當 iframe 載入完成時，隱藏「載入中」畫面
+                workIframe.onload = () => {
+                    modalLoading.classList.add('hidden');
+                };
+
+            } catch (error) {
+                console.error("開啟作品失敗:", error);
+                alert("哎呀！無法開啟這個作品。");
+                closeModalBtn.click();
+            }
+        }
+    </script>
+</body>
+</html>
