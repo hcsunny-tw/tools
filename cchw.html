@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 歡樂作業上傳區 🌟</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 自訂明亮溫暖的色彩主題
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'spring-bg': '#FFF9E6',
+                        'spring-border': '#FFD275',
+                        'spring-text': '#E87A5D',
+                        'spring-btn': '#A8D8B9',
+                        'spring-btn-hover': '#85C79E',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 隱藏預設的檔案上傳按鈕，自訂可愛按鈕 */
+        input[type="file"]::file-selector-button {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-spring-bg min-h-screen flex items-center justify-center p-4 font-sans text-gray-700">
+
+    <div class="max-w-4xl w-full">
+        <!-- 前往作品大廳的按鈕 -->
+        <div class="text-center mb-6">
+            <a href="gallery.html" class="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-bold text-xl py-3 px-8 rounded-full shadow-md transition transform hover:scale-105">
+                👀 去「作品大廳」看同學的作業！
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- 左側：上傳表單區 -->
+            <div class="bg-white p-8 rounded-3xl shadow-lg border-4 border-spring-border flex flex-col">
+                <h1 class="text-3xl font-bold text-spring-text mb-6 text-center flex items-center justify-center gap-2">
+                    🐶 作業上傳小幫手 🦦
+                </h1>
+
+                <div class="space-y-4">
+                    <!-- 班級 -->
+                    <div>
+                        <label class="block text-lg font-bold mb-1 text-spring-text">我是哪一班？</label>
+                        <select id="studentClass" class="w-full p-3 rounded-xl border-2 border-yellow-200 focus:outline-none focus:border-spring-border text-lg bg-yellow-50">
+                            <option value="">請選擇班級...</option>
+                            <option value="二年甲班">二年甲班</option>
+                            <option value="二年乙班">二年乙班</option>
+                            <option value="三年甲班">三年甲班</option>
+                        </select>
+                    </div>
+
+                    <!-- 座號 -->
+                    <div>
+                        <label class="block text-lg font-bold mb-1 text-spring-text">我的座號是？</label>
+                        <input type="number" id="studentNumber" placeholder="例如：5" min="1" class="w-full p-3 rounded-xl border-2 border-yellow-200 focus:outline-none focus:border-spring-border text-lg bg-yellow-50">
+                    </div>
+
+                    <!-- 姓名 -->
+                    <div>
+                        <label class="block text-lg font-bold mb-1 text-spring-text">我的名字是？</label>
+                        <input type="text" id="studentName" placeholder="請輸入姓名" class="w-full p-3 rounded-xl border-2 border-yellow-200 focus:outline-none focus:border-spring-border text-lg bg-yellow-50">
+                    </div>
+
+                    <!-- 檔案選擇 -->
+                    <div>
+                        <label class="block text-lg font-bold mb-1 text-spring-text">選擇作業檔案：</label>
+                        <input type="file" id="fileInput" accept=".html,.sb3" class="w-full p-3 rounded-xl border-2 border-dashed border-spring-border text-lg bg-yellow-50 cursor-pointer hover:bg-yellow-100 transition">
+                        <p class="text-sm text-gray-500 mt-2">💡 只能上傳 .html 網頁檔 或 .sb3 遊戲檔喔！</p>
+                    </div>
+
+                    <!-- 繳交按鈕 -->
+                    <button id="uploadBtn" class="w-full mt-4 bg-spring-btn hover:bg-spring-btn-hover text-white font-bold text-2xl py-4 rounded-2xl shadow-md transform transition active:scale-95 flex justify-center items-center gap-2">
+                        🚀 確認繳交作業！
+                    </button>
+
+                    <!-- 上傳狀態提示 -->
+                    <div id="statusMessage" class="hidden text-center text-lg font-bold mt-4 p-3 rounded-xl"></div>
+                </div>
+            </div>
+
+            <!-- 右側：即時預覽區 -->
+            <div class="bg-white p-6 rounded-3xl shadow-lg border-4 border-green-200 flex flex-col items-center justify-center relative overflow-hidden min-h-[400px]">
+                <h2 class="text-2xl font-bold text-green-600 mb-4 text-center w-full">👀 作業偷看一下區</h2>
+                
+                <!-- 預設畫面 -->
+                <div id="emptyState" class="flex flex-col items-center justify-center text-center opacity-70">
+                    <span class="text-6xl mb-4">✨</span>
+                    <p class="text-lg font-bold text-gray-400">還沒有選擇檔案喔！<br>水豚君在等你～</p>
+                </div>
+
+                <!-- HTML 預覽框架 -->
+                <iframe id="previewFrame" class="hidden w-full h-full border-2 border-gray-100 rounded-xl flex-grow bg-white" sandbox="allow-scripts"></iframe>
+
+                <!-- Scratch 提示畫面 -->
+                <div id="scratchState" class="hidden flex flex-col items-center justify-center text-center">
+                    <span class="text-8xl mb-4">🐈</span>
+                    <p class="text-xl font-bold text-orange-500">Scratch 檔案準備好囉！<br>按左邊的按鈕發射吧！</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 載入 Firebase SDK (使用 ES Modules) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
+
+        // ⚠️ 請將下方的設定替換成你 Firebase 後台複製的配置
+        const firebaseConfig = {
+            apiKey: "你的_API_KEY",
+            authDomain: "你的_PROJECT_ID.firebaseapp.com",
+            projectId: "你的_PROJECT_ID",
+            storageBucket: "你的_PROJECT_ID.appspot.com",
+            messagingSenderId: "你的_SENDER_ID",
+            appId: "你的_APP_ID"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // 取得 DOM 元素
+        const fileInput = document.getElementById('fileInput');
+        const previewFrame = document.getElementById('previewFrame');
+        const emptyState = document.getElementById('emptyState');
+        const scratchState = document.getElementById('scratchState');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // 監聽檔案選擇事件 (FileReader 即時預覽)
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            
+            // 隱藏所有預覽狀態
+            emptyState.classList.add('hidden');
+            previewFrame.classList.add('hidden');
+            scratchState.classList.add('hidden');
+
+            if (!file) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (file.name.endsWith('.html')) {
+                // 如果是 HTML 檔案，讀取文字並顯示在 iframe
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewFrame.srcdoc = event.target.result;
+                    previewFrame.classList.remove('hidden');
+                };
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.sb3')) {
+                // 如果是 Scratch 檔案，顯示可愛提示
+                scratchState.classList.remove('hidden');
+            } else {
+                alert('只能上傳 .html 或是 .sb3 的檔案喔！');
+                fileInput.value = ''; // 清除不合法的檔案
+                emptyState.classList.remove('hidden');
+            }
+        });
+
+        // 監聽上傳按鈕點擊事件
+        uploadBtn.addEventListener('click', async () => {
+            const studentClass = document.getElementById('studentClass').value;
+            const studentNumber = document.getElementById('studentNumber').value;
+            const studentName = document.getElementById('studentName').value;
+            const file = fileInput.files[0];
+
+            // 簡易的防呆檢查
+            if (!studentClass || !studentNumber || !studentName) {
+                alert('班級、座號和姓名都要填寫喔！🐶');
+                return;
+            }
+            if (!file) {
+                alert('還沒有選擇作業檔案喔！🦦');
+                return;
+            }
+
+            // 變更按鈕狀態
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '⏳ 正在努力上傳中...';
+            uploadBtn.classList.replace('bg-spring-btn', 'bg-gray-400');
+            statusMessage.classList.add('hidden');
+
+            try {
+                // 設定 Firebase Storage 存檔路徑 (例如: projects/二年甲班/5_王小明/index.html)
+                const filePath = `projects/${studentClass}/${studentNumber}_${studentName}/${file.name}`;
+                const storageRef = ref(storage, filePath);
+
+                // 執行上傳
+                await uploadBytes(storageRef, file);
+
+                // 上傳成功
+                statusMessage.textContent = '🎉 太棒了！作業繳交成功！💯';
+                statusMessage.className = 'text-center text-lg font-bold mt-4 p-3 rounded-xl bg-green-100 text-green-700 block';
+                
+                // 清空表單，準備迎接下一個學生
+                fileInput.value = '';
+                previewFrame.srcdoc = '';
+                previewFrame.classList.add('hidden');
+                scratchState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("上傳失敗:", error);
+                statusMessage.textContent = '❌ 哎呀！上傳失敗了，請舉手請老師幫忙！';
+                statusMessage.className = 'text-center text-lg font-bold mt-4 p-3 rounded-xl bg-red-100 text-red-700 block';
+            } finally {
+                // 恢復按鈕狀態
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '🚀 確認繳交作業！';
+                uploadBtn.classList.replace('bg-gray-400', 'bg-spring-btn');
+            }
+        });
+    </script>
+</body>
+</html>
