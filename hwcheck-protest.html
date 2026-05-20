@@ -172,8 +172,18 @@
     .att-stat-val { font-size: 20px; font-weight: 900; }
     .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
 
-    /* ⭐ 新版冒險者狀態與紀律小字卡 */
-    .student-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; padding: 10px 0; }
+/* ⭐ 新版冒險者狀態與紀律小字卡 (優化：預設 5 張一列) 6.1.9*/
+    .student-status-grid { 
+        display: grid; 
+        grid-template-columns: repeat(5, minmax(0, 1fr)); 
+        gap: 15px; 
+        padding: 10px 0; 
+    }
+    /* RWD 響應式設定：避免在小螢幕(如平板/手機)上 5 張卡片被擠得太小 */
+    @media (max-width: 1200px) { .student-status-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 992px)  { .student-status-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 768px)  { .student-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 480px)  { .student-status-grid { grid-template-columns: 1fr; } }
     .d-student-card { background: #fff; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 12px; transition: transform 0.2s, box-shadow 0.2s; position: relative; display: flex; flex-direction: column; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); }
     .d-student-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); border-color: var(--primary); }
     .d-avatar { border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: #fff; cursor: pointer; border: 2px solid rgba(0,0,0,0.2); transition: transform 0.1s; flex-shrink: 0; }
