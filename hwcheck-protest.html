@@ -1317,32 +1317,65 @@ function getRankHtml(exp) {
         else ind.innerHTML = `<span style="color:var(--danger)"><i class="bi bi-exclamation-triangle"></i> ${message}</span>`;
     }
 
-    let isDirty = false; // 用來標記「是否有新資料還沒上傳」
+let isDirty = false; // 用來標記「是否有新資料還沒上傳」
+    let lastSyncedState = { core: '', assignments: '', attendance: '', logs: '' }; // ⭐ 新增：用來記錄最後一次上傳的狀態
 
     function triggerAutoSave() {
-        // 1. 瞬間存入瀏覽器 LocalStorage (完全免費，防斷電當機)
         if (currentUser) {
             localStorage.setItem(`guild_backup_${currentUser.uid}`, JSON.stringify(data));
         }
-        
         isDirty = true;
         updateSaveStatus('local');
 
-        // 2. 延遲上傳雲端 (從原本的 1.5 秒改為 15 秒)
-        // 老師連續點擊加分時，計時器會一直重置，直到停手 15 秒後才整包推上 Firebase
         clearTimeout(saveTimeout); 
         saveTimeout = setTimeout(() => {
             syncToCloud();
         }, 15000); 
     }
 
-    // 負責真正把資料推上 Firebase 的核心函數
+    // ⭐ 終極優化版：智慧拆分與差異比對上傳
     async function syncToCloud() {
         if (!currentUser || !isDirty) return;
         updateSaveStatus('uploading', '雲端同步中');
         try { 
             const cleanData = JSON.parse(JSON.stringify(data)); 
-            await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), cleanData); 
+            
+            // 1. 將整包大資料拆分成四個小模組
+            const coreData = { roster: cleanData.roster, teachers: cleanData.teachers, questSettings: cleanData.questSettings, discipline: cleanData.discipline, settings: cleanData.settings, coinPresets: cleanData.coinPresets };
+            const assignData = { assignments: cleanData.assignments };
+            const attData = { attendance: cleanData.attendance };
+            const logsData = { expLogs: cleanData.expLogs };
+
+            const promises = [];
+            
+            // 2. 智慧比對：把資料轉成字串，如果跟上次上傳的一樣，就跳過不上傳 (大幅節省網路與寫入額度)
+            const coreStr = JSON.stringify(coreData);
+            const assignStr = JSON.stringify(assignData);
+            const attStr = JSON.stringify(attData);
+            const logsStr = JSON.stringify(logsData);
+
+            if (lastSyncedState.core !== coreStr) {
+                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "core"), coreData));
+                lastSyncedState.core = coreStr;
+            }
+            if (lastSyncedState.assignments !== assignStr) {
+                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "assignments"), assignData));
+                lastSyncedState.assignments = assignStr;
+            }
+            if (lastSyncedState.attendance !== attStr) {
+                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "attendance"), attData));
+                lastSyncedState.attendance = attStr;
+            }
+            if (lastSyncedState.logs !== logsStr) {
+                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "logs"), logsData));
+                lastSyncedState.logs = logsStr;
+            }
+
+            // 3. 並發執行所有需要的寫入
+            if (promises.length > 0) {
+                await Promise.all(promises);
+            }
+
             isDirty = false;
             updateSaveStatus('success'); 
         } catch (e) { 
@@ -1378,36 +1411,77 @@ function getRankHtml(exp) {
         }
     });
 
+// ⭐ 終極優化版：模組化讀取與舊版資料自動升級
     async function loadDataFromFirebase() {
         if (!currentUser) return;
         updateSaveStatus('pending', '讀取中');
         try {
-            const docSnap = await getDoc(doc(db, "users", currentUser.uid, "data", "guildData"));
-            if (docSnap.exists()) {
-                const loadedData = docSnap.data();
-                data.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
-                data.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
-                data.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
-                data.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
-                data.attendance = loadedData.attendance || {};
-                data.discipline = loadedData.discipline || null;
-                data.settings = loadedData.settings || {};
-                data.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
-                data.coinPresets = loadedData.coinPresets || JSON.parse(JSON.stringify(defaultData.coinPresets));
-                
-                data.roster.forEach(r => { 
-                    if(typeof r.exp === 'undefined') r.exp = 0; 
-                    if(typeof r.coins === 'undefined') r.coins = 0; 
-                    if(typeof r.maxExp === 'undefined') r.maxExp = r.exp; // 確保有歷史最高分紀錄
-                });
+            // 1. 嘗試同時讀取四個新的拆分模組
+            const coreRef = doc(db, "users", currentUser.uid, "data", "core");
+            const assignRef = doc(db, "users", currentUser.uid, "data", "assignments");
+            const attRef = doc(db, "users", currentUser.uid, "data", "attendance");
+            const logsRef = doc(db, "users", currentUser.uid, "data", "logs");
+
+            const [coreSnap, assignSnap, attSnap, logsSnap] = await Promise.all([
+                getDoc(coreRef), getDoc(assignRef), getDoc(attRef), getDoc(logsRef)
+            ]);
+
+            if (coreSnap.exists()) {
+                // 👉 成功讀取新版拆分資料
+                const coreData = coreSnap.data();
+                data.roster = coreData.roster || defaultData.roster;
+                data.teachers = coreData.teachers || defaultData.teachers;
+                data.questSettings = coreData.questSettings || defaultData.questSettings;
+                data.discipline = coreData.discipline || null;
+                data.settings = coreData.settings || {};
+                data.coinPresets = coreData.coinPresets || defaultData.coinPresets;
+
+                data.assignments = assignSnap.exists() ? (assignSnap.data().assignments || []) : [];
+                data.attendance = attSnap.exists() ? (attSnap.data().attendance || {}) : {};
+                data.expLogs = logsSnap.exists() ? (logsSnap.data().expLogs || []) : [];
+
+                // 記錄初始狀態，以便後續進行差異比對
+                lastSyncedState = {
+                    core: JSON.stringify(coreData),
+                    assignments: JSON.stringify(assignSnap.data() || {}),
+                    attendance: JSON.stringify(attSnap.data() || {}),
+                    logs: JSON.stringify(logsSnap.data() || {})
+                };
             } else {
-                data = JSON.parse(JSON.stringify(defaultData));
-                await setDoc(doc(db, "users", currentUser.uid, "data", "guildData"), data);
+                // 👉 兼容舊版：如果找不到新版資料，嘗試讀取原本那一大包舊資料
+                const oldDocSnap = await getDoc(doc(db, "users", currentUser.uid, "data", "guildData"));
+                if (oldDocSnap.exists()) {
+                    const loadedData = oldDocSnap.data();
+                    data.roster = Array.isArray(loadedData.roster) ? loadedData.roster : defaultData.roster;
+                    data.assignments = Array.isArray(loadedData.assignments) ? loadedData.assignments : [];
+                    data.teachers = Array.isArray(loadedData.teachers) && loadedData.teachers.length > 0 ? loadedData.teachers : defaultData.teachers;
+                    data.questSettings = loadedData.questSettings || JSON.parse(JSON.stringify(defaultData.questSettings));
+                    data.attendance = loadedData.attendance || {};
+                    data.discipline = loadedData.discipline || null;
+                    data.settings = loadedData.settings || {};
+                    data.expLogs = Array.isArray(loadedData.expLogs) ? loadedData.expLogs : [];
+                    data.coinPresets = loadedData.coinPresets || JSON.parse(JSON.stringify(defaultData.coinPresets));
+                    
+                    // ⚠️ 標記為有變動，讓系統稍後自動把舊資料以「新拆分格式」存回雲端
+                    isDirty = true;
+                    setTimeout(() => syncToCloud(), 3000); 
+                } else {
+                    // 全新使用者
+                    data = JSON.parse(JSON.stringify(defaultData));
+                }
             }
+
+            // 防呆：確保所有學生都有這些必備的初始欄位
+            data.roster.forEach(r => { 
+                if(typeof r.exp === 'undefined') r.exp = 0; 
+                if(typeof r.coins === 'undefined') r.coins = 0; 
+                if(typeof r.maxExp === 'undefined') r.maxExp = r.exp; 
+            });
+            
             onDataLoaded(); updateSaveStatus('success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
-            let errMsg = "⚠️ 資料庫連線失敗！\n\n【錯誤代碼】 " + (error.code || "無") + "\n【錯誤訊息】 " + (error.message || error) + "\n\n如果您是剛建立 Firebase 專案，請務必去 Firestore 後台點擊「Rules (規則)」，將程式碼改為：\nallow read, write: if request.auth != null;";
+            let errMsg = "⚠️ 資料庫連線失敗！\n\n【錯誤代碼】 " + (error.code || "無") + "\n【錯誤訊息】 " + (error.message || error);
             alert(errMsg);
             data = JSON.parse(JSON.stringify(defaultData)); 
             onDataLoaded();
