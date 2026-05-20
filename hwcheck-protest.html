@@ -631,8 +631,9 @@ body.sidebar-open {
                      <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
                     <button class="btn sm ghost" id="btnToggleClearStudents" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="隱藏無欠款者"><i class="bi bi-eye-slash"></i> </button>
                     <button class="btn sm ghost" id="btnToggleDebtSort" style="border:none; background:transparent; padding:2px 6px; color:var(--primary); font-weight:bold;" title="任務排序切換：依日期 / 依科目"><i class="bi bi-tags-fill"></i> </button>
-                  </div>
-              </div>
+                    <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
+                    <button class="btn sm ghost" id="btnToggleTodayRedo" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="切換：顯示 / 隱藏「今日需訂正」"><i class="bi bi-calendar-check"></i> </button>
+                    </div>
 
               <div class="actions" style="margin:0;">
                   <button class="btn sm" id="btnGreenAllExpPlus" style="background:#16a34a; border-color:#15803d;"><i class="bi bi-stars"></i> 綠燈全體 +1</button>
@@ -1833,6 +1834,16 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         e.currentTarget.style.color = groupDebtsBySubject ? 'var(--primary)' : 'var(--muted)';
         renderStudentStatus();
     });
+
+    // ⭐ 6.1.9新增：隱藏「今日需訂正」切換邏輯
+    let hideTodayRedo = false;
+    document.getElementById('btnToggleTodayRedo').addEventListener('click', (e) => {
+        hideTodayRedo = !hideTodayRedo;
+        // 隱藏時變成紅色打叉的日曆，顯示時為原本的打勾日曆
+        e.currentTarget.innerHTML = hideTodayRedo ? '<i class="bi bi-calendar-x-fill"></i> ' : '<i class="bi bi-calendar-check"></i> ';
+        e.currentTarget.style.color = hideTodayRedo ? 'var(--danger)' : 'var(--muted)';
+        renderStudentStatus();
+    });
     
     document.getElementById('btnSortDirection').addEventListener('click', (e) => {
         currentSortAsc = !currentSortAsc;
@@ -1842,6 +1853,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
     });
 
     function renderStudentStatus() {
+        const todayStr = getTaipeiDateString(); // ⭐ 取得今天日期，供隱藏邏輯比對使用6.1.9
         const con = document.getElementById('studentStatusContainer'); 
         con.innerHTML = '';
         
@@ -1876,9 +1888,13 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             let pendingCount = 0;
             for (let a of activeAssigns) {
                 const indices = a.assignedIndices || 'all';
-                if (indices === 'all' || indices.includes(i)) {
+                    if (indices === 'all' || indices.includes(i)) {
                     const st = (a.statuses || [])[i] || 0;
-                    if (st === 0 || st === 2) pendingCount++;
+                    if (st === 0 || st === 2) {
+                        // ⭐ 如果開啟了隱藏，遇到「今日」且「需訂正(2)」的任務就跳過不計入欠款 6.1.9
+                        if (hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        pendingCount++;
+                    }
                 }
             }
             if (pendingCount === 0) clearedStudents.push(s.no);
@@ -1911,7 +1927,11 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                     const indices = a.assignedIndices || 'all';
                     if(indices === 'all' || indices.includes(i)) {
                         const taskSt = (a.statuses||[])[i] || 0;
-                             if(taskSt === 0 || taskSt === 2) debts.push({ id: a.id, title: a.title, st: taskSt, date: a.date, subject: a.subject || '其他' });
+                        if(taskSt === 0 || taskSt === 2) {
+                            // ⭐ 如果開啟了隱藏，遇到「今日」且「需訂正(2)」的任務就不顯示在卡片上
+                            if (hideTodayRedo && taskSt === 2 && a.date === todayStr) return;
+                            debts.push({ id: a.id, title: a.title, st: taskSt, date: a.date, subject: a.subject || '其他' });
+                        }
                     }
                 }
             });
@@ -2068,9 +2088,14 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             // 檢查該學生的每一項任務狀態
             for (let a of activeAssigns) {
                 const indices = a.assignedIndices || 'all';
+                const todayStr = getTaipeiDateString();
                 if (indices === 'all' || indices.includes(i)) {
                     const st = (a.statuses || [])[i] || 0;
-                    if (st === 0 || st === 2) pendingCount++; // 0未交、2再戰 皆算欠款
+                    if (st === 0 || st === 2) {
+                        // ⭐ 全冠王判定也同步支援：若隱藏今日需訂正，則視為不欠款
+                        if (hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        pendingCount++; 
+                    }
                 }
             }
             
