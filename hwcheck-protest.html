@@ -2110,6 +2110,56 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         }
     };
 
+// ==========================================
+    // ⭐ 補回：綠燈全體一鍵加 EXP 邏輯
+    // ==========================================
+    document.getElementById('btnGreenAllExpPlus').addEventListener('click', () => {
+        let count = 0;
+        const oldRoster = JSON.parse(JSON.stringify(data.roster));
+        const oldLogsLength = data.expLogs ? data.expLogs.length : 0;
+        
+        // 抓出畫面上沒有被封存的有效任務
+        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        const todayStr = getTaipeiDateString();
+        
+        data.roster.forEach((s, i) => {
+            let pendingCount = 0;
+            // 檢查該學生的每一項任務狀態
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) {
+                        // ⭐ 同步支援：若隱藏今日需訂正，則視為不欠款
+                        if (hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        pendingCount++; 
+                    }
+                }
+            }
+            
+            // 如果欠款數為 0，就是亮綠燈，發放 EXP 獎勵！
+            if (pendingCount === 0) { 
+                window.changeExp(i, 1, '綠燈全體獎勵', true); 
+                count++; 
+            }
+        });
+        
+        if (count > 0) { 
+            playSuccessSound(); 
+            triggerAutoSave(); 
+            renderAll(); 
+            showToast(`✨ 綠燈全體 (${count}人) 獲得 +1 EXP！`, "復原", () => {
+                data.roster = oldRoster;
+                if(data.expLogs) data.expLogs.splice(oldLogsLength, data.expLogs.length - oldLogsLength);
+                triggerAutoSave();
+                renderAll();
+                showToast("已復原綠燈加分操作！");
+            });
+        } else {
+            showToast("🥺 目前還沒有人達成綠燈條件喔！");
+        }
+    });
+    
 // ⭐ 新增：討伐全冠王一鍵加金幣邏輯
     document.getElementById('btnAllClearedPlus').addEventListener('click', () => {
         let count = 0;
