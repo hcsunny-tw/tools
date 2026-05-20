@@ -202,9 +202,22 @@
     }
     .task-item-hover:hover { background: var(--tbl-hover); padding-left: 6px !important; padding-right: 4px !important; margin-left: -6px; margin-right: -4px; }
 
-    /* 狀態總覽 */
-    .status-overview { display: flex; gap: 12px; margin-bottom: 16px; }
-    .overview-card { flex: 1; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+
+    /* ⭐ 優化：狀態總覽改用 Grid 排版，與下方小卡完美對齊6.1.9 */
+    .status-overview { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 15px; margin-bottom: 16px; }
+    .overview-card { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .overview-card.success { grid-column: span 3; } /* 左邊佔 3 格 */
+    .overview-card.danger { grid-column: span 2; }  /* 右邊佔 2 格 */
+    
+    /* 配合 RWD 縮放時的對齊 (與下方小卡同步) */
+    @media (max-width: 1200px) { 
+        .status-overview { grid-template-columns: repeat(4, minmax(0, 1fr)); } 
+        .overview-card.success { grid-column: span 2; } 
+        .overview-card.danger { grid-column: span 2; } 
+    }
+    @media (max-width: 992px) { 
+        .status-overview { display: flex; flex-direction: column; gap: 15px; } 
+    }
     .overview-card.success { border-color: var(--success); background: #f0fdf4; }
     .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
     .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
