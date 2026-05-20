@@ -809,10 +809,16 @@ body.sidebar-open {
   </div>
   
 <div id="adminProfileModal" class="modal-overlay">
-      <div class="modal-content" style="max-width: 600px;">
-          <div class="modal-header" style="margin-bottom: 12px;">
+      <div class="modal-content" style="max-width: 630px;">
+          
+          <div class="modal-header" style="margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
               <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
-              <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: auto;">
+                  <button class="btn sm secondary" id="btnExportJSON" title="匯出整個公會的資料備份"><i class="bi bi-cloud-arrow-down-fill"></i> 備份下載</button>
+                  <button class="btn sm ghost" id="btnImportJSONTrigger" title="從電腦檔案還原公會資料"><i class="bi bi-cloud-arrow-up-fill"></i> 備份載入</button>
+                  <input type="file" id="ipImportJSON" accept=".json" style="display: none;">
+                  
+                  <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 2px;"></div>
                   <button class="btn sm" id="btnAdminAttendance" title="點名簿"><i class="bi bi-book"></i> 點名簿</button>
                   <button class="modal-close-btn">&times;</button>
               </div>
@@ -821,7 +827,7 @@ body.sidebar-open {
           <div class="roster-tabs" style="margin-bottom: 16px; border-bottom: 2px solid var(--tbl-border);">
               <button class="tab-btn admin-tab-btn active" data-target="adminTab-debts"><i class="bi bi-shield-exclamation"></i> 狀態追蹤</button>
               <button class="tab-btn admin-tab-btn" data-target="adminTab-settings"><i class="bi bi-gear"></i> 系統設定</button>
-              <button class="tab-btn admin-tab-btn" data-target="adminTab-data"><i class="bi bi-database"></i> 資料管理</button>
+              <button class="tab-btn admin-tab-btn" data-target="adminTab-data"><i class="bi bi-database"></i> 歷史與日誌</button>
           </div>
 
           <div id="adminTab-debts" class="admin-tab-content" style="display: block;">
@@ -833,11 +839,19 @@ body.sidebar-open {
 
           <div id="adminTab-settings" class="admin-tab-content" style="display: none;">
               <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
-                   <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">⚙️ 系統進階設定</h3>
+                   <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">⚙️ 核心名冊與設定管理</h3>
                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                       <button class="btn sm secondary" id="btnAdminRoster" title="設定公會名冊"><i class="bi bi-people"></i> 進入公會名冊</button>
+                       <button class="btn sm secondary" id="btnAdminRoster" title="設定學生與導師名冊"><i class="bi bi-people"></i> 進入公會名冊</button>
                        <button class="btn sm secondary" id="btnOpenCoinSettings"><i class="bi bi-coin"></i> 設定加扣分項目</button>
                    </div>
+              </div>
+              
+              <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
+                    <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <button class="btn ghost warn" id="btnClearAssignments" style="justify-content:center;"><i class="bi bi-fire"></i> 銷毀所有契約 (保留名單)</button>
+                        <button class="btn warn" id="btnResetAll" style="justify-content:center;"><i class="bi bi-radioactive"></i> 另闢新公會 (全部重置)</button>
+                    </div>
               </div>
           </div>
 
@@ -845,24 +859,9 @@ body.sidebar-open {
               <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                    <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄與 加扣分日誌</h3>
                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                       <button class="btn sm secondary" id="btnDownloadArchive"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存任務 (CSV)</button>
-                       <button class="btn sm secondary" id="btnDownloadExpLogs"><i class="bi bi-file-earmark-text"></i> 下載加扣分紀錄 (CSV)</button>
+                       <button class="btn sm secondary" id="btnDownloadArchive" title="下載封存任務 (CSV)"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存任務 (CSV)</button>
+                       <button class="btn sm secondary" id="btnDownloadExpLogs" title="下載加扣分紀錄 (CSV)"><i class="bi bi-file-earmark-text"></i> 下載加扣分紀錄 (CSV)</button>
                    </div>
-              </div>
-              <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
-                   <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">💾 公會資料庫備份與還原</h3>
-                   <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                       <button class="btn sm secondary" id="btnExportJSON"><i class="bi bi-cloud-arrow-down-fill"></i> 匯出備份 (JSON)</button>
-                       <button class="btn sm ghost" id="btnImportJSONTrigger"><i class="bi bi-cloud-arrow-up-fill"></i> 還原備份</button>
-                       <input type="file" id="ipImportJSON" accept=".json" style="display: none;">
-                   </div>
-              </div>
-              <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
-                    <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <button class="btn ghost warn" id="btnClearAssignments" style="justify-content:center;"><i class="bi bi-fire"></i> 銷毀所有契約 (保留名單)</button>
-                        <button class="btn warn" id="btnResetAll" style="justify-content:center;"><i class="bi bi-radioactive"></i> 另闢新公會 (全部重置)</button>
-                    </div>
               </div>
           </div>
 
@@ -3514,8 +3513,9 @@ window.renderQuickSidebar = function() {
         document.getElementById('roster-content-students').classList.add('show');
         document.getElementById('roster-content-teachers').classList.remove('show');
     });
+
 // ==========================================
-    // ⭐ 6.1.9新增：公會長執務室 書籤分頁切換邏輯
+    // ⭐ 6.1.9新增：公會長執務室 書籤分頁切換與連動邏輯
     // ==========================================
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -3531,7 +3531,7 @@ window.renderQuickSidebar = function() {
         });
     });
 
-    // ⭐ 確保每次點開執務室時，都自動預設切換回第一個「狀態追蹤」分頁
+    // ⭐ 貼心細節：每次點開執務室時，都自動預設切換回第一個「狀態追蹤」分頁
     document.getElementById('userEmailDisplay').addEventListener('click', () => {
         const firstTab = document.querySelector('.admin-tab-btn[data-target="adminTab-debts"]');
         if (firstTab) firstTab.click();
