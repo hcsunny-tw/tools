@@ -588,7 +588,6 @@ body.sidebar-open {
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理 (多裝置同步時使用)"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
         <button class="btn ghost nav-btn" id="btnNavDashboard" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
-        <button class="btn ghost nav-btn" id="btnNavRoster" title="公會名冊"><i class="bi bi-people"></i> <span class="nav-text">公會名冊</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSidebar" title="快速狀態欄"><i class="bi bi-layout-sidebar-inset-reverse"></i> <span class="nav-text">速覽</span></button>
         <div id="saveStatusIndicator" style="margin-left: 8px; font-size: 14px; display: flex; align-items: center;"><i class="bi bi-hourglass"></i></div>
@@ -811,9 +810,10 @@ body.sidebar-open {
   
   <div id="adminProfileModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 600px;">
-          <div class="modal-header">
+        <div class="modal-header">
               <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
               <div style="display: flex; align-items: center; gap: 8px;">
+                  <button class="btn sm" id="btnAdminRoster" title="設定公會名冊"><i class="bi bi-people"></i> 名冊</button>
                   <button class="btn sm" id="btnAdminAttendance" title="點名簿"><i class="bi bi-book"></i> 點名簿</button>
                   <button class="modal-close-btn">&times;</button>
               </div>
@@ -2528,6 +2528,12 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         switchView('view-attendance'); 
     });
 
+    // ⭐ 新增：從執務室開啟公會名冊6.1.9
+    document.getElementById('btnAdminRoster').addEventListener('click', () => { 
+        document.getElementById('adminProfileModal').classList.remove('show'); 
+        switchView('view-roster'); 
+    });
+
     function renderRosterEditor() {
         const d = document.getElementById('rosterEditor'); d.innerHTML = '';
         data.roster.forEach(s => {
@@ -2833,9 +2839,9 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         } 
     });
 
-    ['btnNavDashboard','btnNavStudentStatus','btnNavRoster'].forEach(id => {
+    ['btnNavDashboard','btnNavStudentStatus'].forEach(id => {
         document.getElementById(id).addEventListener('click', (e) => {
-            const map = { 'btnNavDashboard':'view-dashboard', 'btnNavStudentStatus':'view-student-status', 'btnNavRoster':'view-roster' };
+            const map = { 'btnNavDashboard':'view-dashboard', 'btnNavStudentStatus':'view-student-status' };
             switchView(map[e.currentTarget.id]);
         });
     });
