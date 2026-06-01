@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.9🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.10🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -759,7 +759,7 @@ body.sidebar-open {
             </a>
 
             <div class="copyright">
-                © 2026 ADVENTURER GUILD PROJECT v6.1.9. ALL RIGHTS RESERVED.
+                © 2026 ADVENTURER GUILD PROJECT v6.1.10. ALL RIGHTS RESERVED.
             </div>
         </div>
     </footer>
@@ -976,6 +976,7 @@ body.sidebar-open {
               <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
               <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
               <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
+              <button class="toolbox-btn" id="btnOpenApple"><i class="bi bi-apple" style="color: #ef4444;"></i> 午飯蘋果</button>
               <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
           </div>
       </div>
@@ -991,7 +992,23 @@ body.sidebar-open {
       <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學準備</span><button class="tool-close">&times;</button></div>
       <div class="tool-body"><div id="dismissalChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div></div>
   </div>
+  
+<div id="panelApple" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-apple"></i> 午餐紀律挑戰</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body" style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card);">
+          <div id="appleStatusText" style="font-size: 5cqi; font-weight: 900; color: var(--primary); margin-bottom: 2cqi;">保護三顆蘋果！</div>
+          
+          <div id="appleContainer" style="font-size: 15cqi; display: flex; justify-content: center; gap: 4cqi; min-height: 20cqi; align-items: center; width: 100%;">
+              </div>
+          
+          <div style="display:flex; gap:2cqi; margin-top:auto; width: 100%;">
+              <button class="tool-btn ghost" id="btnAppleReset" style="flex:1; font-size: 4cqi;"><i class="bi bi-arrow-counterclockwise"></i> 重置蘋果</button>
+              <button class="tool-btn" id="btnAppleTest" style="flex:1; font-size: 4cqi;" title="測試彩帶特效"><i class="bi bi-magic"></i> 測試成功</button>
+          </div>
+      </div>
+  </div>
 
+  
 <div id="panelBGM" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-music-note-beamed"></i> 背景音樂</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -3283,7 +3300,7 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     }
 
     
-  ['panelRecess', 'panelDismissal', 'panelMarquee', 'panelTimer', 'panelStopwatch', 'panelNumDice', 'panelAlphaDice', 'panelDraw', 'panelDecibel', 'panelBGM'].forEach(id => {
+['panelRecess', 'panelDismissal', 'panelMarquee', 'panelTimer', 'panelStopwatch', 'panelNumDice', 'panelAlphaDice', 'panelDraw', 'panelDecibel', 'panelBGM', 'panelApple'].forEach(id => {
         const win = document.getElementById(id);
         if(!win) return;
         
@@ -3324,6 +3341,104 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     // 打開 BGM 視窗
     document.getElementById('btnOpenBGM').onclick = () => openTool('panelBGM');
 
+// ==========================================
+    // ⭐ 新增工具：午飯蘋果挑戰
+    // ==========================================
+    document.getElementById('btnOpenApple').onclick = () => { openTool('panelApple'); renderLunchApple(); };
+
+    let lunchApple = { count: 3, status: 'ongoing' };
+    let appleTriggered1159 = false;
+    let appleTriggered1235 = false;
+
+    function renderLunchApple() {
+        const container = document.getElementById('appleContainer');
+        const statusText = document.getElementById('appleStatusText');
+        
+        if (lunchApple.status === 'failed') {
+            container.innerHTML = '<span style="animation: shakeBlur 0.5s; font-size: 20cqi;">😢</span>';
+            statusText.innerText = '挑戰失敗...蘋果沒了';
+            statusText.style.color = 'var(--danger)';
+        } else if (lunchApple.status === 'success') {
+            container.innerHTML = '🍎🍎🍎';
+            statusText.innerText = '🎉 挑戰成功！完美守護！';
+            statusText.style.color = 'var(--success)';
+        } else {
+            // ongoing 狀態
+            container.innerHTML = '';
+            for(let i = 0; i < lunchApple.count; i++) {
+                const apple = document.createElement('span');
+                apple.innerText = '🍎';
+                apple.style.cursor = 'pointer';
+                apple.style.transition = 'transform 0.1s, opacity 0.2s';
+                apple.onmouseover = () => apple.style.transform = 'scale(1.1) rotate(-5deg)';
+                apple.onmouseout = () => apple.style.transform = 'scale(1) rotate(0deg)';
+                apple.onclick = () => {
+                    lunchApple.count--;
+                    apple.style.transform = 'scale(0)';
+                    apple.style.opacity = '0';
+                    setTimeout(() => {
+                        if (lunchApple.count <= 0) {
+                            lunchApple.status = 'failed';
+                            if (window.playTickSound) window.playTickSound();
+                        } else {
+                            if (window.playTickSound) window.playTickSound();
+                        }
+                        renderLunchApple();
+                    }, 200); // 延遲一點點讓縮小動畫跑完
+                };
+                container.appendChild(apple);
+            }
+            statusText.innerText = `保護 ${lunchApple.count} 顆蘋果！`;
+            statusText.style.color = 'var(--primary)';
+        }
+    }
+
+    // 手動重置與測試按鈕
+    document.getElementById('btnAppleReset').onclick = () => {
+        lunchApple = { count: 3, status: 'ongoing' };
+        renderLunchApple();
+    };
+    document.getElementById('btnAppleTest').onclick = () => {
+        lunchApple = { count: 3, status: 'success' };
+        renderLunchApple();
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+        if (window.playSuccessSound) window.playSuccessSound();
+    };
+
+    // ⌚ 時間監控：每秒檢查一次是否到了 11:59 或 12:35
+    setInterval(() => {
+        const now = new Date();
+        const hh = now.getHours();
+        const mm = now.getMinutes();
+
+        // 11:59 自動重置 3 顆蘋果
+        if (hh === 11 && mm === 59) {
+            if (!appleTriggered1159) {
+                lunchApple = { count: 3, status: 'ongoing' };
+                renderLunchApple();
+                appleTriggered1159 = true;
+                appleTriggered1235 = false; // 重置成功的鎖
+            }
+        } else {
+            appleTriggered1159 = false; // 時間過了就解鎖，準備明天再用
+        }
+
+        // 12:35 檢查是否還有 3 顆
+        if (hh === 12 && mm === 35) {
+            if (!appleTriggered1235) {
+                if (lunchApple.status === 'ongoing' && lunchApple.count === 3) {
+                    lunchApple.status = 'success';
+                    renderLunchApple();
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                    if (window.playSuccessSound) window.playSuccessSound();
+                }
+                appleTriggered1235 = true;
+            }
+        } else {
+            appleTriggered1235 = false;
+        }
+    }, 1000);
+    
     // BGM 控制邏輯
     const bgmPlayer = document.getElementById('bgmPlayer');
     const bgmVol = document.getElementById('bgmVolume');
