@@ -1224,6 +1224,22 @@ body.sidebar-open {
         g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
         o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now + 0.05);
     }
+    // ⭐ 新增：班級星星專屬魔法音效 (雙音和弦)
+    function playStarSound() {
+        const ctx = resumeAudio(); const now = ctx.currentTime;
+        // 第一聲：高音 E6
+        const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+        o1.type = 'sine'; o1.frequency.setValueAtTime(1318.51, now); 
+        g1.gain.setValueAtTime(0.2, now); g1.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        o1.connect(g1); g1.connect(ctx.destination); o1.start(now); o1.stop(now + 0.4);
+        
+        // 第二聲：更高音的清脆 G6 (延遲 0.1 秒撥放，產生閃爍感)
+        const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+        o2.type = 'sine'; o2.frequency.setValueAtTime(1567.98, now + 0.1); 
+        g2.gain.setValueAtTime(0.2, now + 0.1); g2.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        o2.connect(g2); g2.connect(ctx.destination); o2.start(now + 0.1); o2.stop(now + 0.5);
+    }
+    window.playStarSound = playStarSound;
     // RPG 等級與稱號統整設定
 const levelConfig = [
     { lv: 1, exp: 0, coins: 0, rank: "新手村民", color: "#9ca3af" },
@@ -3429,7 +3445,7 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         lunchApple = { count: 3, status: 'success' };
         renderLunchApple();
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-        if (window.playSuccessSound) window.playSuccessSound();
+        if (window.playStarSound) window.playStarSound();
     };
 
     // ⌚ 時間監控：每秒檢查一次是否到了 11:59 或 12:35
