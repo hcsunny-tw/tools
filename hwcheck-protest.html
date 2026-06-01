@@ -125,6 +125,8 @@
     .draw-winner { animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; color: var(--danger) !important; background: #fff8e1 !important; border-color: var(--danger) !important; box-shadow: 0 0 15px rgba(211, 47, 47, 0.4); }
     @keyframes shakeBlur { 0% { transform: translateX(-2px) translateY(1px) scale(1.05); filter: blur(0.5px); } 100% { transform: translateX(2px) translateY(-1px) scale(1.05); filter: blur(1px); } }
     @keyframes popBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes starPop { 0% { transform: scale(1); } 50% { transform: scale(1.5) rotate(15deg); color: #fbbf24; } 100% { transform: scale(1); } }
+    .star-pop-anim { animation: starPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
     /* Modals & Menus */
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
@@ -585,6 +587,10 @@ body.sidebar-open {
       </div>
       <div class="actions">
         <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> <span class="nav-text">執務室</span></span>
+              <div id="classStarDisplay" class="user-badge" style="cursor: default; background: #fffbef; border-color: #fcd34d; color: #f59e0b;" title="班級表現星星">
+                  <i class="bi bi-star-fill"></i> <span id="classStarCountText" style="font-size: 16px; font-weight: 900; margin-left: 2px;">0</span>
+              </div>
+              <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理 (多裝置同步時使用)"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
         <button class="btn ghost nav-btn" id="btnNavDashboard" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
@@ -839,6 +845,16 @@ body.sidebar-open {
 
           <div id="adminTab-settings" class="admin-tab-content" style="display: none;">
               <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+                <div style="background: #fffbef; padding: 16px; border-radius: 8px; border: 2px dashed #fcd34d; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
+                  <h3 style="margin:0 0 10px; font-size: 16px; color: #d97706;"><i class="bi bi-star-fill"></i> 班級共同星星 (全班獎勵)</h3>
+                  <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                      <button class="btn sm warn ghost icon-only" id="btnMinusClassStar" style="border-radius: 50%; width: 36px; height: 36px;"><i class="bi bi-dash-lg"></i></button>
+                      <span id="adminClassStarCount" style="font-size: 28px; font-weight: 900; color: #f59e0b; min-width: 40px; text-align: center; text-shadow: 1px 1px 0px #fef3c7;">0</span>
+                      <button class="btn sm ghost icon-only" id="btnPlusClassStar" style="border-radius: 50%; width: 36px; height: 36px; color: #d97706; border-color: #fcd34d; background: #fef3c7;" title="加一顆星星"><i class="bi bi-plus-lg"></i></button>
+                      
+                      <button class="btn sm secondary" id="btnResetClassStar" style="margin-left: auto;"><i class="bi bi-arrow-counterclockwise"></i> 歸零</button>
+                  </div>
+              </div>
                    <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">⚙️ 核心名冊與設定管理</h3>
                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                        <button class="btn sm secondary" id="btnAdminRoster" title="設定學生與導師名冊"><i class="bi bi-people"></i> 進入公會名冊</button>
@@ -1538,6 +1554,16 @@ let isDirty = false; // 用來標記「是否有新資料還沒上傳」
         loadDataFromFirebase();
     }
 
+// ⭐ 渲染班級星星
+    function renderClassStars() {
+        if (!data.settings) data.settings = {};
+        const stars = data.settings.classStars || 0;
+        const headerText = document.getElementById('classStarCountText');
+        const adminText = document.getElementById('adminClassStarCount');
+        if (headerText) headerText.innerText = stars;
+        if (adminText) adminText.innerText = stars;
+    }
+
     function onDataLoaded() {
         const today = getTaipeiDateString();
         if (!data.attendance || !data.attendance[today]) {
@@ -1549,6 +1575,7 @@ let isDirty = false; // 用來標記「是否有新資料還沒上傳」
         resetNewAssignmentState();
         checkAndResetDiscipline(); 
         renderCoinDropdowns(); 
+        renderClassStars(); // ⭐ 載入時渲染星星
         renderAll(); 
         renderChecklists(); 
     }
@@ -3770,6 +3797,45 @@ window.renderQuickSidebar = function() {
         });
     });
 
+    // ==========================================
+    // ⭐ 新增：班級星星控制邏輯
+    // ==========================================
+    document.getElementById('btnPlusClassStar').addEventListener('click', () => {
+        if (!data.settings) data.settings = {};
+        data.settings.classStars = (data.settings.classStars || 0) + 1;
+        
+        if (window.playSuccessSound) window.playSuccessSound();
+        triggerAutoSave();
+        renderClassStars();
+        
+        // 觸發 Header 上的彈跳特效
+        const display = document.getElementById('classStarDisplay');
+        display.classList.remove('star-pop-anim');
+        void display.offsetWidth; // 觸發 reflow，讓動畫可以重複播放
+        display.classList.add('star-pop-anim');
+        
+        showToast("🌟 班級星星 +1！繼續保持！");
+    });
+
+    document.getElementById('btnMinusClassStar').addEventListener('click', () => {
+        if (!data.settings) data.settings = {};
+        if ((data.settings.classStars || 0) > 0) {
+            data.settings.classStars--;
+            triggerAutoSave();
+            renderClassStars();
+        }
+    });
+
+    document.getElementById('btnResetClassStar').addEventListener('click', () => {
+        if (confirm("確定要將班級星星歸零嗎？\n(通常在兌換獎勵後使用)")) {
+            if (!data.settings) data.settings = {};
+            data.settings.classStars = 0;
+            triggerAutoSave();
+            renderClassStars();
+            showToast("🔄 班級星星已歸零！");
+        }
+    });
+    
     // ⭐ 貼心細節：每次點開執務室時，都自動預設切換回第一個「狀態追蹤」分頁
     document.getElementById('userEmailDisplay').addEventListener('click', () => {
         const firstTab = document.querySelector('.admin-tab-btn[data-target="adminTab-debts"]');
