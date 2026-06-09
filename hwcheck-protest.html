@@ -1255,29 +1255,44 @@ body.sidebar-open {
     }
     window.playStarSound = playStarSound;
 
-// ⭐ 優化：計時器時間到專屬音效 (經典電子鬧鐘嗶聲)
-    function playTimerEndSound() {
-        const ctx = resumeAudio(); 
-        const now = ctx.currentTime;
-        // 連續發出 4 聲清脆高音
-        for (let i = 0; i < 4; i++) {
-            const o = ctx.createOscillator(); 
-            const g = ctx.createGain();
-            o.type = 'sine'; // 改用正弦波，聲音乾淨且絕對不會被瀏覽器底層阻擋
-            o.frequency.value = 1046.50; // C6 高音頻率
-            
-            // 線性音量控制 (確保無爆音、無雜訊)
-            g.gain.setValueAtTime(0, now + i * 0.25);
-            g.gain.linearRampToValueAtTime(0.4, now + i * 0.25 + 0.02);
-            g.gain.linearRampToValueAtTime(0, now + i * 0.25 + 0.15);
-            
-            o.connect(g); 
-            g.connect(ctx.destination);
-            o.start(now + i * 0.25); 
-            o.stop(now + i * 0.25 + 0.15);
-        }
+// ⭐ 新增：計時器最後三秒的倒數嘟音 (單聲短促音)
+    function playTimerTickSound() {
+        const ctx = resumeAudio(); const now = ctx.currentTime;
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'triangle'; // 乾淨且具穿透力的提示音
+        o.frequency.setValueAtTime(880, now); // 高音 A5
+        g.gain.setValueAtTime(0.2, now); 
+        g.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(now); o.stop(now + 0.1);
     }
-    window.playTimerEndSound = playTimerEndSound;
+    window.playTimerTickSound = playTimerTickSound;
+
+    // ⭐ 優化：計時器結束的 RPG 任務完成音樂 (8-bit 凱旋琶音)
+    function playTimerVictoryMusic() {
+        const ctx = resumeAudio(); const now = ctx.currentTime;
+        // C5, E5, G5, C6 (經典遊戲升階琶音)
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const times = [0, 0.15, 0.3, 0.45];
+        
+        notes.forEach((freq, i) => {
+            const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.type = 'square'; // 採用方波，創造出復古 RPG 的電子音樂感
+            o.frequency.setValueAtTime(freq, now + times[i]);
+            g.gain.setValueAtTime(0.15, now + times[i]);
+            
+            if (i === notes.length - 1) {
+                // 最後一個高音拉長，創造華麗的結尾感
+                g.gain.exponentialRampToValueAtTime(0.01, now + times[i] + 1.2);
+                o.start(now + times[i]); o.stop(now + times[i] + 1.2);
+            } else {
+                g.gain.exponentialRampToValueAtTime(0.01, now + times[i] + 0.15);
+                o.start(now + times[i]); o.stop(now + times[i] + 0.15);
+            }
+            o.connect(g); g.connect(ctx.destination);
+        });
+    }
+    window.playTimerVictoryMusic = playTimerVictoryMusic;
     
     
     // RPG 等級與稱號統整設定
@@ -3639,7 +3654,7 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { timerSec += parseInt(e.target.dataset.min) * 60; updateTimer(); }));
     
 document.getElementById('btnTimerStart').addEventListener('click', (e) => { 
-        resumeAudio(); // 確保音效引擎被喚醒
+        resumeAudio(); // 確保喚醒音效引擎，防止瀏覽器阻擋
         const displayBox = document.getElementById('timerDisplay');
         
         if(timerInt) { 
@@ -3651,21 +3666,29 @@ document.getElementById('btnTimerStart').addEventListener('click', (e) => {
             
             if(timerSec > 0) { 
                 e.currentTarget.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; e.currentTarget.classList.add('warn');
-                // 確保背景色恢復正常
                 displayBox.style.backgroundColor = 'var(--bg)'; displayBox.style.color = 'var(--primary)';
                 
                 timerInt = setInterval(() => { 
                     if(timerSec > 0) { 
-                        timerSec--; updateTimer(); 
-                    } else { 
-                        // ⭐ 時間到：停止計時、播放鬧鐘音效、並觸發視覺警報
+                        timerSec--; 
+                        updateTimer(); 
+                        
+                        // ⭐ 最後 3 秒播放倒數嘟音，並加上視覺閃爍
+                        if (timerSec > 0 && timerSec <= 3) {
+                            if (window.playTimerTickSound) window.playTimerTickSound();
+                            displayBox.style.opacity = '0.3';
+                            setTimeout(() => displayBox.style.opacity = '1', 200);
+                        }
+                    } 
+                    
+                    // ⭐ 時間到：停止計時、播放 RPG 凱旋音樂、改變 UI 顏色
+                    if(timerSec <= 0) { 
                         clearInterval(timerInt); timerInt=null; 
                         e.currentTarget.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
                         e.currentTarget.classList.remove('warn'); 
                         
-                        // 播放音效
-                        if (window.playTimerEndSound) window.playTimerEndSound(); 
-                        showToast("⏰ 時間到！"); 
+                        if (window.playTimerVictoryMusic) window.playTimerVictoryMusic(); 
+                        showToast("⏰ 時間到！任務結束！"); 
                         
                         // 視覺警報：背景轉紅
                         displayBox.style.backgroundColor = '#fee2e2';
