@@ -1040,7 +1040,10 @@ body.sidebar-open {
   </div>
 
   
-<audio id="bgmPlayer" loop preload="none"></audio>
+<div id="panelBGM" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-music-note-beamed"></i> 背景音樂</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <audio id="bgmPlayer" loop preload="none"></audio>
           
           <div style="display:flex; flex-direction:column; gap:2cqi;">
               <button class="tool-btn ghost" onclick="window.changeBGM('https://ia801309.us.archive.org/28/items/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
@@ -3434,8 +3437,12 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     document.getElementById('btnOpenAlphaDice').onclick = () => openTool('panelAlphaDice');
     document.getElementById('btnOpenDraw').onclick = () => { openTool('panelDraw'); renderWheel(); };
     document.getElementById('btnOpenDecibel').onclick = () => openTool('panelDecibel');
+    
     // 打開 BGM 視窗
     document.getElementById('btnOpenBGM').onclick = () => openTool('panelBGM');
+
+    // ==========================================
+    // ⭐ 新增工具：午飯蘋果挑戰
 
 // ==========================================
     // ⭐ 新增工具：午飯蘋果挑戰
