@@ -1040,15 +1040,12 @@ body.sidebar-open {
   </div>
 
   
-<div id="panelBGM" class="tool-window">
-      <div class="tool-header"><span><i class="bi bi-music-note-beamed"></i> 背景音樂</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body">
-          <audio id="bgmPlayer" loop preload="none"></audio>
+<audio id="bgmPlayer" loop preload="none"></audio>
           
           <div style="display:flex; flex-direction:column; gap:2cqi;">
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://upload.wikimedia.org/wikipedia/commons/5/5c/Vivaldi_-_The_Four_Seasons_-_Summer_-_III._Presto.ogg', this)"><i class="bi bi-fire"></i> 激昂探險 (韋瓦第)</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://upload.wikimedia.org/wikipedia/commons/e/e8/Gymnop%C3%A9die_No._1.ogg', this)"><i class="bi bi-water"></i> 平靜溫柔 (薩提)</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://upload.wikimedia.org/wikipedia/commons/3/30/Mozart_-_Piano_Sonata_No._11_in_A_major%2C_K._331_-_III._%28Alla_Turca%29.ogg', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆 (土耳其進行曲)</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://ia801309.us.archive.org/28/items/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://ia800408.us.archive.org/28/items/Kevin_MacLeod_-_Relaxing_Piano_Music/Relaxing_Piano_Music.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://ia800305.us.archive.org/30/items/Kevin_MacLeod_-_Carefree/Carefree.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
           </div>
           
           <div style="display:flex; align-items:center; gap:2cqi; margin-top:3cqi; background: var(--bg); padding: 2cqi; border-radius: 2cqi; border: 1px dashed var(--tbl-border);">
@@ -1059,7 +1056,7 @@ body.sidebar-open {
           
           <div style="display:flex; gap:2cqi; margin-top:auto;">
               <button class="tool-btn" id="btnPlayBGM" style="flex:2;"><i class="bi bi-play-fill"></i> 播放</button>
-              <button class="tool-btn warn" id="btnPauseBGM" style="flex:1;"><i class="bi bi-pause-fill"></i> 暫停</button>
+              <button class="tool-btn warn ghost" id="btnStopBGM" style="flex:1;"><i class="bi bi-stop-fill"></i> 停止</button>
           </div>
       </div>
   </div>
@@ -3538,9 +3535,13 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         }
     }, 1000);
     
-    // BGM 控制邏輯
+// ==========================================
+    // ⭐ 優化：BGM 控制邏輯 (UI 連動與自動防呆)
+    // ==========================================
     const bgmPlayer = document.getElementById('bgmPlayer');
     const bgmVol = document.getElementById('bgmVolume');
+    const btnPlayBGM = document.getElementById('btnPlayBGM');
+    const btnStopBGM = document.getElementById('btnStopBGM');
     
     // 音量控制
     if (bgmVol) {
@@ -3549,37 +3550,64 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         });
     }
 
-    // 切換音樂
+    // 連動更新按鈕 UI (播放/暫停)
+    function updateBgmUI() {
+        if (!bgmPlayer.paused && bgmPlayer.currentTime > 0) {
+            btnPlayBGM.innerHTML = '<i class="bi bi-pause-fill"></i> 暫停';
+            btnPlayBGM.style.background = 'var(--accent)'; // 播放中改變一下顏色
+        } else {
+            btnPlayBGM.innerHTML = '<i class="bi bi-play-fill"></i> 播放';
+            btnPlayBGM.style.background = 'var(--primary)';
+        }
+    }
+
+    // 點擊歌單：切換並自動播放
     window.changeBGM = function(url, btn) {
         if (!bgmPlayer) return;
         bgmPlayer.src = url;
         bgmPlayer.volume = bgmVol.value;
-        bgmPlayer.play();
+        bgmPlayer.play().then(() => updateBgmUI()).catch(e => console.log("等待互動後播放"));
         
         // 讓按鈕亮起來，表示目前選中的音樂
         const btns = document.querySelectorAll('#panelBGM .tool-btn.ghost');
         btns.forEach(b => {
-            b.style.borderColor = 'var(--tbl-border)';
-            b.style.background = 'transparent';
+            if (b.id !== 'btnStopBGM') {
+                b.style.borderColor = 'var(--tbl-border)';
+                b.style.background = 'transparent';
+            }
         });
         btn.style.borderColor = 'var(--primary)';
         btn.style.background = 'var(--tbl-alt)';
     };
 
-// ⭐ 優化：播放/暫停按鈕 (加入自動選歌防呆機制)
-    document.getElementById('btnPlayBGM').addEventListener('click', () => {
+    // 播放 / 暫停 共用同一個按鈕
+    btnPlayBGM.addEventListener('click', () => {
         if (bgmPlayer) {
-            // 如果老師還沒點選任何一首歌就直接按「播放」，系統會自動幫忙點選第一首
+            // 防呆：如果還沒點選任何一首歌，就自動點擊第一首
             if (!bgmPlayer.getAttribute('src')) {
-                const firstSongBtn = document.querySelector('#panelBGM .tool-btn.ghost');
+                const firstSongBtn = document.querySelectorAll('#panelBGM .tool-btn.ghost')[0];
                 if (firstSongBtn) firstSongBtn.click();
             } else {
-                bgmPlayer.play();
+                if (bgmPlayer.paused) bgmPlayer.play();
+                else bgmPlayer.pause();
+                updateBgmUI();
             }
         }
     });
-    document.getElementById('btnPauseBGM').addEventListener('click', () => {
-        if (bgmPlayer) bgmPlayer.pause();
+
+    // 音樂狀態改變時，確保按鈕長相正確
+    if (bgmPlayer) {
+        bgmPlayer.addEventListener('play', updateBgmUI);
+        bgmPlayer.addEventListener('pause', updateBgmUI);
+    }
+
+    // 停止按鈕：暫停並把進度條拉回最前面
+    btnStopBGM.addEventListener('click', () => {
+        if (bgmPlayer) {
+            bgmPlayer.pause();
+            bgmPlayer.currentTime = 0; 
+            updateBgmUI();
+        }
     });
 
     document.addEventListener('click', (e) => { 
