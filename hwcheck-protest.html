@@ -127,6 +127,20 @@
     @keyframes popBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
     @keyframes starPop { 0% { transform: scale(1); } 50% { transform: scale(1.5) rotate(15deg); color: #fbbf24; } 100% { transform: scale(1); } }
     .star-pop-anim { animation: starPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    /* ⭐ 新增：加星星時的浮動 Emoji 動畫 */
+    @keyframes floatUpAndFade { 
+        0% { transform: translateY(0) scale(0.5); opacity: 1; } 
+        50% { transform: translateY(-30px) scale(1.2); opacity: 1; } 
+        100% { transform: translateY(-60px) scale(1.5); opacity: 0; } 
+    }
+    .floating-emoji {
+        position: fixed;
+        pointer-events: none;
+        z-index: 21000; /* 確保在執務室視窗之上 */
+        font-size: 28px;
+        animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    }
 
     /* Modals & Menus */
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
@@ -1240,6 +1254,21 @@ body.sidebar-open {
         o2.connect(g2); g2.connect(ctx.destination); o2.start(now + 0.1); o2.stop(now + 0.5);
     }
     window.playStarSound = playStarSound;
+
+    // ⭐ 新增：計時器時間到專屬音效 (三聲警報)
+    function playTimerEndSound() {
+        const ctx = resumeAudio(); const now = ctx.currentTime;
+        for (let i = 0; i < 3; i++) {
+            const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.type = 'square'; o.frequency.setValueAtTime(880, now + i * 0.25); // 稍微高頻的警示音
+            g.gain.setValueAtTime(0.15, now + i * 0.25);
+            g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.25 + 0.2);
+            o.connect(g); g.connect(ctx.destination);
+            o.start(now + i * 0.25); o.stop(now + i * 0.25 + 0.2);
+        }
+    }
+    window.playTimerEndSound = playTimerEndSound;
+    
     // RPG 等級與稱號統整設定
 const levelConfig = [
     { lv: 1, exp: 0, coins: 0, rank: "新手村民", color: "#9ca3af" },
@@ -3609,8 +3638,8 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
             if(timerSec > 0) { 
                 e.currentTarget.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; e.currentTarget.classList.add('warn');
                 timerInt = setInterval(() => { 
-                    if(timerSec > 0) { timerSec--; updateTimer(); } else { clearInterval(timerInt); timerInt=null; e.currentTarget.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; e.currentTarget.classList.remove('warn'); playSuccessSound(); showToast("⏰ 時間到！"); } 
-                }, 1000); 
+                if(timerSec > 0) { timerSec--; updateTimer(); } else { clearInterval(timerInt); timerInt=null; e.currentTarget.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; e.currentTarget.classList.remove('warn'); if (window.playTimerEndSound) window.playTimerEndSound(); showToast("⏰ 時間到！"); } 
+                }, 1000);
             } 
         } 
     });
@@ -3813,22 +3842,49 @@ window.renderQuickSidebar = function() {
         });
     });
 
+// ==========================================
+    // ⭐ 新增/升級：班級星星控制邏輯 (含彩帶與浮動 Emoji 特效)
     // ==========================================
-    // ⭐ 新增：班級星星控制邏輯
-    // ==========================================
-    document.getElementById('btnPlusClassStar').addEventListener('click', () => {
+    document.getElementById('btnPlusClassStar').addEventListener('click', (e) => {
         if (!data.settings) data.settings = {};
         data.settings.classStars = (data.settings.classStars || 0) + 1;
         
-        if (window.playSuccessSound) window.playSuccessSound();
+        if (window.playStarSound) window.playStarSound();
         triggerAutoSave();
         renderClassStars();
         
-        // 觸發 Header 上的彈跳特效
+        // 1. 觸發 Header 上的彈跳特效
         const display = document.getElementById('classStarDisplay');
         display.classList.remove('star-pop-anim');
-        void display.offsetWidth; // 觸發 reflow，讓動畫可以重複播放
+        void display.offsetWidth; // 觸發 reflow
         display.classList.add('star-pop-anim');
+        
+        // 2. 觸發滿滿的黃金色系彩帶特效 (從畫面頂部灑下)
+        confetti({ 
+            particleCount: 80, 
+            spread: 100, 
+            origin: { y: 0.1 },
+            colors: ['#fcd34d', '#f59e0b', '#fbbf24', '#fffbeb'] // 專屬星星金黃色系
+        });
+
+        // 3. 觸發可愛 Emoji 從點擊處往上飄的特效
+        const emojis = ['✨', '💖', '🥰', '🎉', '🌟', '🤩'];
+        // 隨機產生 3~5 個 Emoji
+        const emojiCount = Math.floor(Math.random() * 3) + 3; 
+        for(let i = 0; i < emojiCount; i++) {
+            const el = document.createElement('div');
+            el.className = 'floating-emoji';
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            // 讓 Emoji 在滑鼠點擊的位置附近隨機散開
+            el.style.left = (e.clientX - 30 + Math.random() * 60) + 'px';
+            el.style.top = (e.clientY - 30 + Math.random() * 30) + 'px';
+            // 隨機給一點旋轉角度，看起來更活潑
+            el.style.transform = `rotate(${Math.random() * 40 - 20}deg)`;
+            document.body.appendChild(el);
+            
+            // 動畫結束後自動清理 DOM 元素，不佔用資源
+            setTimeout(() => el.remove(), 1200); 
+        }
         
         showToast("🌟 班級星星 +1！繼續保持！");
     });
