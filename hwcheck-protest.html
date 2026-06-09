@@ -1008,6 +1008,7 @@ body.sidebar-open {
               <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
               <button class="toolbox-btn" id="btnOpenApple"><i class="bi bi-apple" style="color: #ef4444;"></i> 午飯蘋果</button>
               <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
+              <button class="toolbox-btn" onclick="window.open('https://www.youtube.com/watch?v=4QBBPuxTPoY&list=PLsYcWPis8Nh3sSijq2qR61_KM-tRatuFj&index=3', '_blank')"><i class="bi bi-youtube" style="color: #ef4444;"></i> 沉浸暖身</button>
           </div>
       </div>
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
@@ -1045,9 +1046,9 @@ body.sidebar-open {
           <audio id="bgmPlayer" loop preload="none"></audio>
           
           <div style="display:flex; flex-direction:column; gap:2cqi;">
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://cdn.pixabay.com/audio/2022/10/25/audio_2db5f21226.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://cdn.pixabay.com/audio/2022/10/14/audio_9939f792bc.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://upload.wikimedia.org/wikipedia/commons/5/5c/Vivaldi_-_The_Four_Seasons_-_Summer_-_III._Presto.ogg', this)"><i class="bi bi-fire"></i> 激昂探險 (韋瓦第)</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://upload.wikimedia.org/wikipedia/commons/e/e8/Gymnop%C3%A9die_No._1.ogg', this)"><i class="bi bi-water"></i> 平靜溫柔 (薩提)</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://upload.wikimedia.org/wikipedia/commons/3/30/Mozart_-_Piano_Sonata_No._11_in_A_major%2C_K._331_-_III._%28Alla_Turca%29.ogg', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆 (土耳其進行曲)</button>
           </div>
           
           <div style="display:flex; align-items:center; gap:2cqi; margin-top:3cqi; background: var(--bg); padding: 2cqi; border-radius: 2cqi; border: 1px dashed var(--tbl-border);">
@@ -3565,9 +3566,17 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
         btn.style.background = 'var(--tbl-alt)';
     };
 
-    // 播放/暫停按鈕
+// ⭐ 優化：播放/暫停按鈕 (加入自動選歌防呆機制)
     document.getElementById('btnPlayBGM').addEventListener('click', () => {
-        if (bgmPlayer && bgmPlayer.src) bgmPlayer.play();
+        if (bgmPlayer) {
+            // 如果老師還沒點選任何一首歌就直接按「播放」，系統會自動幫忙點選第一首
+            if (!bgmPlayer.getAttribute('src')) {
+                const firstSongBtn = document.querySelector('#panelBGM .tool-btn.ghost');
+                if (firstSongBtn) firstSongBtn.click();
+            } else {
+                bgmPlayer.play();
+            }
+        }
     });
     document.getElementById('btnPauseBGM').addEventListener('click', () => {
         if (bgmPlayer) bgmPlayer.pause();
