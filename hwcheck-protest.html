@@ -3654,7 +3654,7 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { timerSec += parseInt(e.target.dataset.min) * 60; updateTimer(); }));
     
 document.getElementById('btnTimerStart').addEventListener('click', (e) => { 
-        // ⭐ 強制解鎖音效引擎：播放 0.1 秒無聲音訊，確保瀏覽器允許後續倒數與音樂播放
+        // ⭐ 強制解鎖音效引擎
         const ctx = resumeAudio(); 
         const unlockOsc = ctx.createOscillator(); 
         const unlockGain = ctx.createGain();
@@ -3664,11 +3664,13 @@ document.getElementById('btnTimerStart').addEventListener('click', (e) => {
         unlockOsc.start(); unlockOsc.stop(ctx.currentTime + 0.1);
 
         const displayBox = document.getElementById('timerDisplay');
+        const btn = document.getElementById('btnTimerStart'); // ⭐ 關鍵修復：明確抓取按鈕元素
         
         if(timerInt) { 
             // 暫停邏輯
             clearInterval(timerInt); timerInt=null; 
-            e.currentTarget.innerHTML=`<i class="bi bi-play-fill"></i> 繼續`; e.currentTarget.classList.remove('warn');
+            btn.innerHTML=`<i class="bi bi-play-fill"></i> 繼續`; 
+            btn.classList.remove('warn');
         } else { 
             // 開始邏輯
             const inM = parseInt(document.getElementById('timerInput').value); const inS = parseInt(document.getElementById('timerInputSec').value);
@@ -3679,10 +3681,10 @@ document.getElementById('btnTimerStart').addEventListener('click', (e) => {
             }
             
             if(timerSec > 0) { 
-                e.currentTarget.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; 
-                e.currentTarget.classList.add('warn');
+                btn.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; 
+                btn.classList.add('warn');
                 
-                // 確保 UI 恢復預設顏色 (拿掉紅框特效)
+                // 確保 UI 恢復預設顏色
                 displayBox.style.backgroundColor = 'var(--bg)'; 
                 displayBox.style.color = 'var(--primary)';
                 
@@ -3700,8 +3702,10 @@ document.getElementById('btnTimerStart').addEventListener('click', (e) => {
                     // ⭐ 時間到：結束計時、播放 RPG 凱旋音樂
                     if(timerSec <= 0) { 
                         clearInterval(timerInt); timerInt=null; 
-                        e.currentTarget.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
-                        e.currentTarget.classList.remove('warn'); 
+                        
+                        // ⭐ 關鍵修復：改用 btn 變數，就不會報錯中斷了
+                        btn.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
+                        btn.classList.remove('warn'); 
                         
                         if (window.playTimerVictoryMusic) window.playTimerVictoryMusic(); 
                         showToast("⏰ 時間到！任務結束！"); 
