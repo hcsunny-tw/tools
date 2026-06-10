@@ -1046,9 +1046,9 @@ body.sidebar-open {
           <audio id="bgmPlayer" loop preload="none"></audio>
           
           <div style="display:flex; flex-direction:column; gap:2cqi;">
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://ia801309.us.archive.org/28/items/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://ia800408.us.archive.org/28/items/Kevin_MacLeod_-_Relaxing_Piano_Music/Relaxing_Piano_Music.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://ia800305.us.archive.org/30/items/Kevin_MacLeod_-_Carefree/Carefree.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Relaxing_Piano_Music/Relaxing_Piano_Music.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Carefree/Carefree.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
           </div>
           
           <div style="display:flex; align-items:center; gap:2cqi; margin-top:3cqi; background: var(--bg); padding: 2cqi; border-radius: 2cqi; border: 1px dashed var(--tbl-border);">
@@ -1059,7 +1059,7 @@ body.sidebar-open {
           
           <div style="display:flex; gap:2cqi; margin-top:auto;">
               <button class="tool-btn" id="btnPlayBGM" style="flex:2;"><i class="bi bi-play-fill"></i> 播放</button>
-              <button class="tool-btn warn ghost" id="btnStopBGM" style="flex:1;"><i class="bi bi-stop-fill"></i> 停止</button>
+              <button class="tool-btn warn ghost" id="btnStopBGM" style="flex:1;"><i class="bi bi-stop-fill"></i> 停止■</button>
           </div>
       </div>
   </div>
@@ -3543,7 +3543,7 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     }, 1000);
     
 // ==========================================
-    // ⭐ 優化：BGM 控制邏輯 (UI 連動與自動防呆)
+    // ⭐ 終極優化：BGM 控制邏輯 (UI 連動、載入提示與歸零停止)
     // ==========================================
     const bgmPlayer = document.getElementById('bgmPlayer');
     const bgmVol = document.getElementById('bgmVolume');
@@ -3564,16 +3564,26 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
             btnPlayBGM.style.background = 'var(--accent)'; // 播放中改變一下顏色
         } else {
             btnPlayBGM.innerHTML = '<i class="bi bi-play-fill"></i> 播放';
-            btnPlayBGM.style.background = 'var(--primary)';
+            btnPlayBGM.style.background = 'var(--primary)'; // 暫停或停止時恢復原色
         }
     }
 
     // 點擊歌單：切換並自動播放
     window.changeBGM = function(url, btn) {
         if (!bgmPlayer) return;
+        
+        // 加上載入中提示，讓老師知道系統有在動
+        btnPlayBGM.innerHTML = '<i class="bi bi-hourglass-split"></i> 載入中...';
+        
         bgmPlayer.src = url;
         bgmPlayer.volume = bgmVol.value;
-        bgmPlayer.play().then(() => updateBgmUI()).catch(e => console.log("等待互動後播放"));
+        
+        bgmPlayer.play().then(() => {
+            updateBgmUI();
+        }).catch(e => {
+            console.log("等待互動後播放", e);
+            updateBgmUI();
+        });
         
         // 讓按鈕亮起來，表示目前選中的音樂
         const btns = document.querySelectorAll('#panelBGM .tool-btn.ghost');
@@ -3583,8 +3593,10 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
                 b.style.background = 'transparent';
             }
         });
-        btn.style.borderColor = 'var(--primary)';
-        btn.style.background = 'var(--tbl-alt)';
+        if(btn) {
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.background = 'var(--tbl-alt)';
+        }
     };
 
     // 播放 / 暫停 共用同一個按鈕
@@ -3606,9 +3618,10 @@ document.getElementById('ipImportJSON').addEventListener('change', (e) => {
     if (bgmPlayer) {
         bgmPlayer.addEventListener('play', updateBgmUI);
         bgmPlayer.addEventListener('pause', updateBgmUI);
+        bgmPlayer.addEventListener('canplay', updateBgmUI); // 載入完畢準備好時也更新一下 UI
     }
 
-    // 停止按鈕：暫停並把進度條拉回最前面
+    // ⭐ 停止按鈕：暫停並把進度條拉回最前面 (達成重新開始的效果)
     btnStopBGM.addEventListener('click', () => {
         if (bgmPlayer) {
             bgmPlayer.pause();
