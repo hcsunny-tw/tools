@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.1.10🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.1.11🛡️</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -779,7 +779,7 @@ body.sidebar-open {
             </a>
 
             <div class="copyright">
-                © 2026 ADVENTURER GUILD PROJECT v6.1.10. ALL RIGHTS RESERVED.
+                © 2026 ADVENTURER GUILD PROJECT v6.1.11. ALL RIGHTS RESERVED.
             </div>
         </div>
     </footer>
@@ -1126,16 +1126,16 @@ body.sidebar-open {
           .hg-pbtn:hover { background: var(--btn-color); color: #fff; transform: translateX(-3px); }
           .hg-pbtn.active { background: var(--btn-color); color: #fff; transform: scale(1.08); border-color: var(--text-main); }
           
-          /* ⭐ 關鍵修復：沙流放置於 z-index: 1，並加入旋轉補償動畫 */
+          /* ⭐ 沙流顏色綁定變數 */
           #hg-stream {
               position: absolute; top: 50%; left: 50%; width: 0.8cqi; height: 21cqi;
-              background: #e5a95b; transform: translateX(-50%) rotate(0deg); transform-origin: top center;
-              opacity: 0; z-index: 1; transition: opacity 0.3s ease, transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+              background: var(--hg-sand-color, #4CAF50); transform: translateX(-50%) rotate(0deg); transform-origin: top center;
+              opacity: 0; z-index: 1; transition: background 0.4s ease, opacity 0.3s ease, transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
           }
           #hg-stream.active { opacity: 0.9; }
           #hg-stream.active::after {
               content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4cqi;
-              background: rgba(255,255,255,0.4); border-radius: 1cqi;
+              background: rgba(255,255,255,0.5); border-radius: 1cqi;
               animation: hgDropDown 0.45s cubic-bezier(0.5, 0, 1, 0.5) infinite;
           }
           @keyframes hgDropDown {
@@ -1154,27 +1154,27 @@ body.sidebar-open {
       <div class="tool-body" id="hgTimerBody" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 3cqi; overflow: hidden; padding-top: 5cqi;">
           
           <div style="display: flex; flex-direction: column; gap: 2cqi; width: 15cqi;">
-              <button class="hg-pbtn" style="--btn-color: #FF5252;" onclick="window.applyHgPreset(10, this)">10秒</button>
-              <button class="hg-pbtn" style="--btn-color: #FF9800;" onclick="window.applyHgPreset(30, this)">30秒</button>
-              <button class="hg-pbtn active" style="--btn-color: #4CAF50;" onclick="window.applyHgPreset(60, this)">1分</button>
-              <button class="hg-pbtn" style="--btn-color: #2196F3;" onclick="window.applyHgPreset(180, this)">3分</button>
-              <button class="hg-pbtn" style="--btn-color: #9C27B0;" onclick="window.applyHgPreset(300, this)">5分</button>
+              <button class="hg-pbtn" style="--btn-color: #FF5252;" onclick="window.applyHgPreset(10, '#FF5252', this)">10秒</button>
+              <button class="hg-pbtn" style="--btn-color: #FF9800;" onclick="window.applyHgPreset(30, '#FF9800', this)">30秒</button>
+              <button class="hg-pbtn active" style="--btn-color: #4CAF50;" onclick="window.applyHgPreset(60, '#4CAF50', this)">1分</button>
+              <button class="hg-pbtn" style="--btn-color: #2196F3;" onclick="window.applyHgPreset(180, '#2196F3', this)">3分</button>
+              <button class="hg-pbtn" style="--btn-color: #9C27B0;" onclick="window.applyHgPreset(300, '#9C27B0', this)">5分</button>
               <input type="number" id="hg-time-input" style="width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--primary); color: var(--text-main); font-size: 3.5cqi; font-weight: 800; text-align: center; padding: 1cqi 0; outline: none; margin-top: 1cqi;" value="60" min="1" placeholder="自訂">
           </div>
 
           <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
               <div style="width: 100%; height: 50cqi; display: flex; align-items: center; justify-content: center;">
-                  <div id="hg-wrapper" onclick="window.flipHourglassPanel()" title="點擊翻轉" style="position: relative; transform: rotate(var(--hg-rot, 0deg)); transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer;">
+                  <div id="hg-wrapper" onclick="window.flipHourglassPanel()" title="點擊翻轉" style="position: relative; transform: scale(var(--hg-scale, 1)) rotate(var(--hg-rot, 0deg)); transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer;">
                       
                       <div id="hg-stream"></div>
                       
                       <div style="display: flex; flex-direction: column; align-items: center; width: 25cqi; position: relative; z-index: 2;">
                           <div style="width: 100%; height: 2.5cqi; background-color: var(--primary); border-radius: 1.5cqi;"></div>
                           <div style="width: 22cqi; height: 22cqi; background: rgba(0,0,0,0.03); border: 0.8cqi solid var(--primary); clip-path: polygon(0 0, 100% 0, 60% 100%, 40% 100%); border-bottom: none; border-radius: 1.5cqi 1.5cqi 0 0; margin-bottom: -0.5cqi; position: relative; overflow: hidden;">
-                              <div id="hg-sand-a" style="background-color: #e5a95b; width: 100%; position: absolute; left: 0;"></div>
+                              <div id="hg-sand-a" style="background-color: var(--hg-sand-color, #4CAF50); width: 100%; position: absolute; left: 0; transition: background 0.4s ease;"></div>
                           </div>
                           <div style="width: 22cqi; height: 22cqi; background: rgba(0,0,0,0.03); border: 0.8cqi solid var(--primary); clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); border-top: none; border-radius: 0 0 1.5cqi 1.5cqi; margin-top: -0.5cqi; position: relative; overflow: hidden;">
-                              <div id="hg-sand-b" style="background-color: #e5a95b; width: 100%; position: absolute; left: 0;"></div>
+                              <div id="hg-sand-b" style="background-color: var(--hg-sand-color, #4CAF50); width: 100%; position: absolute; left: 0; transition: background 0.4s ease;"></div>
                           </div>
                           <div style="width: 100%; height: 2.5cqi; background-color: var(--primary); border-radius: 1.5cqi;"></div>
                       </div>
@@ -1197,6 +1197,8 @@ body.sidebar-open {
           </div>
       </div>
   </div>
+  
+
   <div id="panelStopwatch" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-clock-history"></i> 碼表</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
@@ -4156,7 +4158,7 @@ window.renderQuickSidebar = function() {
         });
     });
 // ==========================================
-    // 🛡️ 沙漏計時器專屬隔離模組 (等比例縮放 + 重力反轉優化版)
+    // 🛡️ 沙漏計時器專屬隔離模組 (顏色切換 + 動態尺寸版)
     // ==========================================
     let hgTimerInterval = null;
     let hgTotalSeconds = 60;
@@ -4173,6 +4175,13 @@ window.renderQuickSidebar = function() {
     const hgWrapper = document.getElementById('hg-wrapper');
     const hgPlayIcon = document.getElementById('hg-play-icon');
     const hgPauseIcon = document.getElementById('hg-pause-icon');
+    const hgBody = document.getElementById('hgTimerBody');
+
+    // ⭐ 動態計算沙漏尺寸 (時間越長沙漏越大，限定在 0.85x ~ 1.25x 之間)
+    window.updateHgHourglassScale = function(seconds) {
+        const scale = Math.max(0.85, Math.min(1.25, 0.72 + Math.sqrt(seconds) / 28));
+        hgWrapper.style.setProperty('--hg-scale', scale);
+    };
 
     // 核心動畫更新
     window.updateHgVisuals = function(transitionType = 'linear') {
@@ -4186,8 +4195,8 @@ window.renderQuickSidebar = function() {
             transitionStyle = 'top 1s linear, height 1s linear';
         }
 
-        hgSandA.style.transition = transitionStyle;
-        hgSandB.style.transition = transitionStyle;
+        hgSandA.style.transition = transitionStyle + ', background 0.4s ease';
+        hgSandB.style.transition = transitionStyle + ', background 0.4s ease';
 
         hgSandA.style.height = `${amountA * 100}%`;
         hgSandB.style.height = `${amountB * 100}%`;
@@ -4201,17 +4210,19 @@ window.renderQuickSidebar = function() {
         }
 
         let displaySecs = (hgFlipCount % 2 === 0) ? hgVolumeA : hgTotalSeconds - hgVolumeA;
-        
         const m = Math.floor(displaySecs / 60).toString().padStart(2, '0');
         const s = (displaySecs % 60).toString().padStart(2, '0');
         hgDisplay.innerText = `${m}:${s}`;
     };
 
-    // 套用時間預設值
-    window.applyHgPreset = function(sec, btn) {
+    // ⭐ 套用時間預設值 (包含顏色變換)
+    window.applyHgPreset = function(sec, color, btn) {
         resumeAudio();
         document.querySelectorAll('.hg-pbtn').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
+        
+        // 切換沙子顏色
+        if(color) hgBody.style.setProperty('--hg-sand-color', color);
         
         hgTimeInput.value = sec;
         clearInterval(hgTimerInterval);
@@ -4223,14 +4234,14 @@ window.renderQuickSidebar = function() {
         hgVolumeA = 0; 
         hgFlipCount = 0; 
         
-        // 歸零旋轉狀態
         hgWrapper.style.setProperty('--hg-rot', `0deg`);
         hgStream.style.transform = `translateX(-50%) rotate(0deg)`;
         
         window.updateHgVisuals('none');
+        window.updateHgHourglassScale(sec); // 觸發尺寸縮放
     };
 
-    // 監聽手動輸入時間
+    // 監聽手動輸入時間 (輸入時也會改變尺寸)
     hgTimeInput.addEventListener('input', () => {
         if (hgIsRunning) return;
         const val = parseInt(hgTimeInput.value);
@@ -4238,6 +4249,7 @@ window.renderQuickSidebar = function() {
             hgTotalSeconds = val;
             hgVolumeA = (hgFlipCount % 2 === 0) ? 0 : val; 
             window.updateHgVisuals('none');
+            window.updateHgHourglassScale(val);
             document.querySelectorAll('.hg-pbtn').forEach(b => b.classList.remove('active'));
         }
     });
@@ -4298,6 +4310,7 @@ window.renderQuickSidebar = function() {
         hgStream.style.transform = `translateX(-50%) rotate(0deg)`;
         
         window.updateHgVisuals('none');
+        window.updateHgHourglassScale(hgTotalSeconds);
     };
 
     // 翻轉沙漏
@@ -4311,7 +4324,6 @@ window.renderQuickSidebar = function() {
         let newRot = hgFlipCount * 180;
         
         hgWrapper.style.setProperty('--hg-rot', `${newRot}deg`);
-        // ⭐ 關鍵修復：沙流永遠受重力朝下 (抵銷外殼的旋轉)
         hgStream.style.transform = `translateX(-50%) rotate(${-newRot}deg)`;
 
         window.updateHgVisuals('smooth');
