@@ -1114,59 +1114,84 @@ body.sidebar-open {
       </div>
   </div>
 
-  <div id="panelHgTimer" class="tool-window" style="width: 360px; min-height: 380px;">
+<div id="panelHgTimer" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-hourglass-split"></i> 沙漏計時器</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body" id="hgTimerBody" style="background: var(--card); display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px;" data-hg-theme="theme-classic">
+      
+      <style>
+          .hg-pbtn {
+              background: transparent; border: 1.5px solid var(--btn-color); color: var(--text-main);
+              padding: 1.5cqi 0; width: 100%; border-radius: 2cqi; font-size: 3.5cqi; font-weight: 800;
+              cursor: pointer; transition: all 0.25s;
+          }
+          .hg-pbtn:hover { background: var(--btn-color); color: #fff; transform: translateX(-3px); }
+          .hg-pbtn.active { background: var(--btn-color); color: #fff; transform: scale(1.08); border-color: var(--text-main); }
           
-          <div style="display: flex; gap: 10px; background: rgba(0, 0, 0, 0.05); padding: 6px 12px; border-radius: 30px;">
-              <div class="theme-dot active" onclick="window.setHgTheme('theme-classic', this)" title="靜謐木質" style="width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; background: #e5a95b;"></div>
-              <div class="theme-dot" onclick="window.setHgTheme('theme-neon', this)" title="霓虹賽博" style="width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; background: #0ff;"></div>
-              <div class="theme-dot" onclick="window.setHgTheme('theme-minimal', this)" title="極簡純粹" style="width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; background: #1d1d1f;"></div>
+          #hg-stream {
+              position: absolute; top: 49%; left: 50%; width: 0.8cqi; height: 21cqi;
+              background: #e5a95b; transform: translateX(-50%); transform-origin: top center;
+              opacity: 0; z-index: 5; transition: opacity 0.3s ease;
+          }
+          #hg-stream.active { opacity: 0.9; }
+          #hg-stream.active::after {
+              content: ''; position: absolute; top: 0; left: -50%; width: 1.6cqi; height: 4cqi;
+              background: #e5a95b; border-radius: 1cqi;
+              animation: hgDropDown 0.45s cubic-bezier(0.5, 0, 1, 0.5) infinite;
+          }
+          @keyframes hgDropDown {
+              0% { top: 0; opacity: 1; transform: scaleY(1); }
+              80% { top: 80%; opacity: 1; transform: scaleY(1.6); }
+              100% { top: 100%; opacity: 0; transform: scaleY(0.5); }
+          }
+          .hg-icon-btn {
+              background: transparent; border: 0.5cqi solid var(--primary); color: var(--primary);
+              width: 10cqi; height: 10cqi; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+              cursor: pointer; transition: transform 0.2s;
+          }
+          .hg-icon-btn:hover { transform: translateY(-2px) scale(1.05); }
+      </style>
+
+      <div class="tool-body" id="hgTimerBody" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 3cqi; overflow: hidden; padding-top: 5cqi;">
+          
+          <div style="display: flex; flex-direction: column; gap: 2cqi; width: 15cqi;">
+              <button class="hg-pbtn" style="--btn-color: #FF5252;" onclick="window.applyHgPreset(10, this)">10秒</button>
+              <button class="hg-pbtn" style="--btn-color: #FF9800;" onclick="window.applyHgPreset(30, this)">30秒</button>
+              <button class="hg-pbtn active" style="--btn-color: #4CAF50;" onclick="window.applyHgPreset(60, this)">1分</button>
+              <button class="hg-pbtn" style="--btn-color: #2196F3;" onclick="window.applyHgPreset(180, this)">3分</button>
+              <button class="hg-pbtn" style="--btn-color: #9C27B0;" onclick="window.applyHgPreset(300, this)">5分</button>
+              <input type="number" id="hg-time-input" style="width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--primary); color: var(--text-main); font-size: 3.5cqi; font-weight: 800; text-align: center; padding: 1cqi 0; outline: none; margin-top: 1cqi;" value="60" min="1" placeholder="自訂">
           </div>
 
-          <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 100%; gap: 15px; margin-top: 5px;">
-              <div style="display: flex; flex-direction: column; gap: 6px; width: 60px;">
-                  <button class="preset-btn hg-pbtn" style="background: transparent; border: 1.5px solid #FF5252; color: var(--text-main); padding: 4px 0; width: 100%; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer;" onclick="window.applyHgPreset(10, '#FF5252', this)">10秒</button>
-                  <button class="preset-btn hg-pbtn" style="background: transparent; border: 1.5px solid #FF9800; color: var(--text-main); padding: 4px 0; width: 100%; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer;" onclick="window.applyHgPreset(30, '#FF9800', this)">30秒</button>
-                  <button class="preset-btn hg-pbtn active" style="background: #4CAF50; border: 1.5px solid #4CAF50; color: #fff; padding: 4px 0; width: 100%; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer;" onclick="window.applyHgPreset(60, '#4CAF50', this)">1分</button>
-                  <button class="preset-btn hg-pbtn" style="background: transparent; border: 1.5px solid #2196F3; color: var(--text-main); padding: 4px 0; width: 100%; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer;" onclick="window.applyHgPreset(180, '#2196F3', this)">3分</button>
-                  <button class="preset-btn hg-pbtn" style="background: transparent; border: 1.5px solid #9C27B0; color: var(--text-main); padding: 4px 0; width: 100%; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer;" onclick="window.applyHgPreset(300, '#9C27B0', this)">5分</button>
-                  <input type="number" id="hg-time-input" style="width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--primary); color: var(--text-main); font-size: 12px; font-weight: 800; text-align: center; padding: 2px 0; outline: none;" value="60" min="1" placeholder="自訂">
-              </div>
-
-              <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
-                  <div style="width: 100%; height: 190px; display: flex; align-items: center; justify-content: center; position: relative;">
-                      <div id="hg-wrapper" onclick="window.flipHourglassPanel()" title="點擊翻轉" style="position: relative; transform: scale(var(--hg-scale, 0.85)) rotate(var(--hg-rot, 0deg)); transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer;">
-                          <div style="display: flex; flex-direction: column; align-items: center; width: 90px; height: 170px;">
-                              <div style="width: 100%; height: 8px; background-color: var(--primary); border-radius: 4px; z-index: 2;"></div>
-                              <div style="width: 76px; height: 78px; background: rgba(0,0,0,0.03); border: 2.5px solid var(--primary); clip-path: polygon(0 0, 100% 0, 60% 100%, 40% 100%); border-bottom: none; border-radius: 6px 6px 0 0; margin-bottom: -2px; position: relative; overflow: hidden;">
-                                  <div id="hg-sand-a" style="background-color: var(--hg-sand-color, #e5a95b); width: 100%; position: absolute; left: 0;"></div>
-                              </div>
-                              <div style="width: 76px; height: 78px; background: rgba(0,0,0,0.03); border: 2.5px solid var(--primary); clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); border-top: none; border-radius: 0 0 6px 6px; margin-top: -2px; position: relative; overflow: hidden;">
-                                  <div id="hg-sand-b" style="background-color: var(--hg-sand-color, #e5a95b); width: 100%; position: absolute; left: 0;"></div>
-                              </div>
-                              <div style="width: 100%; height: 8px; background-color: var(--primary); border-radius: 4px; z-index: 2;"></div>
+          <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+              <div style="width: 100%; height: 50cqi; display: flex; align-items: center; justify-content: center;">
+                  <div id="hg-wrapper" onclick="window.flipHourglassPanel()" title="點擊翻轉" style="position: relative; transform: rotate(var(--hg-rot, 0deg)); transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer;">
+                      <div style="display: flex; flex-direction: column; align-items: center; width: 25cqi;">
+                          <div style="width: 100%; height: 2.5cqi; background-color: var(--primary); border-radius: 1.5cqi; z-index: 2;"></div>
+                          <div style="width: 22cqi; height: 22cqi; background: rgba(0,0,0,0.03); border: 0.8cqi solid var(--primary); clip-path: polygon(0 0, 100% 0, 60% 100%, 40% 100%); border-bottom: none; border-radius: 1.5cqi 1.5cqi 0 0; margin-bottom: -0.5cqi; position: relative; overflow: hidden;">
+                              <div id="hg-sand-a" style="background-color: #e5a95b; width: 100%; position: absolute; left: 0;"></div>
                           </div>
-                          <div id="hg-stream" style="position: absolute; top: 48%; left: 50%; width: 2px; height: 78px; background: var(--hg-sand-color, #e5a95b); transform: translateX(-50%); transform-origin: top center; opacity: 0; z-index: 5; transition: opacity 0.3s ease;"></div>
+                          <div style="width: 22cqi; height: 22cqi; background: rgba(0,0,0,0.03); border: 0.8cqi solid var(--primary); clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); border-top: none; border-radius: 0 0 1.5cqi 1.5cqi; margin-top: -0.5cqi; position: relative; overflow: hidden;">
+                              <div id="hg-sand-b" style="background-color: #e5a95b; width: 100%; position: absolute; left: 0;"></div>
+                          </div>
+                          <div style="width: 100%; height: 2.5cqi; background-color: var(--primary); border-radius: 1.5cqi; z-index: 2;"></div>
                       </div>
+                      <div id="hg-stream"></div>
                   </div>
-                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 700; line-height: 1; margin-top: 5px;" id="hg-time-display">01:00</div>
               </div>
-
-              <div style="display: flex; flex-direction: column; gap: 14px; width: 50px; align-items: center;">
-                  <button class="icon-btn secondary" onclick="window.resetHgTimer()" title="重設" style="background: transparent; border: 2px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                      <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-                  </button>
-                  <button class="icon-btn secondary" onclick="window.flipHourglassPanel()" title="中途翻轉沙漏" style="background: transparent; border: 2px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                      <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor;"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
-                  </button>
-                  <button id="hg-play-btn" onclick="window.toggleHgTimer()" title="播放/暫停" style="background: var(--primary); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow);">
-                      <svg id="hg-play-icon" viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor;"><path d="M8 5v14l11-7z"/></svg>
-                      <svg id="hg-pause-icon" viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor; display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                  </button>
-              </div>
+              <div style="font-family: 'Courier New', monospace; font-size: 8cqi; font-weight: 900; line-height: 1; color: var(--primary); margin-top: 3cqi;" id="hg-time-display">01:00</div>
           </div>
-          
+
+          <div style="display: flex; flex-direction: column; gap: 4cqi; width: 12cqi; align-items: center;">
+              <button class="hg-icon-btn" onclick="window.resetHgTimer()" title="重設">
+                  <svg viewBox="0 0 24 24" style="width: 5cqi; height: 5cqi; fill: currentColor;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+              </button>
+              <button class="hg-icon-btn" onclick="window.flipHourglassPanel()" title="中途翻轉沙漏">
+                  <svg viewBox="0 0 24 24" style="width: 5cqi; height: 5cqi; fill: currentColor;"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+              </button>
+              <button id="hg-play-btn" class="hg-icon-btn" onclick="window.toggleHgTimer()" title="播放/暫停" style="background: var(--primary); color: #fff;">
+                  <svg id="hg-play-icon" viewBox="0 0 24 24" style="width: 6cqi; height: 6cqi; fill: currentColor;"><path d="M8 5v14l11-7z"/></svg>
+                  <svg id="hg-pause-icon" viewBox="0 0 24 24" style="width: 6cqi; height: 6cqi; fill: currentColor; display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+          </div>
       </div>
   </div>
 
@@ -4128,8 +4153,8 @@ window.renderQuickSidebar = function() {
             }
         });
     });
-    // ==========================================
-    // 🛡️ 沙漏計時器專屬隔離模組 (物理恆定版)
+// ==========================================
+    // 🛡️ 沙漏計時器專屬隔離模組 (等比例縮放優化版)
     // ==========================================
     let hgTimerInterval = null;
     let hgTotalSeconds = 60;
@@ -4146,13 +4171,8 @@ window.renderQuickSidebar = function() {
     const hgWrapper = document.getElementById('hg-wrapper');
     const hgPlayIcon = document.getElementById('hg-play-icon');
     const hgPauseIcon = document.getElementById('hg-pause-icon');
-    const hgBody = document.getElementById('hgTimerBody');
 
-    window.updateHgHourglassScale = function(seconds) {
-        const scale = Math.max(0.82, Math.min(1.22, 0.72 + Math.sqrt(seconds) / 28));
-        hgWrapper.style.setProperty('--hg-scale', scale);
-    };
-
+    // 核心動畫更新
     window.updateHgVisuals = function(transitionType = 'linear') {
         let amountA = hgTotalSeconds > 0 ? hgVolumeA / hgTotalSeconds : 0;
         let amountB = 1 - amountA;
@@ -4180,24 +4200,23 @@ window.renderQuickSidebar = function() {
 
         let displaySecs = (hgFlipCount % 2 === 0) ? hgVolumeA : hgTotalSeconds - hgVolumeA;
         
-        // 格式化分秒顯示
         const m = Math.floor(displaySecs / 60).toString().padStart(2, '0');
         const s = (displaySecs % 60).toString().padStart(2, '0');
         hgDisplay.innerText = `${m}:${s}`;
     };
 
-    window.applyHgPreset = function(sec, color, btn) {
+    // 套用時間預設值
+    window.applyHgPreset = function(sec, btn) {
         resumeAudio();
+        // 清除舊的 active 樣式
         document.querySelectorAll('.hg-pbtn').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
         
-        hgBody.style.setProperty('--hg-sand-color', color);
         hgTimeInput.value = sec;
-        
         clearInterval(hgTimerInterval);
         hgIsRunning = false;
         hgPlayIcon.style.display = 'block'; hgPauseIcon.style.display = 'none';
-        hgStream.style.opacity = '0';
+        hgStream.classList.remove('active');
 
         hgTotalSeconds = sec;
         hgVolumeA = 0; 
@@ -4205,31 +4224,9 @@ window.renderQuickSidebar = function() {
         hgWrapper.style.setProperty('--hg-rot', `0deg`);
         
         window.updateHgVisuals('none');
-        window.updateHgHourglassScale(sec);
     };
 
-    window.setHgTheme = function(themeName, element) {
-        hgBody.setAttribute('data-hg-theme', themeName);
-        document.querySelectorAll('#hgTimerBody .theme-dot').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-        
-        // 根據主題切換沙子顏色與框線色
-        if(themeName === 'theme-neon') {
-            hgBody.style.setProperty('--hg-sand-color', '#0ff');
-            hgBody.style.background = '#0b0b1a';
-            hgBody.style.color = '#e0e0ff';
-        } else if(themeName === 'theme-minimal') {
-            hgBody.style.setProperty('--hg-sand-color', '#1d1d1f');
-            hgBody.style.background = '#f5f5f7';
-            hgBody.style.color = '#1d1d1f';
-        } else {
-            hgBody.style.setProperty('--hg-sand-color', '#e5a95b');
-            hgBody.style.background = 'var(--card)';
-            hgBody.style.color = 'var(--text-main)';
-        }
-        document.querySelectorAll('.hg-pbtn').forEach(b => b.classList.remove('active'));
-    };
-
+    // 監聽手動輸入時間
     hgTimeInput.addEventListener('input', () => {
         if (hgIsRunning) return;
         const val = parseInt(hgTimeInput.value);
@@ -4237,25 +4234,25 @@ window.renderQuickSidebar = function() {
             hgTotalSeconds = val;
             hgVolumeA = (hgFlipCount % 2 === 0) ? 0 : val; 
             window.updateHgVisuals('none');
-            window.updateHgHourglassScale(val); 
             document.querySelectorAll('.hg-pbtn').forEach(b => b.classList.remove('active'));
         }
     });
 
+    // 播放與暫停
     window.toggleHgTimer = function() {
         resumeAudio();
         if (hgIsRunning) {
             clearInterval(hgTimerInterval);
             hgIsRunning = false;
             hgPlayIcon.style.display = 'block'; hgPauseIcon.style.display = 'none';
-            hgStream.style.opacity = '0';
+            hgStream.classList.remove('active');
         } else {
             let displaySecs = (hgFlipCount % 2 === 0) ? hgVolumeA : hgTotalSeconds - hgVolumeA;
             if (displaySecs <= 0) { window.flipHourglassPanel(); return; }
 
             hgIsRunning = true;
             hgPlayIcon.style.display = 'none'; hgPauseIcon.style.display = 'block';
-            hgStream.style.opacity = '0.9';
+            hgStream.classList.add('active');
 
             hgTimerInterval = setInterval(() => {
                 if (hgFlipCount % 2 === 0) {
@@ -4271,22 +4268,22 @@ window.renderQuickSidebar = function() {
                     clearInterval(hgTimerInterval);
                     hgIsRunning = false;
                     hgPlayIcon.style.display = 'block'; hgPauseIcon.style.display = 'none';
-                    hgStream.style.opacity = '0';
+                    hgStream.classList.remove('active');
                     hgDisplay.innerText = "00:00"; 
                     
                     showToast("⏳ 沙漏時間到！任務結束！");
-                    // ⭐ 自動連動公會大廳現有的 RPG 凱旋破關音樂！
                     if (window.playTimerVictoryMusic) window.playTimerVictoryMusic();
                 }
             }, 1000);
         }
     };
 
+    // 重設按鈕
     window.resetHgTimer = function() {
         clearInterval(hgTimerInterval);
         hgIsRunning = false;
         hgPlayIcon.style.display = 'block'; hgPauseIcon.style.display = 'none';
-        hgStream.style.opacity = '0';
+        hgStream.classList.remove('active');
         
         const inputVal = parseInt(hgTimeInput.value);
         hgTotalSeconds = isNaN(inputVal) || inputVal <= 0 ? 60 : inputVal;
@@ -4295,9 +4292,9 @@ window.renderQuickSidebar = function() {
         hgWrapper.style.setProperty('--hg-rot', `0deg`);
         
         window.updateHgVisuals('none');
-        window.updateHgHourglassScale(hgTotalSeconds);
     };
 
+    // 翻轉沙漏
     window.flipHourglassPanel = function() {
         if (hgIsFlipping || hgTotalSeconds <= 0) return;
         resumeAudio();
