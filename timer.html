@@ -15,7 +15,7 @@
             --frame-color: #8b5a2b;
             --glass-bg: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 20%, rgba(255,255,255,0.1) 100%);
             --sand-color: #e5a95b; 
-            --shadow: 0 20px 40px rgba(139, 90, 43, 0.15);
+            --shadow: 0 15px 35px rgba(139, 90, 43, 0.12);
             --glow: none;
             --btn-hover: rgba(0,0,0,0.05);
         }
@@ -23,14 +23,14 @@
         body.theme-neon {
             --bg-color: #0b0b1a;
             --card-bg: rgba(20, 20, 40, 0.6);
-            --border-color: rgba(0, 255, 255, 0.3);
+            --border-color: rgba(0, 255, 255, 0.25);
             --text-color: #e0e0ff;
             --frame-color: #0ff;
             --glass-bg: linear-gradient(90deg, rgba(0,255,255,0.05) 0%, rgba(0,255,255,0.2) 20%, rgba(0,255,255,0.02) 100%);
             --sand-color: #0ff;
-            --shadow: 0 20px 50px rgba(0, 255, 255, 0.2);
-            --glow: 0 0 15px var(--frame-color);
-            --btn-hover: rgba(0, 255, 255, 0.2);
+            --shadow: 0 15px 40px rgba(0, 255, 255, 0.15);
+            --glow: 0 0 12px var(--frame-color);
+            --btn-hover: rgba(0, 255, 255, 0.15);
         }
 
         body.theme-minimal {
@@ -41,7 +41,7 @@
             --frame-color: #1d1d1f;
             --glass-bg: rgba(0, 0, 0, 0.03);
             --sand-color: #1d1d1f;
-            --shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            --shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
             --glow: none;
             --btn-hover: #f0f0f0;
         }
@@ -57,17 +57,20 @@
             justify-content: center;
             min-height: 100vh;
             transition: background-color 0.6s ease, color 0.6s ease;
+            overflow: hidden; /* 防止整個視窗產生捲軸 */
+            padding: 10px;
         }
 
+        /* 縮減 App 卡片尺寸與內邊距，提供最緊湊優雅的黃金比例 */
         .app-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
-            border-radius: 32px;
-            padding: 40px;
+            border-radius: 28px;
+            padding: 24px;
             width: 100%;
-            max-width: 420px;
+            max-width: 520px; /* 放寬卡片以容納左右側邊欄 */
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
@@ -75,82 +78,81 @@
             transition: all 0.6s ease;
         }
 
+        /* 縮小主題切換列，節省垂直空間 */
         .theme-switcher {
             display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-            background: rgba(0, 0, 0, 0.05);
-            padding: 8px 16px;
+            gap: 10px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 6px 12px;
             border-radius: 30px;
         }
 
         .theme-dot {
-            width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+            width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
             border: 2px solid transparent; transition: transform 0.2s, border-color 0.3s;
         }
-        .theme-dot:hover { transform: scale(1.2); }
+        .theme-dot:hover { transform: scale(1.20); }
         .theme-dot.active { border-color: var(--text-color); transform: scale(1.1); }
         .dot-classic { background: #e5a95b; }
-        .dot-neon { background: #0ff; box-shadow: 0 0 10px #0ff; }
+        .dot-neon { background: #0ff; box-shadow: 0 0 8px #0ff; }
         .dot-minimal { background: #1d1d1f; }
 
-        /* 新增：沙漏固定舞台，確保放大縮小不會推擠周圍 UI */
+        /* 縮短沙漏舞台，確保即使放大時也不會溢出或破壞排版 */
         .hourglass-stage {
             width: 100%;
-            height: 380px;
+            height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 10px 0;
+            margin: 5px 0;
+            position: relative;
         }
 
-        /* 沙漏容器與翻轉動畫 */
+        /* 透過縮放比例與旋轉度控制沙漏外觀 */
         .hourglass-wrapper {
             position: relative;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08));
             cursor: pointer; 
-            /* 修改：透過 CSS 變數同時控制縮放與旋轉 */
             transform: scale(var(--hg-scale, 1)) rotate(var(--hg-rot, 0deg));
             transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
+        /* 縮小沙漏尺寸至高度 220px，寬度 110px */
         .hourglass {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 140px;
-            height: 280px;
+            width: 110px;
+            height: 220px;
         }
 
         .cap {
-            width: 100%; height: 12px; background-color: var(--frame-color);
-            border-radius: 6px; box-shadow: var(--glow); z-index: 2; transition: all 0.6s ease;
+            width: 100%; height: 10px; background-color: var(--frame-color);
+            border-radius: 5px; box-shadow: var(--glow); z-index: 2; transition: all 0.6s ease;
         }
 
         .glass {
-            width: 120px; height: 128px; background: var(--glass-bg);
+            width: 92px; height: 100px; background: var(--glass-bg);
             position: relative; overflow: hidden; border: 3px solid var(--frame-color);
-            transition: all 0.6s ease; box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            transition: all 0.6s ease; box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
         }
         .glass::after {
             content: ''; position: absolute; top: 0; left: 10%; width: 20%; height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
             transform: skewX(-15deg); pointer-events: none; z-index: 3;
         }
 
         .top-glass {
             clip-path: polygon(0 0, 100% 0, 60% 100%, 40% 100%);
-            border-bottom: none; border-radius: 8px 8px 0 0; margin-bottom: -2px;
+            border-bottom: none; border-radius: 6px 6px 0 0; margin-bottom: -2px;
         }
 
         .bottom-glass {
             clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
-            border-top: none; border-radius: 0 0 8px 8px; margin-top: -2px;
+            border-top: none; border-radius: 0 0 6px 6px; margin-top: -2px;
         }
 
-        /* 優化 1：全新物理沙子模型
-           移除了固定 height 和 top，改由 JS 動態控制，確保體積絕對恆定！
-        */
         .sand {
             background-color: var(--sand-color);
             width: 100%; 
@@ -159,115 +161,156 @@
             box-shadow: var(--glow);
         }
 
-        /* 優化 2：發光流體動畫取代虛線 
-           使用雙層結構，本體是穩定的發光流體，偽元素是一顆加速落下的沙粒水滴
-        */
+        /* 流體式沙漏動畫落點優化 */
         .stream {
             position: absolute;
             top: 50%; left: 50%;
-            width: 3px;
-            height: 125px; /* 從瓶頸一路流到底部 */
+            width: 2.5px;
+            height: 98px; /* 自動適應縮小後的玻璃杯高度 */
             background: var(--sand-color);
-            box-shadow: 0 0 6px var(--sand-color), 0 0 12px var(--sand-color);
+            box-shadow: 0 0 5px var(--sand-color), 0 0 10px var(--sand-color);
             transform-origin: top center;
             opacity: 0; z-index: 5;
             transition: opacity 0.3s ease;
-            /* 讓水流有兩端漸弱的視覺感 */
             mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, black 10%, black 90%, rgba(0,0,0,0) 100%);
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, black 10%, black 90%, rgba(0,0,0,0) 100%);
         }
 
-        /* 落下的水滴/沙粒模擬 */
         .stream::after {
             content: '';
             position: absolute;
-            top: 0; left: -1.5px; width: 6px; height: 15px;
+            top: 0; left: -1px; width: 4.5px; height: 12px;
             background: var(--sand-color);
-            border-radius: 5px;
-            filter: blur(1px);
+            border-radius: 3px;
+            filter: blur(0.5px);
             opacity: 0;
         }
 
         .stream.active { opacity: 0.9; }
         
         .stream.active::after {
-            animation: dropDown 0.5s cubic-bezier(0.5, 0, 1, 0.5) infinite;
+            animation: dropDown 0.45s cubic-bezier(0.5, 0, 1, 0.5) infinite;
         }
 
         @keyframes dropDown {
             0% { top: 0; opacity: 1; transform: scaleY(1); }
-            80% { top: 100px; opacity: 1; transform: scaleY(1.8); } /* 落下時因速度拉長 */
-            100% { top: 125px; opacity: 0; transform: scaleY(0.5); }
+            80% { top: 80px; opacity: 1; transform: scaleY(1.6); }
+            100% { top: 98px; opacity: 0; transform: scaleY(0.5); }
         }
 
+        /* 縮小時間數字的字型與上下間距 */
         .time-display {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 3.5rem; font-weight: 700;
-            margin: 20px 0 15px; letter-spacing: -2px;
+            font-size: 2.8rem; font-weight: 700;
+            margin: 0; letter-spacing: -1.5px;
             text-shadow: var(--glow); transition: all 0.3s;
+            line-height: 1;
         }
 
-        /* 彩色預設時間按鈕區 */
-        .presets-row {
-            display: flex; gap: 8px; margin-bottom: 25px;
-            flex-wrap: wrap; justify-content: center; width: 100%;
+        /* 全新三欄式佈局 (左按鈕、中沙漏、右控制) */
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .center-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .side-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .presets-column {
+            gap: 8px;
+            width: 60px; /* 固定寬度讓按鈕對齊 */
         }
 
         .preset-btn {
             background: transparent;
-            border: 2px solid var(--btn-color);
+            border: 1.5px solid var(--btn-color);
             color: var(--text-color);
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.9rem; font-weight: 700;
-            cursor: pointer; transition: all 0.3s;
+            padding: 5px 0;
+            width: 100%; /* 填滿欄位寬度 */
+            text-align: center;
+            border-radius: 12px;
+            font-size: 0.8rem; font-weight: 700;
+            cursor: pointer; transition: all 0.25s;
         }
 
         .preset-btn:hover {
             background: var(--btn-color); color: #fff;
-            transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(-3px); box-shadow: 3px 3px 8px rgba(0,0,0,0.1);
         }
 
         .preset-btn.active {
             background: var(--btn-color); color: #fff;
-            transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: scale(1.08); box-shadow: 0 3px 8px rgba(0,0,0,0.12);
             border-color: var(--text-color);
         }
 
         .time-input {
-            width: 70px; background: transparent; border: none;
+            width: 100%; background: transparent; border: none;
             border-bottom: 2px solid var(--frame-color); color: var(--text-color);
-            font-size: 1rem; font-weight: 600; text-align: center; padding: 4px; outline: none;
+            font-size: 0.85rem; font-weight: 600; text-align: center; padding: 4px 0; outline: none;
         }
 
-        /* 控制按鈕 */
-        .controls { display: flex; gap: 15px; align-items: center; }
+        /* 控制按鈕小型化 (放在右側欄) */
+        .controls-column { 
+            gap: 16px; 
+            width: 60px;
+        }
 
         .icon-btn {
             background: var(--frame-color); color: var(--bg-color); border: none;
-            width: 56px; height: 56px; border-radius: 50%;
+            width: 46px; height: 46px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .icon-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-        .icon-btn:active { transform: translateY(0); }
+        .icon-btn:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+        .icon-btn:active { transform: translateY(0) scale(1); }
 
         .icon-btn.secondary {
-            background: transparent; border: 2px solid var(--frame-color);
-            color: var(--text-color); width: 48px; height: 48px; box-shadow: none;
+            background: transparent; border: 2.0px solid var(--frame-color);
+            color: var(--text-color); width: 40px; height: 40px; box-shadow: none;
         }
         .icon-btn.secondary:hover { background: var(--btn-hover); }
 
-        svg { width: 24px; height: 24px; fill: currentColor; }
+        svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* 行動裝置響應式：螢幕過窄時折疊回垂直佈局 */
+        @media (max-width: 520px) {
+            .app-card { max-width: 370px; }
+            .main-layout { flex-direction: column; gap: 20px; }
+            .side-column { flex-direction: row; width: 100%; flex-wrap: wrap; }
+            .presets-column { gap: 6px; }
+            .preset-btn { width: auto; padding: 5px 12px; border-radius: 16px; transform: none !important; }
+            .preset-btn:hover { transform: translateY(-2px) !important; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+            .time-input { width: 54px; }
+            .controls-column { gap: 12px; }
+            .time-display { margin-top: 10px; }
+        }
 
         .toast {
             position: fixed; top: -60px; left: 50%; transform: translateX(-50%);
             background: var(--text-color); color: var(--bg-color);
-            padding: 12px 24px; border-radius: 30px; font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100;
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100;
         }
-        .toast.show { top: 30px; }
+        .toast.show { top: 20px; }
 
     </style>
 </head>
@@ -284,71 +327,70 @@
             <div class="theme-dot dot-minimal" onclick="setTheme('theme-minimal', this)" title="極簡純粹"></div>
         </div>
 
-        <!-- 修改：新增舞台容器包裹沙漏 -->
-        <div class="hourglass-stage">
-            <div class="hourglass-wrapper" id="hg-wrapper" onclick="flipHourglass()" title="點擊翻轉">
-                <div class="hourglass">
-                    <div class="cap"></div>
-                    <div class="glass top-glass">
-                        <div class="sand" id="sand-a"></div>
-                    </div>
-                    <div class="glass bottom-glass">
-                        <div class="sand" id="sand-b"></div>
-                    </div>
-                    <div class="cap"></div>
-                </div>
-                <!-- 沙流獨立放置於中心，配合翻轉動態校正方向 -->
-                <div class="stream" id="stream"></div>
+        <div class="main-layout">
+            <!-- 左側：多彩色時間預設按鈕 -->
+            <div class="side-column presets-column">
+                <button class="preset-btn" style="--btn-color: #FF5252" onclick="applyPreset(10, '#FF5252', this)">10秒</button>
+                <button class="preset-btn" style="--btn-color: #FF9800" onclick="applyPreset(30, '#FF9800', this)">30秒</button>
+                <button class="preset-btn active" style="--btn-color: #4CAF50" onclick="applyPreset(60, '#4CAF50', this)">1分</button>
+                <button class="preset-btn" style="--btn-color: #2196F3" onclick="applyPreset(180, '#2196F3', this)">3分</button>
+                <button class="preset-btn" style="--btn-color: #9C27B0" onclick="applyPreset(300, '#9C27B0', this)">5分</button>
+                <input type="number" id="time-input" class="time-input" value="60" min="1" placeholder="自訂">
             </div>
-        </div>
 
-        <!-- 時間顯示 -->
-        <div class="time-display" id="time-display">01:00</div>
+            <!-- 中間：舞台容器與時間顯示 -->
+            <div class="center-section">
+                <div class="hourglass-stage">
+                    <div class="hourglass-wrapper" id="hg-wrapper" onclick="flipHourglass()" title="點擊翻轉">
+                        <div class="hourglass">
+                            <div class="cap"></div>
+                            <div class="glass top-glass">
+                                <div class="sand" id="sand-a"></div>
+                            </div>
+                            <div class="glass bottom-glass">
+                                <div class="sand" id="sand-b"></div>
+                            </div>
+                            <div class="cap"></div>
+                        </div>
+                        <div class="stream" id="stream"></div>
+                    </div>
+                </div>
+                <div class="time-display" id="time-display">01:00</div>
+            </div>
 
-        <!-- 多彩色時間預設按鈕 -->
-        <div class="presets-row">
-            <button class="preset-btn" style="--btn-color: #FF5252" onclick="applyPreset(10, '#FF5252', this)">10秒</button>
-            <button class="preset-btn" style="--btn-color: #FF9800" onclick="applyPreset(30, '#FF9800', this)">30秒</button>
-            <button class="preset-btn active" style="--btn-color: #4CAF50" onclick="applyPreset(60, '#4CAF50', this)">1分</button>
-            <button class="preset-btn" style="--btn-color: #2196F3" onclick="applyPreset(180, '#2196F3', this)">3分</button>
-            <button class="preset-btn" style="--btn-color: #9C27B0" onclick="applyPreset(300, '#9C27B0', this)">5分</button>
-            <input type="number" id="time-input" class="time-input" value="60" min="1" placeholder="自訂">
-        </div>
+            <!-- 右側：控制按鈕 -->
+            <div class="side-column controls-column">
+                <button class="icon-btn secondary" onclick="resetTimer()" title="重設">
+                    <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                </button>
 
-        <!-- 控制按鈕 -->
-        <div class="controls">
-            <button class="icon-btn secondary" onclick="resetTimer()" title="重設">
-                <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-            </button>
-
-            <!-- 中途翻轉按鈕 -->
-            <button class="icon-btn secondary" onclick="flipHourglass()" title="中途翻轉沙漏">
-                <svg viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
-            </button>
-            
-            <button class="icon-btn" id="play-btn" onclick="toggleTimer()" title="播放/暫停">
-                <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <svg id="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-            </button>
+                <!-- 中途翻轉按鈕 -->
+                <button class="icon-btn secondary" onclick="flipHourglass()" title="中途翻轉沙漏">
+                    <svg viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+                </button>
+                
+                <button class="icon-btn" id="play-btn" onclick="toggleTimer()" title="播放/暫停">
+                    <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         let timerInterval;
         let totalSeconds = 60;
-        let volumeA = 0; // 修改：初始狀態沙子全部在底部 (0代表上方無沙)
+        let volumeA = 0; // 初始狀態沙子全部在底部 (0代表上方無沙)
         let flipCount = 0; // 記錄翻轉次數
         
         let isRunning = false;
         let isFlipping = false;
         let audioCtx;
 
-        // 新增：動態縮放控制函數
+        // 微型化動態縮放：讓大小差異符合黃金比例比例，不破壞排版
         function updateHourglassScale(seconds) {
-            // 演算法：使用開根號讓視覺縮放符合人類直覺
-            // 計算結果：10秒約0.79x、60秒約1.0x、3分鐘約1.25x、5分鐘約1.43x
-            // 限制縮放比例在 0.75x 到 1.45x 之間，避免版面破裂
-            const scale = Math.max(0.75, Math.min(1.45, 0.65 + Math.sqrt(seconds) / 22));
+            // 縮放界限從原本的 0.75x~1.45x 精簡為 0.82x~1.25x 
+            const scale = Math.max(0.82, Math.min(1.25, 0.72 + Math.sqrt(seconds) / 28));
             hgWrapper.style.setProperty('--hg-scale', scale);
         }
 
@@ -412,14 +454,12 @@
 
         /**
          * 終極物理更新引擎：
-         * 捨棄 translateY，直接控制 height 與 top 對齊點。
-         * 徹底解決翻轉時「沙量膨脹」的錯覺 Bug！
+         * 直接控制 height 與 top 對齊點，沙量 100% 物理恆定。
          */
         function updateVisuals(transitionType = 'linear') {
             let amountA = totalSeconds > 0 ? volumeA / totalSeconds : 0;
             let amountB = 1 - amountA;
 
-            // 判斷動畫模式 (翻轉時平滑、計時時線性、重設時瞬間)
             let transitionStyle = 'none';
             if (transitionType === 'smooth') {
                 transitionStyle = 'top 0.6s cubic-bezier(0.4, 0, 0.2, 1), height 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -430,29 +470,22 @@
             sandA.style.transition = transitionStyle;
             sandB.style.transition = transitionStyle;
 
-            // 嚴格鎖定沙子真實體積 (高度)
             sandA.style.height = `${amountA * 100}%`;
             sandB.style.height = `${amountB * 100}%`;
 
-            // 根據容器目前的上下朝向，決定沙子受重力對齊的位置
             if (flipCount % 2 === 0) {
-                // 正放狀態：沙子沉在容器的底部 (100% - 自身高度)
                 sandA.style.top = `${(1 - amountA) * 100}%`;
                 sandB.style.top = `${(1 - amountB) * 100}%`;
             } else {
-                // 倒放狀態：沙子沉在容器的物理底部 (也就是 DOM 的 0% 頂部)
                 sandA.style.top = `0%`;
                 sandB.style.top = `0%`;
             }
             
-            // 清除殘留的 transform 以防萬一
             sandA.style.transform = 'none';
             sandB.style.transform = 'none';
 
-            // 計算當下顯示的倒數時間
             let displaySecs = (flipCount % 2 === 0) ? volumeA : totalSeconds - volumeA;
             
-            // UX優化：如果沙子都在底部且尚未開始，顯示目標時間而非 00:00，避免使用者困惑
             if (displaySecs === 0 && !isRunning) {
                 display.innerText = formatTime(totalSeconds);
             } else {
@@ -465,7 +498,6 @@
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
             
-            // 將 document.documentElement 改為 document.body
             document.body.style.setProperty('--sand-color', color);
             timeInput.value = sec;
             
@@ -475,9 +507,8 @@
             stream.classList.remove('active');
 
             totalSeconds = sec;
-            volumeA = 0; // 修改：套用預設時間時，沙子保持在底部
+            volumeA = 0; 
             
-            // 重置沙漏狀態並套用動態大小
             flipCount = 0; 
             hgWrapper.style.setProperty('--hg-rot', `0deg`);
             stream.style.transform = `translate(-50%, 0) rotate(0deg)`;
@@ -490,21 +521,18 @@
             document.body.className = themeName;
             document.querySelectorAll('.theme-dot').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
-            // 同樣將 document.documentElement 改為 document.body
             document.body.style.removeProperty('--sand-color');
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
         }
-
-        // === 計時與翻轉邏輯 ===
 
         timeInput.addEventListener('input', () => {
             if (isRunning) return;
             const val = parseInt(timeInput.value);
             if (val > 0) {
                 totalSeconds = val;
-                volumeA = (flipCount % 2 === 0) ? 0 : val; // 修改：確保自訂時間時，沙子始終處於視覺底部
+                volumeA = (flipCount % 2 === 0) ? 0 : val; 
                 updateVisuals('none');
-                updateHourglassScale(val); // 自訂時間時也要更新大小
+                updateHourglassScale(val); 
                 document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             }
         });
@@ -518,7 +546,6 @@
         function startTimer() {
             let displaySecs = (flipCount % 2 === 0) ? volumeA : totalSeconds - volumeA;
             if (displaySecs <= 0) {
-                // 修改：如果沙漏已空，點擊播放會「自動翻轉並開始計時」
                 flipHourglass();
                 return;
             }
@@ -528,7 +555,6 @@
             stream.classList.add('active');
 
             timerInterval = setInterval(() => {
-                // 根據朝向決定實體沙量是增加還是減少
                 if (flipCount % 2 === 0) {
                     if (volumeA > 0) volumeA--;
                 } else {
@@ -543,7 +569,7 @@
                     isRunning = false;
                     updatePlayButton();
                     stream.classList.remove('active');
-                    display.innerText = "00:00"; // 確保時間到時顯示為 00:00
+                    display.innerText = "00:00"; 
                     showToast("⏳ 時間到！");
                     playAlarmSound();
                 }
@@ -565,7 +591,7 @@
             
             const inputVal = parseInt(timeInput.value);
             totalSeconds = isNaN(inputVal) || inputVal <= 0 ? 60 : inputVal;
-            volumeA = 0; // 修改：重設時將沙子全部歸到底部
+            volumeA = 0; 
             
             flipCount = 0;
             hgWrapper.style.setProperty('--hg-rot', `0deg`);
@@ -585,21 +611,17 @@
             flipCount++;
             let newRot = flipCount * 180;
 
-            // 翻轉整個容器 (透過更新 CSS 變數)
             hgWrapper.style.setProperty('--hg-rot', `${newRot}deg`);
 
-            // 反向旋轉中間的液柱，讓它永遠受重力往下方流
             stream.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
             stream.style.transform = `translate(-50%, 0) rotate(${-newRot}deg)`;
 
-            // 使用平滑過渡 (Smooth) 來執行完美的重力滑落
             updateVisuals('smooth');
 
             setTimeout(() => {
                 isFlipping = false;
             }, 600);
 
-            // 【優化】如果沙漏已空，翻轉就會自動開始下一輪計時！
             if (displaySecsBefore === 0 && !isRunning) {
                 startTimer();
             }
