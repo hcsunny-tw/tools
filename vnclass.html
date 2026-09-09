@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <!-- 加入 maximum-scale=1.0, user-scalable=no 避免手機連點時畫面意外放大 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>越南語溝通小幫手</title>
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f7f6f3;
+      padding: 16px; /* 手機版縮小一點邊距 */
+      margin: 0 auto;
+      max-width: 800px; /* 限制最大寬度，用平板看也好看 */
+      padding-bottom: 60px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header-container {
+      margin-bottom: 16px;
+      padding-top: 8px;
+    }
+    h2 {
+      color: #37352f;
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .grid {
+      display: grid;
+      /* 手機版預設為兩欄，緊湊好點擊 */
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    /* 當螢幕較大時（平板/電腦），自動擴展欄數 */
+    @media (min-width: 600px) {
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+      }
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e1e1e1;
+      border-radius: 12px;
+      padding: 16px 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      transition: transform 0.1s, box-shadow 0.1s, background-color 0.1s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      
+      /* 行動裝置專屬最佳化：防止點擊閃爍、文字誤選 */
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    /* 只有在支援滑鼠的裝置才顯示 hover 效果 */
+    @media (hover: hover) {
+      .card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        background-color: #fafafa;
+      }
+    }
+
+    /* 點擊時的下壓回饋 */
+    .card:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      background-color: #f0f0f0;
+    }
+
+    .zh-text {
+      font-size: 1.05rem; /* 稍微縮小字體以適應雙欄 */
+      font-weight: 600;
+      color: #37352f;
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    .vi-text {
+      font-size: 0.85rem;
+      color: #787774;
+      line-height: 1.25;
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+      width: fit-content;
+    }
+
+    .tag-green { background: #e6f4ea; color: #137333; }
+    .tag-blue { background: #e8f0fe; color: #1967d2; }
+    .tag-yellow { background: #fef7e0; color: #b06000; }
+    .tag-pink { background: #fce8e6; color: #c5221f; } 
+    .tag-orange { background: #ffe0b2; color: #e65100; } 
+    .tag-purple { background: #f3e8fd; color: #6915b6; } 
+    .tag-teal { background: #e0f2f1; color: #004d40; } 
+    .tag-red { background: #fce4ec; color: #c2185b; } 
+    
+    .section-title {
+      grid-column: 1 / -1;
+      color: #787774;
+      font-size: 1.05rem;
+      margin-top: 16px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #e1e1e1;
+      padding-bottom: 6px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-container">
+    <h2>日常溝通面板</h2>
+  </div>
+
+  <div class="grid">
+    
+    <!-- === 教室與秩序 === -->
+    <div class="section-title">🏫 教室與秩序</div>
+
+    <div class="card" onclick="speak('Mời ngồi xuống')">
+      <span class="tag tag-blue">指令</span>
+      <div class="zh-text">請坐下</div>
+      <div class="vi-text">Mời ngồi xuống</div>
+    </div>
+
+    <div class="card" onclick="speak('Hãy giơ tay')">
+      <span class="tag tag-blue">指令</span>
+      <div class="zh-text">請舉手</div>
+      <div class="vi-text">Hãy giơ tay</div>
+    </div>
+
+    <div class="card" onclick="speak('Xếp hàng nào')">
+      <span class="tag tag-purple">秩序</span>
+      <div class="zh-text">排隊囉</div>
+      <div class="vi-text">Xếp hàng nào</div>
+    </div>
+
+    <div class="card" onclick="speak('Giữ trật tự nhé')">
+      <span class="tag tag-purple">秩序</span>
+      <div class="zh-text">請保持安靜</div>
+      <div class="vi-text">Giữ trật tự nhé</div>
+    </div>
+
+    <div class="card" onclick="speak('Mở sách giáo khoa ra')">
+      <span class="tag tag-blue">指令</span>
+      <div class="zh-text">翻開課本</div>
+      <div class="vi-text">Mở sách giáo khoa ra</div>
+    </div>
+
+    <div class="card" onclick="speak('Hãy viết chữ nhé')">
+      <span class="tag tag-blue">指令</span>
+      <div class="zh-text">請寫字</div>
+      <div class="vi-text">Hãy viết chữ nhé</div>
+    </div>
+
+    <div class="card" onclick="speak('Viết theo thứ tự nhé')">
+      <span class="tag tag-blue">指令</span>
+      <div class="zh-text">照順序寫</div>
+      <div class="vi-text">Viết theo thứ tự nhé</div>
+    </div>
+
+    <!-- === 提醒與引導 === -->
+    <div class="section-title">⏳ 提醒與引導</div>
+
+    <div class="card" onclick="speak('Đợi một chút nhé')">
+      <span class="tag tag-orange">提醒</span>
+      <div class="zh-text">等一下喔</div>
+      <div class="vi-text">Đợi một chút nhé</div>
+    </div>
+
+    <div class="card" onclick="speak('Tập trung nhé')">
+      <span class="tag tag-teal">專注</span>
+      <div class="zh-text">專心一點喔</div>
+      <div class="vi-text">Tập trung nhé</div>
+    </div>
+
+    <div class="card" onclick="speak('Nhanh lên nào')">
+      <span class="tag tag-orange">提醒</span>
+      <div class="zh-text">快一點喔</div>
+      <div class="vi-text">Nhanh lên nào</div>
+    </div>
+
+    <div class="card" onclick="speak('Đừng chạy nhé')">
+      <span class="tag tag-red">注意</span>
+      <div class="zh-text">慢慢走，不要跑</div>
+      <div class="vi-text">Đừng chạy nhé</div>
+    </div>
+
+    <!-- === 讚美與鼓勵 === -->
+    <div class="section-title">✨ 讚美鼓勵</div>
+
+    <div class="card" onclick="speak('Em làm rất tốt')">
+      <span class="tag tag-pink">讚美</span>
+      <div class="zh-text">你做得很棒！</div>
+      <div class="vi-text">Em làm rất tốt</div>
+    </div>
+
+    <div class="card" onclick="speak('Tiến bộ rất nhiều')">
+      <span class="tag tag-pink">讚美</span>
+      <div class="zh-text">進步很多喔！</div>
+      <div class="vi-text">Tiến bộ rất nhiều</div>
+    </div>
+
+    <div class="card" onclick="speak('Tiếp tục phát huy nhé')">
+      <span class="tag tag-pink">鼓勵</span>
+      <div class="zh-text">繼續保持！</div>
+      <div class="vi-text">Tiếp tục phát huy nhé</div>
+    </div>
+
+    <div class="card" onclick="speak('Em làm thử xem')">
+      <span class="tag tag-pink">鼓勵</span>
+      <div class="zh-text">試試看</div>
+      <div class="vi-text">Em làm thử xem</div>
+    </div>
+
+    <div class="card" onclick="speak('Cố lên nhé')">
+      <span class="tag tag-pink">鼓勵</span>
+      <div class="zh-text">加油！</div>
+      <div class="vi-text">Cố lên nhé</div>
+    </div>
+
+    <div class="card" onclick="speak('Em giỏi quá')">
+      <span class="tag tag-pink">讚美</span>
+      <div class="zh-text">你好棒！</div>
+      <div class="vi-text">Em giỏi quá</div>
+    </div>
+
+    <!-- === 午餐時間 === -->
+    <div class="section-title">🍱 午餐時間</div>
+
+    <div class="card" onclick="speak('Đi rửa tay')">
+      <span class="tag tag-orange">常規</span>
+      <div class="zh-text">先去洗手</div>
+      <div class="vi-text">Đi rửa tay</div>
+    </div>
+
+    <div class="card" onclick="speak('Mời ăn cơm')">
+      <span class="tag tag-orange">午餐</span>
+      <div class="zh-text">開動囉！</div>
+      <div class="vi-text">Mời ăn cơm</div>
+    </div>
+
+    <div class="card" onclick="speak('Có muốn ăn thêm không?')">
+      <span class="tag tag-orange">關心</span>
+      <div class="zh-text">要不要多吃一點？</div>
+      <div class="vi-text">Có muốn ăn thêm không?</div>
+    </div>
+
+    <div class="card" onclick="speak('Phải ăn hết rau nhé')">
+      <span class="tag tag-orange">提醒</span>
+      <div class="zh-text">要把菜吃光喔</div>
+      <div class="vi-text">Phải ăn hết rau nhé</div>
+    </div>
+
+    <!-- === 基本互動 === -->
+    <div class="section-title">👋 基本互動</div>
+    
+    <div class="card" onclick="speak('Xin chào')">
+      <span class="tag tag-green">問候</span>
+      <div class="zh-text">你好 / 早安</div>
+      <div class="vi-text">Xin chào</div>
+    </div>
+    
+    <div class="card" onclick="speak('Em có muốn đi vệ sinh không?')">
+      <span class="tag tag-yellow">需求</span>
+      <div class="zh-text">想去洗手間嗎？</div>
+      <div class="vi-text">Em có muốn đi vệ sinh không?</div>
+    </div>
+    
+  </div>
+
+  <script>
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); 
+        
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'vi-VN';
+        // 語速維持 0.85，適合發送指令與提醒
+        msg.rate = 0.85; 
+        
+        window.speechSynthesis.speak(msg);
+      } else {
+        console.error("您的瀏覽器不支援 Web Speech API 語音合成功能");
+      }
+    }
+  </script>
+</body>
+</html>
