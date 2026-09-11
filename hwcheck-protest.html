@@ -384,34 +384,30 @@
     .footer-link:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(139, 69, 19, 0.15); border-color: var(--primary); background: #fff; color: var(--primary); }
     .footer-link i { font-size: 14px; }
     .copyright { font-size: 11px; opacity: 0.6; margin-top: 2px; font-family: 'Courier New', monospace; }
-/* ⭐ 常駐狀態側邊欄樣式 (細長條版) */
+/* ⭐ 常駐狀態側邊欄樣式 (全覽無捲軸版) */
 .persistent-sidebar {
     position: fixed;
     left: 10px;
     top: 80px;
-    width: 50px; /* 縮窄寬度，變成細長條 */
+    width: auto;           /* 讓寬度根據內容彈性微調 */
+    min-width: 55px;       /* 維持最基本的細長感 */
+    max-width: 100px;      /* 若人多，最多長到能容納2~3排號碼 */
     background: var(--card);
     border: 2px solid var(--primary);
     border-radius: 12px;
-    padding: 12px 0;
+    padding: 12px 6px;     /* 減少左右內距，看起來更緊湊 */
     box-shadow: var(--shadow);
     z-index: 3500;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-    overflow-x: hidden;
+    /* ✂️ 已經將 max-height 與 overflow-y 移除，永遠不會再出現捲動軸 */
 }
-
-/* 隱藏長條內的滾動條，讓外觀更乾淨 */
-.persistent-sidebar::-webkit-scrollbar { display: none; }
-.persistent-sidebar { -ms-overflow-style: none; scrollbar-width: none; }
 
 .ps-section { 
     display: flex; 
     flex-direction: column; 
-    align-items: center; /* 讓內容水平置中 */
+    align-items: center; 
     gap: 8px; 
     border-bottom: 2px dashed var(--tbl-border);
     padding-bottom: 12px;
@@ -422,8 +418,8 @@
 }
 
 .ps-title {
-    writing-mode: vertical-rl; /* 讓文字變成垂直直排 */
-    text-orientation: upright; /* 確保中文字是正的 */
+    writing-mode: vertical-rl; /* 標題維持垂直直排 */
+    text-orientation: upright; 
     font-size: 13px;
     font-weight: 900;
     color: var(--primary);
@@ -434,34 +430,34 @@
 }
 
 .ps-title i {
-    writing-mode: horizontal-tb; /* 讓 Icon 維持正常方向不要轉彎 */
+    writing-mode: horizontal-tb;
 }
 
 .ps-section:nth-child(2) .ps-title { color: var(--danger); }
 
 .ps-list {
     display: flex;
-    flex-direction: column; /* 讓號碼球由上往下垂直排列 */
-    gap: 6px;
-    align-items: center;
+    flex-direction: row;  /* 改為橫向排列 */
+    flex-wrap: wrap;      /* 滿了自動換行往下疊 */
+    gap: 4px;             /* 縮小號碼之間的間距 */
+    justify-content: center;
     width: 100%;
 }
 
-/* 讓號碼球在細長條中更完美置中 */
+/* ⭐ 稍微縮小號碼球，讓人多時可以一顆挨著一顆，不用捲動也能全覽 */
 .ps-list .num-badge {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 14px !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 12px !important;
     display: flex;
     justify-content: center;
     align-items: center;
+    border-width: 1px; /* 邊框變細一點，視覺更精緻 */
 }
 
-/* 在大螢幕下自動排版 */
 @media (min-width: 1400px) {
-    .persistent-sidebar { left: calc(50% - 640px); }
+    .persistent-sidebar { left: calc(50% - 660px); }
 }
-    
   </style>
 </head>
 <body>
