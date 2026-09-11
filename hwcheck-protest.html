@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
+    
     /* ============================================================
        🚨 核心視圖控制 & 變數
        ============================================================ */
@@ -383,6 +384,44 @@
     .footer-link:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(139, 69, 19, 0.15); border-color: var(--primary); background: #fff; color: var(--primary); }
     .footer-link i { font-size: 14px; }
     .copyright { font-size: 11px; opacity: 0.6; margin-top: 2px; font-family: 'Courier New', monospace; }
+       /* ⭐ 常駐狀態側邊欄樣式 */
+.persistent-sidebar {
+    position: fixed;
+    left: 10px; /* 固定在左側 */
+    top: 100px;
+    width: 140px;
+    background: var(--card);
+    border: 3px double var(--primary);
+    border-radius: var(--radius);
+    padding: 12px 8px;
+    box-shadow: var(--shadow);
+    z-index: 3500;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+.ps-section { display: flex; flex-direction: column; gap: 6px; }
+.ps-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--primary);
+    text-align: center;
+    border-bottom: 2px dashed var(--tbl-border);
+    padding-bottom: 4px;
+}
+.ps-section:nth-child(2) .ps-title { color: var(--danger); }
+.ps-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+/* 避免與中間內容重疊，可在有側邊欄時讓 wrap 往右移一點 */
+@media (min-width: 1400px) {
+    .persistent-sidebar { left: calc(50% - 700px); }
+}
   </style>
 </head>
 <body>
@@ -958,45 +997,7 @@
       <div class="tool-header"><span><i class="bi bi-hourglass-split"></i> 沙漏計時器</span><button class="tool-close">&times;</button></div>
       
       <style>
-        /* ⭐ 常駐狀態側邊欄樣式 */
-.persistent-sidebar {
-    position: fixed;
-    left: 10px; /* 固定在左側 */
-    top: 100px;
-    width: 140px;
-    background: var(--card);
-    border: 3px double var(--primary);
-    border-radius: var(--radius);
-    padding: 12px 8px;
-    box-shadow: var(--shadow);
-    z-index: 3500;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-}
-.ps-section { display: flex; flex-direction: column; gap: 6px; }
-.ps-title {
-    font-size: 14px;
-    font-weight: 900;
-    color: var(--primary);
-    text-align: center;
-    border-bottom: 2px dashed var(--tbl-border);
-    padding-bottom: 4px;
-}
-.ps-section:nth-child(2) .ps-title { color: var(--danger); }
-.ps-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: center;
-}
-/* 避免與中間內容重疊，可在有側邊欄時讓 wrap 往右移一點 */
-@media (min-width: 1400px) {
-    .persistent-sidebar { left: calc(50% - 700px); }
-}
-          .hg-pbtn {
+               .hg-pbtn {
               background: transparent; border: 1.5cqi solid var(--btn-color); color: var(--text-main);
               padding: 1.5cqi 0; width: 100%; border-radius: 2cqi; font-size: 3.5cqi; font-weight: 800;
               cursor: pointer; transition: all 0.25s;
@@ -1157,67 +1158,6 @@
 
   
   <script type="module">
-
-    // ⭐ 更新常駐側邊欄的函式
-function updatePersistentSidebar() {
-    if (!data || !data.roster) return;
-    
-    const activeAssigns = (data.assignments || []).filter(a => !a.archived);
-    const todayStr = getTaipeiDateString();
-    const clearedStudents = []; 
-    const helpStudents = [];
-    
-    // 重新計算名單
-    data.roster.forEach((s, i) => {
-        let pendingCount = 0;
-        for (let a of activeAssigns) {
-            const indices = a.assignedIndices || 'all';
-            if (indices === 'all' || indices.includes(i)) {
-                const st = (a.statuses || [])[i] || 0;
-                if (st === 0 || st === 2) {
-                    // 若有開啟隱藏今日再訂正功能，則排除
-                    if (typeof hideTodayRedo !== 'undefined' && hideTodayRedo && st === 2 && a.date === todayStr) continue;
-                    pendingCount++;
-                }
-            }
-        }
-        if (pendingCount === 0) clearedStudents.push(s.no);
-        if (pendingCount >= 5) helpStudents.push(s.no);
-    });
-    
-    clearedStudents.sort((a,b) => a - b); 
-    helpStudents.sort((a,b) => a - b);
-    
-    // 渲染至畫面
-    const psClearedList = document.getElementById('psClearedList');
-    const psHelpList = document.getElementById('psHelpList');
-    
-    if (psClearedList) {
-        psClearedList.innerHTML = clearedStudents.length > 0 
-            ? clearedStudents.map(n => `<span class="num-badge" style="width:28px; height:28px; font-size:14px; background:var(--success); color:#fff;">${n}</span>`).join('') 
-            : '<span style="font-size:12px;opacity:0.6;">無</span>';
-    }
-    if (psHelpList) {
-        psHelpList.innerHTML = helpStudents.length > 0 
-            ? helpStudents.map(n => `<span class="num-badge" style="width:28px; height:28px; font-size:14px; background:var(--danger); color:#fff;">${n}</span>`).join('') 
-            : '<span style="font-size:12px;opacity:0.6;">無</span>';
-    }
-}
-
-// ⭐ 修改原本的 renderAll 函式 (約在第 797 行)，在最底部加上 updatePersistentSidebar()
-function renderAll() {
-    const v = document.querySelector('.view.show'); if(!v) return;
-    if (v.id === 'view-dashboard') renderDashboard();
-    else if (v.id === 'view-student-status') renderStudentStatus();
-    else if (v.id === 'view-roster') renderRosterEditor();
-    else if (v.id === 'view-attendance') initAttendanceView();
-    if (document.getElementById('quickSidebar') && document.getElementById('quickSidebar').classList.contains('show')) {
-        window.renderQuickSidebar();
-    }
-    // 加入這一行：每次重新渲染畫面時，都更新左側常駐欄
-    updatePersistentSidebar(); 
-}
-    
     function getTaipeiDateString() { 
         return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
     }
@@ -1642,16 +1582,65 @@ function getRankHtml(exp) {
         renderChecklists(); 
     }
 
+// ⭐ 更新常駐側邊欄的函式
+    function updatePersistentSidebar() {
+        if (!data || !data.roster) return;
+        
+        const activeAssigns = (data.assignments || []).filter(a => !a.archived);
+        const todayStr = getTaipeiDateString();
+        const clearedStudents = []; 
+        const helpStudents = [];
+        
+        // 重新計算名單
+        data.roster.forEach((s, i) => {
+            let pendingCount = 0;
+            for (let a of activeAssigns) {
+                const indices = a.assignedIndices || 'all';
+                if (indices === 'all' || indices.includes(i)) {
+                    const st = (a.statuses || [])[i] || 0;
+                    if (st === 0 || st === 2) {
+                        // 若有開啟隱藏今日再訂正功能，則排除
+                        if (typeof hideTodayRedo !== 'undefined' && hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        pendingCount++;
+                    }
+                }
+            }
+            if (pendingCount === 0) clearedStudents.push(s.no);
+            if (pendingCount >= 5) helpStudents.push(s.no);
+        });
+        
+        clearedStudents.sort((a,b) => a - b); 
+        helpStudents.sort((a,b) => a - b);
+        
+        // 渲染至畫面
+        const psClearedList = document.getElementById('psClearedList');
+        const psHelpList = document.getElementById('psHelpList');
+        
+        if (psClearedList) {
+            psClearedList.innerHTML = clearedStudents.length > 0 
+                ? clearedStudents.map(n => `<span class="num-badge" style="width:28px; height:28px; font-size:14px; background:var(--success); color:#fff;">${n}</span>`).join('') 
+                : '<span style="font-size:12px;opacity:0.6;">無</span>';
+        }
+        if (psHelpList) {
+            psHelpList.innerHTML = helpStudents.length > 0 
+                ? helpStudents.map(n => `<span class="num-badge" style="width:28px; height:28px; font-size:14px; background:var(--danger); color:#fff;">${n}</span>`).join('') 
+                : '<span style="font-size:12px;opacity:0.6;">無</span>';
+        }
+    }
+
+    // ⭐ 修改後的 renderAll 函式
     function renderAll() {
         const v = document.querySelector('.view.show'); if(!v) return;
         if (v.id === 'view-dashboard') renderDashboard();
         else if (v.id === 'view-student-status') renderStudentStatus();
         else if (v.id === 'view-roster') renderRosterEditor();
         else if (v.id === 'view-attendance') initAttendanceView();
-       if (document.getElementById('quickSidebar') && document.getElementById('quickSidebar').classList.contains('show')) {
-        window.renderQuickSidebar();
+        if (document.getElementById('quickSidebar') && document.getElementById('quickSidebar').classList.contains('show')) {
+            window.renderQuickSidebar();
+        }
+        // 加入這一行：每次重新渲染畫面時，都更新左側常駐欄
+        updatePersistentSidebar(); 
     }
-      }
 
     function logAction(sidx, delta, type, reason) {
         if(!data.expLogs) data.expLogs = [];
