@@ -384,44 +384,84 @@
     .footer-link:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(139, 69, 19, 0.15); border-color: var(--primary); background: #fff; color: var(--primary); }
     .footer-link i { font-size: 14px; }
     .copyright { font-size: 11px; opacity: 0.6; margin-top: 2px; font-family: 'Courier New', monospace; }
-       /* ⭐ 常駐狀態側邊欄樣式 */
+/* ⭐ 常駐狀態側邊欄樣式 (細長條版) */
 .persistent-sidebar {
     position: fixed;
-    left: 10px; /* 固定在左側 */
-    top: 100px;
-    width: 140px;
+    left: 10px;
+    top: 80px;
+    width: 50px; /* 縮窄寬度，變成細長條 */
     background: var(--card);
-    border: 3px double var(--primary);
-    border-radius: var(--radius);
-    padding: 12px 8px;
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 12px 0;
     box-shadow: var(--shadow);
     z-index: 3500;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    max-height: calc(100vh - 120px);
+    gap: 12px;
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
+    overflow-x: hidden;
 }
-.ps-section { display: flex; flex-direction: column; gap: 6px; }
+
+/* 隱藏長條內的滾動條，讓外觀更乾淨 */
+.persistent-sidebar::-webkit-scrollbar { display: none; }
+.persistent-sidebar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ps-section { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; /* 讓內容水平置中 */
+    gap: 8px; 
+    border-bottom: 2px dashed var(--tbl-border);
+    padding-bottom: 12px;
+}
+.ps-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
 .ps-title {
-    font-size: 14px;
+    writing-mode: vertical-rl; /* 讓文字變成垂直直排 */
+    text-orientation: upright; /* 確保中文字是正的 */
+    font-size: 13px;
     font-weight: 900;
     color: var(--primary);
-    text-align: center;
-    border-bottom: 2px dashed var(--tbl-border);
-    padding-bottom: 4px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
+
+.ps-title i {
+    writing-mode: horizontal-tb; /* 讓 Icon 維持正常方向不要轉彎 */
+}
+
 .ps-section:nth-child(2) .ps-title { color: var(--danger); }
+
 .ps-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    flex-direction: column; /* 讓號碼球由上往下垂直排列 */
+    gap: 6px;
+    align-items: center;
+    width: 100%;
+}
+
+/* 讓號碼球在細長條中更完美置中 */
+.ps-list .num-badge {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+    display: flex;
     justify-content: center;
+    align-items: center;
 }
-/* 避免與中間內容重疊，可在有側邊欄時讓 wrap 往右移一點 */
+
+/* 在大螢幕下自動排版 */
 @media (min-width: 1400px) {
-    .persistent-sidebar { left: calc(50% - 700px); }
+    .persistent-sidebar { left: calc(50% - 640px); }
 }
+    
   </style>
 </head>
 <body>
