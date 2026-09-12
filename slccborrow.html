@@ -365,7 +365,27 @@
         }
 
         function adminLogin() {
-            prompt("請輸入管理員密碼：\n(目前為純前端展示)");
+            const pwd = prompt("請輸入管理員密碼：");
+            if (!pwd) return; // 如果按取消或沒輸入就跳出
+
+            document.getElementById('loader').style.display = 'flex'; // 顯示載入中動畫
+
+            // 向 GAS 發送密碼驗證請求
+            fetch(API_URL + "?action=verify_admin&pwd=" + pwd)
+                .then(res => res.json())
+                .then(res => {
+                    document.getElementById('loader').style.display = 'none';
+                    if(res.status === 'success') {
+                        alert('✅ 密碼正確！\n\n(未來我們可以接著在這裡實作：隱藏借用按鈕，顯示「核准」或「歸還」按鈕)');
+                        // 之後您管理員專屬的畫面切換邏輯會寫在這裡
+                    } else {
+                        alert('❌ 密碼錯誤，請重新輸入。');
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('loader').style.display = 'none';
+                    alert('連線異常，請稍後再試。');
+                });
         }
     </script>
 </body>
