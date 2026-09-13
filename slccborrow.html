@@ -11,32 +11,32 @@
             --text-main: #37352f;
             --text-muted: #787774;
             --border-color: #ededeb;
-            --accent-color: #ff6b6b; /* 明亮溫暖紅 */
+            --accent-color: #ff6b6b; 
             --accent-hover: #ff5252;
             --blue-action: #2383e2; 
             --admin-color: #e6a23c; 
             --danger-color: #f56c6c;
             --success-color: #67c23a; 
+            --repair-color: #8e44ad;
             --touch-size: 44px; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
         body { display: flex; height: 100vh; background-color: var(--bg-main); color: var(--text-main); overflow: hidden; }
 
-        .sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); padding: 24px 16px; display: flex; flex-direction: column; }
+        .sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); padding: 24px 16px; display: flex; flex-direction: column; overflow-y: auto;}
         .logo { font-size: 18px; font-weight: 600; margin-bottom: 32px; padding-left: 8px; display: flex; align-items: center; gap: 8px; }
         
-        .nav-item { min-height: var(--touch-size); display: flex; align-items: center; gap: 12px; padding: 0 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; color: var(--text-main); font-size: 16px; transition: background 0.2s; }
+        .nav-item { min-height: var(--touch-size); display: flex; align-items: center; gap: 12px; padding: 0 12px; margin-bottom: 4px; border-radius: 8px; cursor: pointer; color: var(--text-main); font-size: 15px; transition: background 0.2s; }
         .nav-item:hover { background-color: rgba(0, 0, 0, 0.04); }
         .nav-item.active { background-color: rgba(0, 0, 0, 0.06); font-weight: 500; }
-        .admin-btn { margin-top: auto; color: var(--text-muted); font-size: 14px; min-height: var(--touch-size); display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .admin-btn { margin-top: 16px; color: var(--text-muted); font-size: 14px; min-height: var(--touch-size); display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 8px; transition: 0.2s; }
         .admin-btn.logged-in { background-color: #fff3e0; color: #d35400; font-weight: 600; border: 1px solid #ffd8a8; }
 
         .main-content { flex: 1; padding: 40px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 24px; }
         .search-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
         .search-input { flex: 1; min-width: 250px; min-height: var(--touch-size); padding: 0 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; outline: none; }
-        .search-input:focus { border-color: var(--blue-action); }
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
         .card { border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; background: white; display: flex; flex-direction: column; transition: box-shadow 0.2s; }
@@ -50,37 +50,41 @@
         .card-info { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.4; }
         
         .card-actions { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
-        .borrow-btn, .dispose-btn { min-height: var(--touch-size); width: 100%; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; transition: all 0.2s; }
-        .borrow-btn { background-color: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); }
+        .borrow-btn, .dispose-btn, .repair-btn { min-height: var(--touch-size); width: 100%; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; border: 1px solid var(--border-color); background: white;}
         .borrow-btn:hover:not(:disabled) { background-color: var(--blue-action); color: white; border-color: var(--blue-action); }
         .borrow-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .dispose-btn { background-color: #fff5f5; border: 1px solid #ffc9c9; color: var(--danger-color); }
+        
+        .dispose-btn { background-color: #fff5f5; border-color: #ffc9c9; color: var(--danger-color); }
         .dispose-btn:hover { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
+        
+        .repair-btn { background-color: #f4f0f8; border-color: #d7bde2; color: var(--repair-color); }
+        .repair-btn:hover { background-color: var(--repair-color); color: white; border-color: var(--repair-color); }
 
         .records-table-container { width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: white; }
-        .records-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; }
+        .records-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
         .records-table th, .records-table td { padding: 16px; border-bottom: 1px solid var(--border-color); }
         .records-table th { background-color: var(--bg-sidebar); color: var(--text-muted); font-weight: 500; white-space: nowrap; }
-        .btn-return { background: #f0f9eb; border: 1px solid #c2e7b0; color: var(--success-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; }
+        
+        .btn-action { padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; border: 1px solid; background: white;}
+        .btn-return { border-color: #c2e7b0; color: var(--success-color); }
         .btn-return:hover { background: var(--success-color); color: white; }
+        .btn-approve { border-color: #a0cfff; color: var(--blue-action); }
+        .btn-approve:hover { background: var(--blue-action); color: white; }
 
-        /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 15, 15, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(2px); }
         .modal-content { background: white; width: 100%; max-width: 560px; border-radius: 16px; padding: 32px; max-height: 90vh; overflow-y: auto; }
         .modal-title { font-size: 22px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
         .form-group input, .form-group textarea { width: 100%; min-height: var(--touch-size); padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; outline: none; }
-        .form-group input:focus { border-color: var(--blue-action); }
-        .form-group input.admin-focus:focus { border-color: var(--danger-color); }
         .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
         .form-row .form-group { flex: 1; min-width: 150px; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-        .btn-cancel, .btn-submit, .btn-danger { min-height: var(--touch-size); padding: 0 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; border: none; }
+        .btn-cancel, .btn-submit, .btn-danger, .btn-repair { min-height: var(--touch-size); padding: 0 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; border: none; }
         .btn-cancel { border: 1px solid var(--border-color); background: white; }
         .btn-submit { background: var(--accent-color); color: white; }
-        .btn-submit:hover { background: var(--accent-hover); }
         .btn-danger { background: var(--danger-color); color: white; }
+        .btn-repair { background: var(--repair-color); color: white; }
 
         .loader-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; font-size: 18px; font-weight: 500; flex-direction: column; gap: 16px;}
         .bounce-emoji { font-size: 40px; animation: bounce 1s infinite alternate; }
@@ -94,11 +98,14 @@
         <div class="nav-item active" onclick="switchView('equipments', '全部')"><span>🎮</span> 全部器材</div>
         <div class="nav-item" onclick="switchView('equipments', '學生載具')"><span>📱</span> 學生載具</div>
         <div class="nav-item" onclick="switchView('equipments', '電腦主機')"><span>💻</span> 電腦主機</div>
+        <div class="nav-item" onclick="switchView('equipments', '顯示設備')"><span>📺</span> 大電視</div>
+        <div class="nav-item" onclick="switchView('equipments', '教學教具')"><span>🧮</span> 教學教具</div>
+        <div class="nav-item" onclick="switchView('equipments', '電腦周邊')"><span>🎧</span> 電腦周邊</div>
+        <div class="nav-item" onclick="switchView('equipments', '網路設備')"><span>📡</span> 網路設備</div>
+        <div class="nav-item" onclick="switchView('equipments', '線材')"><span>🔌</span> 線材</div>
         
-        <div style="height: 1px; background: var(--border-color); margin: 16px 0;"></div>
+        <div style="height: 1px; background: var(--border-color); margin: 12px 0;"></div>
         <div class="nav-item" id="nav-records" onclick="switchView('records')"><span>📋</span> 異動紀錄</div>
-        
-        <!-- 管理員專屬選單 (預設隱藏) -->
         <div class="nav-item" id="nav-disposal" style="display: none; color: var(--danger-color);" onclick="switchView('disposal')"><span>🗑️</span> 擬報廢清單</div>
         
         <div class="admin-btn" id="adminBtn" onclick="adminLogin()">🔒 管理員入口</div>
@@ -109,7 +116,6 @@
             <h1 id="page-title">全部器材</h1>
         </div>
 
-        <!-- 設備清單/擬報廢清單 共用視圖 -->
         <div id="view-equipments">
             <div class="search-bar">
                 <input type="text" id="searchInput" class="search-input" placeholder="搜尋名稱、編號..." onkeyup="renderItems()">
@@ -117,13 +123,12 @@
             <div class="grid-container" id="itemGrid"></div>
         </div>
 
-        <!-- 異動紀錄視圖 -->
         <div id="view-records" style="display: none;">
             <div class="records-table-container">
                 <table class="records-table">
                     <thead>
                         <tr>
-                            <th>狀態</th><th>處理/借用人</th><th>單位</th><th>器材</th><th>數量</th><th>借用日</th><th>預計歸還</th><th>備註</th>
+                            <th>狀態 / 審核</th><th>借用人/廠商</th><th>單位</th><th>器材</th><th>數量</th><th>借修日</th><th>歸還日</th><th>備註/部位</th>
                         </tr>
                     </thead>
                     <tbody id="recordsGrid"></tbody>
@@ -132,47 +137,23 @@
         </div>
     </div>
 
-    <!-- 借用表單 Modal -->
+    <!-- 借用 Modal -->
     <div class="modal-overlay" id="borrowModal">
         <div class="modal-content">
             <div class="modal-title">🐶 填寫借用登記</div>
-            <div class="form-group">
-                <label>借用器材</label>
-                <input type="text" id="formItemName" readonly style="background: #f7f7f5; color: var(--text-muted);">
+            <div class="form-group"><label>借用器材</label><input type="text" id="formItemName" readonly style="background: #f7f7f5;"></div>
+            <div class="form-row">
+                <div class="form-group"><label>數量 *</label><input type="number" id="formQty" min="1" value="1"></div>
+                <div class="form-group"><label>借用事由/編號 *</label><input type="text" id="formReason" placeholder="如: 課堂使用 (編號: 01)"></div>
             </div>
             <div class="form-row">
-                <div class="form-group">
-                    <label>借用數量 <span style="color:var(--accent-color)">*</span></label>
-                    <input type="number" id="formQty" min="1" value="1" placeholder="輸入數量">
-                </div>
-                <div class="form-group">
-                    <label>借用事由/編號 <span style="color:var(--accent-color)">*</span></label>
-                    <input type="text" id="formReason" placeholder="如: 課堂使用 (編號: 01)">
-                </div>
+                <div class="form-group"><label>姓名 *</label><input type="text" id="formName" placeholder="如: 王小明"></div>
+                <div class="form-group"><label>處室 / 班級 *</label><input type="text" id="formUnit" placeholder="如: 教務處"></div>
             </div>
+            <div class="form-group"><label>聯絡 Email *</label><input type="email" id="formEmail" placeholder="接收通知信"></div>
             <div class="form-row">
-                <div class="form-group">
-                    <label>姓名 <span style="color:var(--accent-color)">*</span></label>
-                    <input type="text" id="formName" placeholder="如: 王小明">
-                </div>
-                <div class="form-group">
-                    <label>處室 / 班級 <span style="color:var(--accent-color)">*</span></label>
-                    <input type="text" id="formUnit" placeholder="如: 教務處">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>聯絡 Email <span style="color:var(--accent-color)">*</span></label>
-                <input type="email" id="formEmail" placeholder="接收通知信">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>借用日期</label>
-                    <input type="date" id="formStartDate">
-                </div>
-                <div class="form-group">
-                    <label>預計歸還</label>
-                    <input type="date" id="formEndDate">
-                </div>
+                <div class="form-group"><label>借用日期</label><input type="date" id="formStartDate"></div>
+                <div class="form-group"><label>預計歸還</label><input type="date" id="formEndDate"></div>
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModal('borrowModal')">取消</button>
@@ -181,28 +162,34 @@
         </div>
     </div>
 
-    <!-- 確認報廢 Modal -->
+    <!-- 維修 Modal -->
+    <div class="modal-overlay" id="repairModal">
+        <div class="modal-content" style="border-top: 6px solid var(--repair-color);">
+            <div class="modal-title" style="color: var(--repair-color);">🔧 設備維修登記</div>
+            <div class="form-group"><label>送修器材</label><input type="text" id="repairItemName" readonly style="background: #f4f0f8;"></div>
+            <div class="form-row">
+                <div class="form-group"><label>送修數量 *</label><input type="number" id="repairQty" min="1" value="1"></div>
+                <div class="form-group"><label>維修廠商/處理人 *</label><input type="text" id="repairVendor" placeholder="如: 華碩原廠"></div>
+            </div>
+            <div class="form-group"><label>維修部位 / 損壞原因 *</label><input type="text" id="repairPart" placeholder="如: 螢幕破裂、無法開機 (財產登錄號: 288)"></div>
+            <div class="form-group"><label>送修日期</label><input type="date" id="repairDate"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('repairModal')">取消</button>
+                <button class="btn-repair" onclick="submitRepair()">確認送修</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 報廢 Modal -->
     <div class="modal-overlay" id="disposeModal">
         <div class="modal-content" style="border-top: 6px solid var(--danger-color);">
-            <div class="modal-title" style="color: var(--danger-color);">⚠️ 確認報廢設備</div>
-            <div class="form-group">
-                <label>準備報廢器材</label>
-                <input type="text" id="disposeItemName" readonly style="background: #fff5f5; color: var(--danger-color); font-weight: 500;">
-            </div>
+            <div class="modal-title" style="color: var(--danger-color);">⚠️ 確認正式報廢</div>
+            <div class="form-group"><label>報廢器材</label><input type="text" id="disposeItemName" readonly style="background: #fff5f5;"></div>
             <div class="form-row">
-                <div class="form-group">
-                    <label>報廢數量</label>
-                    <input type="number" id="disposeQty" class="admin-focus" min="1">
-                </div>
-                <div class="form-group">
-                    <label>處理人</label>
-                    <input type="text" id="disposeAdminName" class="admin-focus" placeholder="管理員姓名">
-                </div>
+                <div class="form-group"><label>數量</label><input type="number" id="disposeQty" min="1"></div>
+                <div class="form-group"><label>處理人</label><input type="text" id="disposeAdminName" placeholder="管理員姓名"></div>
             </div>
-            <div class="form-group">
-                <label>報廢公文備註 / 財產編號</label>
-                <input type="text" id="disposeReason" class="admin-focus" placeholder="如: 達年限報廢 (登錄號: 288)">
-            </div>
+            <div class="form-group"><label>報廢公文備註 / 財產編號</label><input type="text" id="disposeReason" placeholder="如: 達年限核准報廢"></div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModal('disposeModal')">取消</button>
                 <button class="btn-danger" onclick="submitDispose()">確認核銷</button>
@@ -210,17 +197,14 @@
         </div>
     </div>
 
-    <div class="loader-overlay" id="loader">
-        <div class="bounce-emoji">🦫</div>
-        <div>資料連線中，請稍候...</div>
-    </div>
+    <div class="loader-overlay" id="loader"><div class="bounce-emoji">🦫</div><div>資料連線中...</div></div>
 
     <script>
         // ⚠️ 替換為您的最新 GAS API 網址
-        const API_URL = "https://script.google.com/macros/s/AKfycbwuVHBUJg1Zmfg1BWO7MzHGsf4eTD2PzaRD6H8GWHTCexNMBuF_ZSS8eXnjUpEDCknd/exec";
+        const API_URL = "https://script.google.com/macros/s/您的專屬字串/exec";
 
         let allEquipmentData = [];
-        let currentMode = 'equipments'; // equipments, records, disposal
+        let currentMode = 'equipments'; 
         let currentCategory = '全部';
         let isAdmin = false;
 
@@ -230,26 +214,20 @@
         };
 
         function fetchData() {
-            fetch(API_URL)
-                .then(res => res.json())
-                .then(data => {
-                    allEquipmentData = data;
-                    renderItems();
-                })
-                .catch(err => {
-                    document.getElementById('itemGrid').innerHTML = '<div style="color: var(--danger-color); padding: 24px;">🦫 讀取失敗，請確認 API 網址。</div>';
-                });
+            fetch(API_URL).then(res => res.json()).then(data => {
+                allEquipmentData = data; renderItems();
+            }).catch(err => {
+                document.getElementById('itemGrid').innerHTML = '<div style="color: red; padding: 24px;">🦫 讀取失敗。</div>';
+            });
         }
 
-        // 判斷是否過期 (核心邏輯)
         function checkExpired(purchaseDateStr, lifespanStr) {
             if(!purchaseDateStr || !lifespanStr) return false;
             const pDate = new Date(purchaseDateStr);
             if(isNaN(pDate.getTime())) return false;
-            
             const expiryDate = new Date(pDate);
             expiryDate.setFullYear(expiryDate.getFullYear() + parseInt(lifespanStr));
-            return new Date() > expiryDate; // 如果今天大於到期日，就判定過期
+            return new Date() > expiryDate;
         }
 
         function switchView(mode, category = '') {
@@ -280,210 +258,149 @@
 
             allEquipmentData.forEach(item => {
                 const total = parseInt(item.total) || 0;
-                if (total <= 0) return; // 已經被管理員完全扣除報廢的設備，徹底隱藏
+                if (total <= 0) return; 
 
                 const isExpired = checkExpired(item.purchase_date, item.lifespan);
                 
-                // 視圖過濾邏輯
-                if (currentMode === 'disposal') {
-                    if (!isExpired) return; // 擬報廢清單只顯示過期的
-                } else if (currentMode === 'equipments') {
-                    if (isExpired) return; // 正常清單隱藏過期的
+                if (currentMode === 'disposal') { if (!isExpired) return; } 
+                else if (currentMode === 'equipments') {
+                    if (isExpired) return; 
                     if (currentCategory !== '全部' && item.category !== currentCategory) return;
                 }
 
-                // 關鍵字搜尋過濾
-                if (keyword && !(item.name && item.name.toLowerCase().includes(keyword)) && 
-                               !(item.asset_tags && item.asset_tags.toLowerCase().includes(keyword))) {
-                    return;
-                }
+                if (keyword && !(item.name && item.name.toLowerCase().includes(keyword)) && !(item.asset_tags && item.asset_tags.toLowerCase().includes(keyword))) return;
 
                 const isAvail = item.available > 0;
-                
-                // 卡片狀態設計
-                let statusClass = 'status-avail';
-                let statusText = '可借用';
-                let btnHtml = '';
+                let statusClass = 'status-avail'; let statusText = '可借用'; let btnHtml = '';
 
                 if (isExpired) {
-                    statusClass = 'status-expired';
-                    statusText = '達年限待報廢';
+                    statusClass = 'status-expired'; statusText = '達年限待報廢';
                     btnHtml = `<button class="dispose-btn" style="display:block;" onclick="openDisposeModal('${item.name}', ${item.available}, ${total})">✅ 確認正式報廢</button>`;
                 } else {
-                    if (!isAvail) { statusClass = 'status-none'; statusText = '已借出'; }
-                    btnHtml = `<button class="borrow-btn" ${!isAvail ? 'disabled' : ''} onclick="openBorrowModal('${item.name}', ${item.available})">
-                                  ${isAvail ? '申請借用' : '暫無庫存'}
-                               </button>`;
+                    if (!isAvail) { statusClass = 'status-none'; statusText = '無庫存'; }
+                    btnHtml = `<button class="borrow-btn" ${!isAvail ? 'disabled' : ''} onclick="openBorrowModal('${item.name}', ${item.available})">${isAvail ? '申請借用' : '庫存不足'}</button>`;
+                    
+                    if (isAdmin && isAvail) {
+                        btnHtml += `<button class="repair-btn" onclick="openRepairModal('${item.name}', ${item.available})">🔧 設備送修</button>`;
+                    }
                 }
 
                 grid.innerHTML += `
                     <div class="card" style="${isExpired ? 'border-color:#fbc4c4; background:#fffbfb;' : ''}">
-                        <div class="card-header">
-                            <div class="card-title">${item.name}</div>
-                            <div class="status-badge ${statusClass}">${statusText}</div>
-                        </div>
+                        <div class="card-header"><div class="card-title">${item.name}</div><div class="status-badge ${statusClass}">${statusText}</div></div>
                         <div class="card-info">📍 存放：${item.location || '未標示'}</div>
                         <div class="card-info">🏷️ 編號：${item.asset_tags || '無'}</div>
-                        <div class="card-info">📅 購置：${item.purchase_date ? item.purchase_date.split('T')[0] : '無'} (年限 ${item.lifespan || 0} 年)</div>
                         <div class="card-info" style="font-weight:500; margin-top:8px;">📦 庫存：${item.available} / ${total}</div>
                         <div class="card-actions">${btnHtml}</div>
-                    </div>
-                `;
+                    </div>`;
                 renderedCount++;
             });
 
             if(renderedCount === 0) grid.innerHTML = '<div style="grid-column: 1/-1; color: var(--text-muted);">🦫 這裡空空的... 找不到設備喔！</div>';
         }
 
-        // --- 紀錄讀取 ---
         function loadRecords() {
             const tbody = document.getElementById('recordsGrid');
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px;">讀取中 🧱...</td></tr>';
 
-            fetch(API_URL + "?action=records")
-                .then(res => res.json())
-                .then(data => {
-                    tbody.innerHTML = '';
-                    if(data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">🦫 目前沒有任何紀錄喔！</td></tr>'; return;
+            fetch(API_URL + "?action=records").then(res => res.json()).then(data => {
+                tbody.innerHTML = '';
+                if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">🦫 目前沒有任何紀錄喔！</td></tr>'; return; }
+
+                data.reverse().forEach(row => {
+                    let sc = '#787774';
+                    let status = row['狀態'];
+                    if(status === '申請中') sc = 'var(--accent-color)';
+                    if(status === '借用中') sc = 'var(--blue-action)';
+                    if(status === '送修中') sc = 'var(--repair-color)';
+                    if(status.includes('報廢') || status.includes('汰換')) sc = 'var(--danger-color)';
+                    if(status.includes('已歸還') || status === '已完修') sc = 'var(--success-color)';
+
+                    let actionBtn = '';
+                    if (isAdmin) {
+                        if (status === '申請中') {
+                            actionBtn = `<br><button class="btn-action btn-approve" onclick="submitApprove('${row['時間戳記']}')">👍 核准</button>
+                                         <button class="btn-action btn-return" onclick="submitReturn('${row['時間戳記']}', '${row['借用器材']}')">❌ 取消/歸還</button>`;
+                        } else if (status === '借用中') {
+                            actionBtn = `<br><button class="btn-action btn-return" onclick="submitReturn('${row['時間戳記']}', '${row['借用器材']}')">✅ 歸還庫存</button>`;
+                        } else if (status === '送修中') {
+                            actionBtn = `<br><button class="btn-action btn-return" onclick="submitReturn('${row['時間戳記']}', '${row['借用器材']}')">🔧 完修歸還</button>`;
+                        }
                     }
 
-                    data.reverse().forEach(row => {
-                        let sc = '#787774';
-                        let isBorrowing = (row['狀態'] === '申請中' || row['狀態'] === '借用中');
-                        
-                        if(isBorrowing) sc = 'var(--accent-color)';
-                        if(row['狀態'].includes('報廢') || row['狀態'].includes('汰換')) sc = 'var(--danger-color)';
-                        if(row['狀態'] === '已歸還') sc = 'var(--success-color)';
-
-                        let actionBtn = (isAdmin && isBorrowing) ? `<br><button class="btn-return" onclick="submitReturn('${row['時間戳記']}', '${row['借用器材']}')">✅ 點此歸還</button>` : '';
-
-                        // 注意：索引配合新表單 -> 借用人(1), 處室(2), 器材(3), 數量(4), 借用日(5), 歸還日(6), 事由(7)
-                        tbody.innerHTML += `
-                            <tr>
-                                <td><span style="color: ${sc}; font-weight: 500;">${row['狀態']}</span>${actionBtn}</td>
-                                <td>${row['借用人'] || ''}</td>
-                                <td>${row['處室班級'] || ''}</td>
-                                <td>${row['借用器材'] || ''}</td>
-                                <td><strong style="color:var(--blue-action)">${row['數量'] || 1}</strong></td>
-                                <td>${row['借用日期'] ? row['借用日期'].split('T')[0] : ''}</td>
-                                <td>${row['預計歸還'] ? row['預計歸還'].split('T')[0] : ''}</td>
-                                <td style="color: var(--text-muted); font-size:13px;">${row['借用事由'] || ''}</td>
-                            </tr>
-                        `;
-                    });
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span style="color: ${sc}; font-weight: 600;">${status}</span>${actionBtn}</td>
+                            <td>${row['借用人'] || ''}</td><td>${row['處室班級'] || ''}</td><td>${row['借用器材'] || ''}</td>
+                            <td><strong>${row['數量'] || 1}</strong></td>
+                            <td>${row['借用日期'] ? row['借用日期'].split('T')[0] : ''}</td><td>${row['預計歸還'] ? row['預計歸還'].split('T')[0] : ''}</td>
+                            <td style="color: var(--text-muted); font-size:13px;">${row['借用事由'] || ''}</td>
+                        </tr>`;
                 });
+            });
         }
 
-        // --- Modal 控制 ---
-        function openBorrowModal(itemName, maxQty) {
-            document.getElementById('formItemName').value = itemName;
-            document.getElementById('formQty').max = maxQty; // 防呆：不能借超過現有庫存
-            document.getElementById('formQty').value = 1;
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('formStartDate').value = today;
-            document.getElementById('formEndDate').value = today;
-            document.getElementById('borrowModal').style.display = 'flex';
+        function openBorrowModal(item, maxQty) { document.getElementById('formItemName').value = item; document.getElementById('formQty').max = maxQty; document.getElementById('borrowModal').style.display = 'flex'; }
+        function openDisposeModal(item, mAvail, mTotal) { document.getElementById('disposeItemName').value = item; document.getElementById('disposeQty').value = mTotal; document.getElementById('disposeModal').style.display = 'flex'; }
+        function openRepairModal(item, maxQty) {
+            document.getElementById('repairItemName').value = item;
+            document.getElementById('repairQty').max = maxQty;
+            document.getElementById('repairDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('repairModal').style.display = 'flex';
         }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        function openDisposeModal(itemName, maxAvail, maxTotal) {
-            document.getElementById('disposeItemName').value = itemName;
-            document.getElementById('disposeQty').max = maxTotal; 
-            document.getElementById('disposeQty').value = maxTotal; // 預設帶入總數量
-            document.getElementById('disposeModal').style.display = 'flex';
-        }
-
-        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
-
-        // --- API 送出 ---
         function submitBorrow() {
-            const payload = {
-                action_type: 'borrow',
-                item: document.getElementById('formItemName').value,
-                qty: document.getElementById('formQty').value,
-                name: document.getElementById('formName').value.trim(),
-                unit: document.getElementById('formUnit').value.trim(),
-                email: document.getElementById('formEmail').value.trim(),
-                start: document.getElementById('formStartDate').value,
-                end: document.getElementById('formEndDate').value,
-                reason: document.getElementById('formReason').value.trim()
-            };
-            
-            if(!payload.qty || !payload.name || !payload.unit || !payload.email || !payload.reason) {
-                alert('🐶 汪！請確認帶有 * 號的欄位都填寫完畢喔！'); return;
-            }
-            sendDataToGAS(payload, 'borrowModal');
+            const p = { action_type: 'borrow', item: document.getElementById('formItemName').value, qty: document.getElementById('formQty').value, name: document.getElementById('formName').value.trim(), unit: document.getElementById('formUnit').value.trim(), email: document.getElementById('formEmail').value.trim(), start: document.getElementById('formStartDate').value, end: document.getElementById('formEndDate').value, reason: document.getElementById('formReason').value.trim() };
+            if(!p.qty || !p.name || !p.unit || !p.reason) return alert('請確認必填欄位！');
+            sendDataToGAS(p, 'borrowModal');
+        }
+        
+        function submitRepair() {
+            const p = { action_type: 'repair', item: document.getElementById('repairItemName').value, qty: document.getElementById('repairQty').value, vendor: document.getElementById('repairVendor').value.trim(), part: document.getElementById('repairPart').value.trim(), start: document.getElementById('repairDate').value, reason: '設備送修' };
+            if(!p.qty || !p.vendor || !p.part) return alert('請填寫維修廠商與部位！');
+            sendDataToGAS(p, 'repairModal');
         }
 
         function submitDispose() {
-            const payload = {
-                action_type: 'dispose',
-                item: document.getElementById('disposeItemName').value,
-                qty: document.getElementById('disposeQty').value,
-                admin_name: document.getElementById('disposeAdminName').value.trim(),
-                reason: document.getElementById('disposeReason').value.trim()
-            };
-
-            if(!payload.admin_name || !payload.qty || !payload.reason) {
-                alert('請填寫處理人與報廢公文備註！'); return;
-            }
-            if(confirm(`⚠️ 確定要將 ${payload.qty} 個 [${payload.item}] 正式報廢核銷嗎？`)) {
-                sendDataToGAS(payload, 'disposeModal');
-            }
+            const p = { action_type: 'dispose', item: document.getElementById('disposeItemName').value, qty: document.getElementById('disposeQty').value, admin_name: document.getElementById('disposeAdminName').value.trim(), reason: document.getElementById('disposeReason').value.trim() };
+            if(!p.admin_name || !p.qty || !p.reason) return alert('請填寫處理人與報廢公文備註！');
+            if(confirm(`⚠️ 確定將 ${p.qty} 個 ${p.item} 正式報廢嗎？`)) sendDataToGAS(p, 'disposeModal');
         }
 
-        function submitReturn(timestamp, itemName) {
-            if(!confirm(`確定要將 [${itemName}] 設為已歸還，並恢復庫存嗎？`)) return;
-            sendDataToGAS({ action_type: 'return', timestamp: timestamp, item: itemName }, null);
-        }
+        function submitApprove(ts) { sendDataToGAS({ action_type: 'approve', timestamp: ts }, null); }
+        function submitReturn(ts, item) { if(confirm(`確定將 [${item}] 設為已歸還/完修嗎？`)) sendDataToGAS({ action_type: 'return', timestamp: ts, item: item }, null); }
 
         function sendDataToGAS(payload, modalId) {
             document.getElementById('loader').style.display = 'flex';
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(res => {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(res => res.json()).then(res => {
                 document.getElementById('loader').style.display = 'none';
                 if(res.status === 'success') {
                     alert('✅ 處理成功！');
                     if(modalId) closeModal(modalId);
                     if(currentMode === 'records') loadRecords();
                     fetchData(); 
-                } else {
-                    alert('❌ 發生錯誤：' + res.message);
-                }
-            })
-            .catch(err => {
-                document.getElementById('loader').style.display = 'none';
-                alert('連線異常，請稍後再試。');
-            });
+                } else alert('❌ 錯誤：' + res.message);
+            }).catch(err => { document.getElementById('loader').style.display = 'none'; alert('連線異常，請稍後再試。'); });
         }
 
         function adminLogin() {
-            if (isAdmin) { alert('您已是管理員模式囉！🦫'); return; }
-            const pwd = prompt("🔒 請輸入資訊組密碼：");
+            if (isAdmin) return alert('您已是管理員模式囉！🦫');
+            const pwd = prompt("🔒 請輸入密碼：");
             if (!pwd) return;
-
             document.getElementById('loader').style.display = 'flex';
-            fetch(API_URL + "?action=verify_admin&pwd=" + pwd)
-                .then(res => res.json())
-                .then(res => {
-                    document.getElementById('loader').style.display = 'none';
-                    if(res.status === 'success') {
-                        isAdmin = true;
-                        document.getElementById('nav-disposal').style.display = 'flex'; // 解鎖擬報廢選單
-                        document.getElementById('adminBtn').innerText = '🔓 已登入管理員';
-                        document.getElementById('adminBtn').classList.add('logged-in');
-                        alert('✅ 登入成功！已為您解鎖「擬報廢清單」與「歸還」功能。');
-                        if(currentMode === 'records') loadRecords();
-                    } else {
-                        alert('❌ 密碼錯誤。');
-                    }
-                });
+            fetch(API_URL + "?action=verify_admin&pwd=" + pwd).then(res => res.json()).then(res => {
+                document.getElementById('loader').style.display = 'none';
+                if(res.status === 'success') {
+                    isAdmin = true;
+                    document.getElementById('nav-disposal').style.display = 'flex';
+                    document.getElementById('adminBtn').innerText = '🔓 已登入管理員';
+                    document.getElementById('adminBtn').classList.add('logged-in');
+                    alert('✅ 登入成功！已解鎖審核、維修與報廢功能。');
+                    if(currentMode === 'records') loadRecords(); else renderItems();
+                } else alert('❌ 密碼錯誤。');
+            });
         }
     </script>
 </body>
