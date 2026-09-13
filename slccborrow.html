@@ -11,18 +11,18 @@
             --text-main: #37352f;
             --text-muted: #787774;
             --border-color: #ededeb;
-            --accent-color: #ff6b6b; /* 淨春型：明亮溫暖紅 */
+            --accent-color: #ff6b6b; /* 明亮溫暖紅 */
             --accent-hover: #ff5252;
             --blue-action: #2383e2; 
-            --admin-color: #e6a23c; /* 管理員專屬暖橘色 */
-            --touch-size: 44px; /* 平板友善觸控高度 */
+            --admin-color: #e6a23c; 
+            --danger-color: #f56c6c;
+            --success-color: #67c23a; 
+            --touch-size: 44px; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-
         body { display: flex; height: 100vh; background-color: var(--bg-main); color: var(--text-main); overflow: hidden; }
 
-        /* 左側邊欄 */
         .sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); padding: 24px 16px; display: flex; flex-direction: column; }
         .logo { font-size: 18px; font-weight: 600; margin-bottom: 32px; padding-left: 8px; display: flex; align-items: center; gap: 8px; }
         
@@ -32,65 +32,56 @@
         .admin-btn { margin-top: auto; color: var(--text-muted); font-size: 14px; min-height: var(--touch-size); display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 8px; transition: 0.2s; }
         .admin-btn.logged-in { background-color: #fff3e0; color: #d35400; font-weight: 600; border: 1px solid #ffd8a8; }
 
-        /* 右側主要內容區 */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 24px; }
-
-        /* 搜尋列 */
         .search-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
         .search-input { flex: 1; min-width: 250px; min-height: var(--touch-size); padding: 0 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; outline: none; }
         .search-input:focus { border-color: var(--blue-action); }
-        .filter-checkbox { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--text-muted); cursor: pointer; min-height: var(--touch-size); }
-        .filter-checkbox input { width: 20px; height: 20px; }
 
-        /* 器材卡片網格 */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
         .card { border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; background: white; display: flex; flex-direction: column; transition: box-shadow 0.2s; }
         .card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06); }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px; }
         .card-title { font-size: 18px; font-weight: 600; line-height: 1.4; }
-        .status-badge { font-size: 13px; padding: 6px 10px; border-radius: 6px; font-weight: 500; }
+        .status-badge { font-size: 13px; padding: 6px 10px; border-radius: 6px; font-weight: 500; white-space: nowrap; }
         .status-avail { background: #e3fcef; color: #18794e; }
         .status-none { background: #ffebe9; color: #bf2419; }
-        .card-info { font-size: 15px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+        .status-expired { background: #fdf6ec; color: #e6a23c; }
+        .card-info { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.4; }
         
-        /* 按鈕區 */
         .card-actions { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
         .borrow-btn, .dispose-btn { min-height: var(--touch-size); width: 100%; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; transition: all 0.2s; }
         .borrow-btn { background-color: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); }
         .borrow-btn:hover:not(:disabled) { background-color: var(--blue-action); color: white; border-color: var(--blue-action); }
         .borrow-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .dispose-btn { background-color: #fff5f5; border: 1px solid #ffc9c9; color: var(--accent-hover); display: none; }
-        .dispose-btn:hover { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+        .dispose-btn { background-color: #fff5f5; border: 1px solid #ffc9c9; color: var(--danger-color); }
+        .dispose-btn:hover { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
 
-        /* 表格樣式 */
         .records-table-container { width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: white; }
         .records-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; }
         .records-table th, .records-table td { padding: 16px; border-bottom: 1px solid var(--border-color); }
         .records-table th { background-color: var(--bg-sidebar); color: var(--text-muted); font-weight: 500; white-space: nowrap; }
-        .records-table tr:hover { background-color: rgba(0,0,0,0.02); }
+        .btn-return { background: #f0f9eb; border: 1px solid #c2e7b0; color: var(--success-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; }
+        .btn-return:hover { background: var(--success-color); color: white; }
 
-        /* Modal 共用樣式 */
+        /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 15, 15, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(2px); }
         .modal-content { background: white; width: 100%; max-width: 560px; border-radius: 16px; padding: 32px; max-height: 90vh; overflow-y: auto; }
         .modal-title { font-size: 22px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 15px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
-        .form-group input, .form-group textarea { width: 100%; min-height: var(--touch-size); padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; outline: none; }
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--blue-action); }
-        .form-group input.admin-focus:focus { border-color: var(--admin-color); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; min-height: var(--touch-size); padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; outline: none; }
+        .form-group input:focus { border-color: var(--blue-action); }
+        .form-group input.admin-focus:focus { border-color: var(--danger-color); }
         .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
-        .form-row .form-group { flex: 1; min-width: 200px; }
-        
-        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
+        .form-row .form-group { flex: 1; min-width: 150px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
         .btn-cancel, .btn-submit, .btn-danger { min-height: var(--touch-size); padding: 0 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; border: none; }
         .btn-cancel { border: 1px solid var(--border-color); background: white; }
         .btn-submit { background: var(--accent-color); color: white; }
         .btn-submit:hover { background: var(--accent-hover); }
-        .btn-danger { background: var(--admin-color); color: white; }
-        .btn-danger:hover { background: #d35400; }
+        .btn-danger { background: var(--danger-color); color: white; }
 
-        /* Loading Overlay */
         .loader-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; font-size: 18px; font-weight: 500; flex-direction: column; gap: 16px;}
         .bounce-emoji { font-size: 40px; animation: bounce 1s infinite alternate; }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
@@ -100,14 +91,16 @@
 
     <div class="sidebar">
         <div class="logo">🧱 資訊設備管理</div>
-        <div class="nav-item active" onclick="filterCategory('全部')"><span>🎮</span> 全部器材</div>
-        <div class="nav-item" onclick="filterCategory('學生載具')"><span>📱</span> 學生載具</div>
-        <div class="nav-item" onclick="filterCategory('電腦主機')"><span>💻</span> 電腦主機</div>
-        <div class="nav-item" onclick="filterCategory('攝影/影音')"><span>📷</span> 攝影/影音</div>
-        <div class="nav-item" onclick="filterCategory('網路設備')"><span>📡</span> 網路設備</div>
+        <div class="nav-item active" onclick="switchView('equipments', '全部')"><span>🎮</span> 全部器材</div>
+        <div class="nav-item" onclick="switchView('equipments', '學生載具')"><span>📱</span> 學生載具</div>
+        <div class="nav-item" onclick="switchView('equipments', '電腦主機')"><span>💻</span> 電腦主機</div>
         
         <div style="height: 1px; background: var(--border-color); margin: 16px 0;"></div>
-        <div class="nav-item" id="nav-records" onclick="showRecords()"><span>📋</span> 異動紀錄</div>
+        <div class="nav-item" id="nav-records" onclick="switchView('records')"><span>📋</span> 異動紀錄</div>
+        
+        <!-- 管理員專屬選單 (預設隱藏) -->
+        <div class="nav-item" id="nav-disposal" style="display: none; color: var(--danger-color);" onclick="switchView('disposal')"><span>🗑️</span> 擬報廢清單</div>
+        
         <div class="admin-btn" id="adminBtn" onclick="adminLogin()">🔒 管理員入口</div>
     </div>
 
@@ -116,13 +109,10 @@
             <h1 id="page-title">全部器材</h1>
         </div>
 
-        <!-- 設備清單視圖 -->
+        <!-- 設備清單/擬報廢清單 共用視圖 -->
         <div id="view-equipments">
             <div class="search-bar">
-                <input type="text" id="searchInput" class="search-input" placeholder="搜尋器材名稱、編號... (例如: Surface)" onkeyup="searchItems()">
-                <label class="filter-checkbox">
-                    <input type="checkbox" id="availFilter" onchange="searchItems()"> 只顯示可借用
-                </label>
+                <input type="text" id="searchInput" class="search-input" placeholder="搜尋名稱、編號..." onkeyup="renderItems()">
             </div>
             <div class="grid-container" id="itemGrid"></div>
         </div>
@@ -133,7 +123,7 @@
                 <table class="records-table">
                     <thead>
                         <tr>
-                            <th>狀態</th><th>處理/借用人</th><th>處室/班級</th><th>器材名稱</th><th>借用日</th><th>預計歸還</th><th>事由/備註</th>
+                            <th>狀態</th><th>處理/借用人</th><th>單位</th><th>器材</th><th>數量</th><th>借用日</th><th>預計歸還</th><th>備註</th>
                         </tr>
                     </thead>
                     <tbody id="recordsGrid"></tbody>
@@ -152,31 +142,37 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
+                    <label>借用數量 <span style="color:var(--accent-color)">*</span></label>
+                    <input type="number" id="formQty" min="1" value="1" placeholder="輸入數量">
+                </div>
+                <div class="form-group">
+                    <label>借用事由/編號 <span style="color:var(--accent-color)">*</span></label>
+                    <input type="text" id="formReason" placeholder="如: 課堂使用 (編號: 01)">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label>姓名 <span style="color:var(--accent-color)">*</span></label>
                     <input type="text" id="formName" placeholder="如: 王小明">
                 </div>
                 <div class="form-group">
                     <label>處室 / 班級 <span style="color:var(--accent-color)">*</span></label>
-                    <input type="text" id="formUnit" placeholder="如: 教務處 ext.123">
+                    <input type="text" id="formUnit" placeholder="如: 教務處">
                 </div>
             </div>
             <div class="form-group">
-                <label>電子信箱 Email <span style="color:var(--accent-color)">*</span></label>
-                <input type="email" id="formEmail" placeholder="接收借用成功通知">
+                <label>聯絡 Email <span style="color:var(--accent-color)">*</span></label>
+                <input type="email" id="formEmail" placeholder="接收通知信">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>借用日期 <span style="color:var(--accent-color)">*</span></label>
+                    <label>借用日期</label>
                     <input type="date" id="formStartDate">
                 </div>
                 <div class="form-group">
-                    <label>預計歸還日期 <span style="color:var(--accent-color)">*</span></label>
+                    <label>預計歸還</label>
                     <input type="date" id="formEndDate">
                 </div>
-            </div>
-            <div class="form-group">
-                <label>借用事由與設備編號 <span style="color:var(--accent-color)">*</span></label>
-                <input type="text" id="formReason" placeholder="如: 課堂使用 (借用編號: 01)">
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModal('borrowModal')">取消</button>
@@ -185,51 +181,51 @@
         </div>
     </div>
 
-    <!-- 汰換與數量調整 Modal (管理員專屬) -->
+    <!-- 確認報廢 Modal -->
     <div class="modal-overlay" id="disposeModal">
-        <div class="modal-content" style="border-top: 6px solid var(--admin-color);">
-            <div class="modal-title" style="color: var(--admin-color);">🛠️ 耗材汰換與數量調整</div>
+        <div class="modal-content" style="border-top: 6px solid var(--danger-color);">
+            <div class="modal-title" style="color: var(--danger-color);">⚠️ 確認報廢設備</div>
             <div class="form-group">
-                <label>調整器材</label>
-                <input type="text" id="disposeItemName" readonly style="background: #fff8f0; color: #d35400; font-weight: 500;">
+                <label>準備報廢器材</label>
+                <input type="text" id="disposeItemName" readonly style="background: #fff5f5; color: var(--danger-color); font-weight: 500;">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>處理人 (管理員姓名) <span style="color:var(--admin-color)">*</span></label>
-                    <input type="text" id="disposeAdminName" class="admin-focus" placeholder="如: 資訊組長">
+                    <label>報廢數量</label>
+                    <input type="number" id="disposeQty" class="admin-focus" min="1">
                 </div>
                 <div class="form-group">
-                    <label>減少數量 <span style="color:var(--admin-color)">*</span></label>
-                    <input type="number" id="disposeQty" class="admin-focus" min="1" placeholder="輸入報廢/汰換數量">
+                    <label>處理人</label>
+                    <input type="text" id="disposeAdminName" class="admin-focus" placeholder="管理員姓名">
                 </div>
             </div>
             <div class="form-group">
-                <label>汰換原因與備註 <span style="color:var(--admin-color)">*</span></label>
-                <input type="text" id="disposeReason" class="admin-focus" placeholder="如: 接頭斷裂報廢、主機板燒毀 (登錄號: 288)">
+                <label>報廢公文備註 / 財產編號</label>
+                <input type="text" id="disposeReason" class="admin-focus" placeholder="如: 達年限報廢 (登錄號: 288)">
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeModal('disposeModal')">取消</button>
-                <button class="btn-danger" onclick="submitDispose()">確認扣除</button>
+                <button class="btn-danger" onclick="submitDispose()">確認核銷</button>
             </div>
         </div>
     </div>
 
-    <!-- 載入動畫 -->
     <div class="loader-overlay" id="loader">
         <div class="bounce-emoji">🦫</div>
-        <div>資料處理中，請稍候...</div>
+        <div>資料連線中，請稍候...</div>
     </div>
 
     <script>
-        // ⚠️ 請替換為您包含 action_type 邏輯的最新 GAS 網址
+        // ⚠️ 替換為您的最新 GAS API 網址
         const API_URL = "https://script.google.com/macros/s/AKfycbwuVHBUJg1Zmfg1BWO7MzHGsf4eTD2PzaRD6H8GWHTCexNMBuF_ZSS8eXnjUpEDCknd/exec";
 
         let allEquipmentData = [];
+        let currentMode = 'equipments'; // equipments, records, disposal
         let currentCategory = '全部';
-        let isAdmin = false; // 管理員狀態旗標
+        let isAdmin = false;
 
         window.onload = function() {
-            document.getElementById('itemGrid').innerHTML = '<div style="padding: 24px; font-size: 16px; color: var(--text-muted);">連線中 🧱...</div>';
+            document.getElementById('itemGrid').innerHTML = '<div style="padding: 24px; color: var(--text-muted);">連線中 🧱...</div>';
             fetchData();
         };
 
@@ -238,132 +234,141 @@
                 .then(res => res.json())
                 .then(data => {
                     allEquipmentData = data;
-                    renderItems(allEquipmentData);
+                    renderItems();
                 })
                 .catch(err => {
-                    document.getElementById('itemGrid').innerHTML = '<div style="color: var(--accent-color); padding: 24px;">🦫 讀取資料失敗，請確認 API 網址是否正確。</div>';
+                    document.getElementById('itemGrid').innerHTML = '<div style="color: var(--danger-color); padding: 24px;">🦫 讀取失敗，請確認 API 網址。</div>';
                 });
         }
 
-        function renderItems(items) {
-            const grid = document.getElementById('itemGrid');
-            grid.innerHTML = ''; 
+        // 判斷是否過期 (核心邏輯)
+        function checkExpired(purchaseDateStr, lifespanStr) {
+            if(!purchaseDateStr || !lifespanStr) return false;
+            const pDate = new Date(purchaseDateStr);
+            if(isNaN(pDate.getTime())) return false;
+            
+            const expiryDate = new Date(pDate);
+            expiryDate.setFullYear(expiryDate.getFullYear() + parseInt(lifespanStr));
+            return new Date() > expiryDate; // 如果今天大於到期日，就判定過期
+        }
 
-            let renderedCount = 0;
+        function switchView(mode, category = '') {
+            currentMode = mode;
+            if(category) currentCategory = category;
 
-            items.forEach(item => {
-                const total = parseInt(item.total) || 0;
-                
-                // 【核心 UI 邏輯】：一般老師看不到總數為 0 的已汰換設備，管理員才看得到
-                if (!isAdmin && total <= 0) return;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
 
-                const isAvail = item.available > 0;
-                const statusClass = isAvail ? 'status-avail' : 'status-none';
-                
-                // 如果總數為 0，加上視覺標記
-                const isDisposed = total <= 0;
-                const cardOpacity = isDisposed ? '0.6' : '1';
-                const statusText = isDisposed ? '已全數報廢' : (isAvail ? '可借用' : '已借出');
-                const badgeStyle = isDisposed ? 'background: #f2f2f2; color: #999;' : '';
-
-                // 組裝財產標籤與存放地顯示
-                const tagHTML = item.asset_tags ? `<div class="card-info">🏷️ 編號：${item.asset_tags}</div>` : '';
-                const locHTML = item.location ? `<div class="card-info">📍 存放：${item.location}</div>` : '';
-
-                let html = `
-                    <div class="card" style="opacity: ${cardOpacity}">
-                        <div class="card-header">
-                            <div class="card-title">${item.name || '未命名設備'}</div>
-                            <div class="status-badge ${statusClass}" style="${badgeStyle}">${statusText}</div>
-                        </div>
-                        <div class="card-info">分類：${item.category || '未分類'}</div>
-                        ${locHTML}
-                        ${tagHTML}
-                        <div class="card-info">庫存：${item.available || 0} / ${total}</div>
-                        
-                        <div class="card-actions">
-                            <button class="borrow-btn" ${(!isAvail || isDisposed) ? 'disabled' : ''} onclick="openBorrowModal('${item.name}')">
-                                ${isDisposed ? '無法借用' : (isAvail ? '申請借用' : '暫無庫存')}
-                            </button>
-                            <button class="dispose-btn" style="display: ${isAdmin && !isDisposed ? 'block' : 'none'};" 
-                                    onclick="openDisposeModal('${item.name}', ${item.available}, ${total})">
-                                🛠️ 數量調整 / 汰換
-                            </button>
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += html;
-                renderedCount++;
-            });
-
-            if(renderedCount === 0) {
-                grid.innerHTML = '<div style="padding: 40px; font-size: 16px; color: var(--text-muted); width: 100%; grid-column: 1 / -1;">🦫 這裡空空的... 找不到符合的設備喔！</div>';
+            if(mode === 'records') {
+                document.getElementById('view-equipments').style.display = 'none';
+                document.getElementById('view-records').style.display = 'block';
+                document.getElementById('page-title').innerText = '異動與借用紀錄';
+                loadRecords();
+            } else {
+                document.getElementById('view-records').style.display = 'none';
+                document.getElementById('view-equipments').style.display = 'block';
+                document.getElementById('page-title').innerText = mode === 'disposal' ? '🗑️ 擬報廢清單' : (category === '全部' ? '全部器材' : category);
+                renderItems();
             }
         }
 
-        // --- 搜尋與過濾 ---
-        function filterCategory(category) {
-            currentCategory = category;
-            document.getElementById('view-equipments').style.display = 'block';
-            document.getElementById('view-records').style.display = 'none';
-            document.getElementById('page-title').innerText = category === '全部' ? '全部器材' : category + '清單';
-            
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            searchItems();
-        }
-
-        function searchItems() {
+        function renderItems() {
+            const grid = document.getElementById('itemGrid');
+            grid.innerHTML = ''; 
             const keyword = document.getElementById('searchInput').value.toLowerCase();
-            const onlyAvail = document.getElementById('availFilter').checked;
+            let renderedCount = 0;
 
-            const filtered = allEquipmentData.filter(item => {
-                const matchCat = currentCategory === '全部' || item.category === currentCategory;
-                const matchKey = (item.name && item.name.toLowerCase().includes(keyword)) || 
-                                 (item.asset_tags && item.asset_tags.toLowerCase().includes(keyword));
-                const matchAvail = onlyAvail ? item.available > 0 : true;
-                return matchCat && matchKey && matchAvail;
+            allEquipmentData.forEach(item => {
+                const total = parseInt(item.total) || 0;
+                if (total <= 0) return; // 已經被管理員完全扣除報廢的設備，徹底隱藏
+
+                const isExpired = checkExpired(item.purchase_date, item.lifespan);
+                
+                // 視圖過濾邏輯
+                if (currentMode === 'disposal') {
+                    if (!isExpired) return; // 擬報廢清單只顯示過期的
+                } else if (currentMode === 'equipments') {
+                    if (isExpired) return; // 正常清單隱藏過期的
+                    if (currentCategory !== '全部' && item.category !== currentCategory) return;
+                }
+
+                // 關鍵字搜尋過濾
+                if (keyword && !(item.name && item.name.toLowerCase().includes(keyword)) && 
+                               !(item.asset_tags && item.asset_tags.toLowerCase().includes(keyword))) {
+                    return;
+                }
+
+                const isAvail = item.available > 0;
+                
+                // 卡片狀態設計
+                let statusClass = 'status-avail';
+                let statusText = '可借用';
+                let btnHtml = '';
+
+                if (isExpired) {
+                    statusClass = 'status-expired';
+                    statusText = '達年限待報廢';
+                    btnHtml = `<button class="dispose-btn" style="display:block;" onclick="openDisposeModal('${item.name}', ${item.available}, ${total})">✅ 確認正式報廢</button>`;
+                } else {
+                    if (!isAvail) { statusClass = 'status-none'; statusText = '已借出'; }
+                    btnHtml = `<button class="borrow-btn" ${!isAvail ? 'disabled' : ''} onclick="openBorrowModal('${item.name}', ${item.available})">
+                                  ${isAvail ? '申請借用' : '暫無庫存'}
+                               </button>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="card" style="${isExpired ? 'border-color:#fbc4c4; background:#fffbfb;' : ''}">
+                        <div class="card-header">
+                            <div class="card-title">${item.name}</div>
+                            <div class="status-badge ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="card-info">📍 存放：${item.location || '未標示'}</div>
+                        <div class="card-info">🏷️ 編號：${item.asset_tags || '無'}</div>
+                        <div class="card-info">📅 購置：${item.purchase_date ? item.purchase_date.split('T')[0] : '無'} (年限 ${item.lifespan || 0} 年)</div>
+                        <div class="card-info" style="font-weight:500; margin-top:8px;">📦 庫存：${item.available} / ${total}</div>
+                        <div class="card-actions">${btnHtml}</div>
+                    </div>
+                `;
+                renderedCount++;
             });
-            renderItems(filtered);
+
+            if(renderedCount === 0) grid.innerHTML = '<div style="grid-column: 1/-1; color: var(--text-muted);">🦫 這裡空空的... 找不到設備喔！</div>';
         }
 
-        // --- 紀錄檢視 ---
-        function showRecords() {
-            document.getElementById('view-equipments').style.display = 'none';
-            document.getElementById('view-records').style.display = 'block';
-            document.getElementById('page-title').innerText = '異動與借用紀錄';
-            
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.getElementById('nav-records').classList.add('active');
-
+        // --- 紀錄讀取 ---
+        function loadRecords() {
             const tbody = document.getElementById('recordsGrid');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px;">讀取中 🧱...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px;">讀取中 🧱...</td></tr>';
 
             fetch(API_URL + "?action=records")
                 .then(res => res.json())
                 .then(data => {
                     tbody.innerHTML = '';
                     if(data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 60px; font-size: 16px; color: var(--text-muted);">🦫 目前沒有任何紀錄喔！</td></tr>';
-                        return;
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">🦫 目前沒有任何紀錄喔！</td></tr>'; return;
                     }
 
                     data.reverse().forEach(row => {
                         let sc = '#787774';
-                        if(row['狀態'] === '申請中') sc = 'var(--accent-color)';
-                        if(row['狀態'] === '耗材汰換' || row['狀態'] === '設備報廢') sc = 'var(--admin-color)';
+                        let isBorrowing = (row['狀態'] === '申請中' || row['狀態'] === '借用中');
+                        
+                        if(isBorrowing) sc = 'var(--accent-color)';
+                        if(row['狀態'].includes('報廢') || row['狀態'].includes('汰換')) sc = 'var(--danger-color)';
+                        if(row['狀態'] === '已歸還') sc = 'var(--success-color)';
 
-                        const formatDt = (d) => d ? d.split('T')[0] : '';
+                        let actionBtn = (isAdmin && isBorrowing) ? `<br><button class="btn-return" onclick="submitReturn('${row['時間戳記']}', '${row['借用器材']}')">✅ 點此歸還</button>` : '';
+
+                        // 注意：索引配合新表單 -> 借用人(1), 處室(2), 器材(3), 數量(4), 借用日(5), 歸還日(6), 事由(7)
                         tbody.innerHTML += `
                             <tr>
-                                <td><span style="color: ${sc}; font-weight: 500;">${row['狀態'] || '未標示'}</span></td>
+                                <td><span style="color: ${sc}; font-weight: 500;">${row['狀態']}</span>${actionBtn}</td>
                                 <td>${row['借用人'] || ''}</td>
                                 <td>${row['處室班級'] || ''}</td>
                                 <td>${row['借用器材'] || ''}</td>
-                                <td>${formatDt(row['借用日期'])}</td>
-                                <td>${formatDt(row['預計歸還'])}</td>
-                                <td style="color: var(--text-muted);">${row['借用事由'] || ''}</td>
+                                <td><strong style="color:var(--blue-action)">${row['數量'] || 1}</strong></td>
+                                <td>${row['借用日期'] ? row['借用日期'].split('T')[0] : ''}</td>
+                                <td>${row['預計歸還'] ? row['預計歸還'].split('T')[0] : ''}</td>
+                                <td style="color: var(--text-muted); font-size:13px;">${row['借用事由'] || ''}</td>
                             </tr>
                         `;
                     });
@@ -371,8 +376,11 @@
         }
 
         // --- Modal 控制 ---
-        function openBorrowModal(itemName) {
+        function openBorrowModal(itemName, maxQty) {
             document.getElementById('formItemName').value = itemName;
+            document.getElementById('formQty').max = maxQty; // 防呆：不能借超過現有庫存
+            document.getElementById('formQty').value = 1;
+            
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('formStartDate').value = today;
             document.getElementById('formEndDate').value = today;
@@ -381,20 +389,19 @@
 
         function openDisposeModal(itemName, maxAvail, maxTotal) {
             document.getElementById('disposeItemName').value = itemName;
-            // 限制防呆：不能報廢大於現有庫存的數量
-            document.getElementById('disposeQty').max = maxAvail; 
+            document.getElementById('disposeQty').max = maxTotal; 
+            document.getElementById('disposeQty').value = maxTotal; // 預設帶入總數量
             document.getElementById('disposeModal').style.display = 'flex';
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 
-        // --- 送出表單 API ---
+        // --- API 送出 ---
         function submitBorrow() {
             const payload = {
                 action_type: 'borrow',
                 item: document.getElementById('formItemName').value,
+                qty: document.getElementById('formQty').value,
                 name: document.getElementById('formName').value.trim(),
                 unit: document.getElementById('formUnit').value.trim(),
                 email: document.getElementById('formEmail').value.trim(),
@@ -403,14 +410,9 @@
                 reason: document.getElementById('formReason').value.trim()
             };
             
-            if(!payload.name || !payload.unit || !payload.email || !payload.reason) {
-                alert('🐶 汪！請確認帶有 * 號的欄位都填寫完畢喔！');
-                return;
+            if(!payload.qty || !payload.name || !payload.unit || !payload.email || !payload.reason) {
+                alert('🐶 汪！請確認帶有 * 號的欄位都填寫完畢喔！'); return;
             }
-            if(new Date(payload.end) < new Date(payload.start)) {
-                alert('預計歸還日期不能早於借用日期喔！'); return;
-            }
-
             sendDataToGAS(payload, 'borrowModal');
         }
 
@@ -418,26 +420,26 @@
             const payload = {
                 action_type: 'dispose',
                 item: document.getElementById('disposeItemName').value,
-                admin_name: document.getElementById('disposeAdminName').value.trim(),
                 qty: document.getElementById('disposeQty').value,
+                admin_name: document.getElementById('disposeAdminName').value.trim(),
                 reason: document.getElementById('disposeReason').value.trim()
             };
 
             if(!payload.admin_name || !payload.qty || !payload.reason) {
-                alert('請完整填寫處理人、數量與汰換原因！'); return;
+                alert('請填寫處理人與報廢公文備註！'); return;
             }
-            if(parseInt(payload.qty) <= 0) {
-                alert('數量必須大於 0'); return;
-            }
-
-            if(confirm(`⚠️ 確定要將 ${payload.qty} 個 [${payload.item}] 進行汰換/報廢扣除嗎？此動作將寫入異動紀錄。`)) {
+            if(confirm(`⚠️ 確定要將 ${payload.qty} 個 [${payload.item}] 正式報廢核銷嗎？`)) {
                 sendDataToGAS(payload, 'disposeModal');
             }
         }
 
+        function submitReturn(timestamp, itemName) {
+            if(!confirm(`確定要將 [${itemName}] 設為已歸還，並恢復庫存嗎？`)) return;
+            sendDataToGAS({ action_type: 'return', timestamp: timestamp, item: itemName }, null);
+        }
+
         function sendDataToGAS(payload, modalId) {
             document.getElementById('loader').style.display = 'flex';
-
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -448,12 +450,9 @@
                 document.getElementById('loader').style.display = 'none';
                 if(res.status === 'success') {
                     alert('✅ 處理成功！');
-                    closeModal(modalId);
-                    // 重新抓取最新資料以更新畫面庫存
+                    if(modalId) closeModal(modalId);
+                    if(currentMode === 'records') loadRecords();
                     fetchData(); 
-                    
-                    // 清空表單
-                    document.querySelectorAll('input[type="text"], input[type="email"], input[type="number"]').forEach(el => el.value = '');
                 } else {
                     alert('❌ 發生錯誤：' + res.message);
                 }
@@ -464,40 +463,26 @@
             });
         }
 
-        // --- 管理員登入切換 ---
         function adminLogin() {
-            if (isAdmin) {
-                alert('您目前已經是管理員模式囉！🦫');
-                return;
-            }
-            
-            const pwd = prompt("🔒 請輸入資訊組管理員密碼：");
+            if (isAdmin) { alert('您已是管理員模式囉！🦫'); return; }
+            const pwd = prompt("🔒 請輸入資訊組密碼：");
             if (!pwd) return;
 
             document.getElementById('loader').style.display = 'flex';
-
             fetch(API_URL + "?action=verify_admin&pwd=" + pwd)
                 .then(res => res.json())
                 .then(res => {
                     document.getElementById('loader').style.display = 'none';
                     if(res.status === 'success') {
                         isAdmin = true;
-                        alert('✅ 登入成功！已為您開啟「數量調整/汰換」功能。');
-                        
-                        // 改變左下角按鈕樣式
-                        const btn = document.getElementById('adminBtn');
-                        btn.innerText = '🔓 已登入管理員';
-                        btn.classList.add('logged-in');
-                        
-                        // 重新渲染畫面顯示隱藏按鈕與已報廢設備
-                        searchItems();
+                        document.getElementById('nav-disposal').style.display = 'flex'; // 解鎖擬報廢選單
+                        document.getElementById('adminBtn').innerText = '🔓 已登入管理員';
+                        document.getElementById('adminBtn').classList.add('logged-in');
+                        alert('✅ 登入成功！已為您解鎖「擬報廢清單」與「歸還」功能。');
+                        if(currentMode === 'records') loadRecords();
                     } else {
-                        alert('❌ 密碼錯誤，請重新輸入。');
+                        alert('❌ 密碼錯誤。');
                     }
-                })
-                .catch(err => {
-                    document.getElementById('loader').style.display = 'none';
-                    alert('連線異常，請稍後再試。');
                 });
         }
     </script>
