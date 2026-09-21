@@ -1417,7 +1417,7 @@ function getRankHtml(exp) {
         }, 15000); 
     }
 
-    async function syncToCloud() {
+async function syncToCloud() {
         if (!currentUser || !isDirty) return;
         updateSaveStatus('uploading', '雲端同步中');
         try { 
@@ -1435,13 +1435,17 @@ function getRankHtml(exp) {
             const attStr = JSON.stringify(attData);
             const logsStr = JSON.stringify(logsData);
 
+            let needsPublicUpdate = false; // 用來標記是否需要更新學生的公開看板
+
             if (lastSyncedState.core !== coreStr) {
                 promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "core"), coreData));
                 lastSyncedState.core = coreStr;
+                needsPublicUpdate = true;
             }
             if (lastSyncedState.assignments !== assignStr) {
                 promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "assignments"), assignData));
                 lastSyncedState.assignments = assignStr;
+                needsPublicUpdate = true;
             }
             if (lastSyncedState.attendance !== attStr) {
                 promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "attendance"), attData));
@@ -1450,6 +1454,30 @@ function getRankHtml(exp) {
             if (lastSyncedState.logs !== logsStr) {
                 promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "logs"), logsData));
                 lastSyncedState.logs = logsStr;
+            }
+
+            // 🌟 新增：如果名單或任務有變動，就產生一份精簡版的公開資料給學生看
+            if (needsPublicUpdate || promises.length > 0) {
+                const publicSummary = cleanData.roster.map((s, i) => {
+                    const debts = [];
+                    cleanData.assignments.forEach(a => {
+                        if(!a.archived) {
+                            const indices = a.assignedIndices || 'all';
+                            if (indices === 'all' || indices.includes(i)) {
+                                const st = (a.statuses || [])[i] || 0;
+                                if (st === 0 || st === 2) { // 0=未交, 2=再訂正
+                                    debts.push({ title: a.title, st: st, subject: a.subject || '一般' });
+                                }
+                            }
+                        }
+                    });
+                    return { no: s.no, name: s.name, debts: debts };
+                });
+
+                promises.push(setDoc(doc(db, "public_boards", currentUser.uid), { 
+                    lastUpdated: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+                    summary: publicSummary 
+                }));
             }
 
             if (promises.length > 0) {
