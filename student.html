@@ -148,29 +148,48 @@
     const uid = urlParams.get('uid');
     const no = parseInt(urlParams.get('no'));
 
-    // 🌟 移植老師端的等級換算表
-    const levelConfig = [
-        { lv: 1, exp: 0, rank: "新手村民", color: "#9ca3af" },
-        { lv: 2, exp: 10, rank: "見習冒險者", color: "#86efac" },
-        { lv: 3, exp: 30, rank: "銅牌討伐者", color: "#22c55e" },
-        { lv: 4, exp: 60, rank: "鐵印勇士", color: "#0ea5e9" },
-        { lv: 5, exp: 100, rank: "銀牌初級騎士", color: "#3b82f6" },
-        { lv: 6, exp: 110, rank: "銀牌高級將士", color: "#6366f1" },
-        { lv: 7, exp: 130, rank: "金牌百夫長", color: "#8b5cf6" },
-        { lv: 8, exp: 160, rank: "金牌大師領主", color: "#a855f7" },
-        { lv: 9, exp: 180, rank: "傳奇殿堂聖徒", color: "#d946ef" },
-        { lv: 10, exp: 200, rank: "愛心天使", color: "#ec4899" },
-        { lv: 11, exp: 230, rank: "童話大師", color: "#f43f5e" }, 
-        { lv: 12, exp: 260, rank: "機智神童", color: "#ef4444" }, 
-        { lv: 13, exp: 290, rank: "飛行勇士", color: "#f97316" }, 
-        { lv: 14, exp: 300, rank: "登月先鋒", color: "#ea580c" }, 
-        { lv: 15, exp: 350, rank: "機智聰明", color: "#f59e0b" }, 
-        { lv: 16, exp: 400, rank: "叢林醫生", color: "#eab308" }, 
-        { lv: 17, exp: 450, rank: "科學之星", color: "#ca8a04" }, 
-        { lv: 18, exp: 500, rank: "動物博士", color: "#14b8a6" }, 
-        { lv: 19, exp: 560, rank: "智慧大師", color: "#06b6d4" }, 
-        { lv: "Max", exp: 700, rank: "全能天才", color: "#ffd700" }  
-    ];
+const levelConfig = [
+    { lv: 1, exp: 0, coins: 0, rank: "🌱 迷路的小村民", color: "#9ca3af" },
+    { lv: 2, exp: 10, coins: 5, rank: "🪵 木劍小勇者", color: "#86efac" },
+    { lv: 3, exp: 30, coins: 10, rank: "🛡️ 銅牌小護衛", color: "#22c55e" },
+    { lv: 4, exp: 60, coins: 10, rank: "🐾 森林小遊俠", color: "#0ea5e9" },
+    { lv: 5, exp: 100, coins: 15, rank: "🗡️ 鐵甲小騎士", color: "#3b82f6" },
+    { lv: 6, exp: 140, coins: 15, rank: "🦅 飛鷹小偵探", color: "#6366f1" },
+    { lv: 7, exp: 180, coins: 20, rank: "🐺 灰狼小戰士", color: "#8b5cf6" },
+    { lv: 8, exp: 220, coins: 20, rank: "🧙🏻‍♀️ 見習魔法師", color: "#a855f7" },
+    { lv: 9, exp: 260, coins: 20, rank: "🦄 獨角獸騎士", color: "#d946ef" },
+    { lv: 10, exp: 300, coins: 30, rank: "🌟 星星守護者", color: "#ec4899" },
+    { lv: 11, exp: 350, coins: 30, rank: "🔥 烈焰小法師", color: "#f43f5e" },
+    { lv: 12, exp: 400, coins: 30, rank: "💧 水波小精靈", color: "#ef4444" },
+    { lv: 13, exp: 450, coins: 30, rank: "🌪️ 狂風小飛俠", color: "#f97316" },
+    { lv: 14, exp: 500, coins: 30, rank: "⚡ 閃電小超人", color: "#ea580c" },
+    { lv: 15, exp: 550, coins: 40, rank: "❄️ 冰雪魔法使", color: "#f59e0b" },
+    { lv: 16, exp: 600, coins: 40, rank: "🦁 獅鷲小騎士", color: "#eab308" },
+    { lv: 17, exp: 650, coins: 40, rank: "🏹 神準小獵人", color: "#ca8a04" },
+    { lv: 18, exp: 700, coins: 40, rank: "⚔️ 雙劍小達人", color: "#14b8a6" },
+    { lv: 19, exp: 750, coins: 40, rank: "🛡️ 聖光小衛兵", color: "#06b6d4" },
+    { lv: 20, exp: 800, coins: 50, rank: "👑 城堡守衛隊長", color: "#0284c7" },
+    { lv: 21, exp: 860, coins: 50, rank: "🐉 飛龍馴獸師", color: "#2563eb" },
+    { lv: 22, exp: 920, coins: 50, rank: "🦖 恐龍小霸王", color: "#4f46e5" },
+    { lv: 23, exp: 980, coins: 50, rank: "🌋 火山探險家", color: "#7c3aed" },
+    { lv: 24, exp: 1040, coins: 50, rank: "🌌 星空小旅人", color: "#9333ea" },
+    { lv: 25, exp: 1100, coins: 50, rank: "🌠 彗星觀測者", color: "#c026d3" },
+    { lv: 26, exp: 1170, coins: 50, rank: "🏅 青銅大師", color: "#db2777" },
+    { lv: 27, exp: 1240, coins: 50, rank: "🥈 白銀大師", color: "#e11d48" },
+    { lv: 28, exp: 1310, coins: 50, rank: "🥇 黃金大師", color: "#ea580c" },
+    { lv: 29, exp: 1380, coins: 50, rank: "💎 鑽石大師", color: "#d97706" },
+    { lv: 30, exp: 1450, coins: 50, rank: "🏆 榮耀大師", color: "#65a30d" },
+    { lv: 31, exp: 1530, coins: 50, rank: "🧚 森林精靈王", color: "#16a34a" },
+    { lv: 32, exp: 1610, coins: 60, rank: "🦅 鳳凰守護者", color: "#059669" },
+    { lv: 33, exp: 1690, coins: 60, rank: "🦄 幻獸大師", color: "#0d9488" },
+    { lv: 34, exp: 1770, coins: 60, rank: "⚡ 雷神小勇士", color: "#0891b2" },
+    { lv: 35, exp: 1850, coins: 60, rank: "☀️ 太陽神官", color: "#0284c7" },
+    { lv: 36, exp: 1940, coins: 60, rank: "👑 傳說中的勇者", color: "#4f46e5" },
+    { lv: 37, exp: 2030, coins: 60, rank: "🌌 宇宙大探險家", color: "#7c3aed" },
+    { lv: 38, exp: 2120, coins: 60, rank: "🌟 銀河守護神", color: "#be185d" },
+    { lv: 39, exp: 2210, coins: 60, rank: "🐉 萬獸之王", color: "#e11d48" },
+    { lv: "Max", exp: 2300, coins: 100, rank: "✨ 全班的超級英雄", color: "#ffd700" }
+];
 
     function getRankHtml(exp) {
         let currentLevel = levelConfig[0];
