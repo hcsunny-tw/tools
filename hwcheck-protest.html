@@ -488,15 +488,26 @@
 
   <div class="wrap no-print" style="display:none; flex-direction:column;" id="mainApp">
     <header>
-      <!-- ⭐ 常駐狀態側邊欄 -->
+<!-- ⭐ 常駐狀態側邊欄 -->
 <div id="persistentSidebar" class="persistent-sidebar no-print">
-    <div class="ps-section">
-        <div class="ps-title"><i class="bi bi-trophy-fill"></i> 討伐全冠王</div>
-        <div id="psClearedList" class="ps-list"></div>
+    <!-- 拖曳把手與收合按鈕 -->
+    <div id="psDragHandle" style="cursor: grab; display: flex; justify-content: space-between; align-items: center; color: var(--muted); padding-bottom: 6px; border-bottom: 1px dashed var(--tbl-border); margin-bottom: 8px;">
+        <i class="bi bi-grip-horizontal" style="flex:1; text-align:center; font-size: 16px;"></i>
+        <button id="btnTogglePs" class="btn sm ghost icon-only" style="border:none; padding: 0 4px;" title="收合/展開">
+            <i class="bi bi-arrows-collapse"></i>
+        </button>
     </div>
-    <div class="ps-section">
-        <div class="ps-title"><i class="bi bi-bandaid-fill"></i> 需補血成員</div>
-        <div id="psHelpList" class="ps-list"></div>
+    
+    <!-- 內容區塊 (包裝起來方便隱藏) -->
+    <div id="psContentWrapper">
+        <div class="ps-section">
+            <div class="ps-title"><i class="bi bi-trophy-fill"></i> 討伐全冠王</div>
+            <div id="psClearedList" class="ps-list"></div>
+        </div>
+        <div class="ps-section">
+            <div class="ps-title"><i class="bi bi-bandaid-fill"></i> 需補血成員</div>
+            <div id="psHelpList" class="ps-list"></div>
+        </div>
     </div>
 </div>
       <div class="brand">
@@ -4293,6 +4304,87 @@ window.renderQuickSidebar = function() {
             window.toggleHgTimer();
         }
     };
+// ==========================================
+    // ⭐ 左側常駐浮窗：拖曳與收合功能 (支援電腦與平板)
+    // ==========================================
+    const psSidebar = document.getElementById('persistentSidebar');
+    const psHandle = document.getElementById('psDragHandle');
+    let isPsDragging = false;
+    let psStartX, psStartY, psInitialLeft, psInitialTop;
+
+    // 啟動拖曳
+    const startPsDrag = (e) => {
+        // 如果點擊的是按鈕，不要觸發拖曳
+        if (e.target.closest('#btnTogglePs')) return; 
+        
+        isPsDragging = true;
+        psSidebar.style.transition = 'none'; // 拖曳時取消動畫，讓跟隨更順暢
+        
+        // 判斷是滑鼠還是觸控
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        
+        psStartX = clientX;
+        psStartY = clientY;
+        
+        const rect = psSidebar.getBoundingClientRect();
+        psInitialLeft = rect.left;
+        psInitialTop = rect.top;
+        
+        psHandle.style.cursor = 'grabbing';
+    };
+
+    // 拖曳中
+    const doPsDrag = (e) => {
+        if (!isPsDragging) return;
+        // e.preventDefault(); // 避免在平板上拖曳時畫面跟著捲動 (若有需要可解除註解)
+        
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        
+        const dx = clientX - psStartX;
+        const dy = clientY - psStartY;
+        
+        psSidebar.style.left = `${psInitialLeft + dx}px`;
+        psSidebar.style.top = `${psInitialTop + dy}px`;
+        psSidebar.style.bottom = 'auto';
+        psSidebar.style.right = 'auto';
+    };
+
+    // 結束拖曳
+    const stopPsDrag = () => {
+        if (!isPsDragging) return;
+        isPsDragging = false;
+        psHandle.style.cursor = 'grab';
+        psSidebar.style.transition = 'background-color .3s, color .3s'; // 恢復背景顏色漸變動畫
+    };
+
+    // 綁定滑鼠事件 (電腦端)
+    psHandle.addEventListener('mousedown', startPsDrag);
+    document.addEventListener('mousemove', doPsDrag);
+    document.addEventListener('mouseup', stopPsDrag);
+
+    // 綁定觸控事件 (平板/手機端)
+    psHandle.addEventListener('touchstart', startPsDrag, { passive: true });
+    document.addEventListener('touchmove', doPsDrag, { passive: true });
+    document.addEventListener('touchend', stopPsDrag);
+
+    // 收合/展開按鈕邏輯
+    document.getElementById('btnTogglePs').addEventListener('click', function() {
+        const wrapper = document.getElementById('psContentWrapper');
+        const icon = this.querySelector('i');
+        
+        if (wrapper.style.display === 'none') {
+            wrapper.style.display = 'block';
+            icon.className = 'bi bi-arrows-collapse';
+            psSidebar.style.minWidth = '55px';
+        } else {
+            wrapper.style.display = 'none';
+            icon.className = 'bi bi-arrows-expand';
+            psSidebar.style.minWidth = 'auto';
+        }
+    });
+    
   </script>
 </body>
 </html>
