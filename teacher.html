@@ -1118,30 +1118,37 @@
                   <div key={dObj.day} className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                     <h4 className="font-bold text-darkText mb-3 text-sm">{dObj.name}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      {weekSettings[dObj.day].map((item, pIdx) => (
-                        <div key={pIdx} className="bg-white p-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
-                          <span className="text-xs font-bold text-gray-400 w-5">第{pIdx+1}</span>
-                          <input 
-                            type="text" 
-                            value={item.subject} 
-                            onChange={(e) => {
-                              const newSet = { ...weekSettings };
-                              newSet[dObj.day][pIdx].subject = e.target.value;
-                              setWeekSettings(newSet);
-                            }}
-                            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-darkText outline-none"
-                          />
-                          <button 
-                            onClick={() => {
-                              const newSet = { ...weekSettings };
-                              newSet[dObj.day][pIdx].active = !newSet[dObj.day][pIdx].active;
-                              setWeekSettings(newSet);
-                            }}
-                            className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${item.active ? 'bg-theme-light text-theme' : 'bg-gray-200 text-gray-400'}`}>
-                            {item.active ? '☑ 導師' : '➖ 科任'}
-                          </button>
-                        </div>
-                      ))}
+{weekSettings[dObj.day].map((item, pIdx) => (
+  <div key={pIdx} className="bg-white p-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
+    
+    {/* 1. 稍微加寬至 w-7，並加上 shrink-0 避免「第X節」文字被壓縮 */}
+    <span className="text-xs font-bold text-gray-400 w-7 shrink-0 text-center">第{pIdx+1}</span>
+    
+    <input 
+      type="text" 
+      value={item.subject} 
+      onChange={(e) => {
+        const newSet = { ...weekSettings };
+        newSet[dObj.day][pIdx].subject = e.target.value;
+        setWeekSettings(newSet);
+      }}
+      // 2. 加上 min-w-0，防止輸入框在小螢幕時無限制擴張撐破容器
+      className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-darkText outline-none"
+    />
+    
+    <button 
+      onClick={() => {
+        const newSet = { ...weekSettings };
+        newSet[dObj.day][pIdx].active = !newSet[dObj.day][pIdx].active;
+        setWeekSettings(newSet);
+      }}
+      // 3. 加上 shrink-0 避免變形，固定寬度 w-[60px]，並強制不換行 whitespace-nowrap
+      className={`shrink-0 w-[60px] whitespace-nowrap py-1 rounded-lg text-[10px] text-center font-bold transition-all ${item.active ? 'bg-theme-light text-theme' : 'bg-gray-200 text-gray-400'}`}>
+      {item.active ? '☑ 導師' : '➖ 科任'}
+    </button>
+    
+  </div>
+))}
                     </div>
                   </div>
                 ))}
