@@ -85,29 +85,26 @@
       const [schedule, setSchedule] = useState(initialSchedule);
       const [homework, setHomework] = useState(initialHomework);
       const [schoolAffairs, setSchoolAffairs] = useState([{ id: Date.now(), text: '', isOk: false }]);
-      const [studentEvents, setStudentEvents] = useState([{ id: Date.now(), text: '', status: '已處理' }]);
-      const [parentContacts, setParentContacts] = useState([{ id: Date.now(), text: '', status: '已處理' }]);
+      const [studentEvents, setStudentEvents] = useState([{ id: Date.now()+1, text: '', status: '已處理' }]);
+      const [parentContacts, setParentContacts] = useState([{ id: Date.now()+2, text: '', status: '已處理' }]);
       const [notes, setNotes] = useState('');
       
       // UI 狀態控制
       const [showToast, setShowToast] = useState(false);
+      const [isSaving, setIsSaving] = useState(false); // 新增防連點鎖
       
       // 自訂「更改科目」Modal 的狀態
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [editingPeriodId, setEditingPeriodId] = useState(null);
       const [tempSubjectName, setTempSubjectName] = useState('');
 
-      // 初始化日期 (自動抓取台灣時區)
+      // 初始化日期 (自動抓取台灣時區並格式化為 YYYY-MM-DD，防空白)
       useEffect(() => {
-        <comment-tag id="1">const today = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' });
-        setDate(today.replace(/\//g, '-'));</comment-tag id="1" text="建議改用更嚴謹的 YYYY-MM-DD 組合方式。`toLocaleDateString` 在某些 iOS 裝置或舊版瀏覽器上，即使設定了 '2-digit' 依然會回傳單一位數（如 2026-10-2），這會導致 HTML 的 input[type='date'] 無法正確顯示預設值。
-
-您可以替換為：
-const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-const yyyy = d.getFullYear();
-const mm = String(d.getMonth() + 1).padStart(2, '0');
-const dd = String(d.getDate()).padStart(2, '0');
-setDate(`${yyyy}-${mm}-${dd}`);" type="suggestion">
+        const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        setDate(`${yyyy}-${mm}-${dd}`);
         
         // 簡單估算週次 (假設開學日，這邊暫設為固定值，實際應用可依開學日計算)
         setWeek(5); 
@@ -131,19 +128,19 @@ setDate(`${yyyy}-${mm}-${dd}`);" type="suggestion">
         }
       };
 
-      <comment-tag id="2">const addEvent = (type) => {
+      const addEvent = (type) => {
         const newEvent = { id: Date.now(), text: '', status: '已處理' };
         if (type === 'student') setStudentEvents([...studentEvents, newEvent]);
         if (type === 'parent') setParentContacts([...parentContacts, newEvent]);
         if (type === 'school') setSchoolAffairs([...schoolAffairs, { id: Date.now(), text: '', isOk: false }]);
-      };</comment-tag id="2" text="建議在這裡補上一個 `removeEvent` 的函式。因為行動裝置很容易誤觸「新增」按鈕，如果沒有刪除功能，老師只能留下空白紀錄送出。
+      };
 
-您可以新增這段：
-const removeEvent = (type, id) => {
-  if (type === 'student') setStudentEvents(studentEvents.filter(e => e.id !== id));
-  if (type === 'parent') setParentContacts(parentContacts.filter(e => e.id !== id));
-  if (type === 'school') setSchoolAffairs(schoolAffairs.filter(e => e.id !== id));
-};" type="suggestion">
+      // 新增刪除事件的功能
+      const removeEvent = (type, id) => {
+        if (type === 'student') setStudentEvents(studentEvents.filter(e => e.id !== id));
+        if (type === 'parent') setParentContacts(parentContacts.filter(e => e.id !== id));
+        if (type === 'school') setSchoolAffairs(schoolAffairs.filter(e => e.id !== id));
+      };
 
       const openSubjectModal = (item) => {
         setEditingPeriodId(item.id);
@@ -158,20 +155,21 @@ const removeEvent = (type, id) => {
         setIsModalOpen(false);
       };
 
-      <comment-tag id="3">const handleSave = () => {
+      const handleSave = () => {
+        if (isSaving) return; // 如果正在儲存中，直接返回，防連點
+        setIsSaving(true);
+        
         // 這裡未來會串接 Google Apps Script
         const logData = { date, week, absentees, schedule, homework, schoolAffairs, studentEvents, parentContacts, notes };
         console.log("Saving Data to GAS... ", logData);
         
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
-      };</comment-tag id="3" text="建議在此函式加入一個 `isSaving` 的 State 鎖。當未來串接 GAS (fetch 請求) 時，通常需要等待 1~3 秒。如果老師在這期間連按兩次「儲存」，就會寫入重複資料。
-
-思路：
-1. 宣告 `const [isSaving, setIsSaving] = useState(false);`
-2. 點擊進入時先 `setIsSaving(true)`
-3. 等待 GAS 回傳結果後，再 `setIsSaving(false)` 並顯示 Toast。
-這是一個預防資料庫產生髒資料的重要防線！" type="suggestion">
+        // 模擬伺服器等待時間 1 秒
+        setTimeout(() => {
+          setIsSaving(false);
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }, 1000);
+      };
 
       return (
         <div className="max-w-2xl mx-auto w-full relative">
@@ -209,6 +207,7 @@ const removeEvent = (type, id) => {
 
           <div className="px-4 space-y-6">
             
+            {}
             {/* 節次與教學進度 */}
             <section>
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
@@ -249,6 +248,7 @@ const removeEvent = (type, id) => {
               </div>
             </section>
 
+            {}
             {/* 作業批閱 */}
             <section>
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
@@ -274,6 +274,7 @@ const removeEvent = (type, id) => {
               </div>
             </section>
 
+            {}
             {/* 學校相關事務 */}
             <section>
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
@@ -291,8 +292,9 @@ const removeEvent = (type, id) => {
                       <input type="checkbox" checked={evt.isOk} onChange={(e) => updateEvent('school', evt.id, 'isOk', e.target.checked)} className="hidden" />
                       <span className={`text-xs font-bold ${evt.isOk ? 'text-accent' : 'text-gray-400'}`}>OK</span>
                     </label>
-                    <comment-tag id="4">{/* 如果新增了 removeEvent 功能，可以考慮在這裡加一顆刪除按鈕 */}
-                    {/* <button onClick={() => removeEvent('school', evt.id)} className="p-2 text-gray-300 hover:text-danger"><i className="ph-bold ph-trash"></i></button> */}</comment-tag id="4" text="搭配上面提到的刪除函式，您可以在輸入框的右側（或 OK 按鈕旁）加入這個垃圾桶圖示，讓誤按新增的使用者可以輕鬆移除該行。這樣資料會更乾淨。" type="suggestion">
+                    <button onClick={() => removeEvent('school', evt.id)} className="p-2 mr-1 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors">
+                      <i className="ph-bold ph-trash"></i>
+                    </button>
                   </div>
                 ))}
                 <button onClick={() => addEvent('school')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
@@ -310,7 +312,7 @@ const removeEvent = (type, id) => {
                 {studentEvents.map((evt) => (
                   <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2 items-center focus-within:border-accent/50 transition-colors">
                     <input type="text" placeholder="紀錄學生狀況..." value={evt.text} onChange={(e) => updateEvent('student', evt.id, 'text', e.target.value)}
-                           className="flex-1 bg-transparent py-1 text-sm outline-none text-darkText" />
+                           className="flex-1 w-24 bg-transparent py-1 text-sm outline-none text-darkText" />
                     <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0">
                       {['已處理', '需轉介'].map(status => (
                         <button key={status}
@@ -320,6 +322,9 @@ const removeEvent = (type, id) => {
                         </button>
                       ))}
                     </div>
+                    <button onClick={() => removeEvent('student', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors">
+                      <i className="ph-bold ph-trash"></i>
+                    </button>
                   </div>
                 ))}
                 <button onClick={() => addEvent('student')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
@@ -337,7 +342,7 @@ const removeEvent = (type, id) => {
                 {parentContacts.map((evt) => (
                   <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2 items-center focus-within:border-accent/50 transition-colors">
                     <input type="text" placeholder="聯繫內容..." value={evt.text} onChange={(e) => updateEvent('parent', evt.id, 'text', e.target.value)}
-                           className="flex-1 bg-transparent py-1 text-sm outline-none text-darkText" />
+                           className="flex-1 w-24 bg-transparent py-1 text-sm outline-none text-darkText" />
                     <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0">
                       {['已處理', '需轉達'].map(status => (
                         <button key={status}
@@ -347,6 +352,9 @@ const removeEvent = (type, id) => {
                         </button>
                       ))}
                     </div>
+                    <button onClick={() => removeEvent('parent', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors">
+                      <i className="ph-bold ph-trash"></i>
+                    </button>
                   </div>
                 ))}
                 <button onClick={() => addEvent('parent')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
@@ -355,6 +363,7 @@ const removeEvent = (type, id) => {
               </div>
             </section>
 
+            {}
             {/* 其他記事 */}
             <section>
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
@@ -368,13 +377,14 @@ const removeEvent = (type, id) => {
 
           {/* 底部懸浮儲存按鈕 */}
           <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-gray-200 via-gray-100/90 to-transparent flex justify-center z-20 pointer-events-none">
-            <button onClick={handleSave} 
-                    className="pointer-events-auto bg-darkText text-white w-full max-w-sm py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-gray-900 active:scale-95 transition-transform duration-200">
-              <i className="ph-bold ph-paper-plane-tilt text-xl"></i>
-              儲存今日日誌
+            <button onClick={handleSave} disabled={isSaving}
+                    className={`pointer-events-auto w-full max-w-sm py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 transition-transform duration-200 ${isSaving ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-darkText text-white hover:bg-gray-900 active:scale-95'}`}>
+              {isSaving ? <i className="ph-bold ph-spinner animate-spin text-xl"></i> : <i className="ph-bold ph-paper-plane-tilt text-xl"></i>}
+              {isSaving ? '儲存中...' : '儲存今日日誌'}
             </button>
           </div>
 
+          {}
           {/* 客製化「更改科目」對話框 (Modal) 取代原生 prompt */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
@@ -384,15 +394,14 @@ const removeEvent = (type, id) => {
                 </h3>
                 <p className="text-xs text-gray-500 mb-4">如遇調課或代課，請直接修改科目名稱，或在後方加上 (代)。</p>
                 
-                <comment-tag id="5"><input 
+                <input 
                   type="text" 
                   value={tempSubjectName} 
                   onChange={(e) => setTempSubjectName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && saveSubjectChange()}
                   autoFocus
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 mb-5 text-darkText font-bold focus:ring-2 focus:ring-accent/50 outline-none"
-                /></comment-tag id="5" text="在手機上打字時，許多人習慣按鍵盤上的「完成」或「Enter」鍵。建議在這邊多綁定一個 `onKeyDown` 事件：
-`onKeyDown={(e) => e.key === 'Enter' && saveSubjectChange()}`
-這樣可以省去還要用手指去點擊下方「確定」按鈕的步驟，填寫起來更加行雲流水。" type="suggestion">
+                />
                 
                 <div className="flex gap-3">
                   <button onClick={() => setIsModalOpen(false)} className="flex-1 py-3 bg-gray-100 text-gray-600 font-bold rounded-xl active:bg-gray-200 transition-colors">
