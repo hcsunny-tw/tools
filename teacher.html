@@ -772,9 +772,9 @@
                           <div className="flex justify-between items-center px-1">
                             <label className={`text-xs font-bold ${setting.active ? 'text-accent' : 'text-gray-400'}`}>第 {periodIndex + 1} 節</label>
                             <button onClick={() => toggleSettingActive(day, periodIndex)} 
-                                    className={`text-lg transition-colors tap-highlight-transparent ${setting.active ? 'text-accent hover:text-accent/80' : 'text-gray-300 hover:text-gray-500'}`}
-                                    title={setting.active ? '隱藏此節次' : '顯示此節次'}>
-                              {setting.active ? <i className="ph-fill ph-eye"></i> : <i className="ph-bold ph-eye-slash"></i>}
+                                    className={`text-[10px] px-2 py-0.5 rounded flex items-center gap-1 font-bold transition-colors ${setting.active ? 'bg-accent/10 text-accent hover:bg-accent/20' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                    title={setting.active ? '點擊設為科任課(日誌預設隱藏)' : '點擊設為導師課(日誌預設顯示)'}>
+                              {setting.active ? <><i className="ph-bold ph-check"></i>導師</> : <><i className="ph-bold ph-minus"></i>科任</>}
                             </button>
                           </div>
                           <input type="text" 
