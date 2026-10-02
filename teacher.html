@@ -97,17 +97,20 @@
     const firebaseConfig = typeof __firebase_config !== 'undefined' 
       ? JSON.parse(__firebase_config) 
       : {
-          apiKey: "AIzaSyYOUR_ACTUAL_API_KEY_HERE",
-          authDomain: "your-app-id.firebaseapp.com",
-          projectId: "your-app-id",
-          storageBucket: "your-app-id.appspot.com",
-          messagingSenderId: "123456789012",
-          appId: "1:123456789012:web:abcdef123456"
+  apiKey: "AIzaSyD-RVYlQrgRFgZ-Et1Hdm8bhF-J5wAaCZw",
+  authDomain: "teacher-fa5e4.firebaseapp.com",
+  projectId: "teacher-fa5e4",
+  storageBucket: "teacher-fa5e4.firebasestorage.app",
+  messagingSenderId: "248651659825",
+  appId: "1:248651659825:web:ed9ae5af6af6eeb2247310",
+  measurementId: "G-C9TNW80MF7"
         };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+    
 
     // 暴露 Firebase 服務至 window 全局物件供 React 調用
     window.firebaseService = {
