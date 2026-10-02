@@ -65,22 +65,22 @@
 
     // --- 預設空課表與設定 ---
     const emptySchedule = [
-      { id: 1, period: 1, subject: '', content: '', status: '完成' },
-      { id: 2, period: 2, subject: '', content: '', status: '完成' },
-      { id: 3, period: 3, subject: '', content: '', status: '完成' },
-      { id: 4, period: 4, subject: '', content: '', status: '完成' },
-      { id: 5, period: 5, subject: '', content: '', status: '完成' },
-      { id: 6, period: 6, subject: '', content: '', status: '完成' },
-      { id: 7, period: 7, subject: '', content: '', status: '完成' },
+      { id: 1, period: 1, subject: '', content: '', status: '完成', isActive: true },
+      { id: 2, period: 2, subject: '', content: '', status: '完成', isActive: true },
+      { id: 3, period: 3, subject: '', content: '', status: '完成', isActive: true },
+      { id: 4, period: 4, subject: '', content: '', status: '完成', isActive: true },
+      { id: 5, period: 5, subject: '', content: '', status: '完成', isActive: true },
+      { id: 6, period: 6, subject: '', content: '', status: '完成', isActive: true },
+      { id: 7, period: 7, subject: '', content: '', status: '完成', isActive: true },
     ];
 
-    // 預設的期初課表格式
+    // 預設的期初課表格式 (進階版：支援設定是否為本人任教 active)
     const defaultWeekSchedule = {
-      1: ['國語', '數學', '英文', '自然', '社會', '綜合', '健體'], // 星期一
-      2: ['數學', '國語', '健體', '綜合', '社會', '自然', '英文'], // 星期二
-      3: ['國語', '數學', '美勞', '美勞', '綜合', '空白', '空白'], // 星期三 (通常半天)
-      4: ['自然', '社會', '數學', '國語', '英文', '電腦', '音樂'], // 星期四
-      5: ['國語', '數學', '英文', '綜合', '健體', '班會', '社團'], // 星期五
+      1: [{subject: '國語', active: true}, {subject: '數學', active: true}, {subject: '英文', active: false}, {subject: '自然', active: false}, {subject: '社會', active: false}, {subject: '綜合', active: true}, {subject: '健體', active: false}],
+      2: [{subject: '數學', active: true}, {subject: '國語', active: true}, {subject: '健體', active: false}, {subject: '綜合', active: true}, {subject: '社會', active: false}, {subject: '自然', active: false}, {subject: '英文', active: false}],
+      3: [{subject: '國語', active: true}, {subject: '數學', active: true}, {subject: '美勞', active: false}, {subject: '美勞', active: false}, {subject: '綜合', active: true}, {subject: '空白', active: false}, {subject: '空白', active: false}],
+      4: [{subject: '自然', active: false}, {subject: '社會', active: false}, {subject: '數學', active: true}, {subject: '國語', active: true}, {subject: '英文', active: false}, {subject: '電腦', active: false}, {subject: '音樂', active: false}],
+      5: [{subject: '國語', active: true}, {subject: '數學', active: true}, {subject: '英文', active: false}, {subject: '綜合', active: true}, {subject: '健體', active: false}, {subject: '班會', active: true}, {subject: '社團', active: false}],
     };
 
     const initialHomework = [
@@ -125,7 +125,21 @@
         // 從 LocalStorage 讀取期初課表設定
         const savedSettings = localStorage.getItem('homeroom_schedule_settings');
         if (savedSettings) {
-          setWeekSettings(JSON.parse(savedSettings));
+          try {
+            const parsed = JSON.parse(savedSettings);
+            // 自動升級舊版設定資料：如果第一天第一節是字串，代表是舊版，幫他升級成新物件格式
+            if (typeof parsed[1][0] === 'string') {
+              const migrated = {};
+              [1, 2, 3, 4, 5].forEach(d => {
+                migrated[d] = parsed[d].map(subj => ({ subject: subj, active: true }));
+              });
+              setWeekSettings(migrated);
+            } else {
+              setWeekSettings(parsed);
+            }
+          } catch (e) {
+            console.error("設定檔讀取失敗:", e);
+          }
         }
 
         // 設定初始日期為今天
@@ -163,30 +177,59 @@
         
         if (dayOfWeek >= 1 && dayOfWeek <= 5) {
           const todaysSubjects = weekSettings[dayOfWeek];
-          setSchedule(prevSchedule => 
-            prevSchedule.map((item, index) => ({
-              ...item,
-              subject: todaysSubjects[index] || ''
-            }))
-          );
+          setSchedule(emptySchedule.map((item, index) => ({
+            ...item,
+            subject: todaysSubjects[index]?.subject || '',
+            isActive: todaysSubjects[index]?.active ?? true
+          })));
         } else {
-          setSchedule(prevSchedule => prevSchedule.map(item => ({ ...item, subject: '' })));
+          setSchedule(emptySchedule.map(item => ({ ...item, subject: '', isActive: false })));
         }
 
         // 神奇功能：尋找最近一天的歷史紀錄，將其「聯絡簿」自動轉為今天的「作業批閱」
-        const prevDates = Object.keys(savedLogs).sort().filter(d => d < date);
-        if (prevDates.length > 0) {
-           const lastLog = savedLogs[prevDates[prevDates.length - 1]];
-           if (lastLog.contactBook && lastLog.contactBook.some(cb => cb.text.trim() !== '')) {
-               const newHomework = lastLog.contactBook
-                   .filter(cb => cb.text.trim() !== '')
-                   .map((cb, idx) => ({ id: idx + 1, name: cb.text, checked: false, amount: '' }));
-               setHomework(newHomework);
-           } else {
-               setHomework(initialHomework);
-           }
+        // 為了讓「週一」優先抓「上週五」的作業，我們先計算前一個工作日
+        let targetPrevDate = new Date(d);
+        if (dayOfWeek === 1) { // 星期一
+          targetPrevDate.setDate(targetPrevDate.getDate() - 3); 
+        } else if (dayOfWeek === 0) { // 星期日
+          targetPrevDate.setDate(targetPrevDate.getDate() - 2);
         } else {
-           setHomework(initialHomework);
+          targetPrevDate.setDate(targetPrevDate.getDate() - 1);
+        }
+        
+        const yyyyPrev = targetPrevDate.getFullYear();
+        const mmPrev = String(targetPrevDate.getMonth() + 1).padStart(2, '0');
+        const ddPrev = String(targetPrevDate.getDate()).padStart(2, '0');
+        const prevWorkingDateStr = `${yyyyPrev}-${mmPrev}-${ddPrev}`;
+        
+        // 1. 優先找前一個工作日
+        let foundHomework = false;
+        if (savedLogs[prevWorkingDateStr] && savedLogs[prevWorkingDateStr].contactBook) {
+            const cbData = savedLogs[prevWorkingDateStr].contactBook.filter(cb => cb.text.trim() !== '');
+            if (cbData.length > 0) {
+               setHomework(cbData.map((cb, idx) => ({ id: idx + 1, name: cb.text, checked: false, amount: '' })));
+               foundHomework = true;
+            }
+        }
+        
+        // 2. 如果前一個工作日沒紀錄（可能放假），則往前回溯找最近有寫聯絡簿的一天
+        if (!foundHomework) {
+            const prevDates = Object.keys(savedLogs).sort().filter(dateKey => dateKey < date);
+            let fallbackFound = false;
+            for (let i = prevDates.length - 1; i >= 0; i--) {
+                const lastLog = savedLogs[prevDates[i]];
+                if (lastLog.contactBook) {
+                    const cbData = lastLog.contactBook.filter(cb => cb.text.trim() !== '');
+                    if (cbData.length > 0) {
+                        setHomework(cbData.map((cb, idx) => ({ id: idx + 1, name: cb.text, checked: false, amount: '' })));
+                        fallbackFound = true;
+                        break;
+                    }
+                }
+            }
+            if (!fallbackFound) {
+                setHomework(initialHomework);
+            }
         }
         
         // 清空其他今日新填項
@@ -301,6 +344,11 @@
         return days[new Date(dateStr).getDay()];
       };
 
+      // 判斷當前日期的屬性，用於顯示提示文字
+      const currentDayOfWeek = date ? new Date(date).getDay() : new Date().getDay();
+      const homeworkSubTitle = currentDayOfWeek === 1 ? '上週五指派' : '昨日指派';
+      const contactBookPlaceholder = currentDayOfWeek === 5 ? '輸入作業內容 (自動帶入下週一批閱)...' : '輸入作業內容 (自動帶入明天批閱)...';
+
       // --- 新增：常用片語清單 (Quick Phrases) ---
       const quickPhrases = {
         student: ['作業缺交', '上課分心', '常規不佳', '遲到', '身體不適', '與同學衝突'],
@@ -321,8 +369,19 @@
         setExpandedSections(newState);
       };
 
-      // ==========================================
-      // RENDER: 日誌填寫畫面 (支援 RWD 雙欄)
+      // --- 新增：設定頁面專用控制函數 ---
+      const updateSettingSubject = (day, periodIdx, value) => {
+        const newSettings = { ...weekSettings };
+        newSettings[day][periodIdx].subject = value;
+        setWeekSettings(newSettings);
+      };
+
+      const toggleSettingActive = (day, periodIdx) => {
+        const newSettings = { ...weekSettings };
+        newSettings[day][periodIdx].active = !newSettings[day][periodIdx].active;
+        setWeekSettings(newSettings);
+      };
+
       // ==========================================
       const renderLogView = () => (
         <div className="pb-28">
@@ -395,8 +454,29 @@
                 
                 {expandedSections.schedule && (
                   <div className="space-y-3 p-4 pt-1">
-                    {schedule.map((item) => (
-                      <div key={item.id} className="bg-paper p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                    
+                    {/* 今日任教節次快速切換列 (調代課神兵) */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3 bg-gray-50/80 p-2.5 rounded-2xl border border-gray-100">
+                      <span className="text-xs font-bold text-gray-500 mr-1 flex items-center gap-1">
+                        <i className="ph-fill ph-check-circle text-accent"></i> 今日有課：
+                      </span>
+                      {[1, 2, 3, 4, 5, 6, 7].map(p => {
+                        const item = schedule.find(s => s.period === p);
+                        const isActive = item?.isActive !== false; // 預設為 true 以兼容舊紀錄
+                        return (
+                          <button key={p} 
+                                  onClick={() => updateSchedule(item.id, 'isActive', !isActive)}
+                                  className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-all transform active:scale-90 ${isActive ? 'bg-accent text-white shadow-md' : 'bg-white border-2 border-gray-200 text-gray-300'}`}>
+                            {p}
+                          </button>
+                        )
+                      })}
+                      <span className="text-[10px] text-gray-400 ml-auto hidden sm:block">點擊數字切換顯示</span>
+                    </div>
+
+                    {/* 動態渲染有啟用的節次 */}
+                    {schedule.filter(item => item.isActive !== false).map((item) => (
+                      <div key={item.id} className="bg-paper p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3 animate-[fadeIn_0.3s_ease-out]">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-3">
                             <span className="bg-highlight text-primary w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold">{item.period}</span>
@@ -443,7 +523,7 @@
                       {contactBook.map((item, idx) => (
                         <div key={item.id} className="flex gap-2 items-center">
                           <span className="text-accent font-bold text-sm w-5">{idx + 1}.</span>
-                          <input type="text" placeholder="輸入作業內容 (自動帶入明天批閱)..." value={item.text} onChange={(e) => updateEvent('contact', item.id, 'text', e.target.value)}
+                          <input type="text" placeholder={contactBookPlaceholder} value={item.text} onChange={(e) => updateEvent('contact', item.id, 'text', e.target.value)}
                                  onKeyDown={(e) => e.key === 'Enter' && addEvent('contact')}
                                  className="flex-1 bg-gray-50 border border-transparent rounded-xl p-2 text-sm focus:bg-white focus:ring-2 focus:ring-accent/50 outline-none" />
                           <button onClick={() => removeEvent('contact', item.id)} className="p-2 text-gray-300 hover:text-danger rounded-xl transition-colors">
@@ -463,7 +543,7 @@
               <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
                 <button onClick={() => toggleSection('homework')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
                   <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
-                    <i className="ph-fill ph-books text-accent text-2xl"></i> 作業批閱 (昨日指派)
+                    <i className="ph-fill ph-books text-accent text-2xl"></i> 作業批閱 ({homeworkSubTitle})
                   </h2>
                   <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.homework ? 'rotate-180' : ''}`}>
                     <i className="ph-bold ph-caret-down text-xl"></i>
@@ -685,20 +765,27 @@
                 <div key={day} className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <h3 className="font-bold text-lg mb-3 text-darkText">星期 {['一', '二', '三', '四', '五'][day-1]}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[0, 1, 2, 3, 4, 5, 6].map(periodIndex => (
-                      <div key={periodIndex} className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-gray-500">第 {periodIndex + 1} 節</label>
-                        <input type="text" 
-                               value={weekSettings[day][periodIndex]} 
-                               onChange={(e) => {
-                                 const newSettings = {...weekSettings};
-                                 newSettings[day][periodIndex] = e.target.value;
-                                 setWeekSettings(newSettings);
-                               }}
-                               className="bg-white border border-gray-200 rounded-xl p-2 text-sm focus:ring-2 focus:ring-accent outline-none"
-                               placeholder="科目" />
-                      </div>
-                    ))}
+                    {[0, 1, 2, 3, 4, 5, 6].map(periodIndex => {
+                      const setting = weekSettings[day][periodIndex] || { subject: '', active: true };
+                      return (
+                        <div key={periodIndex} className="flex flex-col gap-1.5 p-2 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors focus-within:border-accent">
+                          <div className="flex justify-between items-center px-1">
+                            <label className={`text-xs font-bold ${setting.active ? 'text-accent' : 'text-gray-400'}`}>第 {periodIndex + 1} 節</label>
+                            <button onClick={() => toggleSettingActive(day, periodIndex)} 
+                                    className={`text-lg transition-colors tap-highlight-transparent ${setting.active ? 'text-accent hover:text-accent/80' : 'text-gray-300 hover:text-gray-500'}`}
+                                    title={setting.active ? '隱藏此節次' : '顯示此節次'}>
+                              {setting.active ? <i className="ph-fill ph-eye"></i> : <i className="ph-bold ph-eye-slash"></i>}
+                            </button>
+                          </div>
+                          <input type="text" 
+                                 value={setting.subject} 
+                                 disabled={!setting.active}
+                                 onChange={(e) => updateSettingSubject(day, periodIndex, e.target.value)}
+                                 className={`w-full border-none rounded-lg p-2 text-sm focus:ring-2 focus:ring-accent outline-none transition-colors ${!setting.active ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-darkText'}`}
+                                 placeholder={setting.active ? "填寫科目..." : "非任教節次"} />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -752,15 +839,26 @@
                 {schedule.map((item, index) => (
                   <tr key={item.id} className={index === 4 ? "border-t-[3px] border-black" : ""}>
                     <td className="border border-black p-2 text-center font-bold text-lg">{item.period}</td>
-                    <td className="border border-black p-2">{item.subject}</td>
-                    <td className="border border-black p-2 relative">
-                      <div className="mb-4">{item.content}</div>
-                      <div className="flex gap-3 text-xs absolute bottom-1 right-2">
-                        <span>{item.status === '完成' ? '☑' : '☐'}完成</span>
-                        <span>{item.status === '超前' ? '☑' : '☐'}超前</span>
-                        <span>{item.status === '待補課' ? '☑' : '☐'}待補課</span>
-                      </div>
-                    </td>
+                    
+                    {/* 如果有課才顯示科目與進度，否則顯示空底與提示 */}
+                    {item.isActive !== false ? (
+                      <>
+                        <td className="border border-black p-2">{item.subject}</td>
+                        <td className="border border-black p-2 relative">
+                          <div className="mb-4">{item.content}</div>
+                          <div className="flex gap-3 text-xs absolute bottom-1 right-2">
+                            <span>{item.status === '完成' ? '☑' : '☐'}完成</span>
+                            <span>{item.status === '超前' ? '☑' : '☐'}超前</span>
+                            <span>{item.status === '待補課' ? '☑' : '☐'}待補課</span>
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <td className="border border-black p-2 text-center text-gray-400 bg-gray-50" colSpan="2">
+                         <span className="opacity-50 tracking-widest text-xs">（ 非 任 教 節 次 ）</span>
+                      </td>
+                    )}
+
                     {/* 作業欄位合併處理 (前5節對應5項作業) */}
                     {index < 5 ? (
                       <>
