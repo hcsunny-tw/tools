@@ -791,6 +791,33 @@
               ))}
             </div>
 
+            {/* === 休假日設定 === */}
+            <div className="mt-8 bg-gray-50 p-5 rounded-2xl border border-gray-100">
+              <h3 className="font-bold text-lg mb-2 text-darkText flex items-center gap-2">
+                 <i className="ph-fill ph-calendar-x text-accent"></i> 國定假日與停課日設定
+              </h3>
+              <p className="text-xs text-gray-500 mb-4">設定後，日誌切換到該日期會自動進入「放假模式」，且未來產出 Excel 模板時將自動跳過這些日子。</p>
+              <div className="flex gap-2 mb-4">
+                <input type="date" value={newHolidayDate} onChange={e => setNewHolidayDate(e.target.value)} 
+                       className="flex-1 max-w-xs bg-white border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-accent outline-none" />
+                <button onClick={() => {
+                    if(newHolidayDate && !holidaySettings.includes(newHolidayDate)) {
+                        setHolidaySettings([...holidaySettings, newHolidayDate].sort());
+                        setNewHolidayDate('');
+                    }
+                }} className="px-5 py-2.5 bg-darkText text-white font-bold rounded-xl active:scale-95 transition-all">新增休假</button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                 {holidaySettings.map(hd => (
+                     <span key={hd} className="bg-white border border-gray-200 text-darkText text-sm px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+                         {hd}
+                         <button onClick={() => setHolidaySettings(holidaySettings.filter(d => d !== hd))} className="text-gray-400 hover:text-danger flex items-center ml-1"><i className="ph-bold ph-x"></i></button>
+                     </span>
+                 ))}
+                 {holidaySettings.length === 0 && <span className="text-sm text-gray-400 py-2">尚未設定任何休假日</span>}
+              </div>
+            </div>
+
             <button onClick={saveSettingsToLocal}
                     className="mt-8 w-full py-4 bg-accent text-white rounded-2xl font-bold text-lg shadow-md hover:bg-accent/90 active:scale-95 transition-all flex items-center justify-center gap-2">
               <i className="ph-bold ph-floppy-disk"></i> 儲存設定至瀏覽器
