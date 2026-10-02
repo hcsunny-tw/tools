@@ -937,21 +937,40 @@
       return (
         <div className="w-full relative min-h-screen">
           
-          {/* 頂部導覽列 Navigation - 列印時隱藏 */}
+          {/* 頂部導覽列 Navigation - 漢堡選單版 (列印時隱藏) */}
           <nav className="bg-white shadow-sm sticky top-0 z-50 print:hidden">
-            <div className="max-w-5xl mx-auto px-4 flex justify-around sm:justify-start sm:gap-8 overflow-x-auto">
-              <button onClick={() => setActiveTab('log')} 
-                      className={`whitespace-nowrap py-4 px-2 font-bold border-b-[3px] transition-colors flex items-center gap-2 ${activeTab === 'log' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
-                <i className="ph-fill ph-pencil-line text-xl"></i> 填寫日誌
+            <div className="max-w-5xl mx-auto px-4 flex justify-between items-center h-14">
+              {/* 動態顯示當前頁面標題 */}
+              <div className="font-bold text-lg flex items-center gap-2 text-darkText">
+                 {activeTab === 'log' && <><i className="ph-fill ph-pencil-line text-accent"></i> 填寫日誌</>}
+                 {activeTab === 'settings' && <><i className="ph-fill ph-gear text-accent"></i> 期初設定</>}
+                 {activeTab === 'export' && <><i className="ph-fill ph-printer text-accent"></i> 匯出與預覽</>}
+              </div>
+              
+              {/* 三條線 (Hamburger) 選單按鈕 */}
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                className="p-2 text-gray-500 hover:text-accent transition-colors focus:outline-none tap-highlight-transparent flex items-center justify-center rounded-xl active:bg-gray-100">
+                <i className={`ph-bold ${isMenuOpen ? 'ph-x' : 'ph-list'} text-2xl`}></i>
               </button>
-              <button onClick={() => setActiveTab('settings')} 
-                      className={`whitespace-nowrap py-4 px-2 font-bold border-b-[3px] transition-colors flex items-center gap-2 ${activeTab === 'settings' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
-                <i className="ph-fill ph-gear text-xl"></i> 期初設定
-              </button>
-              <button onClick={() => setActiveTab('export')} 
-                      className={`whitespace-nowrap py-4 px-2 font-bold border-b-[3px] transition-colors flex items-center gap-2 ${activeTab === 'export' ? 'border-accent text-accent' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
-                <i className="ph-fill ph-printer text-xl"></i> 匯出與預覽
-              </button>
+            </div>
+
+            {/* 展開的下拉選單區塊 */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-60 border-t border-gray-100 shadow-inner' : 'max-h-0'}`}>
+              <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col gap-2.5 bg-gray-50">
+                <button onClick={() => { setActiveTab('log'); setIsMenuOpen(false); }} 
+                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-[0.98] ${activeTab === 'log' ? 'bg-accent text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
+                  <i className="ph-fill ph-pencil-line text-xl w-6 text-center"></i> 填寫日誌
+                </button>
+                <button onClick={() => { setActiveTab('settings'); setIsMenuOpen(false); }} 
+                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-[0.98] ${activeTab === 'settings' ? 'bg-accent text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
+                  <i className="ph-fill ph-gear text-xl w-6 text-center"></i> 期初設定 (含 Excel)
+                </button>
+                <button onClick={() => { setActiveTab('export'); setIsMenuOpen(false); }} 
+                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-[0.98] ${activeTab === 'export' ? 'bg-accent text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
+                  <i className="ph-fill ph-printer text-xl w-6 text-center"></i> 匯出與列印預覽
+                </button>
+              </div>
             </div>
           </nav>
 
