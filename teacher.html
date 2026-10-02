@@ -55,6 +55,14 @@
     .text-theme { color: var(--color-primary) !important; }
     .border-theme { border-color: var(--color-primary) !important; }
     .ring-theme:focus { --tw-ring-color: var(--color-primary) !important; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 
   <script>
@@ -88,8 +96,7 @@
       doc, 
       getDoc, 
       setDoc, 
-      onSnapshot, 
-      collection 
+      onSnapshot 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // Firebase 配置與初始化
@@ -97,20 +104,18 @@
     const firebaseConfig = typeof __firebase_config !== 'undefined' 
       ? JSON.parse(__firebase_config) 
       : {
-  apiKey: "AIzaSyD-RVYlQrgRFgZ-Et1Hdm8bhF-J5wAaCZw",
-  authDomain: "teacher-fa5e4.firebaseapp.com",
-  projectId: "teacher-fa5e4",
-  storageBucket: "teacher-fa5e4.firebasestorage.app",
-  messagingSenderId: "248651659825",
-  appId: "1:248651659825:web:ed9ae5af6af6eeb2247310",
-  measurementId: "G-C9TNW80MF7"
+          apiKey: "AIzaSyD-RVYlQrgRFgZ-Et1Hdm8bhF-J5wAaCZw",
+          authDomain: "teacher-fa5e4.firebaseapp.com",
+          projectId: "teacher-fa5e4",
+          storageBucket: "teacher-fa5e4.firebasestorage.app",
+          messagingSenderId: "248651659825",
+          appId: "1:248651659825:web:ed9ae5af6af6eeb2247310",
+          measurementId: "G-C9TNW80MF7"
         };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
-    
 
     // 暴露 Firebase 服務至 window 全局物件供 React 調用
     window.firebaseService = {
@@ -126,7 +131,6 @@
       getUser: () => auth.currentUser,
       onAuth: (callback) => onAuthStateChanged(auth, callback),
       
-      // 雲端儲存與同步日誌
       saveLogCloud: async (userId, logData) => {
         if (!userId || !logData || !logData.date) return;
         try {
@@ -137,7 +141,6 @@
         }
       },
 
-      // 雲端儲存與同步設定
       saveSettingsCloud: async (userId, settingsData) => {
         if (!userId || !settingsData) return;
         try {
@@ -148,7 +151,6 @@
         }
       },
 
-      // 監聽雲端日誌實時變更 (跨載具連線)
       subscribeLogCloud: (userId, dateStr, callback, errorCb) => {
         if (!userId || !dateStr) return () => {};
         const logRef = doc(db, 'artifacts', appId, 'users', userId, 'logs', dateStr);
@@ -161,7 +163,6 @@
         }, errorCb || ((err) => console.error("Firestore sync error:", err)));
       },
 
-      // 讀取雲端設定
       getSettingsCloud: async (userId) => {
         if (!userId) return null;
         try {
@@ -175,7 +176,6 @@
       }
     };
 
-    // 初始登入狀態檢查
     (async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -203,6 +203,17 @@
       { id: 'forest-green', name: '森林竹綠', color: '#5A7D7C', hover: '#486665' },
       { id: 'lavender-purple', name: '優雅薰紫', color: '#7B68EE', hover: '#6753D6' },
       { id: 'warm-terracotta', name: '暖陽橙褐', color: '#C86D51', hover: '#B35B40' }
+    ];
+
+    // --- 導師七彩正向鼓勵希望卡庫 ---
+    const hopeCards = [
+      { color: 'from-rose-500 to-pink-500', bgLight: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', title: '暖陽紅', quote: '「每一個微小的進步，都值得為自己與孩子喝采！」' },
+      { color: 'from-orange-400 to-amber-500', bgLight: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', title: '活力橘', quote: '「溫柔地對待學生的同時，別忘了也溫柔地對待努力的自己。」' },
+      { color: 'from-amber-400 to-yellow-500', bgLight: 'bg-yellow-50', text: 'text-amber-800', border: 'border-yellow-200', title: '希望黃', quote: '「您今天的一句話、一個微笑，可能已經點亮了某個孩子的一生。」' },
+      { color: 'from-emerald-400 to-teal-500', bgLight: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', title: '森林綠', quote: '「教育是一場溫柔的馬拉松，保持自己的節奏，靜待花開。」' },
+      { color: 'from-sky-400 to-blue-500', bgLight: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', title: '寧靜藍', quote: '「深呼吸，喝口水。今天的您已經做得很棒了，辛苦了！」' },
+      { color: 'from-indigo-500 to-purple-500', bgLight: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', title: '智慧靛', quote: '「接納班級的不完美，也是教育中最有力量的學習與成長。」' },
+      { color: 'from-purple-500 to-fuchsia-500', bgLight: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', title: '優雅紫', quote: '「用愛帶班，用心生活。記得給辛苦的自己一個大大的讚！」' }
     ];
 
     // --- 預設空課表與設定 ---
@@ -233,23 +244,19 @@
     ];
 
     function App() {
-      // --- 視圖狀態 ---
-      const [activeTab, setActiveTab] = useState('log'); // 'log' | 'settings' | 'export'
+      const [activeTab, setActiveTab] = useState('log'); 
       const [isMenuOpen, setIsMenuOpen] = useState(false);
-      const [exportMode, setExportMode] = useState('daily'); // 'daily' | 'weekly'
+      const [exportMode, setExportMode] = useState('daily'); 
 
-      // --- 跨載具與 Google 登入狀態 ---
       const [currentUser, setCurrentUser] = useState(null);
       const [isLoggingIn, setIsLoggingIn] = useState(false);
-      const [isSyncing, setIsSyncing] = useState(false);
 
-      // --- 主題色彩狀態 ---
       const [currentTheme, setCurrentTheme] = useState('morandi-gray');
 
-      // --- 表單狀態 ---
       const [date, setDate] = useState('');
       const [week, setWeek] = useState(1);
       const [absentees, setAbsentees] = useState('');
+      const [quickAbsenceText, setQuickAbsenceText] = useState('');
       const [isHoliday, setIsHoliday] = useState(false);
       const [schedule, setSchedule] = useState(emptySchedule);
       const [homework, setHomework] = useState(initialHomework);
@@ -259,7 +266,6 @@
       const [parentContacts, setParentContacts] = useState([{ id: Date.now()+2, text: '', status: '已處理' }]);
       const [notes, setNotes] = useState('');
       
-      // --- UI 與設定狀態 ---
       const [showToast, setShowToast] = useState(false);
       const [toastMessage, setToastMessage] = useState('操作成功！');
       const [isSaving, setIsSaving] = useState(false);
@@ -267,19 +273,21 @@
       const [editingPeriodId, setEditingPeriodId] = useState(null);
       const [tempSubjectName, setTempSubjectName] = useState('');
       const [autoSaveTime, setAutoSaveTime] = useState('');
+
+      // 正向鼓勵希望卡 Modal 狀態
+      const [showHopeModal, setShowHopeModal] = useState(false);
+      const [currentHopeCard, setCurrentHopeCard] = useState(null);
+      const [dontShowHopeToday, setDontShowHopeToday] = useState(false);
       
-      // 儲存期初課表與休假日設定
       const [weekSettings, setWeekSettings] = useState(defaultWeekSchedule);
       const [holidaySettings, setHolidaySettings] = useState([]); 
       const [tempHolidays, setTempHolidays] = useState('');
       const [excelSyllabus, setExcelSyllabus] = useState([]);
 
-      // 區塊收合狀態管理 (Accordion)
       const [expandedSections, setExpandedSections] = useState({
         schedule: true, contact: true, homework: true, school: true, student: true, parent: true, notes: true
       });
 
-      // --- 更改 CSS 變數套用主題色彩 ---
       const applyTheme = (themeId) => {
         const theme = themePalettes.find(t => t.id === themeId) || themePalettes[0];
         document.documentElement.style.setProperty('--color-primary', theme.color);
@@ -289,9 +297,7 @@
         localStorage.setItem('homeroom_theme', theme.id);
       };
 
-      // --- 初始化登入監聽與本機設定讀取 ---
       useEffect(() => {
-        // 載入主題
         const savedTheme = localStorage.getItem('homeroom_theme');
         if (savedTheme) applyTheme(savedTheme);
 
@@ -318,15 +324,22 @@
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
-        setDate(`${yyyy}-${mm}-${dd}`);
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        setDate(todayStr);
         setWeek(5);
 
-        // 訂閱 Firebase 驗證狀態
+        // 檢查希望卡今天是否不再顯示
+        const hideHopeDate = localStorage.getItem('homeroom_hide_hope_date');
+        if (hideHopeDate !== todayStr) {
+          const randomCard = hopeCards[Math.floor(Math.random() * hopeCards.length)];
+          setCurrentHopeCard(randomCard);
+          setShowHopeModal(true);
+        }
+
         if (window.firebaseService) {
           const unsubscribe = window.firebaseService.onAuth(async (user) => {
             setCurrentUser(user);
             if (user && !user.isAnonymous) {
-              // 若為 Google 登入使用者，從雲端載入設定
               const cloudSettings = await window.firebaseService.getSettingsCloud(user.uid);
               if (cloudSettings) {
                 if (cloudSettings.weekSettings) setWeekSettings(cloudSettings.weekSettings);
@@ -343,13 +356,19 @@
         }
       }, []);
 
-      // --- Google 登入與登出處理 ---
+      const handleCloseHopeModal = () => {
+        if (dontShowHopeToday && date) {
+          localStorage.setItem('homeroom_hide_hope_date', date);
+        }
+        setShowHopeModal(false);
+      };
+
       const handleGoogleLogin = async () => {
         if (!window.firebaseService) return;
         setIsLoggingIn(true);
         try {
           const result = await window.firebaseService.signInWithGoogle();
-          setToastMessage(`歡迎，${result.user.displayName || '老師'}！已連結跨載具雲端同步。`);
+          setToastMessage(`歡迎，${result.user.displayName || '老師'}！已連結雲端同步。`);
           setShowToast(true);
           setTimeout(() => setShowToast(false), 3000);
         } catch (error) {
@@ -370,7 +389,6 @@
         setTimeout(() => setShowToast(false), 2500);
       };
 
-      // --- 當日期改變時，自動套用該星期的課表與進度，或從雲端/本機載入日誌 ---
       useEffect(() => {
         if (!date) return;
         
@@ -390,12 +408,10 @@
           setNotes(log.notes || '');
         };
 
-        // 優先從 LocalStorage 讀取
         const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
         if (savedLogs[date]) {
           loadLogData(savedLogs[date]);
         } else {
-          // 若無本機紀錄，初始化預設課表
           const d = new Date(date);
           const dayOfWeek = d.getDay(); 
           let newSchedule = emptySchedule.map(item => ({ ...item, subject: '', isActive: false }));
@@ -420,7 +436,6 @@
           }
           setSchedule(newSchedule);
 
-          // 自動帶入昨日聯絡簿
           let targetPrevDate = new Date(d);
           if (dayOfWeek === 1) targetPrevDate.setDate(targetPrevDate.getDate() - 3); 
           else if (dayOfWeek === 0) targetPrevDate.setDate(targetPrevDate.getDate() - 2);
@@ -447,13 +462,11 @@
           setNotes('');
         }
 
-        // 若已登入使用者，監聽雲端日誌實時變更 (跨載具連線同步)
         let unsubCloud = null;
         if (currentUser && window.firebaseService) {
           unsubCloud = window.firebaseService.subscribeLogCloud(currentUser.uid, date, (cloudLog) => {
             if (cloudLog) {
               loadLogData(cloudLog);
-              // 同步至本機快取
               savedLogs[date] = cloudLog;
               localStorage.setItem('homeroom_logs', JSON.stringify(savedLogs));
             }
@@ -464,18 +477,16 @@
 
       }, [date, weekSettings, holidaySettings, excelSyllabus, currentUser]);
 
-      // --- 自動存檔 (Auto-Save 至 LocalStorage & Firestore) ---
+      // 自動存檔
       useEffect(() => {
         if (!date) return;
         const timer = setTimeout(() => {
           const logData = { date, week, absentees, isHoliday, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes };
           
-          // 本機儲存
           const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
           savedLogs[date] = logData;
           localStorage.setItem('homeroom_logs', JSON.stringify(savedLogs));
           
-          // 雲端備份與跨載具同步
           if (currentUser && window.firebaseService) {
             window.firebaseService.saveLogCloud(currentUser.uid, logData);
           }
@@ -486,9 +497,47 @@
         return () => clearTimeout(timer);
       }, [date, week, absentees, isHoliday, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes, currentUser]);
 
-      // --- 資料更新處理函數 ---
+      // --- 學生出缺勤智能快捷代碼解析 ---
+      const handleApplyQuickAbsence = () => {
+        if (!quickAbsenceText.trim()) return;
+        
+        const mapping = { 's': '病假', 'p': '事假', 'e': '早退', 'l': '遲到' };
+        const cleaned = quickAbsenceText.toLowerCase().replace(/：/g, ':').replace(/，/g, ',');
+        const parts = cleaned.trim().split(/\s+/);
+        const parsedResults = [];
+
+        parts.forEach(part => {
+          if (part.includes(':')) {
+            const [code, numStr] = part.split(':');
+            if (mapping[code] && numStr) {
+              const nums = numStr.split(',').map(n => n.trim()).filter(n => n && !isNaN(n)).join(', ');
+              if (nums) {
+                parsedResults.push(`${mapping[code]}:${nums}`);
+              }
+            }
+          }
+        });
+
+        if (parsedResults.length > 0) {
+          const resultStr = parsedResults.join(' | ');
+          setAbsentees(prev => prev ? `${prev} | ${resultStr}` : resultStr);
+          setQuickAbsenceText('');
+          setToastMessage('已成功帶入出缺勤紀錄！');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2000);
+        } else {
+          setToastMessage('格式解析失敗，例：s:1,3 p:5 e:7 l:9');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2500);
+        }
+      };
+
+      // --- 作業批閱區進階操作 ---
       const updateSchedule = (id, field, value) => setSchedule(schedule.map(item => item.id === id ? { ...item, [field]: value } : item));
       const updateHomework = (id, field, value) => setHomework(homework.map(item => item.id === id ? { ...item, [field]: value } : item));
+      const addHomeworkItem = () => setHomework([...homework, { id: Date.now(), name: '新作業', checked: false, amount: '' }]);
+      const removeHomeworkItem = (id) => setHomework(homework.filter(item => item.id !== id));
+      const toggleAllHomework = (status) => setHomework(homework.map(item => ({ ...item, checked: status })));
 
       const updateEvent = (type, id, field, value) => {
         if (type === 'student') setStudentEvents(studentEvents.map(item => item.id === id ? { ...item, [field]: value } : item));
@@ -541,12 +590,10 @@
         setIsSaving(true);
         const logData = { date, week, absentees, isHoliday, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes };
         
-        // 本機儲存
         const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
         savedLogs[date] = logData;
         localStorage.setItem('homeroom_logs', JSON.stringify(savedLogs));
 
-        // 雲端同步
         if (currentUser && window.firebaseService) {
           window.firebaseService.saveLogCloud(currentUser.uid, logData);
         }
@@ -630,7 +677,6 @@
                 <span className="text-xs text-gray-500 font-bold">週</span>
               </div>
               
-              {/* 自動儲存與雲端同步提示 */}
               {autoSaveTime && (
                 <div className="text-[11px] text-gray-400 hidden sm:flex items-center gap-1">
                   <span>☁️ {currentUser && !currentUser.isAnonymous ? '已同步雲端' : '已自動儲存'}</span>
@@ -653,7 +699,6 @@
                 </span>
               </div>
 
-              {/* 今日放假開關 */}
               <button 
                 onClick={() => setIsHoliday(!isHoliday)}
                 className={`px-4 py-2.5 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all ${isHoliday ? 'bg-green-500 text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
@@ -663,7 +708,55 @@
             </div>
           </div>
 
-          {/* 放假模式提示卡 */}
+          {/* 學生出缺勤智能快捷輸入區 */}
+          {!isHoliday && (
+            <div className="bg-white p-5 rounded-3xl shadow-sm mb-6 border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <i className="ph-fill ph-user-list text-theme text-lg"></i>
+                  <h3 className="font-bold text-darkText text-sm">學生出缺勤點名 (智能快捷模式)</h3>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
+                  <span className="text-theme">指令範例：</span>
+                  <span className="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">s 病假</span>
+                  <span className="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">p 事假</span>
+                  <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">e 早退</span>
+                  <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">l 遲到</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <input 
+                    type="text"
+                    placeholder="輸入快捷代碼 (例如: s:1,3,5 p:7 e:10 l:12)..."
+                    value={quickAbsenceText}
+                    onChange={(e) => setQuickAbsenceText(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleApplyQuickAbsence()}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm font-bold text-darkText outline-none ring-theme focus:ring-2 pr-24"
+                  />
+                  <button 
+                    type="button"
+                    onClick={handleApplyQuickAbsence}
+                    className="absolute right-1.5 top-1.5 bottom-1.5 bg-theme text-white text-xs font-bold px-3 rounded-xl hover:opacity-90 transition-all">
+                    轉換帶入
+                  </button>
+                </div>
+
+                <div className="flex-1 flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl px-3 py-2">
+                  <span className="text-xs font-bold text-gray-400 shrink-0">當日前紀錄：</span>
+                  <input 
+                    type="text" 
+                    placeholder="無請假 (可直接手動輸入...)" 
+                    value={absentees} 
+                    onChange={(e) => setAbsentees(e.target.value)} 
+                    className="w-full font-bold bg-transparent text-darkText outline-none text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           {isHoliday ? (
             <div className="bg-white rounded-3xl p-12 shadow-sm border border-gray-100 text-center flex flex-col items-center justify-center my-10">
               <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-500 mb-4 text-4xl shadow-inner">
@@ -674,7 +767,6 @@
             </div>
           ) : (
             <>
-              {/* 快速收合控制列 */}
               <div className="flex justify-between items-center mb-4 px-2">
                 <span className="text-xs font-bold text-gray-400">表單快速操作</span>
                 <div className="flex gap-2 text-xs">
@@ -684,10 +776,9 @@
                 </div>
               </div>
 
-              {/* RWD 雙欄格線系統 */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 
-                {/* === 左欄：教學實際進度 & 作業批閱 === */}
+                {/* 左欄：教學實際進度 & 作業批閱 */}
                 <div className="flex flex-col gap-6">
                   
                   {/* 教學實際進度卡片 */}
@@ -751,32 +842,69 @@
                     )}
                   </div>
 
-                  {/* 作業批閱卡片 */}
+                  {/* 作業批閱卡片 (無縫編輯體驗) */}
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
                     <div onClick={() => toggleSection('homework')} className="p-5 bg-gray-50/50 flex justify-between items-center cursor-pointer select-none">
                       <h3 className="font-bold text-darkText flex items-center gap-2">
-                        <i className="ph-fill ph-check-square text-theme"></i> 作業批閱 <span className="text-xs text-gray-400 font-normal">({homeworkSubTitle})</span>
+                        <i className="ph-fill ph-check-square text-theme"></i> 作業批閱與編輯 <span className="text-xs text-gray-400 font-normal">({homeworkSubTitle})</span>
                       </h3>
                       <i className={`ph-bold ph-caret-down transition-transform duration-300 ${expandedSections.homework ? 'rotate-180' : ''}`}></i>
                     </div>
                     {expandedSections.homework && (
                       <div className="p-5 flex flex-col gap-3 border-t border-gray-100">
-                        {homework.map(item => (
-                          <div key={item.id} className="flex items-center gap-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-100">
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-100 gap-2">
+                          <div className="flex gap-2">
+                            <button 
+                              type="button"
+                              onClick={() => toggleAllHomework(true)} 
+                              className="text-xs bg-theme-light text-theme font-bold px-2.5 py-1 rounded-xl hover:opacity-80 transition-all">
+                              ☑ 全部完成
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => toggleAllHomework(false)} 
+                              className="text-xs bg-gray-100 text-gray-500 font-bold px-2.5 py-1 rounded-xl hover:bg-gray-200 transition-all">
+                              ☐ 全部未完
+                            </button>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={addHomeworkItem} 
+                            className="text-xs bg-theme text-white font-bold px-3 py-1 rounded-xl shadow-sm hover:opacity-90 transition-all">
+                            ＋ 新增作業
+                          </button>
+                        </div>
+
+                        {homework.map((item) => (
+                          <div key={item.id} className="flex items-center gap-2.5 bg-gray-50/80 p-2.5 rounded-2xl border border-gray-100">
                             <input 
                               type="checkbox" 
                               checked={item.checked}
                               onChange={(e) => updateHomework(item.id, 'checked', e.target.checked)}
-                              className="w-5 h-5 rounded-lg cursor-pointer accent-gray-600"
+                              className="w-5 h-5 rounded-lg cursor-pointer accent-theme shrink-0"
                             />
-                            <span className="font-bold text-sm flex-1 text-darkText">{item.name}</span>
+                            <input 
+                              type="text"
+                              value={item.name}
+                              onChange={(e) => updateHomework(item.id, 'name', e.target.value)}
+                              placeholder="作業名稱..."
+                              className="font-bold text-sm flex-1 text-darkText bg-transparent border-b border-transparent hover:border-gray-300 focus:border-theme focus:bg-white rounded-lg px-2 py-1 outline-none transition-all"
+                            />
                             <input 
                               type="text" 
                               placeholder="數量/本數"
                               value={item.amount}
                               onChange={(e) => updateHomework(item.id, 'amount', e.target.value)}
-                              className="w-24 bg-white border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs text-center text-darkText outline-none ring-theme focus:ring-2"
+                              className="w-20 sm:w-24 bg-white border border-gray-200 rounded-xl px-2 py-1.5 text-xs text-center text-darkText outline-none ring-theme focus:ring-2 shrink-0"
                             />
+                            {homework.length > 1 && (
+                              <button 
+                                type="button"
+                                onClick={() => removeHomeworkItem(item.id)} 
+                                className="text-gray-300 hover:text-danger p-1 shrink-0 transition-colors">
+                                <i className="ph-bold ph-trash"></i>
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -785,7 +913,7 @@
 
                 </div>
 
-                {/* === 右欄：今日聯絡簿 & 各類事件紀錄 === */}
+                {/* 右欄：今日聯絡簿 & 各類事件紀錄 */}
                 <div className="flex flex-col gap-6">
                   
                   {/* 今日聯絡簿卡片 */}
@@ -1016,7 +1144,6 @@
           setHolidaySettings(hArr);
           localStorage.setItem('homeroom_holidays', JSON.stringify(hArr));
           
-          // 若已登入，保存至雲端
           if (currentUser && window.firebaseService) {
             window.firebaseService.saveSettingsCloud(currentUser.uid, {
               weekSettings,
@@ -1100,7 +1227,7 @@
               </div>
             </div>
 
-            {/* 期初固定課表設定 */}
+            {/* 期初固定課表設定 (已修復版面) */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mb-6">
               <h2 className="text-xl font-bold text-darkText mb-2 flex items-center gap-2">
                 <i className="ph-fill ph-gear text-theme"></i> 期初固定課表設定
@@ -1118,37 +1245,30 @@
                   <div key={dObj.day} className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                     <h4 className="font-bold text-darkText mb-3 text-sm">{dObj.name}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-{weekSettings[dObj.day].map((item, pIdx) => (
-  <div key={pIdx} className="bg-white p-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
-    
-    {/* 1. 稍微加寬至 w-7，並加上 shrink-0 避免「第X節」文字被壓縮 */}
-    <span className="text-xs font-bold text-gray-400 w-7 shrink-0 text-center">第{pIdx+1}</span>
-    
-    <input 
-      type="text" 
-      value={item.subject} 
-      onChange={(e) => {
-        const newSet = { ...weekSettings };
-        newSet[dObj.day][pIdx].subject = e.target.value;
-        setWeekSettings(newSet);
-      }}
-      // 2. 加上 min-w-0，防止輸入框在小螢幕時無限制擴張撐破容器
-      className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-darkText outline-none"
-    />
-    
-    <button 
-      onClick={() => {
-        const newSet = { ...weekSettings };
-        newSet[dObj.day][pIdx].active = !newSet[dObj.day][pIdx].active;
-        setWeekSettings(newSet);
-      }}
-      // 3. 加上 shrink-0 避免變形，固定寬度 w-[60px]，並強制不換行 whitespace-nowrap
-      className={`shrink-0 w-[60px] whitespace-nowrap py-1 rounded-lg text-[10px] text-center font-bold transition-all ${item.active ? 'bg-theme-light text-theme' : 'bg-gray-200 text-gray-400'}`}>
-      {item.active ? '☑ 導師' : '➖ 科任'}
-    </button>
-    
-  </div>
-))}
+                      {weekSettings[dObj.day].map((item, pIdx) => (
+                        <div key={pIdx} className="bg-white p-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-400 w-7 shrink-0 text-center">第{pIdx+1}</span>
+                          <input 
+                            type="text" 
+                            value={item.subject} 
+                            onChange={(e) => {
+                              const newSet = { ...weekSettings };
+                              newSet[dObj.day][pIdx].subject = e.target.value;
+                              setWeekSettings(newSet);
+                            }}
+                            className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-darkText outline-none"
+                          />
+                          <button 
+                            onClick={() => {
+                              const newSet = { ...weekSettings };
+                              newSet[dObj.day][pIdx].active = !newSet[dObj.day][pIdx].active;
+                              setWeekSettings(newSet);
+                            }}
+                            className={`shrink-0 w-[60px] whitespace-nowrap py-1 rounded-lg text-[10px] text-center font-bold transition-all ${item.active ? 'bg-theme-light text-theme' : 'bg-gray-200 text-gray-400'}`}>
+                            {item.active ? '☑ 導師' : '➖ 科任'}
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -1374,7 +1494,6 @@
                  {activeTab === 'export' && <><i className="ph-fill ph-printer text-theme"></i> 匯出與預覽</>}
               </div>
 
-              {/* 雲端同步與 Google 登入按鈕區 */}
               <div className="flex items-center gap-3">
                 {currentUser && !currentUser.isAnonymous ? (
                   <div className="flex items-center gap-2.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-2xl">
@@ -1441,6 +1560,53 @@
             {activeTab === 'settings' && renderSettingsView()}
             {activeTab === 'export' && renderExportView()}
           </main>
+
+          {/* 正向鼓勵希望卡 Modal */}
+          {showHopeModal && currentHopeCard && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4 print:hidden animate-fadeIn">
+              <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100 transform transition-all">
+                <div className={`bg-gradient-to-r ${currentHopeCard.color} p-6 text-white relative`}>
+                  <button 
+                    onClick={handleCloseHopeModal}
+                    className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center transition-all">
+                    <i className="ph-bold ph-x text-lg"></i>
+                  </button>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">✨</span>
+                    <span className="text-xs font-bold tracking-wider uppercase bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
+                      今日導師希望卡 ({currentHopeCard.title})
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold tracking-wide">給親愛的導師：</h3>
+                </div>
+
+                <div className="p-6 text-center">
+                  <div className={`p-6 rounded-2xl ${currentHopeCard.bgLight} ${currentHopeCard.border} border mb-6 shadow-inner`}>
+                    <p className={`text-base sm:text-lg font-bold leading-relaxed ${currentHopeCard.text}`}>
+                      {currentHopeCard.quote}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-500 cursor-pointer select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={dontShowHopeToday}
+                        onChange={(e) => setDontShowHopeToday(e.target.checked)}
+                        className="w-4 h-4 rounded accent-theme cursor-pointer"
+                      />
+                      今日不再顯示
+                    </label>
+                    <button 
+                      onClick={handleCloseHopeModal}
+                      className={`px-5 py-2.5 bg-gradient-to-r ${currentHopeCard.color} text-white font-bold rounded-xl text-xs sm:text-sm shadow-md hover:opacity-90 active:scale-95 transition-all`}>
+                      接收祝福 ❤️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 修改科目 Modal */}
           {isModalOpen && (
