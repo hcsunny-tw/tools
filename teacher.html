@@ -307,6 +307,20 @@
         parent: ['作業提醒', '近期表現佳', '電訪:行為宣導', '電訪:身體狀況', '傳達班級事務']
       };
 
+      // 新增：區塊收合狀態管理 (Accordion)
+      const [expandedSections, setExpandedSections] = useState({
+        schedule: true, contact: true, homework: true, school: true, student: true, parent: true, notes: true
+      });
+
+      const toggleSection = (section) => {
+        setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+      };
+
+      const toggleAllSections = (expand) => {
+        const newState = Object.keys(expandedSections).reduce((acc, key) => ({ ...acc, [key]: expand }), {});
+        setExpandedSections(newState);
+      };
+
       // ==========================================
       // RENDER: 日誌填寫畫面 (支援 RWD 雙欄)
       // ==========================================
@@ -352,212 +366,294 @@
             </div>
           </header>
 
+          {/* 新增：全部展開 / 收合控制列 */}
+          <div className="flex justify-end gap-3 mb-3 px-4 lg:px-8 print:hidden">
+            <button onClick={() => toggleAllSections(true)} className="text-xs font-bold text-gray-500 hover:text-accent flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-gray-100 transition-colors active:scale-95">
+              <i className="ph-bold ph-arrows-out-line-vertical"></i> 全部展開
+            </button>
+            <button onClick={() => toggleAllSections(false)} className="text-xs font-bold text-gray-500 hover:text-accent flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-gray-100 transition-colors active:scale-95">
+              <i className="ph-bold ph-arrows-in-line-vertical"></i> 全部收合
+            </button>
+          </div>
+
           {/* RWD 雙欄配置 Grid */}
-          <div className="px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+          <div className="px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
             
             {/* 左欄：課表與作業 */}
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-chalkboard-teacher text-accent text-2xl"></i> 教學實際進度
-                </h2>
-                <div className="space-y-3">
-                  {schedule.map((item) => (
-                    <div key={item.id} className="bg-paper p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <span className="bg-highlight text-primary w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold">{item.period}</span>
-                          <div className="flex items-center gap-1">
-                            <span className="font-bold text-lg text-darkText w-16">{item.subject || '無'}</span>
-                            <button className="text-gray-400 hover:text-accent p-1.5 rounded-full bg-gray-50 active:bg-gray-200 tap-highlight-transparent transition-colors" 
-                                    onClick={() => openSubjectModal(item)}>
-                              <i className="ph-bold ph-arrows-left-right text-lg"></i>
-                            </button>
+            <div className="space-y-4">
+              
+              {/* === 教學進度 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('schedule')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-chalkboard-teacher text-accent text-2xl"></i> 教學實際進度
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.schedule ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.schedule && (
+                  <div className="space-y-3 p-4 pt-1">
+                    {schedule.map((item) => (
+                      <div key={item.id} className="bg-paper p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <span className="bg-highlight text-primary w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold">{item.period}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="font-bold text-lg text-darkText w-16">{item.subject || '無'}</span>
+                              <button className="text-gray-400 hover:text-accent p-1.5 rounded-full bg-gray-50 active:bg-gray-200 tap-highlight-transparent transition-colors" 
+                                      onClick={() => openSubjectModal(item)}>
+                                <i className="ph-bold ph-arrows-left-right text-lg"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex bg-gray-100 rounded-xl p-1">
+                            {['完成', '超前', '待補課'].map(status => (
+                              <button key={status}
+                                className={`px-2 lg:px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${item.status === status ? 'bg-white shadow-sm text-accent scale-105' : 'text-gray-500 hover:text-gray-700'}`}
+                                onClick={() => updateSchedule(item.id, 'status', status)}>
+                                {status}
+                              </button>
+                            ))}
                           </div>
                         </div>
-                        <div className="flex bg-gray-100 rounded-xl p-1">
-                          {['完成', '超前', '待補課'].map(status => (
-                            <button key={status}
-                              className={`px-2 lg:px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${item.status === status ? 'bg-white shadow-sm text-accent scale-105' : 'text-gray-500 hover:text-gray-700'}`}
-                              onClick={() => updateSchedule(item.id, 'status', status)}>
-                              {status}
-                            </button>
-                          ))}
-                        </div>
+                        <input type="text" placeholder="輸入教學單元或內容..." value={item.content} onChange={(e) => updateSchedule(item.id, 'content', e.target.value)} 
+                               className="w-full bg-gray-50 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-accent/50 outline-none transition-all placeholder-gray-400 border border-transparent focus:border-accent/30" />
                       </div>
-                      <input type="text" placeholder="輸入教學單元或內容..." value={item.content} onChange={(e) => updateSchedule(item.id, 'content', e.target.value)} 
-                             className="w-full bg-gray-50 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-accent/50 outline-none transition-all placeholder-gray-400 border border-transparent focus:border-accent/30" />
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </section>
 
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-pencil-line text-accent text-2xl"></i> 聯絡簿指派 (今日作業)
-                </h2>
-                <div className="bg-paper p-3 rounded-2xl shadow-sm border border-gray-100 space-y-2">
-                  {contactBook.map((item, idx) => (
-                    <div key={item.id} className="flex gap-2 items-center">
-                      <span className="text-accent font-bold text-sm w-5">{idx + 1}.</span>
-                      <input type="text" placeholder="輸入作業內容 (自動帶入明天批閱欄)..." value={item.text} onChange={(e) => updateEvent('contact', item.id, 'text', e.target.value)}
-                             onKeyDown={(e) => e.key === 'Enter' && addEvent('contact')}
-                             className="flex-1 bg-gray-50 border border-transparent rounded-xl p-2 text-sm focus:bg-white focus:ring-2 focus:ring-accent/50 outline-none" />
-                      <button onClick={() => removeEvent('contact', item.id)} className="p-2 text-gray-300 hover:text-danger rounded-xl transition-colors">
-                        <i className="ph-bold ph-trash"></i>
+              {/* === 聯絡簿指派 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('contact')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-pencil-line text-accent text-2xl"></i> 聯絡簿指派 (今日作業)
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.contact ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.contact && (
+                  <div className="p-4 pt-1 space-y-2">
+                    <div className="bg-paper p-3 rounded-2xl shadow-sm border border-gray-100 space-y-2">
+                      {contactBook.map((item, idx) => (
+                        <div key={item.id} className="flex gap-2 items-center">
+                          <span className="text-accent font-bold text-sm w-5">{idx + 1}.</span>
+                          <input type="text" placeholder="輸入作業內容 (自動帶入明天批閱)..." value={item.text} onChange={(e) => updateEvent('contact', item.id, 'text', e.target.value)}
+                                 onKeyDown={(e) => e.key === 'Enter' && addEvent('contact')}
+                                 className="flex-1 bg-gray-50 border border-transparent rounded-xl p-2 text-sm focus:bg-white focus:ring-2 focus:ring-accent/50 outline-none" />
+                          <button onClick={() => removeEvent('contact', item.id)} className="p-2 text-gray-300 hover:text-danger rounded-xl transition-colors">
+                            <i className="ph-bold ph-trash"></i>
+                          </button>
+                        </div>
+                      ))}
+                      <button onClick={() => addEvent('contact')} className="w-full py-2 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
+                        <i className="ph-bold ph-plus"></i> 新增作業
                       </button>
                     </div>
-                  ))}
-                  <button onClick={() => addEvent('contact')} className="w-full py-2 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
-                    <i className="ph-bold ph-plus"></i> 新增作業
-                  </button>
-                </div>
+                  </div>
+                )}
               </section>
 
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-books text-accent text-2xl"></i> 作業批閱 (昨日指派)
-                </h2>
-                <div className="bg-paper rounded-2xl shadow-sm border border-gray-100 p-2">
-                  {homework.map((hw) => (
-                    <div key={hw.id} className="flex items-center justify-between p-3 border-b border-gray-50 last:border-0">
-                      <label className="flex items-center gap-3 cursor-pointer tap-highlight-transparent flex-1">
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${hw.checked ? 'bg-accent text-white' : 'bg-gray-100 border border-gray-300'}`}>
-                           {hw.checked && <i className="ph-bold ph-check text-sm"></i>}
+              {/* === 作業批閱 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('homework')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-books text-accent text-2xl"></i> 作業批閱 (昨日指派)
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.homework ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.homework && (
+                  <div className="p-4 pt-1">
+                    <div className="bg-paper rounded-2xl shadow-sm border border-gray-100 p-2">
+                      {homework.map((hw) => (
+                        <div key={hw.id} className="flex items-center justify-between p-3 border-b border-gray-50 last:border-0">
+                          <label className="flex items-center gap-3 cursor-pointer tap-highlight-transparent flex-1">
+                            <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${hw.checked ? 'bg-accent text-white' : 'bg-gray-100 border border-gray-300'}`}>
+                               {hw.checked && <i className="ph-bold ph-check text-sm"></i>}
+                            </div>
+                            <input type="checkbox" checked={hw.checked} onChange={(e) => updateHomework(hw.id, 'checked', e.target.checked)} className="hidden" />
+                            <span className={`${hw.checked ? 'text-darkText font-bold' : 'text-gray-500 font-medium'}`}>{hw.name}</span>
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-400">數量</span>
+                            <input type="number" placeholder="-" value={hw.amount} onChange={(e) => updateHomework(hw.id, 'amount', e.target.value)}
+                                   className="w-14 text-center bg-gray-50 border border-gray-100 rounded-lg p-1.5 text-sm focus:ring-2 focus:ring-accent/50 outline-none" />
+                          </div>
                         </div>
-                        <input type="checkbox" checked={hw.checked} onChange={(e) => updateHomework(hw.id, 'checked', e.target.checked)} className="hidden" />
-                        <span className={`${hw.checked ? 'text-darkText font-bold' : 'text-gray-500 font-medium'}`}>{hw.name}</span>
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">數量</span>
-                        <input type="number" placeholder="-" value={hw.amount} onChange={(e) => updateHomework(hw.id, 'amount', e.target.value)}
-                               className="w-14 text-center bg-gray-50 border border-gray-100 rounded-lg p-1.5 text-sm focus:ring-2 focus:ring-accent/50 outline-none" />
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </section>
             </div>
 
             {/* 右欄：事件與記事 */}
-            <div className="space-y-6">
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-buildings text-accent text-2xl"></i> 學校事務與會議
-                </h2>
-                <div className="space-y-3">
-                  {schoolAffairs.map((evt) => (
-                    <div key={evt.id} className="bg-paper p-1.5 pl-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2 items-center focus-within:border-accent/50 transition-colors">
-                      <input type="text" placeholder="處室宣導、會議紀錄..." value={evt.text} onChange={(e) => updateEvent('school', evt.id, 'text', e.target.value)}
-                             className="flex-1 bg-transparent py-2 text-sm outline-none text-darkText min-w-0" />
-                      <label className="flex items-center gap-1.5 cursor-pointer tap-highlight-transparent bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-xl transition-colors flex-shrink-0">
-                        <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${evt.isOk ? 'bg-accent text-white' : 'bg-white border border-gray-300'}`}>
-                           {evt.isOk && <i className="ph-bold ph-check text-xs"></i>}
-                        </div>
-                        <input type="checkbox" checked={evt.isOk} onChange={(e) => updateEvent('school', evt.id, 'isOk', e.target.checked)} className="hidden" />
-                        <span className={`text-xs font-bold ${evt.isOk ? 'text-accent' : 'text-gray-400'}`}>OK</span>
-                      </label>
-                      <button onClick={() => removeEvent('school', evt.id)} className="p-2 mr-1 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
-                        <i className="ph-bold ph-trash"></i>
-                      </button>
-                    </div>
-                  ))}
-                  <button onClick={() => addEvent('school')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
-                    <i className="ph-bold ph-plus"></i> 新增事務
-                  </button>
-                </div>
-              </section>
-
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-student text-accent text-2xl"></i> 學生事件
-                </h2>
-                <div className="space-y-3">
-                  {studentEvents.map((evt) => (
-                    <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col focus-within:border-accent/50 transition-colors">
-                      <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center w-full">
-                        <input type="text" placeholder="紀錄學生狀況..." value={evt.text} onChange={(e) => updateEvent('student', evt.id, 'text', e.target.value)}
-                               className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
-                        <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
-                          {['已處理', '需轉介'].map(status => (
-                            <button key={status}
-                              className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? (status==='需轉介'?'bg-danger text-white shadow-sm':'bg-accent text-white shadow-sm') : 'text-gray-500 hover:text-gray-700'}`}
-                              onClick={() => updateEvent('student', evt.id, 'status', status)}>
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                        <button onClick={() => removeEvent('student', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
+            <div className="space-y-4">
+              
+              {/* === 學校事務 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('school')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-buildings text-accent text-2xl"></i> 學校事務與會議
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.school ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.school && (
+                  <div className="space-y-3 p-4 pt-1">
+                    {schoolAffairs.map((evt) => (
+                      <div key={evt.id} className="bg-paper p-1.5 pl-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2 items-center focus-within:border-accent/50 transition-colors">
+                        <input type="text" placeholder="處室宣導、會議紀錄..." value={evt.text} onChange={(e) => updateEvent('school', evt.id, 'text', e.target.value)}
+                               onKeyDown={(e) => e.key === 'Enter' && addEvent('school')}
+                               className="flex-1 bg-transparent py-2 text-sm outline-none text-darkText min-w-0" />
+                        <label className="flex items-center gap-1.5 cursor-pointer tap-highlight-transparent bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-xl transition-colors flex-shrink-0">
+                          <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${evt.isOk ? 'bg-accent text-white' : 'bg-white border border-gray-300'}`}>
+                             {evt.isOk && <i className="ph-bold ph-check text-xs"></i>}
+                          </div>
+                          <input type="checkbox" checked={evt.isOk} onChange={(e) => updateEvent('school', evt.id, 'isOk', e.target.checked)} className="hidden" />
+                          <span className={`text-xs font-bold ${evt.isOk ? 'text-accent' : 'text-gray-400'}`}>OK</span>
+                        </label>
+                        <button onClick={() => removeEvent('school', evt.id)} className="p-2 mr-1 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
                           <i className="ph-bold ph-trash"></i>
                         </button>
                       </div>
-                      
-                      {/* 新增：學生事件的常用片語快選 */}
-                      <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-gray-50">
-                         {quickPhrases.student.map(phrase => (
-                            <button key={phrase} 
-                                    onClick={() => updateEvent('student', evt.id, 'text', evt.text ? `${evt.text}, ${phrase}` : phrase)}
-                                    className="text-[10px] bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors border border-gray-100">
-                               +{phrase}
-                            </button>
-                         ))}
-                      </div>
-                    </div>
-                  ))}
-                  <button onClick={() => addEvent('student')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
-                    <i className="ph-bold ph-plus"></i> 新增學生事件
-                  </button>
-                </div>
+                    ))}
+                    <button onClick={() => addEvent('school')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
+                      <i className="ph-bold ph-plus"></i> 新增事務
+                    </button>
+                  </div>
+                )}
               </section>
 
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-phone-call text-accent text-2xl"></i> 家長聯繫
-                </h2>
-                <div className="space-y-3">
-                  {parentContacts.map((evt) => (
-                    <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col focus-within:border-accent/50 transition-colors">
-                      <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center w-full">
-                        <input type="text" placeholder="聯繫內容..." value={evt.text} onChange={(e) => updateEvent('parent', evt.id, 'text', e.target.value)}
-                               className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
-                        <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
-                          {['已處理', '需轉達'].map(status => (
-                            <button key={status}
-                              className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? 'bg-accent text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                              onClick={() => updateEvent('parent', evt.id, 'status', status)}>
-                              {status}
-                            </button>
-                          ))}
+              {/* === 學生事件 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('student')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-student text-accent text-2xl"></i> 學生事件
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.student ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.student && (
+                  <div className="space-y-3 p-4 pt-1">
+                    {studentEvents.map((evt) => (
+                      <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col focus-within:border-accent/50 transition-colors">
+                        <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center w-full">
+                          <input type="text" placeholder="紀錄學生狀況..." value={evt.text} onChange={(e) => updateEvent('student', evt.id, 'text', e.target.value)}
+                                 onKeyDown={(e) => e.key === 'Enter' && addEvent('student')}
+                                 className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
+                          <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
+                            {['已處理', '需轉介'].map(status => (
+                              <button key={status}
+                                className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? (status==='需轉介'?'bg-danger text-white shadow-sm':'bg-accent text-white shadow-sm') : 'text-gray-500 hover:text-gray-700'}`}
+                                onClick={() => updateEvent('student', evt.id, 'status', status)}>
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                          <button onClick={() => removeEvent('student', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
+                            <i className="ph-bold ph-trash"></i>
+                          </button>
                         </div>
-                        <button onClick={() => removeEvent('parent', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
-                          <i className="ph-bold ph-trash"></i>
-                        </button>
+                        
+                        <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-gray-50">
+                           {quickPhrases.student.map(phrase => (
+                              <button key={phrase} 
+                                      onClick={() => updateEvent('student', evt.id, 'text', evt.text ? `${evt.text}, ${phrase}` : phrase)}
+                                      className="text-[10px] bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors border border-gray-100">
+                                 +{phrase}
+                              </button>
+                           ))}
+                        </div>
                       </div>
-                      
-                      {/* 新增：家長聯繫的常用片語快選 */}
-                      <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-gray-50">
-                         {quickPhrases.parent.map(phrase => (
-                            <button key={phrase} 
-                                    onClick={() => updateEvent('parent', evt.id, 'text', evt.text ? `${evt.text}, ${phrase}` : phrase)}
-                                    className="text-[10px] bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors border border-gray-100">
-                               +{phrase}
-                            </button>
-                         ))}
-                      </div>
-                    </div>
-                  ))}
-                  <button onClick={() => addEvent('parent')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
-                    <i className="ph-bold ph-plus"></i> 新增家長聯繫
-                  </button>
-                </div>
+                    ))}
+                    <button onClick={() => addEvent('student')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
+                      <i className="ph-bold ph-plus"></i> 新增學生事件
+                    </button>
+                  </div>
+                )}
               </section>
 
-              <section>
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-note-pencil text-accent text-2xl"></i> 其他記事
-                </h2>
-                <textarea placeholder="隨手記下重要的事、交辦事項..." value={notes} onChange={(e) => setNotes(e.target.value)} rows="4"
-                          className="w-full bg-paper rounded-2xl p-4 shadow-sm border border-gray-100 text-sm focus:ring-2 focus:ring-accent/50 outline-none resize-none text-darkText"></textarea>
+              {/* === 家長聯繫 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('parent')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-phone-call text-accent text-2xl"></i> 家長聯繫
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.parent ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.parent && (
+                  <div className="space-y-3 p-4 pt-1">
+                    {parentContacts.map((evt) => (
+                      <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col focus-within:border-accent/50 transition-colors">
+                        <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center w-full">
+                          <input type="text" placeholder="聯繫內容..." value={evt.text} onChange={(e) => updateEvent('parent', evt.id, 'text', e.target.value)}
+                                 onKeyDown={(e) => e.key === 'Enter' && addEvent('parent')}
+                                 className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
+                          <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
+                            {['已處理', '需轉達'].map(status => (
+                              <button key={status}
+                                className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? 'bg-accent text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                onClick={() => updateEvent('parent', evt.id, 'status', status)}>
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                          <button onClick={() => removeEvent('parent', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
+                            <i className="ph-bold ph-trash"></i>
+                          </button>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-gray-50">
+                           {quickPhrases.parent.map(phrase => (
+                              <button key={phrase} 
+                                      onClick={() => updateEvent('parent', evt.id, 'text', evt.text ? `${evt.text}, ${phrase}` : phrase)}
+                                      className="text-[10px] bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors border border-gray-100">
+                                 +{phrase}
+                              </button>
+                           ))}
+                        </div>
+                      </div>
+                    ))}
+                    <button onClick={() => addEvent('parent')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
+                      <i className="ph-bold ph-plus"></i> 新增家長聯繫
+                    </button>
+                  </div>
+                )}
+              </section>
+
+              {/* === 其他記事 === */}
+              <section className="bg-white/60 rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all">
+                <button onClick={() => toggleSection('notes')} className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors tap-highlight-transparent">
+                  <h2 className="text-lg font-bold flex items-center gap-2 text-darkText">
+                    <i className="ph-fill ph-note-pencil text-accent text-2xl"></i> 其他記事
+                  </h2>
+                  <div className={`transition-transform duration-300 text-gray-400 ${expandedSections.notes ? 'rotate-180' : ''}`}>
+                    <i className="ph-bold ph-caret-down text-xl"></i>
+                  </div>
+                </button>
+                
+                {expandedSections.notes && (
+                  <div className="p-4 pt-1">
+                    <textarea placeholder="隨手記下重要的事、交辦事項..." value={notes} onChange={(e) => setNotes(e.target.value)} rows="4"
+                              className="w-full bg-paper rounded-2xl p-4 shadow-sm border border-gray-100 text-sm focus:ring-2 focus:ring-accent/50 outline-none resize-none text-darkText"></textarea>
+                  </div>
+                )}
               </section>
             </div>
           </div>
