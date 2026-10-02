@@ -246,7 +246,6 @@
     function App() {
       const [activeTab, setActiveTab] = useState('log'); 
       const [isMenuOpen, setIsMenuOpen] = useState(false);
-      const [exportMode, setExportMode] = useState('daily'); 
 
       const [currentUser, setCurrentUser] = useState(null);
       const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -617,35 +616,6 @@
       const toggleSection = (section) => setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
       const toggleAllSections = (expand) => setExpandedSections(Object.keys(expandedSections).reduce((acc, key) => ({ ...acc, [key]: expand }), {}));
 
-      const getWeekDates = (currentDateStr) => {
-        if (!currentDateStr) return [];
-        const curr = new Date(currentDateStr);
-        const day = curr.getDay();
-        const diffToMon = curr.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(curr.setDate(diffToMon));
-        
-        const dates = [];
-        for (let i = 0; i < 5; i++) {
-          const d = new Date(monday);
-          d.setDate(monday.getDate() + i);
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, '0');
-          const dd = String(d.getDate()).padStart(2, '0');
-          dates.push(`${yyyy}-${mm}-${dd}`);
-        }
-        return dates;
-      };
-
-      const getLogForDate = (targetDateStr) => {
-        const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
-        if (savedLogs[targetDateStr]) return savedLogs[targetDateStr];
-        return {
-          date: targetDateStr, week, absentees: '', isHoliday: holidaySettings.includes(targetDateStr),
-          schedule: emptySchedule, homework: initialHomework, contactBook: [{ id: 1, text: '' }],
-          schoolAffairs: [], studentEvents: [], parentContacts: [], notes: ''
-        };
-      };
-
       const currentDayOfWeek = date ? new Date(date).getDay() : new Date().getDay();
       const homeworkSubTitle = currentDayOfWeek === 1 ? '上週五指派' : '昨日指派';
       const contactBookPlaceholder = currentDayOfWeek === 5 ? '輸入作業內容 (自動帶入下週一批閱)...' : '輸入作業內容 (自動帶入明天批閱)...';
@@ -741,7 +711,7 @@
       // 1. 填寫日誌畫面 (Log View)
       // ==========================================
       const renderLogView = () => (
-        <div className="px-4 py-6 max-w-5xl mx-auto pb-24">
+        <div className="px-4 py-6 max-w-5xl mx-auto pb-28">
           
           {/* 頂部日期與狀態控制列 */}
           <div className="bg-white p-5 rounded-3xl shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -1202,9 +1172,18 @@
             </>
           )}
 
-          {/* 底部懸浮儲存按鈕 */}
-          <div className="fixed bottom-6 right-6 z-40">
+          {/* 底部懸浮按鈕區（匯出預覽直接位於儲存按鈕上方） */}
+          <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 items-end print:hidden">
             <button 
+              type="button"
+              onClick={handlePrint}
+              className="px-6 py-3.5 bg-darkText text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 text-sm hover:bg-gray-800">
+              <i className="ph-bold ph-printer text-lg"></i>
+              匯出與列印預覽
+            </button>
+
+            <button 
+              type="button"
               onClick={handleSave}
               disabled={isSaving}
               className="px-8 py-4 bg-theme text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-all flex items-center gap-3 text-base">
@@ -1429,32 +1408,84 @@
         );
       };
 
-      // ==========================================
-      // 3. 匯出與列印預覽畫面 (Export View)
-      // ==========================================
-      const renderExportView = () => {
-        const pagesToRender = exportMode === 'weekly' 
-           ? getWeekDates(date).map(d => getLogForDate(d))
-           : [{ date, week, absentees, isHoliday, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes }];
-
-        return (
-          <div className="px-4 py-6 max-w-5xl mx-auto">
-            <div className="mb-6 flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-2xl shadow-sm print:hidden gap-4 sticky top-16 z-10">
-              <div className="flex gap-2 w-full sm:w-auto bg-gray-100 p-1.5 rounded-xl">
-                <button onClick={() => setExportMode('daily')} className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-sm transition-all ${exportMode === 'daily' ? 'bg-white text-theme shadow-sm' : 'text-gray-500'}`}>單日預覽</button>
-                <button onClick={() => setExportMode('weekly')} className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-sm transition-all ${exportMode === 'weekly' ? 'bg-white text-theme shadow-sm' : 'text-gray-500'}`}>一週預覽 (一~五)</button>
+      return (
+        <div className="w-full relative min-h-screen">
+          {/* 頂部導航列與 Google 登入同步控制 */}
+          <nav className="bg-white shadow-sm sticky top-0 z-50 print:hidden">
+            <div className="max-w-5xl mx-auto px-4 flex justify-between items-center h-16">
+              <div className="font-bold text-lg flex items-center gap-2 text-darkText">
+                 {activeTab === 'log' && <><i className="ph-fill ph-pencil-line text-theme"></i> 導師日誌</>}
+                 {activeTab === 'settings' && <><i className="ph-fill ph-gear text-theme"></i> 期初設定與主題</>}
               </div>
-              <button onClick={handlePrint} className="w-full sm:w-auto px-6 py-3 bg-darkText text-white rounded-xl font-bold shadow-md hover:bg-gray-800 flex items-center justify-center gap-2">
-                <i className="ph-bold ph-printer"></i> {exportMode === 'weekly' ? '匯出整週 PDF (共 5 頁)' : '匯出單日 PDF'}
-              </button>
+
+              <div className="flex items-center gap-3">
+                {currentUser && !currentUser.isAnonymous ? (
+                  <div className="flex items-center gap-2.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-2xl">
+                    {currentUser.photoURL ? (
+                      <img src={currentUser.photoURL} className="w-7 h-7 rounded-full" alt="User Avatar" />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-theme text-white flex items-center justify-center font-bold text-xs">
+                        {currentUser.displayName ? currentUser.displayName[0] : '教'}
+                      </div>
+                    )}
+                    <span className="text-xs font-bold text-darkText hidden sm:inline">
+                      {currentUser.displayName || '導師帳號'}
+                    </span>
+                    <button 
+                      onClick={handleLogout} 
+                      title="登出帳號"
+                      className="text-xs text-gray-400 hover:text-danger pl-1">
+                      <i className="ph-bold ph-sign-out text-base"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleGoogleLogin} 
+                    disabled={isLoggingIn}
+                    className="flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-darkText px-3.5 py-2 rounded-2xl font-bold text-xs shadow-sm transition-all">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.28 14.24c-.25-.75-.38-1.55-.38-2.36s.13-1.61.38-2.36V6.37H1.29C.47 8.01 0 9.94 0 12s.47 3.99 1.29 5.63l3.99-3.39z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.37l3.99 3.39c.95-2.85 3.6-4.96 6.72-4.96z"/>
+                    </svg>
+                    <span>{isLoggingIn ? '驗證中...' : 'Google 登入同步'}</span>
+                  </button>
+                )}
+
+                <button 
+                  onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                  className="p-2 text-gray-500 hover:text-theme transition-colors focus:outline-none tap-highlight-transparent flex items-center justify-center rounded-xl active:bg-gray-100">
+                  <i className={`ph-bold ${isMenuOpen ? 'ph-x' : 'ph-list'} text-2xl`}></i>
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-8 print:gap-0">
-              {pagesToRender.map((pageData, pageIdx) => (
-                <div key={pageData.date} 
-                     className="bg-white p-6 sm:p-8 print:p-2 shadow-md mx-auto rounded-none sm:rounded-xl text-black relative" 
-                     style={{ minHeight: '297mm', maxWidth: '210mm', width: '100%', pageBreakAfter: pageIdx !== pagesToRender.length - 1 ? 'always' : 'auto' }}>
-                  
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-60 border-t border-gray-100 shadow-inner' : 'max-h-0'}`}>
+              <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col gap-2.5 bg-gray-50">
+                <button onClick={() => { setActiveTab('log'); setIsMenuOpen(false); }} 
+                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'log' ? 'bg-theme text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
+                  <i className="ph-fill ph-pencil-line text-xl w-6 text-center"></i> 填寫日誌
+                </button>
+                <button onClick={() => { setActiveTab('settings'); setIsMenuOpen(false); }} 
+                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'settings' ? 'bg-theme text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
+                  <i className="ph-fill ph-gear text-xl w-6 text-center"></i> 期初設定 (課表、主題與進度)
+                </button>
+              </div>
+            </div>
+          </nav>
+
+          <main className="max-w-5xl mx-auto print:hidden">
+            {activeTab === 'log' && renderLogView()}
+            {activeTab === 'settings' && renderSettingsView()}
+          </main>
+
+          {/* 專供列印/PDF匯出的 A4 版面 (畫面上隱藏，列印時顯示) */}
+          <div className="hidden print:block">
+            {(() => {
+              const pageData = { date, week, absentees, isHoliday, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes };
+              return (
+                <div className="bg-white p-2 text-black relative" style={{ minHeight: '297mm', maxWidth: '210mm', width: '100%' }}>
                   <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8 tracking-widest border-b-2 border-black pb-4">
                     115學年度 第一學期 導師工作日誌
                   </h1>
@@ -1581,89 +1612,9 @@
                      </>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
-        );
-      };
-
-      return (
-        <div className="w-full relative min-h-screen">
-          {/* 頂部導航列與 Google 登入同步控制 */}
-          <nav className="bg-white shadow-sm sticky top-0 z-50 print:hidden">
-            <div className="max-w-5xl mx-auto px-4 flex justify-between items-center h-16">
-              <div className="font-bold text-lg flex items-center gap-2 text-darkText">
-                 {activeTab === 'log' && <><i className="ph-fill ph-pencil-line text-theme"></i> 導師日誌</>}
-                 {activeTab === 'settings' && <><i className="ph-fill ph-gear text-theme"></i> 期初設定與主題</>}
-                 {activeTab === 'export' && <><i className="ph-fill ph-printer text-theme"></i> 匯出與預覽</>}
-              </div>
-
-              <div className="flex items-center gap-3">
-                {currentUser && !currentUser.isAnonymous ? (
-                  <div className="flex items-center gap-2.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-2xl">
-                    {currentUser.photoURL ? (
-                      <img src={currentUser.photoURL} className="w-7 h-7 rounded-full" alt="User Avatar" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-theme text-white flex items-center justify-center font-bold text-xs">
-                        {currentUser.displayName ? currentUser.displayName[0] : '教'}
-                      </div>
-                    )}
-                    <span className="text-xs font-bold text-darkText hidden sm:inline">
-                      {currentUser.displayName || '導師帳號'}
-                    </span>
-                    <button 
-                      onClick={handleLogout} 
-                      title="登出帳號"
-                      className="text-xs text-gray-400 hover:text-danger pl-1">
-                      <i className="ph-bold ph-sign-out text-base"></i>
-                    </button>
-                  </div>
-                ) : (
-                  <button 
-                    onClick={handleGoogleLogin} 
-                    disabled={isLoggingIn}
-                    className="flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-darkText px-3.5 py-2 rounded-2xl font-bold text-xs shadow-sm transition-all">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
-                      <path fill="#FBBC05" d="M5.28 14.24c-.25-.75-.38-1.55-.38-2.36s.13-1.61.38-2.36V6.37H1.29C.47 8.01 0 9.94 0 12s.47 3.99 1.29 5.63l3.99-3.39z"/>
-                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.37l3.99 3.39c.95-2.85 3.6-4.96 6.72-4.96z"/>
-                    </svg>
-                    <span>{isLoggingIn ? '驗證中...' : 'Google 登入同步'}</span>
-                  </button>
-                )}
-
-                <button 
-                  onClick={() => setIsMenuOpen(!isMenuOpen)} 
-                  className="p-2 text-gray-500 hover:text-theme transition-colors focus:outline-none tap-highlight-transparent flex items-center justify-center rounded-xl active:bg-gray-100">
-                  <i className={`ph-bold ${isMenuOpen ? 'ph-x' : 'ph-list'} text-2xl`}></i>
-                </button>
-              </div>
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-60 border-t border-gray-100 shadow-inner' : 'max-h-0'}`}>
-              <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col gap-2.5 bg-gray-50">
-                <button onClick={() => { setActiveTab('log'); setIsMenuOpen(false); }} 
-                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'log' ? 'bg-theme text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
-                  <i className="ph-fill ph-pencil-line text-xl w-6 text-center"></i> 填寫日誌
-                </button>
-                <button onClick={() => { setActiveTab('settings'); setIsMenuOpen(false); }} 
-                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'settings' ? 'bg-theme text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
-                  <i className="ph-fill ph-gear text-xl w-6 text-center"></i> 期初設定 (課表、主題與進度)
-                </button>
-                <button onClick={() => { setActiveTab('export'); setIsMenuOpen(false); }} 
-                        className={`text-left px-5 py-3.5 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === 'export' ? 'bg-theme text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-100'}`}>
-                  <i className="ph-fill ph-printer text-xl w-6 text-center"></i> 匯出與列印預覽
-                </button>
-              </div>
-            </div>
-          </nav>
-
-          <main className="max-w-5xl mx-auto">
-            {activeTab === 'log' && renderLogView()}
-            {activeTab === 'settings' && renderSettingsView()}
-            {activeTab === 'export' && renderExportView()}
-          </main>
 
           {/* 正向鼓勵希望卡 Modal */}
           {showHopeModal && currentHopeCard && (
@@ -1704,7 +1655,7 @@
                     <button 
                       onClick={handleCloseHopeModal}
                       className={`px-5 py-2.5 bg-gradient-to-r ${currentHopeCard.color} text-white font-bold rounded-xl text-xs sm:text-sm shadow-md hover:opacity-90 active:scale-95 transition-all`}>
-                      接收祝福 ❤️
+                      接收祝福 ❤️️
                     </button>
                   </div>
                 </div>
