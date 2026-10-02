@@ -114,6 +114,9 @@
       const [editingPeriodId, setEditingPeriodId] = useState(null);
       const [tempSubjectName, setTempSubjectName] = useState('');
       
+      // 新增：自動儲存時間狀態 (Auto-Save 救星)
+      const [autoSaveTime, setAutoSaveTime] = useState('');
+      
       // 儲存期初課表的 State
       const [weekSettings, setWeekSettings] = useState(defaultWeekSchedule);
 
@@ -196,6 +199,25 @@
         
       }, [date, weekSettings]); // 當日期或設定改變時觸發
 
+      // --- 新增：斷線自動存檔 (Auto-Save 救星) ---
+      useEffect(() => {
+        if (!date) return;
+        
+        // 延遲 1.5 秒執行儲存，避免每打一個字就寫入一次造成卡頓
+        const timer = setTimeout(() => {
+          const logData = { date, week, absentees, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes };
+          const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
+          
+          savedLogs[date] = logData;
+          localStorage.setItem('homeroom_logs', JSON.stringify(savedLogs));
+          
+          // 更新 UI 顯示的儲存時間
+          const now = new Date();
+          setAutoSaveTime(now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }));
+        }, 1500);
+
+        return () => clearTimeout(timer); // 重新計時 (Debounce 技術)
+      }, [date, week, absentees, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes]);
 
       // --- 資料更新處理函數 ---
       const updateSchedule = (id, field, value) => {
@@ -279,6 +301,11 @@
         return days[new Date(dateStr).getDay()];
       };
 
+      // --- 新增：常用片語清單 (Quick Phrases) ---
+      const quickPhrases = {
+        student: ['作業缺交', '上課分心', '常規不佳', '遲到', '身體不適', '與同學衝突'],
+        parent: ['作業提醒', '近期表現佳', '電訪:行為宣導', '電訪:身體狀況', '傳達班級事務']
+      };
 
       // ==========================================
       // RENDER: 日誌填寫畫面 (支援 RWD 雙欄)
@@ -291,7 +318,11 @@
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <i className="ph-fill ph-notebook text-3xl"></i> 導師日誌
               </h1>
-              <span className="text-sm bg-white/20 px-3 py-1 rounded-full font-medium tracking-wide">115 學年度</span>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-sm bg-white/20 px-3 py-1 rounded-full font-medium tracking-wide">115 學年度</span>
+                {/* 顯示自動存檔時間 */}
+                {autoSaveTime && <span className="text-[10px] text-white/80 flex items-center gap-1 font-medium"><i className="ph-bold ph-cloud-check"></i>已自動儲存 {autoSaveTime}</span>}
+              </div>
             </div>
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -443,21 +474,34 @@
                 </h2>
                 <div className="space-y-3">
                   {studentEvents.map((evt) => (
-                    <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap lg:flex-nowrap gap-2 items-center focus-within:border-accent/50 transition-colors">
-                      <input type="text" placeholder="紀錄學生狀況..." value={evt.text} onChange={(e) => updateEvent('student', evt.id, 'text', e.target.value)}
-                             className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
-                      <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
-                        {['已處理', '需轉介'].map(status => (
-                          <button key={status}
-                            className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? (status==='需轉介'?'bg-danger text-white shadow-sm':'bg-accent text-white shadow-sm') : 'text-gray-500 hover:text-gray-700'}`}
-                            onClick={() => updateEvent('student', evt.id, 'status', status)}>
-                            {status}
-                          </button>
-                        ))}
+                    <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col focus-within:border-accent/50 transition-colors">
+                      <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center w-full">
+                        <input type="text" placeholder="紀錄學生狀況..." value={evt.text} onChange={(e) => updateEvent('student', evt.id, 'text', e.target.value)}
+                               className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
+                        <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
+                          {['已處理', '需轉介'].map(status => (
+                            <button key={status}
+                              className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? (status==='需轉介'?'bg-danger text-white shadow-sm':'bg-accent text-white shadow-sm') : 'text-gray-500 hover:text-gray-700'}`}
+                              onClick={() => updateEvent('student', evt.id, 'status', status)}>
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                        <button onClick={() => removeEvent('student', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
+                          <i className="ph-bold ph-trash"></i>
+                        </button>
                       </div>
-                      <button onClick={() => removeEvent('student', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
-                        <i className="ph-bold ph-trash"></i>
-                      </button>
+                      
+                      {/* 新增：學生事件的常用片語快選 */}
+                      <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-gray-50">
+                         {quickPhrases.student.map(phrase => (
+                            <button key={phrase} 
+                                    onClick={() => updateEvent('student', evt.id, 'text', evt.text ? `${evt.text}, ${phrase}` : phrase)}
+                                    className="text-[10px] bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors border border-gray-100">
+                               +{phrase}
+                            </button>
+                         ))}
+                      </div>
                     </div>
                   ))}
                   <button onClick={() => addEvent('student')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
@@ -472,21 +516,34 @@
                 </h2>
                 <div className="space-y-3">
                   {parentContacts.map((evt) => (
-                    <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap lg:flex-nowrap gap-2 items-center focus-within:border-accent/50 transition-colors">
-                      <input type="text" placeholder="聯繫內容..." value={evt.text} onChange={(e) => updateEvent('parent', evt.id, 'text', e.target.value)}
-                             className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
-                      <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
-                        {['已處理', '需轉達'].map(status => (
-                          <button key={status}
-                            className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? 'bg-accent text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            onClick={() => updateEvent('parent', evt.id, 'status', status)}>
-                            {status}
-                          </button>
-                        ))}
+                    <div key={evt.id} className="bg-paper p-2 pl-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col focus-within:border-accent/50 transition-colors">
+                      <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center w-full">
+                        <input type="text" placeholder="聯繫內容..." value={evt.text} onChange={(e) => updateEvent('parent', evt.id, 'text', e.target.value)}
+                               className="flex-1 w-full lg:w-auto bg-transparent py-1 text-sm outline-none text-darkText min-w-0" />
+                        <div className="flex bg-gray-100 rounded-xl p-1 flex-shrink-0 ml-auto">
+                          {['已處理', '需轉達'].map(status => (
+                            <button key={status}
+                              className={`px-2 py-1.5 text-xs rounded-lg font-bold transition-all ${evt.status === status ? 'bg-accent text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                              onClick={() => updateEvent('parent', evt.id, 'status', status)}>
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                        <button onClick={() => removeEvent('parent', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
+                          <i className="ph-bold ph-trash"></i>
+                        </button>
                       </div>
-                      <button onClick={() => removeEvent('parent', evt.id)} className="p-2 text-gray-300 hover:text-danger bg-gray-50 rounded-xl transition-colors flex-shrink-0">
-                        <i className="ph-bold ph-trash"></i>
-                      </button>
+                      
+                      {/* 新增：家長聯繫的常用片語快選 */}
+                      <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-gray-50">
+                         {quickPhrases.parent.map(phrase => (
+                            <button key={phrase} 
+                                    onClick={() => updateEvent('parent', evt.id, 'text', evt.text ? `${evt.text}, ${phrase}` : phrase)}
+                                    className="text-[10px] bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-accent/10 hover:text-accent transition-colors border border-gray-100">
+                               +{phrase}
+                            </button>
+                         ))}
+                      </div>
                     </div>
                   ))}
                   <button onClick={() => addEvent('parent')} className="w-full py-2.5 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-2xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
