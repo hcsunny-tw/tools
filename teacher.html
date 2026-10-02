@@ -101,6 +101,7 @@
       const [absentees, setAbsentees] = useState('');
       const [schedule, setSchedule] = useState(emptySchedule);
       const [homework, setHomework] = useState(initialHomework);
+      const [contactBook, setContactBook] = useState([{ id: Date.now(), text: '' }]); // 新增聯絡簿狀態
       const [schoolAffairs, setSchoolAffairs] = useState([{ id: Date.now(), text: '', isOk: false }]);
       const [studentEvents, setStudentEvents] = useState([{ id: Date.now()+1, text: '', status: '已處理' }]);
       const [parentContacts, setParentContacts] = useState([{ id: Date.now()+2, text: '', status: '已處理' }]);
@@ -136,6 +137,24 @@
       // --- 當日期改變時，自動套用該星期的課表 ---
       useEffect(() => {
         if (!date) return;
+        
+        // 嘗試讀取當天的歷史紀錄
+        const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
+        if (savedLogs[date]) {
+          const log = savedLogs[date];
+          setWeek(log.week || 1);
+          setAbsentees(log.absentees || '');
+          setSchedule(log.schedule || emptySchedule);
+          setHomework(log.homework || initialHomework);
+          setContactBook(log.contactBook || [{ id: Date.now(), text: '' }]);
+          setSchoolAffairs(log.schoolAffairs || [{ id: Date.now(), text: '', isOk: false }]);
+          setStudentEvents(log.studentEvents || [{ id: Date.now()+1, text: '', status: '已處理' }]);
+          setParentContacts(log.parentContacts || [{ id: Date.now()+2, text: '', status: '已處理' }]);
+          setNotes(log.notes || '');
+          return;
+        }
+
+        // 若當天無紀錄，套用期初設定課表
         const d = new Date(date);
         const dayOfWeek = d.getDay(); // 0(日) ~ 6(六)
         
@@ -148,11 +167,33 @@
             }))
           );
         } else {
-          // 假日清空科目
-          setSchedule(prevSchedule => 
-            prevSchedule.map(item => ({ ...item, subject: '' }))
-          );
+          setSchedule(prevSchedule => prevSchedule.map(item => ({ ...item, subject: '' })));
         }
+
+        // 神奇功能：尋找最近一天的歷史紀錄，將其「聯絡簿」自動轉為今天的「作業批閱」
+        const prevDates = Object.keys(savedLogs).sort().filter(d => d < date);
+        if (prevDates.length > 0) {
+           const lastLog = savedLogs[prevDates[prevDates.length - 1]];
+           if (lastLog.contactBook && lastLog.contactBook.some(cb => cb.text.trim() !== '')) {
+               const newHomework = lastLog.contactBook
+                   .filter(cb => cb.text.trim() !== '')
+                   .map((cb, idx) => ({ id: idx + 1, name: cb.text, checked: false, amount: '' }));
+               setHomework(newHomework);
+           } else {
+               setHomework(initialHomework);
+           }
+        } else {
+           setHomework(initialHomework);
+        }
+        
+        // 清空其他今日新填項
+        setAbsentees('');
+        setContactBook([{ id: Date.now(), text: '' }]);
+        setSchoolAffairs([{ id: Date.now(), text: '', isOk: false }]);
+        setStudentEvents([{ id: Date.now()+1, text: '', status: '已處理' }]);
+        setParentContacts([{ id: Date.now()+2, text: '', status: '已處理' }]);
+        setNotes('');
+        
       }, [date, weekSettings]); // 當日期或設定改變時觸發
 
 
@@ -169,6 +210,7 @@
         if (type === 'student') setStudentEvents(studentEvents.map(item => item.id === id ? { ...item, [field]: value } : item));
         if (type === 'parent') setParentContacts(parentContacts.map(item => item.id === id ? { ...item, [field]: value } : item));
         if (type === 'school') setSchoolAffairs(schoolAffairs.map(item => item.id === id ? { ...item, [field]: value } : item));
+        if (type === 'contact') setContactBook(contactBook.map(item => item.id === id ? { ...item, [field]: value } : item));
       };
 
       const addEvent = (type) => {
@@ -176,12 +218,14 @@
         if (type === 'student') setStudentEvents([...studentEvents, newEvent]);
         if (type === 'parent') setParentContacts([...parentContacts, newEvent]);
         if (type === 'school') setSchoolAffairs([...schoolAffairs, { id: Date.now(), text: '', isOk: false }]);
+        if (type === 'contact') setContactBook([...contactBook, { id: Date.now(), text: '' }]);
       };
 
       const removeEvent = (type, id) => {
         if (type === 'student') setStudentEvents(studentEvents.filter(e => e.id !== id));
         if (type === 'parent') setParentContacts(parentContacts.filter(e => e.id !== id));
         if (type === 'school') setSchoolAffairs(schoolAffairs.filter(e => e.id !== id));
+        if (type === 'contact') setContactBook(contactBook.filter(e => e.id !== id));
       };
 
       // --- Modal 處理 ---
@@ -202,7 +246,13 @@
       const handleSave = () => {
         if (isSaving) return;
         setIsSaving(true);
-        const logData = { date, week, absentees, schedule, homework, schoolAffairs, studentEvents, parentContacts, notes };
+        const logData = { date, week, absentees, schedule, homework, contactBook, schoolAffairs, studentEvents, parentContacts, notes };
+        
+        // 儲存到 LocalStorage 以利跨日自動讀取聯絡簿
+        const savedLogs = JSON.parse(localStorage.getItem('homeroom_logs') || '{}');
+        savedLogs[date] = logData;
+        localStorage.setItem('homeroom_logs', JSON.stringify(savedLogs));
+        
         console.log("準備送出至資料庫 Data: ", logData);
         
         setTimeout(() => {
@@ -241,7 +291,7 @@
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <i className="ph-fill ph-notebook text-3xl"></i> 導師日誌
               </h1>
-              <span className="text-sm bg-white/20 px-3 py-1 rounded-full font-medium tracking-wide">114 學年度</span>
+              <span className="text-sm bg-white/20 px-3 py-1 rounded-full font-medium tracking-wide">115 學年度</span>
             </div>
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -313,7 +363,29 @@
 
               <section>
                 <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
-                  <i className="ph-fill ph-books text-accent text-2xl"></i> 作業批閱
+                  <i className="ph-fill ph-pencil-line text-accent text-2xl"></i> 聯絡簿指派 (今日作業)
+                </h2>
+                <div className="bg-paper p-3 rounded-2xl shadow-sm border border-gray-100 space-y-2">
+                  {contactBook.map((item, idx) => (
+                    <div key={item.id} className="flex gap-2 items-center">
+                      <span className="text-accent font-bold text-sm w-5">{idx + 1}.</span>
+                      <input type="text" placeholder="輸入作業內容 (自動帶入明天批閱欄)..." value={item.text} onChange={(e) => updateEvent('contact', item.id, 'text', e.target.value)}
+                             onKeyDown={(e) => e.key === 'Enter' && addEvent('contact')}
+                             className="flex-1 bg-gray-50 border border-transparent rounded-xl p-2 text-sm focus:bg-white focus:ring-2 focus:ring-accent/50 outline-none" />
+                      <button onClick={() => removeEvent('contact', item.id)} className="p-2 text-gray-300 hover:text-danger rounded-xl transition-colors">
+                        <i className="ph-bold ph-trash"></i>
+                      </button>
+                    </div>
+                  ))}
+                  <button onClick={() => addEvent('contact')} className="w-full py-2 text-sm text-accent font-bold border-2 border-dashed border-accent/30 rounded-xl hover:bg-accent/5 transition-colors flex items-center justify-center gap-1">
+                    <i className="ph-bold ph-plus"></i> 新增作業
+                  </button>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-darkText">
+                  <i className="ph-fill ph-books text-accent text-2xl"></i> 作業批閱 (昨日指派)
                 </h2>
                 <div className="bg-paper rounded-2xl shadow-sm border border-gray-100 p-2">
                   {homework.map((hw) => (
@@ -503,7 +575,7 @@
           {/* A4 模擬畫布 (列印時這區塊將滿版呈現) */}
           <div className="bg-white p-8 sm:p-12 shadow-md mx-auto rounded-none sm:rounded-xl text-black" style={{ minHeight: '297mm', maxWidth: '210mm' }}>
             <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8 tracking-widest border-b-2 border-black pb-4">
-              114學年度 第一學期 教師工作日誌
+              115學年度 第一學期 教師工作日誌
             </h1>
             
             <div className="flex justify-between items-end mb-4 font-bold text-lg">
@@ -563,6 +635,18 @@
             {/* 下半部事件表格 */}
             <table className="w-full border-collapse border-2 border-black text-sm">
               <tbody>
+                <tr>
+                  <td className="border-2 border-black p-2 font-bold bg-gray-100" colSpan="2">* 今日聯絡簿</td>
+                </tr>
+                <tr>
+                  <td colSpan="2" className="border-2 border-black p-2 align-top">
+                    <div className="grid grid-cols-2 gap-x-4">
+                      {contactBook.filter(cb => cb.text.trim()).map((cb, idx) => (
+                         <div key={idx} className="mb-1">{idx + 1}. {cb.text}</div>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
                 <tr>
                   <td className="border-2 border-black p-2 font-bold bg-gray-100" colSpan="2">* 學生事件</td>
                 </tr>
