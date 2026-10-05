@@ -6,6 +6,9 @@
   <title>冒險者公會-個人狀態卡</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📜</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- 引入紙花動畫套件 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
   <style>
     :root {
       --primary: #8B4513; --accent: #CD853F;
@@ -61,7 +64,27 @@
     .val-exp { color: var(--primary); }
     .val-coin { color: #b45309; }
 
-    /* 條列整理箱 UI */
+    /* 經驗值進度條 */
+    .exp-progress-wrapper {
+      width: 100%; margin-top: 15px; background: #fff;
+      border: 2px solid #D2B48C; border-radius: 20px; padding: 4px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .exp-bar-bg {
+      width: 100%; height: 20px; background: #fef3c7;
+      border-radius: 12px; overflow: hidden; position: relative;
+    }
+    .exp-bar-fill {
+      height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+    }
+    .exp-text {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; color: #78350f;
+    }
+
     .summary-box {
       background: #fff; border: 2px dashed #d97706; border-radius: 12px;
       padding: 15px; margin: 20px 0 10px; text-align: center;
@@ -85,66 +108,47 @@
     .badge.redo { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
     .badge.subj { background: #E6D2B5; color: var(--primary); padding: 2px 6px; font-size: 11px; margin-right: 6px; }
 
+    /* 慶祝成功徽章的彈跳動畫 */
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.1); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
     .success-msg { 
       text-align: center; padding: 30px 10px; background: #f0fdf4; 
       border: 2px dashed var(--success); border-radius: 12px; 
       color: var(--success); font-weight: bold; font-size: 18px; line-height: 1.6;
+      animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    .success-icon {
+      font-size: 48px; display: block; margin-bottom: 10px; color: #22c55e;
+      text-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
     }
 
     #loading { text-align: center; padding: 40px; color: var(--primary); font-size: 18px; font-weight: bold; }
     .hidden { display: none !important; }
 
-    /* 懸浮工具按鈕 UI (右下角) */
-    .fab-container {
-      position: fixed; bottom: 20px; right: 20px; 
-      display: flex; flex-direction: column; gap: 12px; z-index: 100;
-    }
-    .fab-btn {
-      width: 55px; height: 55px; border-radius: 50%;
-      background: var(--primary); color: white; border: 2px solid #fff;
-      font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      display: grid; place-items: center; cursor: pointer; transition: 0.2s;
-    }
+    /* 工具按鈕與視窗 */
+    .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+    .fab-btn { width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: 2px solid #fff; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: grid; place-items: center; cursor: pointer; transition: 0.2s; }
     .fab-btn:active { transform: scale(0.9); }
     .fab-btn.timer-btn { background: var(--accent); }
-
-    /* 碼表與計時器彈出視窗 UI */
-    .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-      z-index: 200; backdrop-filter: blur(3px);
-    }
-    .modal-content {
-      background: var(--card); padding: 30px 25px; border-radius: 20px;
-      width: 90%; max-width: 320px; text-align: center;
-      border: 4px solid var(--primary); position: relative;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
-    .close-btn {
-      position: absolute; top: 10px; right: 15px; font-size: 28px;
-      font-weight: bold; cursor: pointer; color: var(--muted);
-    }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(3px); }
+    .modal-content { background: var(--card); padding: 30px 25px; border-radius: 20px; width: 90%; max-width: 320px; text-align: center; border: 4px solid var(--primary); position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: var(--muted); }
     .tool-title { font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
-    .time-display {
-      font-size: 56px; font-weight: 900; color: var(--primary); font-family: monospace;
-      margin: 15px 0; letter-spacing: 2px;
-    }
+    .time-display { font-size: 56px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 15px 0; letter-spacing: 2px; }
     .tool-controls { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
-    .tool-controls button {
-      padding: 12px 24px; font-size: 18px; font-weight: 900; border-radius: 12px; border: none; cursor: pointer; flex: 1;
-    }
+    .tool-controls button { padding: 12px 24px; font-size: 18px; font-weight: 900; border-radius: 12px; border: none; cursor: pointer; flex: 1; }
     .btn-start { background: var(--success); color: white; box-shadow: 0 4px 0 #14532d; }
     .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #14532d; }
     .btn-pause { background: #ea580c; color: white; box-shadow: 0 4px 0 #9a3412; }
     .btn-pause:active { transform: translateY(4px); box-shadow: 0 0 0 #9a3412; }
     .btn-reset { background: #e5e7eb; color: var(--text-main); box-shadow: 0 4px 0 #d1d5db; }
     .btn-reset:active { transform: translateY(4px); box-shadow: 0 0 0 #d1d5db; }
-    
     #timerInputs { margin-bottom: 10px; font-weight: bold; color: var(--text-main); }
-    #timerInputs input { 
-      width: 70px; font-size: 20px; text-align: center; padding: 5px; 
-      border-radius: 8px; border: 2px solid var(--primary); font-weight: 900;
-    }
+    #timerInputs input { width: 70px; font-size: 20px; text-align: center; padding: 5px; border-radius: 8px; border: 2px solid var(--primary); font-weight: 900; }
   </style>
 </head>
 <body>
@@ -168,6 +172,14 @@
                       <div class="value val-coin" id="stCoin">0</div>
                   </div>
               </div>
+              
+              <!-- 經驗值進度條 -->
+              <div class="exp-progress-wrapper">
+                  <div class="exp-bar-bg">
+                      <div class="exp-bar-fill" id="expBarFill"></div>
+                      <div class="exp-text" id="expText">計算中...</div>
+                  </div>
+              </div>
           </div>
 
           <div id="taskListArea"></div>
@@ -177,24 +189,17 @@
     </div>
   </div>
 
-  <!-- 懸浮工具按鈕 -->
+  <!-- 懸浮工具按鈕與視窗 -->
   <div class="fab-container hidden" id="fabTools">
     <button id="btnStopwatch" class="fab-btn" title="碼表"><i class="bi bi-stopwatch"></i></button>
     <button id="btnTimer" class="fab-btn timer-btn" title="計時器"><i class="bi bi-hourglass-bottom"></i></button>
   </div>
-
-  <!-- 碼表與計時器共用視窗 -->
   <div id="toolModal" class="modal hidden">
     <div class="modal-content">
       <span class="close-btn" id="closeModal">&times;</span>
       <div id="toolTitle" class="tool-title">工具</div>
-      
-      <div id="timerInputs" class="hidden">
-        設定：<input type="number" id="minInput" min="1" max="60" value="10"> 分鐘
-      </div>
-
+      <div id="timerInputs" class="hidden">設定：<input type="number" id="minInput" min="1" max="60" value="10"> 分鐘</div>
       <div id="timeDisplay" class="time-display">00:00</div>
-      
       <div class="tool-controls">
         <button id="btnStartPause" class="btn-start">開始</button>
         <button id="btnReset" class="btn-reset">重設</button>
@@ -203,7 +208,6 @@
   </div>
 
   <script type="module">
-    // Firebase Config (保持不變)
     const firebaseConfig = {
       apiKey: "AIzaSyA0UhDKqcsChUa8OZWxZUmuFdKATfgiL8E",
       authDomain: "homework-hc906.firebaseapp.com",
@@ -213,6 +217,7 @@
       appId: "1:1051903125085:web:b205f868669ea7d5c34fb4",
     };
 
+    // 🌟 改回單次讀取的 getDoc
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
 
@@ -223,22 +228,66 @@
     const uid = urlParams.get('uid');
     const no = parseInt(urlParams.get('no'));
 
+    // ⚠️ 請記得保留你完整的 levelConfig 陣列
     const levelConfig = [
         { lv: 1, exp: 0, coins: 0, rank: "🌱 迷路的小村民", color: "#9ca3af" },
-        // ... 中間等級省略以節省篇幅，請保留你原本的 levelConfig 完整陣列
+        { lv: 2, exp: 10, coins: 5, rank: "🪵 木劍小勇者", color: "#86efac" },
+        { lv: 3, exp: 30, coins: 10, rank: "🛡️ 銅牌小護衛", color: "#22c55e" },
+        { lv: 4, exp: 60, coins: 10, rank: "🐾 森林小遊俠", color: "#0ea5e9" },
+        { lv: 5, exp: 100, coins: 15, rank: "🗡️️ 鐵甲小騎士", color: "#3b82f6" },
+        // ... (中間省略，請貼上你原本寫好的完整等級)
         { lv: 39, exp: 2210, coins: 60, rank: "🐉 萬獸之王", color: "#e11d48" },
         { lv: "Max", exp: 2300, coins: 100, rank: "✨ 全班的超級英雄", color: "#ffd700" }
     ];
 
-    function getRankHtml(exp) {
+    // 處理經驗值條 UI 更新
+    function updateExpUI(exp) {
         let currentLevel = levelConfig[0];
-        for (let i = levelConfig.length - 1; i >= 0; i--) {
+        let nextLevel = levelConfig[1];
+        let isMax = false;
+        
+        for (let i = 0; i < levelConfig.length; i++) {
             if (exp >= levelConfig[i].exp) {
                 currentLevel = levelConfig[i];
-                break;
+                nextLevel = levelConfig[i + 1] || currentLevel;
             }
         }
-        return `<span style="color:${currentLevel.color};">Lv.${currentLevel.lv} ${currentLevel.rank}</span>`;
+        
+        if (currentLevel.lv === "Max" || nextLevel === currentLevel) {
+            isMax = true;
+        }
+
+        document.getElementById('stRank').innerHTML = `<span style="color:${currentLevel.color};">Lv.${currentLevel.lv} ${currentLevel.rank}</span>`;
+        
+        const barFill = document.getElementById('expBarFill');
+        const expText = document.getElementById('expText');
+        
+        if (isMax) {
+            barFill.style.width = '100%';
+            expText.innerText = `MAX (已達最高等級)`;
+        } else {
+            const currentTierTotal = nextLevel.exp - currentLevel.exp;
+            const currentTierProgress = exp - currentLevel.exp;
+            const percentage = Math.min(100, Math.max(0, (currentTierProgress / currentTierTotal) * 100));
+            
+            // 延遲一點點讓進度條有滑動效果
+            setTimeout(() => {
+                barFill.style.width = `${percentage}%`;
+            }, 100);
+            expText.innerText = `距離下一級還差 ${nextLevel.exp - exp} 點`;
+        }
+    }
+
+    // 觸發撒紙花特效
+    function fireConfetti() {
+        setTimeout(() => {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#fca5a5', '#fcd34d', '#86efac', '#93c5fd', '#d8b4fe'] 
+            });
+        }, 300); // 稍微延遲讓 DOM 渲染完再噴灑
     }
 
     async function loadData() {
@@ -251,7 +300,7 @@
             const docSnap = await getDoc(doc(db, "public_boards", uid));
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('contentArea').classList.remove('hidden');
-            document.getElementById('fabTools').classList.remove('hidden'); // 顯示工具按鈕
+            document.getElementById('fabTools').classList.remove('hidden');
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -264,23 +313,24 @@
                     document.getElementById('stName').innerText = student.name;
                     document.getElementById('stExp').innerText = student.exp || 0;
                     document.getElementById('stCoin').innerText = student.coins || 0;
-                    document.getElementById('stRank').innerHTML = getRankHtml(student.exp || 0);
+                    
+                    // 更新進度條
+                    updateExpUI(student.exp || 0);
                     
                     if (student.debts.length === 0) {
                         document.getElementById('taskListArea').innerHTML = `
                             <div class="success-msg">
-                                <i class="bi bi-shield-fill-check" style="font-size: 36px; display:block; margin-bottom:10px;"></i>
+                                <i class="bi bi-shield-fill-check success-icon"></i>
                                 太棒了！<br>所有任務皆已順利討伐完畢！
                             </div>`;
+                        // 單次讀取模式下，只要一載入發現沒有欠作業，就直接放紙花！
+                        fireConfetti();
                     } else {
-                        // 🌟 新增：條列功能 - 計算欠交的本子與科目數量
                         const bookSummary = {};
                         student.debts.forEach(d => {
-                            // 這裡透過 subject 分類，確保同科目的作業會加總在一起
                             const subjectKey = d.subject || "未分類";
                             bookSummary[subjectKey] = (bookSummary[subjectKey] || 0) + 1;
                         });
-                        // 組合成 "數習(4)、聯絡簿(2)" 的字串格式
                         const summaryText = Object.entries(bookSummary)
                                                   .map(([subject, count]) => `${subject}(${count})`)
                                                   .join('、');
@@ -297,7 +347,6 @@
                         student.debts.forEach(d => {
                             const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
                             const dateTxt = d.date ? `<div style="font-size:12px; color:#888; margin-top:4px;"><i class="bi bi-calendar"></i> 發布於：${d.date}</div>` : '';
-                            
                             html += `
                             <div class="task-item">
                                 <div class="task-header">
@@ -312,7 +361,7 @@
                     document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;color:red;'>找不到該座號的冒險者</h3>";
                 }
             } else {
-                document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;'>尚未發布資料<br><span style='font-size:14px;color:#888;'>請提醒公會長(老師)開啟系統並連線</span></h3>";
+                document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;'>尚未發布資料</h3>";
             }
         } catch (error) {
             console.error(error);
@@ -322,11 +371,11 @@
 
     loadData();
 
-    // 🌟 新增：碼表與計時器邏輯 🌟
+    // 🌟 碼表與計時器邏輯 🌟
     let toolInterval;
     let timeInSeconds = 0;
     let isRunning = false;
-    let currentMode = 'stopwatch'; // 'stopwatch' 或 'timer'
+    let currentMode = 'stopwatch'; 
 
     const modal = document.getElementById('toolModal');
     const timeDisplay = document.getElementById('timeDisplay');
@@ -395,7 +444,6 @@
                         isRunning = false;
                         btnStartPause.innerText = "時間到！";
                         btnStartPause.className = "btn-start";
-                        // 播放簡單的提示音效
                         try {
                            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
                            audio.play();
@@ -419,7 +467,6 @@
         }
         updateDisplay();
     });
-
   </script>
 </body>
 </html>
