@@ -28,6 +28,7 @@
       flex-direction: column; 
       align-items: center;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .wrap { width: 100%; max-width: 500px; margin-top: 20px; padding-bottom: 80px; }
@@ -54,50 +55,24 @@
     h2 { margin: 0 0 5px; font-size: 24px; color: var(--primary); font-weight: 900; }
     
     .stats-container { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-    .stat-box {
-      background: #fff; border: 2px solid #D2B48C; border-radius: 12px;
-      padding: 10px; flex: 1; text-align: center;
-    }
+    .stat-box { background: #fff; border: 2px solid #D2B48C; border-radius: 12px; padding: 10px; flex: 1; text-align: center; }
     .stat-box .title { font-size: 13px; color: var(--muted); font-weight: bold; margin-bottom: 4px; }
     .stat-box .value { font-size: 20px; font-weight: 900; }
     .val-exp { color: var(--primary); }
     .val-coin { color: #b45309; }
 
-    .exp-progress-wrapper {
-      width: 100%; margin-top: 15px; background: #fff;
-      border: 2px solid #D2B48C; border-radius: 20px; padding: 4px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .exp-bar-bg {
-      width: 100%; height: 20px; background: #fef3c7;
-      border-radius: 12px; overflow: hidden; position: relative;
-    }
-    .exp-bar-fill {
-      height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24);
-      width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 12px;
-    }
-    .exp-text {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 900; color: #78350f;
-    }
+    .exp-progress-wrapper { width: 100%; margin-top: 15px; background: #fff; border: 2px solid #D2B48C; border-radius: 20px; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+    .exp-bar-bg { width: 100%; height: 20px; background: #fef3c7; border-radius: 12px; overflow: hidden; position: relative; }
+    .exp-bar-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 12px; }
+    .exp-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: #78350f; }
 
-    .summary-box {
-      background: #fff; border: 2px dashed #d97706; border-radius: 12px;
-      padding: 15px; margin: 20px 0 10px; text-align: center;
-      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
-    }
+    .summary-box { background: #fff; border: 2px dashed #d97706; border-radius: 12px; padding: 15px; margin: 20px 0 10px; text-align: center; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1); }
     .summary-title { font-weight: 900; color: #b45309; margin-bottom: 8px; font-size: 16px; }
     .summary-content { font-size: 18px; font-weight: bold; color: var(--text-main); line-height: 1.5; }
 
     .debt-title { font-size: 18px; font-weight: 900; color: var(--danger); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
     
-    .task-item { 
-      background: #fff; padding: 14px; margin-bottom: 12px; 
-      border: 2px solid rgba(0,0,0,0.1); border-radius: 10px; 
-      display: flex; flex-direction: column; gap: 8px;
-    }
+    .task-item { background: #fff; padding: 14px; margin-bottom: 12px; border: 2px solid rgba(0,0,0,0.1); border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
     .task-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .task-name { font-weight: bold; font-size: 16px; line-height: 1.4; color: var(--text-main); }
     
@@ -106,46 +81,57 @@
     .badge.redo { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
     .badge.subj { background: #E6D2B5; color: var(--primary); padding: 2px 6px; font-size: 11px; margin-right: 6px; }
 
-    @keyframes bounceIn {
-      0% { transform: scale(0.3); opacity: 0; }
-      50% { transform: scale(1.1); }
-      70% { transform: scale(0.9); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .success-msg { 
-      text-align: center; padding: 30px 10px; background: #f0fdf4; 
-      border: 2px dashed var(--success); border-radius: 12px; 
-      color: var(--success); font-weight: bold; font-size: 18px; line-height: 1.6;
-      animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-    }
-    .success-icon {
-      font-size: 48px; display: block; margin-bottom: 10px; color: #22c55e;
-      text-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
-    }
+    @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
+    .success-msg { text-align: center; padding: 30px 10px; background: #f0fdf4; border: 2px dashed var(--success); border-radius: 12px; color: var(--success); font-weight: bold; font-size: 18px; line-height: 1.6; animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+    .success-icon { font-size: 48px; display: block; margin-bottom: 10px; color: #22c55e; text-shadow: 0 4px 10px rgba(34, 197, 94, 0.3); }
 
     #loading { text-align: center; padding: 40px; color: var(--primary); font-size: 18px; font-weight: bold; }
     .hidden { display: none !important; }
 
-    /* 工具按鈕與視窗 */
+    /* FAB 懸浮按鈕群 */
     .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-    .fab-btn { width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: 2px solid #fff; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: grid; place-items: center; cursor: pointer; transition: 0.2s; }
+    .fab-btn { width: 50px; height: 50px; border-radius: 50%; color: white; border: 2px solid #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: grid; place-items: center; cursor: pointer; transition: 0.2s; }
     .fab-btn:active { transform: scale(0.9); }
-    .fab-btn.timer-btn { background: var(--accent); }
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(3px); }
-    .modal-content { background: var(--card); padding: 30px 25px; border-radius: 20px; width: 90%; max-width: 320px; text-align: center; border: 4px solid var(--primary); position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: var(--muted); }
-    .tool-title { font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
-    .time-display { font-size: 56px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 15px 0; letter-spacing: 2px; }
-    .tool-controls { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
-    .tool-controls button { padding: 12px 24px; font-size: 18px; font-weight: 900; border-radius: 12px; border: none; cursor: pointer; flex: 1; }
+    .btn-stopwatch { background: #3b82f6; }
+    .btn-timer { background: #f59e0b; }
+    .btn-pomodoro { background: #ef4444; }
+
+    /* 可拖曳懸浮工具面板 UI */
+    .draggable-panel {
+      position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
+      background: var(--card); border-radius: 16px; width: 90%; max-width: 300px;
+      border: 4px solid var(--primary); box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      z-index: 200; display: flex; flex-direction: column; overflow: hidden;
+      /* 確保不會擋住背後所有的操作 */
+    }
+    
+    .drag-handle {
+      background: var(--primary); color: white; padding: 10px; text-align: center;
+      font-size: 18px; cursor: grab; display: flex; justify-content: space-between;
+      align-items: center; user-select: none; touch-action: none; /* 讓平板拖曳更順 */
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .drag-title { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 6px; }
+    
+    .panel-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 5px; line-height: 1; }
+    
+    .panel-body { padding: 20px; text-align: center; }
+
+    .time-display { font-size: 52px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 10px 0; letter-spacing: 2px; }
+    
+    .pomodoro-status { font-size: 14px; font-weight: bold; color: #ef4444; background: #fee2e2; padding: 4px 12px; border-radius: 12px; display: inline-block; margin-bottom: 5px; }
+
+    .tool-controls { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+    .tool-controls button { padding: 10px 0; font-size: 16px; font-weight: 900; border-radius: 10px; border: none; cursor: pointer; flex: 1; }
     .btn-start { background: var(--success); color: white; box-shadow: 0 4px 0 #14532d; }
     .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #14532d; }
     .btn-pause { background: #ea580c; color: white; box-shadow: 0 4px 0 #9a3412; }
     .btn-pause:active { transform: translateY(4px); box-shadow: 0 0 0 #9a3412; }
     .btn-reset { background: #e5e7eb; color: var(--text-main); box-shadow: 0 4px 0 #d1d5db; }
     .btn-reset:active { transform: translateY(4px); box-shadow: 0 0 0 #d1d5db; }
-    #timerInputs { margin-bottom: 10px; font-weight: bold; color: var(--text-main); }
-    #timerInputs input { width: 70px; font-size: 20px; text-align: center; padding: 5px; border-radius: 8px; border: 2px solid var(--primary); font-weight: 900; }
+    
+    #timerInputs { margin-bottom: 10px; font-weight: bold; color: var(--text-main); font-size: 14px;}
+    #timerInputs input { width: 60px; font-size: 16px; text-align: center; padding: 4px; border-radius: 6px; border: 2px solid var(--primary); font-weight: 900; }
   </style>
 </head>
 <body>
@@ -179,22 +165,36 @@
           </div>
 
           <div id="taskListArea"></div>
-          
           <div id="updateTime" style="text-align: center; margin-top: 20px; font-size: 12px; color: var(--muted); font-weight: bold;"></div>
       </div>
     </div>
   </div>
 
+  <!-- 右下角工具按鈕 -->
   <div class="fab-container hidden" id="fabTools">
-    <button id="btnStopwatch" class="fab-btn" title="碼表"><i class="bi bi-stopwatch"></i></button>
-    <button id="btnTimer" class="fab-btn timer-btn" title="計時器"><i class="bi bi-hourglass-bottom"></i></button>
+    <button id="btnStopwatch" class="fab-btn btn-stopwatch" title="碼表"><i class="bi bi-stopwatch"></i></button>
+    <button id="btnTimer" class="fab-btn btn-timer" title="計時器"><i class="bi bi-hourglass-split"></i></button>
+    <button id="btnPomodoro" class="fab-btn btn-pomodoro" title="番茄鐘"><i class="bi bi-alarm"></i></button>
   </div>
-  <div id="toolModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModal">&times;</span>
-      <div id="toolTitle" class="tool-title">工具</div>
-      <div id="timerInputs" class="hidden">設定：<input type="number" id="minInput" min="1" max="60" value="10"> 分鐘</div>
+
+  <!-- 可拖曳懸浮面板 -->
+  <div id="toolPanel" class="draggable-panel hidden">
+    <!-- 拖曳把手 -->
+    <div class="drag-handle" id="dragHandle">
+      <i class="bi bi-grid-3x3-gap-fill" style="opacity: 0.6; font-size:14px;"></i>
+      <span class="drag-title" id="toolTitle"><i class="bi bi-stopwatch"></i> 專注碼表</span>
+      <button class="panel-close-btn" id="closePanel">&times;</button>
+    </div>
+    
+    <div class="panel-body">
+      <!-- 只有番茄鐘才顯示的狀態 -->
+      <div id="pomodoroStatus" class="pomodoro-status hidden">🍅 專注時間 (25分)</div>
+      
+      <!-- 只有計時器才顯示的自訂時間 -->
+      <div id="timerInputs" class="hidden">自訂：<input type="number" id="minInput" min="1" max="60" value="10"> 分鐘</div>
+      
       <div id="timeDisplay" class="time-display">00:00</div>
+      
       <div class="tool-controls">
         <button id="btnStartPause" class="btn-start">開始</button>
         <button id="btnReset" class="btn-reset">重設</button>
@@ -222,17 +222,18 @@
     const uid = urlParams.get('uid');
     const no = parseInt(urlParams.get('no'));
 
+    // ⚠️ 記得放回你完整的等級列表
     const levelConfig = [
         { lv: 1, exp: 0, coins: 0, rank: "🌱 迷路的小村民", color: "#9ca3af" },
         { lv: 2, exp: 10, coins: 5, rank: "🪵 木劍小勇者", color: "#86efac" },
         { lv: 3, exp: 30, coins: 10, rank: "🛡️ 銅牌小護衛", color: "#22c55e" },
         { lv: 4, exp: 60, coins: 10, rank: "🐾 森林小遊俠", color: "#0ea5e9" },
-        { lv: 5, exp: 100, coins: 15, rank: "🗡 鐵甲小騎士", color: "#3b82f6" },
-      { lv: 6, exp: 140, coins: 15, rank: "🦅 飛鷹小偵探", color: "#6366f1" },
-      { lv: 7, exp: 180, coins: 20, rank: "🐺 灰狼小戰士", color: "#8b5cf6" },
-      { lv: 8, exp: 220, coins: 20, rank: "🧙🏻‍♀️ 見習魔法師", color: "#a855f7" },
-      { lv: 9, exp: 260, coins: 20, rank: "🦄 獨角獸騎士", color: "#d946ef" },
-      { lv: 10, exp: 300, coins: 30, rank: "🌟 星星守護者", color: "#ec4899" },
+          { lv: 5, exp: 100, coins: 15, rank: "🗡️ 鐵甲小騎士", color: "#3b82f6" },
+        { lv: 6, exp: 140, coins: 15, rank: "🦅 飛鷹小偵探", color: "#6366f1" },
+    { lv: 7, exp: 180, coins: 20, rank: "🐺 灰狼小戰士", color: "#8b5cf6" },
+    { lv: 8, exp: 220, coins: 20, rank: "🧙🏻‍♀️ 見習魔法師", color: "#a855f7" },
+    { lv: 9, exp: 260, coins: 20, rank: "🦄 獨角獸騎士", color: "#d946ef" },
+    { lv: 10, exp: 300, coins: 30, rank: "🌟 星星守護者", color: "#ec4899" },
     { lv: 11, exp: 350, coins: 30, rank: "🔥 烈焰小法師", color: "#f43f5e" },
     { lv: 12, exp: 400, coins: 30, rank: "💧 水波小精靈", color: "#ef4444" },
     { lv: 13, exp: 450, coins: 30, rank: "🌪️ 狂風小飛俠", color: "#f97316" },
@@ -276,13 +277,9 @@
                 nextLevel = levelConfig[i + 1] || currentLevel;
             }
         }
-        
-        if (currentLevel.lv === "Max" || nextLevel === currentLevel) {
-            isMax = true;
-        }
+        if (currentLevel.lv === "Max" || nextLevel === currentLevel) isMax = true;
 
         document.getElementById('stRank').innerHTML = `<span style="color:${currentLevel.color};">Lv.${currentLevel.lv} ${currentLevel.rank}</span>`;
-        
         const barFill = document.getElementById('expBarFill');
         const expText = document.getElementById('expText');
         
@@ -293,7 +290,6 @@
             const currentTierTotal = nextLevel.exp - currentLevel.exp;
             const currentTierProgress = exp - currentLevel.exp;
             const percentage = Math.min(100, Math.max(0, (currentTierProgress / currentTierTotal) * 100));
-            
             setTimeout(() => { barFill.style.width = `${percentage}%`; }, 100);
             expText.innerText = `距離下一級還差 ${nextLevel.exp - exp} 點`;
         }
@@ -301,21 +297,15 @@
 
     function fireConfetti() {
         setTimeout(() => {
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#fca5a5', '#fcd34d', '#86efac', '#93c5fd', '#d8b4fe'] 
-            });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fca5a5', '#fcd34d', '#86efac', '#93c5fd', '#d8b4fe'] });
         }, 300); 
     }
 
     async function loadData() {
         if (!uid || !no) {
-            document.getElementById('loading').innerHTML = "❌ 掃描的 QR Code 網址有誤<br><span style='font-size:14px;color:#888;margin-top:10px;display:block;'>缺少老師代碼或座號</span>";
+            document.getElementById('loading').innerHTML = "❌ 掃描的 QR Code 網址有誤";
             return;
         }
-
         try {
             const docSnap = await getDoc(doc(db, "public_boards", uid));
             document.getElementById('loading').classList.add('hidden');
@@ -325,7 +315,6 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 const student = data.summary.find(s => s.no === no);
-                
                 document.getElementById('updateTime').innerText = `最後更新：${data.lastUpdated}`;
 
                 if (student) {
@@ -333,104 +322,101 @@
                     document.getElementById('stName').innerText = student.name;
                     document.getElementById('stExp').innerText = student.exp || 0;
                     document.getElementById('stCoin').innerText = student.coins || 0;
-                    
                     updateExpUI(student.exp || 0);
                     
                     if (student.debts.length === 0) {
                         document.getElementById('taskListArea').innerHTML = `
-                            <div class="success-msg">
-                                <i class="bi bi-shield-fill-check success-icon"></i>
-                                太棒了！<br>所有任務皆已順利討伐完畢！
-                            </div>`;
+                            <div class="success-msg"><i class="bi bi-shield-fill-check success-icon"></i>太棒了！<br>所有任務皆已順利討伐完畢！</div>`;
                         fireConfetti();
                     } else {
-                        // 🌟 核心優化區塊：智慧抓取本子名稱 🌟
                         const bookSummary = {};
-                        
-                        // 建立國小常用本子與作業的關鍵字字典
-                        const bookKeywords = [
-                            "數習", "數練", "數作", "國習", "國作", 
-                            "甲本", "乙本", "聯絡簿", "聽寫", "生字", 
-                            "圈詞", "造詞", "學習單", "作文本", "閱讀", "英文"
-                        ];
-
+                        const bookKeywords = ["數習", "數練", "數作", "國習", "國作", "甲本", "乙本", "聯絡簿", "聽寫", "生字", "圈詞", "造詞", "學習單", "作文本", "閱讀", "英文"];
                         student.debts.forEach(d => {
                             let exactBook = null;
                             const titleStr = d.title || "";
-                            
-                            // 第一關：掃描標題是否有命中常用關鍵字
-                            for (let kw of bookKeywords) {
-                                if (titleStr.includes(kw)) {
-                                    exactBook = kw;
-                                    break;
-                                }
-                            }
-
-                            // 第二關：如果沒命中關鍵字，抓取標題最前面的中文字 (自動過濾掉「完成」、「訂正」等動詞)
+                            for (let kw of bookKeywords) { if (titleStr.includes(kw)) { exactBook = kw; break; } }
                             if (!exactBook) {
                                 const match = titleStr.trim().match(/^[\u4e00-\u9fa5]+/);
-                                if (match && !["完成", "寫", "訂正", "背", "帶", "交"].includes(match[0])) {
-                                    // 最多抓前3個字，避免整個長句被當成本子名稱
-                                    exactBook = match[0].substring(0, 3); 
-                                }
+                                if (match && !["完成", "寫", "訂正", "背", "帶", "交"].includes(match[0])) exactBook = match[0].substring(0, 3); 
                             }
-
-                            // 第三關：如果標題完全沒線索，退回使用原本設定的科目
                             const finalCategory = exactBook || d.subject || "未分類";
-                            
                             bookSummary[finalCategory] = (bookSummary[finalCategory] || 0) + 1;
                         });
 
-                        const summaryText = Object.entries(bookSummary)
-                                                  .map(([book, count]) => `${book}(${count})`)
-                                                  .join('、');
-                        
+                        const summaryText = Object.entries(bookSummary).map(([book, count]) => `${book}(${count})`).join('、');
                         let html = `
-                            <div class="summary-box">
-                                <div class="summary-title"><i class="bi bi-backpack"></i> 帶回家書包確認清單</div>
-                                <div class="summary-content">${summaryText}</div>
-                            </div>
-                            <div class="debt-title"><i class="bi bi-exclamation-triangle-fill"></i> 待處理任務 (${student.debts.length})</div>
-                        `;
+                            <div class="summary-box"><div class="summary-title"><i class="bi bi-backpack"></i> 帶回家書包確認清單</div><div class="summary-content">${summaryText}</div></div>
+                            <div class="debt-title"><i class="bi bi-exclamation-triangle-fill"></i> 待處理任務 (${student.debts.length})</div>`;
                         
                         student.debts.sort((a, b) => a.date < b.date ? 1 : -1);
                         student.debts.forEach(d => {
                             const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
                             const dateTxt = d.date ? `<div style="font-size:12px; color:#888; margin-top:4px;"><i class="bi bi-calendar"></i> 發布於：${d.date}</div>` : '';
-                            html += `
-                            <div class="task-item">
-                                <div class="task-header">
-                                    <div class="task-name"><span class="badge subj">${d.subject}</span>${d.title}${dateTxt}</div>
-                                    ${badge}
-                                </div>
-                            </div>`;
+                            html += `<div class="task-item"><div class="task-header"><div class="task-name"><span class="badge subj">${d.subject}</span>${d.title}${dateTxt}</div>${badge}</div></div>`;
                         });
                         document.getElementById('taskListArea').innerHTML = html;
                     }
-                } else {
-                    document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;color:red;'>找不到該座號的冒險者</h3>";
-                }
-            } else {
-                document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;'>尚未發布資料</h3>";
-            }
-        } catch (error) {
-            console.error(error);
-            document.getElementById('loading').innerHTML = "❌ 連線失敗，請檢查網路狀態";
-        }
+                } else { document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;color:red;'>找不到該座號的冒險者</h3>"; }
+            } else { document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;'>尚未發布資料</h3>"; }
+        } catch (error) { console.error(error); document.getElementById('loading').innerHTML = "❌ 連線失敗，請檢查網路狀態"; }
     }
-
     loadData();
 
-    // 工具功能邏輯
+    // 🌟 懸浮面板拖曳邏輯 🌟
+    const panel = document.getElementById('toolPanel');
+    const handle = document.getElementById('dragHandle');
+    let isDragging = false, offsetX = 0, offsetY = 0;
+
+    function startDrag(e) {
+        isDragging = true;
+        const rect = panel.getBoundingClientRect();
+        // 取得滑鼠或觸控點的位置
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+        
+        // 移除原本用來置中的 transform，改用純 left/top 定位
+        panel.style.transform = 'none'; 
+        panel.style.left = rect.left + 'px';
+        panel.style.top = rect.top + 'px';
+    }
+
+    function doDrag(e) {
+        if (!isDragging) return;
+        e.preventDefault(); // 避免在平板上拖曳面板時，背景網頁跟著滾動
+        
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        
+        panel.style.left = (clientX - offsetX) + 'px';
+        panel.style.top = (clientY - offsetY) + 'px';
+    }
+
+    function endDrag() { isDragging = false; }
+
+    handle.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', endDrag);
+
+    handle.addEventListener('touchstart', startDrag, { passive: false });
+    document.addEventListener('touchmove', doDrag, { passive: false });
+    document.addEventListener('touchend', endDrag);
+
+    // 🌟 碼表、計時器、番茄鐘核心邏輯 🌟
     let toolInterval;
     let timeInSeconds = 0;
     let isRunning = false;
-    let currentMode = 'stopwatch'; 
+    let currentMode = 'stopwatch'; // 'stopwatch', 'timer', 'pomodoro'
+    let pomoState = 'work'; // 'work' 專注, 'break' 休息
+    const WORK_MINUTES = 25;
+    const BREAK_MINUTES = 5;
 
-    const modal = document.getElementById('toolModal');
     const timeDisplay = document.getElementById('timeDisplay');
     const btnStartPause = document.getElementById('btnStartPause');
     const minInput = document.getElementById('minInput');
+    const pomoStatus = document.getElementById('pomodoroStatus');
 
     function formatTime(sec) {
         const m = Math.floor(sec / 60).toString().padStart(2, '0');
@@ -442,29 +428,49 @@
         timeDisplay.innerText = formatTime(timeInSeconds);
     }
 
+    function playAlert() {
+        try { const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); audio.play(); } catch(e) {}
+    }
+
     function openTool(mode) {
         currentMode = mode;
         isRunning = false;
         clearInterval(toolInterval);
         btnStartPause.innerText = "開始";
         btnStartPause.className = "btn-start";
-        modal.classList.remove('hidden');
+        panel.classList.remove('hidden');
         
+        // 讓視窗每次打開都回到畫面中間，方便找尋
+        panel.style.transform = 'translateX(-50%)';
+        panel.style.left = '50%';
+        panel.style.top = '15%';
+        
+        document.getElementById('timerInputs').classList.add('hidden');
+        pomoStatus.classList.add('hidden');
+
         if (mode === 'stopwatch') {
             document.getElementById('toolTitle').innerHTML = "<i class='bi bi-stopwatch'></i> 專注碼表";
-            document.getElementById('timerInputs').classList.add('hidden');
             timeInSeconds = 0;
-        } else {
+        } else if (mode === 'timer') {
             document.getElementById('toolTitle').innerHTML = "<i class='bi bi-hourglass-split'></i> 倒數計時器";
             document.getElementById('timerInputs').classList.remove('hidden');
             timeInSeconds = (parseInt(minInput.value) || 10) * 60;
+        } else if (mode === 'pomodoro') {
+            document.getElementById('toolTitle').innerHTML = "🍅 番茄鐘工作法";
+            pomoStatus.classList.remove('hidden');
+            pomoState = 'work';
+            pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
+            pomoStatus.style.color = "#ef4444";
+            pomoStatus.style.background = "#fee2e2";
+            timeInSeconds = WORK_MINUTES * 60;
         }
         updateDisplay();
     }
 
     document.getElementById('btnStopwatch').addEventListener('click', () => openTool('stopwatch'));
     document.getElementById('btnTimer').addEventListener('click', () => openTool('timer'));
-    document.getElementById('closeModal').addEventListener('click', () => modal.classList.add('hidden'));
+    document.getElementById('btnPomodoro').addEventListener('click', () => openTool('pomodoro'));
+    document.getElementById('closePanel').addEventListener('click', () => panel.classList.add('hidden'));
 
     minInput.addEventListener('change', (e) => {
         if (!isRunning && currentMode === 'timer') {
@@ -490,14 +496,29 @@
                 } else {
                     if (timeInSeconds > 0) timeInSeconds--;
                     if (timeInSeconds === 0) {
-                        clearInterval(toolInterval);
-                        isRunning = false;
-                        btnStartPause.innerText = "時間到！";
-                        btnStartPause.className = "btn-start";
-                        try {
-                           const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                           audio.play();
-                        } catch(e) {}
+                        playAlert();
+                        if (currentMode === 'pomodoro') {
+                            // 番茄鐘：工作與休息切換
+                            if (pomoState === 'work') {
+                                pomoState = 'break';
+                                pomoStatus.innerHTML = `☕ 休息時間 (${BREAK_MINUTES}分)`;
+                                pomoStatus.style.color = "#059669";
+                                pomoStatus.style.background = "#d1fae5";
+                                timeInSeconds = BREAK_MINUTES * 60;
+                            } else {
+                                pomoState = 'work';
+                                pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
+                                pomoStatus.style.color = "#ef4444";
+                                pomoStatus.style.background = "#fee2e2";
+                                timeInSeconds = WORK_MINUTES * 60;
+                            }
+                        } else {
+                            // 一般計時器結束
+                            clearInterval(toolInterval);
+                            isRunning = false;
+                            btnStartPause.innerText = "時間到！";
+                            btnStartPause.className = "btn-start";
+                        }
                     }
                 }
                 updateDisplay();
@@ -512,8 +533,14 @@
         btnStartPause.className = "btn-start";
         if (currentMode === 'stopwatch') {
             timeInSeconds = 0;
-        } else {
+        } else if (currentMode === 'timer') {
             timeInSeconds = (parseInt(minInput.value) || 10) * 60;
+        } else if (currentMode === 'pomodoro') {
+            pomoState = 'work';
+            pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
+            pomoStatus.style.color = "#ef4444";
+            pomoStatus.style.background = "#fee2e2";
+            timeInSeconds = WORK_MINUTES * 60;
         }
         updateDisplay();
     });
