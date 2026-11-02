@@ -95,6 +95,8 @@
     .btn-stopwatch { background: #3b82f6; }
     .btn-timer { background: #f59e0b; }
     .btn-pomodoro { background: #ef4444; }
+    .btn-recommend { background: #10b981; text-decoration: none; }
+    .btn-locked { background: #9ca3af !important; pointer-events: none; opacity: 0.6; }
 
     /* 可拖曳懸浮工具面板 UI */
     .draggable-panel {
@@ -172,6 +174,9 @@
 
   <!-- 右下角工具按鈕 -->
   <div class="fab-container hidden" id="fabTools">
+    <a href="https://padlet.com/hc1998_1/115-s0251p2xpanvln5dj073" target="_blank" class="fab-btn btn-recommend btn-locked" title="作業繳齊後解鎖" id="btnRecommend">
+      <i class="bi bi-bookmarks"></i>
+    </a>
     <button id="btnStopwatch" class="fab-btn btn-stopwatch" title="碼表"><i class="bi bi-stopwatch"></i></button>
     <button id="btnTimer" class="fab-btn btn-timer" title="計時器"><i class="bi bi-hourglass-split"></i></button>
     <button id="btnPomodoro" class="fab-btn btn-pomodoro" title="番茄鐘"><i class="bi bi-alarm"></i></button>
@@ -325,10 +330,14 @@
                     updateExpUI(student.exp || 0);
                     
                     if (student.debts.length === 0) {
+                        document.getElementById('btnRecommend').classList.remove('btn-locked');
+                        document.getElementById('btnRecommend').title = "好站推薦";
                         document.getElementById('taskListArea').innerHTML = `
                             <div class="success-msg"><i class="bi bi-shield-fill-check success-icon"></i>太棒了！<br>所有任務皆已順利討伐完畢！</div>`;
                         fireConfetti();
                     } else {
+                        document.getElementById('btnRecommend').classList.add('btn-locked');
+                        document.getElementById('btnRecommend').title = "作業繳齊後解鎖";
                         const bookSummary = {};
                         const bookKeywords = ["數習", "數練", "數作", "國習", "國作", "甲本", "乙本", "聯絡簿", "聽寫", "生字", "圈詞", "造詞", "學習單", "作文本", "閱讀", "英文"];
                         student.debts.forEach(d => {
