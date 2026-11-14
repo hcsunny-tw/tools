@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.7.0.0🛡️</title>
+  <title>🛡️ 冒險者公會 v.7.0.1🛡️</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧙‍♂️</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -1207,43 +1207,469 @@
 
   
   
-  <!-- 🌟 幻獸召喚陣 Modal -->
+  
+  <style>
+    /* ============================================================
+       🐾 Bubble Check 風格：立體扭蛋機 & 像素萌寵圖鑑樣式
+       ============================================================ */
+    .pixel-pet {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    .gacha-modal-box {
+      max-width: 450px !important;
+      border-radius: 28px !important;
+      border: 4px solid #fff !important;
+      background: linear-gradient(165deg, #fff8ec 0%, #ffeef3 50%, #e2f2ff 100%) !important;
+      color: #4a2e22 !important;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45) !important;
+      padding: 16px !important;
+      overflow: hidden !important;
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh !important;
+    }
+    html[data-theme='dark'] .gacha-modal-box {
+      background: linear-gradient(165deg, #2c1810 0%, #3e2723 60%, #1e293b 100%) !important;
+      color: #FDF5E6 !important;
+      border-color: #8B4513 !important;
+    }
+    .gacha-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .gacha-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.65);
+      border: 2px solid #fff;
+      border-radius: 999px;
+      padding: 4px;
+    }
+    html[data-theme='dark'] .gacha-tabs {
+      background: rgba(0,0,0,0.35);
+      border-color: #5D4037;
+    }
+    .gacha-tab-btn {
+      border: none;
+      background: transparent;
+      color: rgba(74,46,34,0.65);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    html[data-theme='dark'] .gacha-tab-btn { color: #E6D2B5; }
+    .gacha-tab-btn.active {
+      background: #2fb0bb;
+      color: #fff;
+      box-shadow: 0 2px 0 #1b8a97;
+    }
+    .gacha-student-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid #fff;
+      border-radius: 16px;
+      padding: 8px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(74,46,34,0.06);
+    }
+    html[data-theme='dark'] .gacha-student-banner {
+      background: rgba(0,0,0,0.3);
+      border-color: #5D4037;
+    }
+    .gacha-stage-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 280px;
+      aspect-ratio: 300 / 400;
+      margin: 0 auto;
+      user-select: none;
+    }
+    .gacha-cta-btn {
+      height: 46px;
+      border-radius: 999px;
+      background: #2fb0bb;
+      border: none;
+      padding: 0 28px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #fff;
+      box-shadow: 0 5px 0 #1b8a97;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .gacha-cta-btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+    .gacha-cta-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #1b8a97; }
+    .gacha-cta-btn:disabled {
+      background: #9fd3d8;
+      box-shadow: 0 5px 0 #86bfc4;
+      cursor: not-allowed;
+      opacity: 0.75;
+    }
+    .gacha-sub-btn {
+      height: 42px;
+      border-radius: 999px;
+      border: 2px solid #bfe9ec;
+      background: #fff;
+      padding: 0 18px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #1b8a97;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .gacha-sub-btn:hover { background: #f0fdfe; }
+    .gacha-reveal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 24px;
+      background: rgba(255, 248, 236, 0.96);
+      padding: 12px;
+      animation: fadeIn 0.25s ease;
+    }
+    html[data-theme='dark'] .gacha-reveal-overlay {
+      background: rgba(44, 24, 16, 0.96);
+    }
+    .gacha-reveal-overlay.show { display: flex; }
+    .gacha-book-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 4px 2px;
+      overflow-y: auto;
+      max-height: 52vh;
+    }
+    @media (min-width: 480px) {
+      .gacha-book-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
+    .gacha-book-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 16px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.82);
+      padding: 4px 4px 6px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    html[data-theme='dark'] .gacha-book-item {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .gacha-book-item.locked {
+      background: rgba(255,255,255,0.35);
+      border-color: rgba(201,162,126,0.45);
+      cursor: default;
+    }
+    .gacha-book-item.active-partner {
+      border-color: #2fb0bb;
+      background: #e3f8f9;
+      box-shadow: 0 0 0 2px rgba(47,176,187,0.3);
+    }
+    html[data-theme='dark'] .gacha-book-item.active-partner {
+      background: rgba(47,176,187,0.25);
+    }
+    .gacha-book-item:not(.locked):hover {
+      transform: translateY(-2px);
+      border-color: #2fb0bb;
+    }
+    .gacha-filter-pill {
+      border-radius: 999px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.75);
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #4a2e22;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .gacha-filter-pill.active {
+      border-color: #2fb0bb;
+      background: #2fb0bb;
+      color: #fff;
+    }
+    @keyframes capFloat0 { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-3px) rotate(-3deg); } }
+    @keyframes capFloat1 { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-4px) rotate(3deg); } }
+    .cap-idle-0 { animation: capFloat0 1.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+    .cap-idle-1 { animation: capFloat1 1.9s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+    @keyframes petBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    .pet-bob-anim { animation: petBob 2.4s ease-in-out infinite; }
+  </style>
+
+  <!-- 🌟 Bubble Check 風格：立體扭蛋機與百種萌寵圖鑑 Modal -->
   <div id="summonModal" class="modal-overlay">
-      <div class="modal-content" style="max-width: 440px; text-align: center; border: 4px double var(--accent);">
-          <div class="modal-header" style="justify-content: space-between; border-bottom: 2px dashed var(--tbl-border);">
-              <h2 style="color: var(--primary); font-size: 22px; font-weight: 900; margin: 0;"><i class="bi bi-stars" style="color:#d97706;"></i> 幻獸召喚陣</h2>
-              <button class="modal-close-btn">&times;</button>
+      <div class="modal-content gacha-modal-box">
+          <!-- 頂部切換列 -->
+          <div class="gacha-top-bar">
+              <div class="gacha-tabs">
+                  <button class="gacha-tab-btn active" id="tabGachaMachine" onclick="window.switchGachaTab('machine')">扭蛋機</button>
+                  <button class="gacha-tab-btn" id="tabGachaBook" onclick="window.switchGachaTab('book')">圖鑑 <span id="gachaBookProgress">0/100</span></button>
+              </div>
+              <button class="modal-close-btn" style="background:#fff; color:#4a2e22; border:2px solid #e5e7eb; width:34px; height:34px; box-shadow:none;">&times;</button>
           </div>
-          
-          <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--tbl-border); margin-bottom: 16px;">
-              <div id="summonStudentName" style="font-size: 18px; font-weight: 900; color: var(--text-main);">冒險者姓名</div>
-              <div style="font-size: 14px; color: var(--muted); margin-top: 4px; font-weight: bold;">
-                  目前擁有金幣：<span id="summonStudentCoins" style="color: #d97706; font-weight: 900; font-size: 20px;">0</span> 💰
+
+          <!-- 學生資訊與金幣餘額 -->
+          <div class="gacha-student-banner">
+              <div style="display:flex; align-items:center; gap:8px;">
+                  <img id="summonPartnerPreview" src="" alt="" class="pixel-pet" style="width:32px; height:32px; display:none;">
+                  <span id="summonStudentName" style="font-size:16px; font-weight:900;">冒險者</span>
+              </div>
+              <div style="font-size:14px; font-weight:900; color:#b45309; background:#fffbeb; border:1.5px solid #fcd34d; padding:3px 10px; border-radius:999px;">
+                  💰 <span id="summonStudentCoins">0</span> 金幣
               </div>
           </div>
 
-          <div id="summonResultArea" style="min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 16px; background: var(--tbl-alt); border-radius: 12px; border: 2px solid var(--tbl-border); padding: 16px;">
-              <div id="summonMysteryBox" style="font-size: 64px; line-height: 1; user-select: none;">🔮</div>
-              <div id="summonResultPet" style="display: none; flex-direction: column; align-items: center;">
-                  <div id="summonPetImg" style="font-size: 64px; line-height: 1; animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;"></div>
-                  <div id="summonPetName" style="font-size: 18px; font-weight: 900; color: var(--primary); margin-top: 8px;"></div>
-                  <div id="summonPetRarity" style="font-size: 12px; font-weight: 900; padding: 3px 10px; border-radius: 12px; margin-top: 4px; color: #fff;"></div>
+          <!-- 視圖 1：立體扭蛋機 -->
+          <div id="gachaViewMachine" style="display:flex; flex-direction:column; align-items:center; gap:8px; overflow-y:auto; padding-bottom:4px;">
+              <div id="gachaMachineShakeWrap" class="gacha-stage-wrap">
+                  <svg viewBox="0 0 300 400" style="width:100%; height:100%; overflow:visible;" aria-hidden="true">
+                      <defs>
+                          <linearGradient id="cap-shade" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#fff" stop-opacity=".4"/>
+                              <stop offset=".4" stop-color="#fff" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".3"/>
+                          </linearGradient>
+                          <linearGradient id="cap-side" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0" stop-color="#000" stop-opacity=".16"/>
+                              <stop offset=".3" stop-color="#fff" stop-opacity=".22"/>
+                              <stop offset=".65" stop-color="#fff" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".2"/>
+                          </linearGradient>
+                          <radialGradient id="cap-glass" cx=".32" cy=".28" r=".85">
+                              <stop offset="0" stop-color="#fff" stop-opacity=".42"/>
+                              <stop offset=".5" stop-color="#eaf7ff" stop-opacity=".12"/>
+                              <stop offset="1" stop-color="#b9def2" stop-opacity=".38"/>
+                          </radialGradient>
+                          <radialGradient id="cap-inner" cx=".5" cy=".2" r=".9">
+                              <stop offset="0" stop-color="#000" stop-opacity=".05"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".32"/>
+                          </radialGradient>
+                          <clipPath id="gacha-dome-clip">
+                              <rect x="36" y="62" width="228" height="164" rx="26"/>
+                          </clipPath>
+                          <linearGradient id="gm-body" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#8be1e6"/>
+                              <stop offset="1" stop-color="#47b6c1"/>
+                          </linearGradient>
+                          <linearGradient id="gm-body-side" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
+                              <stop offset=".12" stop-color="#fff" stop-opacity="0"/>
+                              <stop offset=".88" stop-color="#000" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".14"/>
+                          </linearGradient>
+                          <linearGradient id="gm-lid" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#b2eef0"/>
+                              <stop offset="1" stop-color="#63cbd3"/>
+                          </linearGradient>
+                          <linearGradient id="gm-glass" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#c4e4f6"/>
+                              <stop offset=".35" stop-color="#e9f7ff"/>
+                              <stop offset="1" stop-color="#cfe9f7"/>
+                          </linearGradient>
+                          <linearGradient id="gm-top-shade" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#0a3c50" stop-opacity=".22"/>
+                              <stop offset="1" stop-color="#0a3c50" stop-opacity="0"/>
+                          </linearGradient>
+                          <linearGradient id="gm-floor" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#0a3c50" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#0a3c50" stop-opacity=".28"/>
+                          </linearGradient>
+                          <linearGradient id="gm-house" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#626d77"/>
+                              <stop offset="1" stop-color="#3a4249"/>
+                          </linearGradient>
+                          <radialGradient id="gm-dial" cx=".38" cy=".32" r=".8">
+                              <stop offset="0" stop-color="#a9b3bb"/>
+                              <stop offset="1" stop-color="#56616b"/>
+                          </radialGradient>
+                          <linearGradient id="gm-handle" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#eef2f5"/>
+                              <stop offset="1" stop-color="#a3adb6"/>
+                          </linearGradient>
+                          <linearGradient id="gm-exit" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#0f4950"/>
+                              <stop offset="1" stop-color="#2a8792"/>
+                          </linearGradient>
+                          <filter id="gm-drop" x="-10%" y="-10%" width="120%" height="125%">
+                              <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#0e4a55" flood-opacity=".28"/>
+                          </filter>
+                      </defs>
+
+                      <ellipse cx="150" cy="393" rx="132" ry="8" fill="#4a2e22" opacity=".16"/>
+                      <g filter="url(#gm-drop)">
+                          <rect x="22" y="246" width="256" height="130" rx="14" fill="url(#gm-body)" stroke="#1b8a97" stroke-width="3.5"/>
+                          <rect x="22" y="246" width="256" height="130" rx="14" fill="url(#gm-body-side)"/>
+                          <rect x="14" y="370" width="272" height="18" rx="8" fill="#3aa5b0" stroke="#1b8a97" stroke-width="3.5"/>
+                          <path d="M22 375H278" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>
+                          <rect x="22" y="48" width="256" height="196" rx="16" fill="url(#gm-body)" stroke="#1b8a97" stroke-width="3.5"/>
+                          <rect x="22" y="48" width="256" height="196" rx="16" fill="url(#gm-body-side)"/>
+                      </g>
+
+                      <!-- 機身螺絲 -->
+                      <g><circle cx="36" cy="262.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="36" cy="262" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M33.8 262h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+                      <g><circle cx="264" cy="262.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="264" cy="262" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M261.8 262h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+                      <g><circle cx="36" cy="358.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="36" cy="358" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M33.8 358h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+                      <g><circle cx="264" cy="358.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="264" cy="358" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M261.8 358h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+
+                      <!-- 轉盤投幣區 -->
+                      <rect x="50" y="262" width="80" height="92" rx="18" fill="url(#gm-house)" stroke="#2f363c" stroke-width="3"/>
+                      <path d="M58 270Q90 264 122 270" stroke="#fff" stroke-opacity=".18" stroke-width="3" fill="none" stroke-linecap="round"/>
+                      <rect x="64" y="268" width="52" height="8" rx="3" fill="#252b30"/>
+                      <circle cx="90" cy="314" r="33" fill="#000" opacity=".25"/>
+                      
+                      <!-- 旋轉把手 -->
+                      <g id="gachaDialKnob" style="transform-box:fill-box; transform-origin:center; cursor:pointer;" onclick="window.triggerGachaSpin()">
+                          <circle cx="90" cy="312" r="32" fill="url(#gm-dial)" stroke="#2f363c" stroke-width="2.5"/>
+                          <rect x="62" y="304" width="56" height="20" rx="10" fill="#000" opacity=".22"/>
+                          <rect x="62" y="301" width="56" height="20" rx="10" fill="url(#gm-handle)" stroke="#3b434b" stroke-width="3"/>
+                          <g fill="none" stroke="#eef3f6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M80 291Q90 286 100 291M96 287l5 4-5 3"/>
+                              <path d="M100 333Q90 338 80 333M84 337l-5-4 5-3"/>
+                          </g>
+                      </g>
+
+                      <g transform="translate(32 352)">
+                          <circle cy="2" r="19" fill="#0e4a55" opacity=".2"/>
+                          <circle r="19" fill="#f3fbfb" stroke="#1b8a97" stroke-width="2.5"/>
+                          <text y="6.5" text-anchor="middle" font-size="17" font-weight="900" fill="#1b6f7a">扭</text>
+                      </g>
+
+                      <!-- 出蛋口 -->
+                      <rect x="166" y="264" width="90" height="90" rx="20" fill="#9eeaee" stroke="#1b8a97" stroke-width="3"/>
+                      <path d="M172 272Q211 266 250 272" stroke="#fff" stroke-opacity=".55" stroke-width="3" fill="none" stroke-linecap="round"/>
+                      <path d="M178 346V300Q178 276 211 276Q244 276 244 300V346Z" fill="url(#gm-exit)"/>
+                      <path d="M178 300Q178 276 211 276Q244 276 244 300V308Q244 286 211 286Q178 286 178 308Z" fill="#000" opacity=".25"/>
+                      <path d="M178 346H244L238 336H184Z" fill="#0c4047" opacity=".7"/>
+
+                      <!-- 玻璃櫥窗與裡面的扭蛋球 -->
+                      <rect x="36" y="62" width="228" height="164" rx="26" fill="url(#gm-glass)"/>
+                      <g clip-path="url(#gacha-dome-clip)">
+                          <rect x="36" y="186" width="228" height="40" fill="url(#gm-floor)"/>
+                          <g id="gachaDomeCapsules"></g>
+                          <rect x="36" y="62" width="228" height="26" fill="url(#gm-top-shade)"/>
+                          <path d="M70 62H122L58 226H36V150Z" fill="#fff" opacity=".2"/>
+                          <path d="M132 62H148L84 226H68Z" fill="#fff" opacity=".12"/>
+                      </g>
+                      <rect x="36" y="62" width="228" height="164" rx="26" fill="none" stroke="#1b8a97" stroke-width="3"/>
+                      <rect x="39.5" y="65.5" width="221" height="157" rx="22.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5"/>
+
+                      <!-- 櫥窗頂部標牌 -->
+                      <rect x="58" y="76" width="184" height="38" rx="19" fill="#0e4a55" opacity=".18"/>
+                      <rect x="58" y="74" width="184" height="38" rx="19" fill="#1f6f87" fill-opacity=".92" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/>
+                      <text x="150" y="90" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">每次召喚消耗 <tspan fill="#ffd84a" font-size="13.5">10</tspan> 枚金幣</text>
+                      <text x="150" y="105" text-anchor="middle" font-size="11" font-weight="700" fill="#e0f2fe" id="gachaBannerSubText">共有 100 隻可愛貓狗夥伴等你收集</text>
+
+                      <!-- 機頂蓋 -->
+                      <rect x="12" y="239" width="276" height="16" rx="6" fill="#0e4a55" opacity=".2"/>
+                      <rect x="12" y="236" width="276" height="16" rx="6" fill="url(#gm-lid)" stroke="#1b8a97" stroke-width="3.5"/>
+                      <path d="M20 240H280" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>
+                      <rect x="10" y="12" width="280" height="44" rx="12" fill="#0e4a55" opacity=".18"/>
+                      <rect x="8" y="8" width="284" height="44" rx="12" fill="url(#gm-lid)" stroke="#1b8a97" stroke-width="3.5"/>
+                      <path d="M20 14H280" stroke="#fff" stroke-opacity=".65" stroke-width="2.5" stroke-linecap="round"/>
+                      <path d="M20 44H280" stroke="#1b8a97" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+
+                  <!-- 掉落至洞口的待開扭蛋 -->
+                  <button id="gachaDroppedCapsule" onclick="window.openDroppedCapsule()" title="點擊打開扭蛋！" style="display:none; position:absolute; left:70.3%; top:81.5%; width:18%; aspect-ratio:1; transform:translate(-50%,-50%); border:none; background:transparent; padding:0; cursor:pointer; z-index:12;">
+                      <svg viewBox="-27 -27 54 54" style="width:100%; height:100%; overflow:visible;" id="gachaDroppedCapsuleSvg"></svg>
+                  </button>
+
+                  <!-- 開蛋破殼與寵物揭曉層 -->
+                  <div id="gachaRevealOverlay" class="gacha-reveal-overlay">
+                      <div style="position:relative; width:155px; height:155px; display:flex; align-items:center; justify-content:center;">
+                          <div style="position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle, rgba(255,224,140,0.92), rgba(255,224,140,0) 68%);"></div>
+                          <img id="gachaRevealPetImg" src="" alt="" class="pixel-pet" style="position:relative; width:82%; height:82%; object-fit:contain; z-index:2; cursor:pointer;" onclick="window.playCurrentPetCry()" title="點我聽叫聲！">
+                          <svg viewBox="-30 -30 60 60" style="position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:3; pointer-events:none;" id="gachaSplitCapsuleSvg"></svg>
+                      </div>
+                      <div id="gachaRevealInfo" style="display:none; flex-direction:column; align-items:center; gap:4px; width:100%;">
+                          <div style="display:flex; align-items:center; gap:6px;">
+                              <span id="gachaRevealRarity" style="border-radius:999px; padding:2px 10px; font-size:11px; font-weight:900; color:#fff;">普通</span>
+                              <span id="gachaRevealNo" style="font-family:monospace; font-size:12px; font-weight:800; opacity:0.6;">No.001</span>
+                          </div>
+                          <div id="gachaRevealName" style="font-size:22px; font-weight:900; letter-spacing:0.05em;">灰虎斑</div>
+                          <div id="gachaRevealKind" style="font-size:12px; opacity:0.7; font-weight:bold;">種類：貓咪</div>
+                          <div id="gachaRevealBadge" style="margin-top:2px; transform:rotate(-5deg); border-radius:10px; border:2.5px solid #ff6b7d; background:rgba(255,255,255,0.85); padding:2px 10px; font-size:13px; font-weight:900; color:#ff6b7d;">收藏成功！新夥伴</div>
+                          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center;">
+                              <button class="gacha-sub-btn" id="btnSetPartnerFromReveal" onclick="window.setPartnerPetFromReveal()"><i class="bi bi-heart-fill" style="color:#ff6b7d;"></i> 設為代表夥伴</button>
+                              <button class="gacha-cta-btn" style="height:42px; padding:0 22px; font-size:14px;" onclick="window.resetGachaMachineView()">收下</button>
+                          </div>
+                      </div>
+                  </div>
               </div>
-          </div>
 
-          <div id="summonOwnedSection" style="text-align: left; margin-bottom: 16px; background: var(--bg); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--tbl-border);">
-              <div style="font-size: 12px; font-weight: 900; color: var(--muted); margin-bottom: 6px;"><i class="bi bi-collection-fill"></i> 已收服的幻獸夥伴：</div>
-              <div id="summonOwnedList" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto;"></div>
-          </div>
-
-          <div class="actions" style="justify-content: center; gap: 12px;">
-              <button class="btn" id="btnDoSummon" style="font-size: 16px; padding: 10px 24px; background: #d97706; border-color: #b45309; color: #fff; flex: 1;">
-                  <i class="bi bi-magic"></i> 召喚 (消耗 10 💰)
+              <!-- 底部統計與操作按鈕 -->
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; font-size:12px; font-weight:800; width:100%;">
+                  <span style="background:rgba(255,255,255,0.8); border:2px solid #fff; border-radius:999px; padding:4px 12px;">
+                      已收集 <b id="gachaOwnedStat" style="color:#1b8a97;">0</b> / 100
+                  </span>
+                  <span id="gachaLastDrawnStat" style="background:rgba(255,255,255,0.8); border:2px solid #fff; border-radius:999px; padding:4px 12px; display:inline-flex; align-items:center; gap:4px;">
+                      尚未抽過扭蛋
+                  </span>
+              </div>
+              <button class="gacha-cta-btn" id="btnDoSummon" onclick="window.handleMainGachaBtn()" style="width:85%; max-width:260px; margin-top:2px;">
+                  轉一下把手 (10 💰)
               </button>
-              <button class="btn ghost" onclick="document.getElementById('summonModal').classList.remove('show')" style="border: 2px dashed var(--tbl-border); color: var(--text-light);">關閉</button>
+          </div>
+
+          <!-- 視圖 2：百種萌寵圖鑑 -->
+          <div id="gachaViewBook" style="display:none; flex-direction:column; gap:10px; position:relative; min-height:360px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                  <button class="gacha-filter-pill active" data-filter="all" onclick="window.setGachaBookFilter('all')">全部</button>
+                  <button class="gacha-filter-pill" data-filter="cat" onclick="window.setGachaBookFilter('cat')">🐱 貓咪</button>
+                  <button class="gacha-filter-pill" data-filter="dog" onclick="window.setGachaBookFilter('dog')">🐶 狗狗</button>
+                  <span style="margin-left:auto; font-size:11px; opacity:0.65; font-weight:bold;">點擊已解鎖夥伴可聽叫聲與設為代表</span>
+              </div>
+              <div id="gachaBookGrid" class="gacha-book-grid"></div>
+
+              <!-- 圖鑑詳細資訊彈窗 -->
+              <div id="gachaPetDetailOverlay" class="gacha-reveal-overlay" onclick="window.closeGachaPetDetail()">
+                  <div onclick="event.stopPropagation()" style="background:#fff8ec; border:4px solid #fff; border-radius:24px; padding:16px; width:90%; max-width:280px; display:flex; flex-direction:column; align-items:center; gap:6px; box-shadow:0 16px 40px rgba(74,46,34,0.28); color:#4a2e22;">
+                      <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                          <span id="detailPetNo" style="font-family:monospace; font-size:12px; font-weight:800; opacity:0.6;">No.001</span>
+                          <span id="detailPetRarity" style="border-radius:999px; padding:2px 10px; font-size:11px; font-weight:900; color:#fff;">普通</span>
+                      </div>
+                      <div style="position:relative; width:120px; height:120px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.playDetailPetCry()" title="點我聽叫聲！">
+                          <div style="position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle, rgba(255,224,140,0.85), rgba(255,224,140,0) 68%);"></div>
+                          <img id="detailPetImg" src="" alt="" class="pixel-pet pet-bob-anim" style="position:relative; width:90%; height:90%; object-fit:contain;">
+                      </div>
+                      <div id="detailPetName" style="font-size:20px; font-weight:900;">灰虎斑</div>
+                      <div id="detailPetMeta" style="font-size:12px; opacity:0.75; font-weight:bold; text-align:center; line-height:1.5;"></div>
+                      <div style="display:flex; gap:8px; margin-top:8px; width:100%; justify-content:center;">
+                          <button class="gacha-sub-btn" onclick="window.closeGachaPetDetail()">返回</button>
+                          <button class="gacha-cta-btn" id="btnSetPartnerFromDetail" style="height:42px; padding:0 18px; font-size:13px;" onclick="window.setPartnerPetFromDetail()">設為代表夥伴</button>
+                      </div>
+                  </div>
+              </div>
           </div>
       </div>
   </div>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>
