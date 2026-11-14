@@ -31,59 +31,412 @@
       overflow-x: hidden;
     }
 
-    .wrap { width: 100%; max-width: 500px; margin-top: 20px; padding-bottom: 80px; }
+    .wrap { width: 100%; max-width: 500px; margin-top: 15px; padding-bottom: 85px; }
 
-    .card { background: var(--card); border: 3px solid var(--primary); border-radius: 16px; padding: 24px; box-shadow: 4px 4px 15px rgba(139, 69, 19, 0.15); }
-    .header-section { text-align: center; margin-bottom: 20px; border-bottom: 2px dashed var(--primary); padding-bottom: 15px; }
+    .card { background: var(--card); border: 3px solid var(--primary); border-radius: 16px; padding: 20px; box-shadow: 4px 4px 15px rgba(139, 69, 19, 0.15); }
+    .header-section { text-align: center; margin-bottom: 18px; border-bottom: 2px dashed var(--primary); padding-bottom: 15px; }
     
-    .avatar-circle { width: 70px; height: 70px; background: var(--primary); color: #fff; border-radius: 50%; display: grid; place-items: center; font-size: 32px; font-weight: 900; margin: 0 auto 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    h2 { margin: 0 0 5px; font-size: 24px; color: var(--primary); font-weight: 900; }
+    .avatar-circle { width: 68px; height: 68px; background: var(--primary); color: #fff; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-weight: 900; margin: 0 auto 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    h2 { margin: 0 0 4px; font-size: 24px; color: var(--primary); font-weight: 900; }
     
-    .stats-container { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-    .stat-box { background: #fff; border: 2px solid #D2B48C; border-radius: 12px; padding: 10px; flex: 1; text-align: center; }
-    .stat-box .title { font-size: 13px; color: var(--muted); font-weight: bold; margin-bottom: 4px; }
+    .stats-container { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+    .stat-box { background: #fff; border: 2px solid #D2B48C; border-radius: 12px; padding: 8px 10px; flex: 1; text-align: center; }
+    .stat-box .title { font-size: 12px; color: var(--muted); font-weight: bold; margin-bottom: 2px; }
     .stat-box .value { font-size: 20px; font-weight: 900; }
     .val-exp { color: var(--primary); }
     .val-coin { color: #b45309; }
 
-    .exp-progress-wrapper { width: 100%; margin-top: 15px; background: #fff; border: 2px solid #D2B48C; border-radius: 20px; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+    .exp-progress-wrapper { width: 100%; margin-top: 12px; background: #fff; border: 2px solid #D2B48C; border-radius: 20px; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
     .exp-bar-bg { width: 100%; height: 20px; background: #fef3c7; border-radius: 12px; overflow: hidden; position: relative; }
     .exp-bar-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 12px; }
     .exp-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: #78350f; }
 
-    .summary-box { background: #fff; border: 2px dashed #d97706; border-radius: 12px; padding: 15px; margin: 20px 0 10px; text-align: center; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1); }
-    .summary-title { font-weight: 900; color: #b45309; margin-bottom: 8px; font-size: 16px; }
-    
-    /* 🎒 功能 1.1：書包清單點擊打勾 */
-    .pack-items-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-    .pack-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #fff8f0; border: 2px solid #f59e0b; border-radius: 12px; font-size: 15px; font-weight: 900; color: #b45309; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); user-select: none; }
-    .pack-item:active { transform: scale(0.95); }
-    .pack-item.checked { background: #d1fae5; border-color: #10b981; color: #047857; text-decoration: line-through; opacity: 0.7; }
+    /* ============================================================
+       🏅 升級 2：個人榮耀徽章櫃
+       ============================================================ */
+    .badge-cabinet {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .honor-badge {
+      background: #f5f5f4;
+      border: 1.5px dashed #d6d3d1;
+      border-radius: 10px;
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      opacity: 0.45;
+      filter: grayscale(100%);
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    .honor-badge.unlocked {
+      background: linear-gradient(145deg, #fffbeb, #fef3c7);
+      border: 2px solid #f59e0b;
+      opacity: 1;
+      filter: grayscale(0%);
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+    }
+    .honor-badge .b-icon { font-size: 20px; line-height: 1.1; }
+    .honor-badge .b-name { font-size: 11px; font-weight: 900; color: #78350f; white-space: nowrap; }
+    .honor-badge .b-desc { font-size: 9px; font-weight: bold; color: #92400e; opacity: 0.85; white-space: nowrap; }
 
-    .debt-title { font-size: 18px; font-weight: 900; color: var(--danger); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
+    /* ============================================================
+       🐾 升級 1, 3, 4：橫向草地漫步舞台、對話氣泡、重新鑑定與防連點餵食
+       ============================================================ */
+    .pixel-pet { image-rendering: pixelated; image-rendering: crisp-edges; }
+    .pet-sanctuary-wrap {
+      position: relative;
+      margin: 14px 0 6px;
+      border-radius: 16px;
+      border: 2.5px solid #84cc16;
+      background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 58%, #bef264 58%, #84cc16 100%);
+      padding: 12px 10px 10px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+      transition: all 0.4s ease;
+    }
+    .pet-sanctuary-wrap.is-fogged {
+      border-color: #d6d3d1;
+      background: #f5f5f4;
+    }
+    .pet-sanctuary-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: filter 0.5s ease, opacity 0.5s ease;
+    }
+    .pet-sanctuary-wrap.is-fogged .pet-sanctuary-inner:not(.unsealed) {
+      filter: blur(11px) grayscale(75%);
+      opacity: 0.3;
+      pointer-events: none;
+      user-select: none;
+    }
+    .pet-fog-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 15;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .pet-sanctuary-wrap.is-fogged .pet-fog-overlay { display: flex; }
+    .pet-fog-overlay.clearing {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.06);
+    }
+    @keyframes rejectShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .pet-fog-overlay.shake-reject { animation: rejectShake 0.45s ease; }
+
+    .pet-fog-badge {
+      background: #fff1f2;
+      color: #be123c;
+      border: 2px solid #fda4af;
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 6px;
+    }
+    .btn-unseal {
+      margin-top: 10px;
+      background: #0d9488;
+      color: white;
+      border: 2px solid #115e59;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 0 #115e59;
+      transition: 0.15s;
+    }
+    .btn-unseal:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 #115e59; }
+    .btn-unseal:disabled { opacity: 0.7; cursor: wait; }
+
+    .pet-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 6px;
+      flex-wrap: wrap;
+      z-index: 5;
+    }
+    .pet-status-pill {
+      font-size: 11px;
+      font-weight: 900;
+      color: #365314;
+      background: rgba(255,255,255,0.9);
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1.5px solid #86efac;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pet-action-btns { display: flex; gap: 5px; align-items: center; }
+    .btn-feed {
+      background: #fef08a;
+      border: 2px solid #eab308;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #854d0e;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 0 #ca8a04;
+      transition: 0.15s;
+    }
+    .btn-feed:active:not(.empty) { transform: translateY(2px); box-shadow: none; }
+    .btn-feed.empty {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+      color: #4b5563;
+      box-shadow: none;
+    }
+    .btn-open-dex {
+      background: #e0f2fe;
+      border: 2px solid #38bdf8;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #0369a1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      box-shadow: 0 2px 0 #0284c7;
+    }
+    .btn-open-dex:active { transform: translateY(2px); box-shadow: none; }
+
+    /* 🌿 橫向草地漫步舞台 */
+    .pet-meadow-track {
+      position: relative;
+      width: 100%;
+      height: 105px;
+      margin: 4px 0 2px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .meadow-clouds-mini {
+      position: absolute;
+      top: 6px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      font-size: 16px;
+      opacity: 0.65;
+      pointer-events: none;
+    }
+    .meadow-flowers-mini {
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 12px;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    .pet-walker-box {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: left 2.4s linear;
+      z-index: 4;
+    }
+    .pet-speech-bubble {
+      position: absolute;
+      bottom: 76px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.8);
+      background: #fff;
+      border: 2px solid #3E2723;
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #3E2723;
+      white-space: nowrap;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 12;
+    }
+    .pet-speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border-right: 2px solid #3E2723;
+      border-bottom: 2px solid #3E2723;
+    }
+    .pet-speech-bubble.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    .pet-stage-avatar {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 5px rgba(0,0,0,0.18));
+      transition: transform 0.2s;
+    }
+    @keyframes petHappyBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @keyframes petWalkStep { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
+    @keyframes petScratchAnim { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
+    .pet-bob { animation: petHappyBob 1.8s ease-in-out infinite; }
+    .pet-waddle { animation: petWalkStep 0.45s ease-in-out infinite; }
+    .pet-scratch { animation: petScratchAnim 0.35s ease-in-out infinite; }
+
+    @keyframes heartPop { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-45px) scale(1.6); } }
+    .heart-float { position: absolute; font-size: 22px; animation: heartPop 0.9s forwards ease-out; pointer-events: none; z-index: 20; }
+
+    /* 圖鑑與集氣條 */
+    .pet-mini-dex { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 4px; padding-top: 6px; border-top: 1px dashed rgba(54, 83, 20, 0.25); width: 100%; }
+    .pet-mini-chip { background: rgba(255,255,255,0.9); border: 1.5px solid #86efac; border-radius: 10px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 900; color: #166534; cursor: pointer; }
+    .pet-mini-chip.active-chip { border-color: #0284c7; background: #e0f2fe; color: #0369a1; }
     
-    .task-item { background: #fff; padding: 14px; margin-bottom: 12px; border: 2px solid rgba(0,0,0,0.1); border-radius: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; }
+    .gacha-bar-wrap { width: 95%; height: 16px; background: #e5e7eb; border-radius: 99px; margin-top: 6px; overflow: hidden; position: relative; border: 2px solid #d1d5db; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .gacha-bar-fill { height: 100%; background: linear-gradient(90deg, #fcd34d, #f59e0b); width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+    .gacha-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #78350f; text-shadow: 0 1px 0 rgba(255,255,255,0.6); }
+
+    /* ============================================================
+       🎒 書包確認清單 & 🔥 升級 5：任務緊急度視覺分級與完成印章
+       ============================================================ */
+    .summary-box { background: #fff; border: 2px dashed #d97706; border-radius: 12px; padding: 14px; margin: 16px 0 10px; text-align: center; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.08); }
+    .summary-title { font-weight: 900; color: #b45309; margin-bottom: 8px; font-size: 15px; }
+    .pack-items-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .pack-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #fff8f0; border: 2px solid #f59e0b; border-radius: 12px; font-size: 15px; font-weight: 900; color: #b45309; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .pack-item:active { transform: scale(0.95); }
+    .pack-item.checked { background: #d1fae5; border-color: #10b981; color: #047857; text-decoration: line-through; opacity: 0.72; }
+
+    .debt-title { font-size: 17px; font-weight: 900; color: var(--danger); margin: 18px 0 10px; display: flex; align-items: center; justify-content: space-between; }
+    
+    .task-item {
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 2px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    /* 🔥 拖欠超過 3 天：緊急討伐呼吸燈 */
+    @keyframes urgentPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.25); }
+      50% { box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.12); }
+    }
+    .task-item.is-urgent {
+      border-color: #ef4444;
+      background: #fffafa;
+      animation: urgentPulse 2.2s infinite;
+    }
+    /* ✅ 本地端標記已在座位寫完 */
+    .task-item.self-done {
+      border-color: #22c55e;
+      background: #f0fdf4;
+      animation: none;
+    }
     .task-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .task-name { font-weight: bold; font-size: 16px; line-height: 1.4; color: var(--text-main); }
     
-    /* ⏱️ 功能 1.2：專注任務按鈕 */
-    .quick-timer-btn { background: #fef3c7; border: 2px solid #f59e0b; color: #d97706; border-radius: 8px; padding: 4px 8px; font-size: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; white-space: nowrap; }
-    .quick-timer-btn:active { transform: scale(0.9); }
+    .urgent-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 1px 7px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .self-done-stamp {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: #dcfce7;
+      color: #166534;
+      border: 1.5px solid #86efac;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-top: 4px;
+      width: fit-content;
+    }
+    .task-item.self-done .self-done-stamp { display: inline-flex; }
+
+    .task-btn-group { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .quick-timer-btn { background: #fef3c7; border: 2px solid #f59e0b; color: #b45309; border-radius: 8px; padding: 4px 9px; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: 0.15s; white-space: nowrap; }
+    .quick-timer-btn:active { transform: scale(0.92); }
+    .self-check-btn { background: #f3f4f6; border: 2px solid #d1d5db; color: #374151; border-radius: 8px; padding: 4px 9px; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: 0.15s; white-space: nowrap; }
+    .task-item.self-done .self-check-btn { background: #22c55e; border-color: #16a34a; color: #fff; }
 
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 900; white-space: nowrap; flex-shrink: 0; }
     .badge.miss { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
     .badge.redo { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
     .badge.subj { background: #E6D2B5; color: var(--primary); padding: 2px 6px; font-size: 11px; margin-right: 6px; }
 
-    @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
-    .success-msg { text-align: center; padding: 30px 10px; background: #f0fdf4; border: 2px dashed var(--success); border-radius: 12px; color: var(--success); font-weight: bold; font-size: 18px; line-height: 1.6; animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
-    .success-icon { font-size: 48px; display: block; margin-bottom: 10px; color: #22c55e; text-shadow: 0 4px 10px rgba(34, 197, 94, 0.3); }
+    @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.08); } 70% { transform: scale(0.95); } 100% { transform: scale(1); opacity: 1; } }
+    .success-msg { text-align: center; padding: 28px 10px; background: #f0fdf4; border: 2px dashed var(--success); border-radius: 12px; color: var(--success); font-weight: bold; font-size: 18px; line-height: 1.6; animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+    .success-icon { font-size: 46px; display: block; margin-bottom: 8px; color: #22c55e; }
 
     #loading { text-align: center; padding: 40px; color: var(--primary); font-size: 18px; font-weight: bold; }
     .hidden { display: none !important; }
 
-    .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-    .fab-btn { width: 50px; height: 50px; border-radius: 50%; color: white; border: 2px solid #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: grid; place-items: center; cursor: pointer; transition: 0.2s; }
+    /* 右下角懸浮按鈕與計時面板 */
+    .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    .fab-btn { width: 48px; height: 48px; border-radius: 50%; color: white; border: 2px solid #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: grid; place-items: center; cursor: pointer; transition: 0.2s; }
     .fab-btn:active { transform: scale(0.9); }
     .btn-stopwatch { background: #3b82f6; }
     .btn-timer { background: #f59e0b; }
@@ -93,81 +446,68 @@
 
     .draggable-panel {
       position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
-      background: var(--card); border-radius: 16px; width: 90%; max-width: 300px;
-      border: 4px solid var(--primary); box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      background: var(--card); border-radius: 16px; width: 92%; max-width: 310px;
+      border: 4px solid var(--primary); box-shadow: 0 15px 35px rgba(0,0,0,0.45);
       z-index: 200; display: flex; flex-direction: column; overflow: hidden;
     }
-    .drag-handle { background: var(--primary); color: white; padding: 10px; text-align: center; font-size: 18px; cursor: grab; display: flex; justify-content: space-between; align-items: center; user-select: none; touch-action: none; }
+    .drag-handle { background: var(--primary); color: white; padding: 10px 12px; font-size: 18px; cursor: grab; display: flex; justify-content: space-between; align-items: center; user-select: none; touch-action: none; }
     .drag-handle:active { cursor: grabbing; }
-    .drag-title { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 6px; }
-    .panel-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 5px; line-height: 1; }
-    .panel-body { padding: 20px; text-align: center; }
-    .time-display { font-size: 52px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 10px 0; letter-spacing: 2px; }
-    .pomodoro-status { font-size: 14px; font-weight: bold; color: #ef4444; background: #fee2e2; padding: 4px 12px; border-radius: 12px; display: inline-block; margin-bottom: 5px; }
+    .drag-title { font-weight: 900; font-size: 15px; display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .panel-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 4px; line-height: 1; }
+    .panel-body { padding: 18px; text-align: center; }
+    .time-display { font-size: 50px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 8px 0; letter-spacing: 2px; }
+    .pomodoro-status { font-size: 13px; font-weight: bold; color: #ef4444; background: #fee2e2; padding: 4px 12px; border-radius: 12px; display: inline-block; margin-bottom: 5px; }
+    .cookie-bonus-hint { font-size: 11px; color: #b45309; background: #fef3c7; border-radius: 8px; padding: 4px 8px; font-weight: 900; margin-top: 6px; }
 
-    .tool-controls { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-    .tool-controls button { padding: 10px 0; font-size: 16px; font-weight: 900; border-radius: 10px; border: none; cursor: pointer; flex: 1; }
+    .tool-controls { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+    .tool-controls button { padding: 10px 0; font-size: 15px; font-weight: 900; border-radius: 10px; border: none; cursor: pointer; flex: 1; }
     .btn-start { background: var(--success); color: white; box-shadow: 0 4px 0 #14532d; }
     .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #14532d; }
     .btn-pause { background: #ea580c; color: white; box-shadow: 0 4px 0 #9a3412; }
     .btn-pause:active { transform: translateY(4px); box-shadow: 0 0 0 #9a3412; }
     .btn-reset { background: #e5e7eb; color: var(--text-main); box-shadow: 0 4px 0 #d1d5db; }
     .btn-reset:active { transform: translateY(4px); box-shadow: 0 0 0 #d1d5db; }
-    #timerInputs { margin-bottom: 10px; font-weight: bold; color: var(--text-main); font-size: 14px;}
-    #timerInputs input { width: 60px; font-size: 16px; text-align: center; padding: 4px; border-radius: 6px; border: 2px solid var(--primary); font-weight: 900; }
+    #timerInputs { margin-bottom: 8px; font-weight: bold; color: var(--text-main); font-size: 14px;}
+    #timerInputs input { width: 58px; font-size: 16px; text-align: center; padding: 4px; border-radius: 6px; border: 2px solid var(--primary); font-weight: 900; }
 
-    /* ============================================================
-       🐾 個人萌寵夥伴小屋 & 欠交訂正「迷霧封印」防分心機制
-       ============================================================ */
-    .pixel-pet { image-rendering: pixelated; image-rendering: crisp-edges; }
-    .pet-sanctuary-wrap { position: relative; margin: 16px 0 8px; border-radius: 16px; border: 2.5px solid #84cc16; background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 58%, #bef264 58%, #84cc16 100%); padding: 14px 12px 12px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0,0,0,0.06); transition: all 0.4s ease; }
-    .pet-sanctuary-wrap.is-fogged { border-color: #d6d3d1; background: #f5f5f4; }
-    .pet-sanctuary-inner { display: flex; flex-direction: column; align-items: center; gap: 6px; transition: filter 0.5s ease, opacity 0.5s ease; }
-    
-    /* 🚨 迷霧鎖定 */
-    .pet-sanctuary-wrap.is-fogged .pet-sanctuary-inner:not(.unsealed) { filter: blur(11px) grayscale(75%); opacity: 0.32; pointer-events: none; user-select: none; }
-    
-    .pet-fog-overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 14px; background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 10; transition: opacity 0.5s ease, backdrop-filter 0.5s ease; }
-    .pet-sanctuary-wrap.is-fogged .pet-fog-overlay { display: flex; }
-    
-    /* 🔄 破霧解封動畫 */
-    .pet-fog-overlay.clearing { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); pointer-events: none; transform: scale(1.05); }
+    /* 📖 100 格百獸圖鑑預覽 Modal */
+    .dex-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 300;
+      display: none; align-items: center; justify-content: center; padding: 14px;
+    }
+    .dex-modal-overlay.show { display: flex; }
+    .dex-modal-box {
+      background: linear-gradient(165deg, #fff8ec 0%, #ffeef3 55%, #e2f2ff 100%);
+      border: 4px solid #fff; border-radius: 24px; width: 100%; max-width: 440px;
+      max-height: 86vh; display: flex; flex-direction: column; padding: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+    .dex-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+      overflow-y: auto; padding: 6px 2px; flex: 1;
+    }
+    .dex-cell {
+      background: rgba(255,255,255,0.85); border: 2px solid #fff; border-radius: 14px;
+      padding: 6px 4px; display: flex; flex-direction: column; align-items: center;
+      position: relative; cursor: pointer;
+    }
+    .dex-cell.locked { background: rgba(255,255,255,0.38); cursor: default; }
+    .dex-cell.active-partner { border-color: #0284c7; background: #e0f2fe; }
 
-    .pet-fog-badge { background: #fff1f2; color: #be123c; border: 2px solid #fda4af; border-radius: 999px; padding: 4px 14px; font-size: 14px; font-weight: 900; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 6px; }
-    
-    .btn-unseal { margin-top: 10px; background: #14b8a6; color: white; border: 2px solid #0f766e; padding: 6px 16px; border-radius: 999px; font-weight: 900; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 0 #0f766e; transition: 0.2s; }
-    .btn-unseal:active { transform: translateY(4px); box-shadow: 0 0 0 #0f766e; }
-
-    /* 🐾 寵物專屬動態與互動 */
-    .pet-stage-avatar { width: 76px; height: 76px; object-fit: contain; cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15)); position: relative; z-index: 2; }
-    .pet-stage-avatar:active { transform: scale(1.18) translateY(-6px); }
-    
-    /* 隨機動畫狀態 */
-    @keyframes petHappyBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-    @keyframes petWalk { 0%, 100% { transform: translateX(-15px) rotateY(0deg); } 45% { transform: translateX(15px) rotateY(0deg); } 50% { transform: translateX(15px) rotateY(180deg); } 95% { transform: translateX(-15px) rotateY(180deg); } }
-    @keyframes petScratch { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
-    
-    .pet-bob { animation: petHappyBob 2s ease-in-out infinite; }
-    .pet-walk { animation: petWalk 6s linear infinite; }
-    .pet-scratch { animation: petScratch 0.4s ease-in-out infinite; }
-
-    .btn-feed { background: #fef08a; border: 2px solid #eab308; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 900; color: #a16207; cursor: pointer; margin-left: 8px; transition: 0.2s; }
-    .btn-feed:active { transform: scale(0.9); }
-    
-    @keyframes heartPop { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.8); } }
-    .heart-float { position: absolute; font-size: 24px; animation: heartPop 0.8s forwards ease-out; pointer-events: none; z-index: 10; }
-
-    /* 圖鑑與進度條 */
-    .pet-mini-dex { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 6px; padding-top: 8px; border-top: 1px dashed rgba(54, 83, 20, 0.25); width: 100%; }
-    .pet-mini-chip { background: rgba(255,255,255,0.88); border: 1.5px solid #86efac; border-radius: 10px; padding: 2px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #166534; cursor: pointer; }
-    .pet-mini-chip.active-chip { border-color: #0284c7; background: #e0f2fe; color: #0369a1; }
-    
-    .gacha-bar-wrap { width: 90%; height: 16px; background: #e5e7eb; border-radius: 99px; margin-top: 8px; overflow: hidden; position: relative; border: 2px solid #d1d5db; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-    .gacha-bar-fill { height: 100%; background: linear-gradient(90deg, #fcd34d, #f59e0b); width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-    .gacha-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #78350f; text-shadow: 0 1px 0 rgba(255,255,255,0.5); }
+    /* 輕量 Toast 通知 */
+    #stToast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(40, 26, 20, 0.94); color: #fff; padding: 10px 18px; border-radius: 999px;
+      font-size: 13px; font-weight: 900; z-index: 400; opacity: 0; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); white-space: nowrap;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3); border: 2px solid #f59e0b;
+    }
+    #stToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
+
+  <div id="stToast"></div>
 
   <div class="wrap">
     <div class="card" id="mainCard">
@@ -176,7 +516,7 @@
           <div class="header-section">
               <div class="avatar-circle" id="stNo"></div>
               <h2 id="stName">載入中</h2>
-              <div id="stRank" style="font-size:15px; font-weight:bold; margin-top:5px;"></div>
+              <div id="stRank" style="font-size:15px; font-weight:bold; margin-top:4px;"></div>
               
               <div class="stats-container">
                   <div class="stat-box">
@@ -196,35 +536,69 @@
                   </div>
               </div>
 
-              <!-- 🐾 萌寵夥伴展示區 -->
+              <!-- 🏅 升級 2：個人榮耀徽章櫃 -->
+              <div id="badgeCabinet" class="badge-cabinet"></div>
+
+              <!-- 🐾 升級 1, 3, 4：萌寵夥伴橫向漫步小窩 -->
               <div id="petSanctuaryWrap" class="pet-sanctuary-wrap is-fogged">
                   <div class="pet-fog-overlay" id="petFogOverlay">
                       <div class="pet-fog-badge"><i class="bi bi-lock-fill"></i> 萌寵夥伴迷霧封印中</div>
-                      <div id="petFogReasonText" style="font-size:13px; font-weight:bold; color:#57534e; line-height:1.4;">
+                      <div id="petFogReasonText" style="font-size:13px; font-weight:bold; color:#57534e; line-height:1.45;">
                           載入中...
                       </div>
-                      <!-- 功能 2.1：手動破霧按鈕 -->
-                      <button class="btn-unseal" onclick="window.manualUnseal()"><i class="bi bi-magic"></i> 我訂正完了！手動解封</button>
+                      <button class="btn-unseal" id="btnVerifyUnseal" onclick="window.verifyAndUnseal()">
+                          <i class="bi bi-shield-check"></i> 我訂正完了！向公會申請重新鑑定
+                      </button>
                   </div>
+
                   <div class="pet-sanctuary-inner" id="petSanctuaryInner">
-                      <div style="font-size:12px; font-weight:900; color:#365314; background:rgba(255,255,255,0.85); padding:2px 10px; border-radius:999px; border:1px solid #86efac; display:flex; align-items:center; z-index:3;">
-                          👑 討伐全冠王・專屬夥伴 
-                          <!-- 功能 3.2：餵食按鈕 -->
-                          <button class="btn-feed" onclick="window.feedPet()"><i class="bi bi-cookie"></i> 餵食</button>
+                      <div class="pet-top-bar">
+                          <span class="pet-status-pill">👑 全冠王專屬小窩</span>
+                          <div class="pet-action-btns">
+                              <button class="btn-feed" id="btnFeedPet" onclick="window.feedPet()">
+                                  🍪 餵食 (<span id="cookieCountTxt">3</span>)
+                              </button>
+                              <button class="btn-open-dex" onclick="window.openFullDexModal()">
+                                  <i class="bi bi-book-half"></i> 百獸圖鑑
+                              </button>
+                          </div>
+                      </div>
+
+                      <!-- 🌿 橫向草地漫步舞台 + 對話氣泡 -->
+                      <div class="pet-meadow-track" id="petMeadowTrack" onclick="window.interactWithPet()">
+                          <div class="meadow-clouds-mini"><span>☁️</span><span>⛅</span><span>🦋</span></div>
+                          <div class="meadow-flowers-mini"><span>🌼</span><span>🌱</span><span>🌷</span><span>🍀</span></div>
+                          <div class="pet-walker-box" id="petWalkerBox">
+                              <div class="pet-speech-bubble" id="petSpeechBubble">主人今天也要加油喔！</div>
+                              <img id="stActivePetImg" src="" alt="萌寵夥伴" class="pixel-pet pet-stage-avatar pet-bob">
+                          </div>
                       </div>
                       
-                      <!-- 寵物本體 -->
-                      <img id="stActivePetImg" src="" alt="萌寵夥伴" class="pixel-pet pet-stage-avatar pet-bob">
-                      
-                      <div id="stActivePetName" style="font-size:15px; font-weight:900; color:#14532d; z-index:3;">載入中...</div>
+                      <div id="stActivePetName" style="font-size:14px; font-weight:900; color:#14532d; z-index:3;">載入中...</div>
                       <div id="stPetMiniDex" class="pet-mini-dex"></div>
                   </div>
               </div>
           </div>
 
           <div id="taskListArea"></div>
-          <div id="updateTime" style="text-align: center; margin-top: 20px; font-size: 12px; color: var(--muted); font-weight: bold;"></div>
+          <div id="updateTime" style="text-align: center; margin-top: 18px; font-size: 12px; color: var(--muted); font-weight: bold;"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- 📖 100 格百獸圖鑑彈跳視窗 -->
+  <div id="fullDexModal" class="dex-modal-overlay" onclick="window.closeFullDexModal()">
+    <div class="dex-modal-box" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="font-size:17px; font-weight:900; color:#4a2e22;">
+          🐾 百獸圖鑑收集冊 (<span id="dexModalCount">0</span>/100)
+        </div>
+        <button onclick="window.closeFullDexModal()" style="background:#ef4444; color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-size:18px; font-weight:900; cursor:pointer;">&times;</button>
+      </div>
+      <div style="font-size:12px; color:#57534e; font-weight:bold; margin-bottom:8px;">
+        💡 存滿 10 枚金幣可請老師幫你抽扭蛋！點擊已收服的夥伴可切換代表並聽叫聲喔！
+      </div>
+      <div id="fullDexGrid" class="dex-grid"></div>
     </div>
   </div>
 
@@ -250,6 +624,7 @@
       <div id="pomodoroStatus" class="pomodoro-status hidden">🍅 專注時間 (25分)</div>
       <div id="timerInputs" class="hidden">自訂：<input type="number" id="minInput" min="1" max="60" value="10"> 分鐘</div>
       <div id="timeDisplay" class="time-display">00:00</div>
+      <div class="cookie-bonus-hint" id="cookieBonusHint">🍪 專注倒數滿 5 分鐘完成，獎勵能量餅乾 +1！</div>
       
       <div class="tool-controls">
         <button id="btnStartPause" class="btn-start">開始</button>
@@ -278,433 +653,810 @@
     const uid = urlParams.get('uid');
     const no = parseInt(urlParams.get('no'));
 
-    // 等級與扭蛋池設定保留
+    // 🌟 完整 40 等級列表 (與 app.js 完全同步)
     const levelConfig = [
-        { lv: 1, exp: 0, coins: 0, rank: "🌱 迷路的小村民", color: "#9ca3af" },
-        { lv: 2, exp: 10, coins: 5, rank: "🪵 木劍小勇者", color: "#86efac" },
-        { lv: "Max", exp: 2300, coins: 100, rank: "✨ 全班的超級英雄", color: "#ffd700" }
+      { lv: 1, exp: 0, coins: 0, rank: "🌱 迷路的小村民", color: "#9ca3af" },
+      { lv: 2, exp: 10, coins: 5, rank: "🪵 木劍小勇者", color: "#86efac" },
+      { lv: 3, exp: 30, coins: 10, rank: "🛡️ 銅牌小護衛", color: "#22c55e" },
+      { lv: 4, exp: 60, coins: 10, rank: "🐾 森林小遊俠", color: "#0ea5e9" },
+      { lv: 5, exp: 100, coins: 15, rank: "🗡️ 鐵甲小騎士", color: "#3b82f6" },
+      { lv: 6, exp: 140, coins: 15, rank: "🦅 飛鷹小偵探", color: "#6366f1" },
+      { lv: 7, exp: 180, coins: 20, rank: "🐺 灰狼小戰士", color: "#8b5cf6" },
+      { lv: 8, exp: 220, coins: 20, rank: "🧙🏻‍♀️ 見習魔法師", color: "#a855f7" },
+      { lv: 9, exp: 260, coins: 20, rank: "🦄 獨角獸騎士", color: "#d946ef" },
+      { lv: 10, exp: 300, coins: 30, rank: "🌟 星星守護者", color: "#ec4899" },
+      { lv: 11, exp: 350, coins: 30, rank: "🔥 烈焰小法師", color: "#f43f5e" },
+      { lv: 12, exp: 400, coins: 30, rank: "💧 水波小精靈", color: "#ef4444" },
+      { lv: 13, exp: 450, coins: 30, rank: "🌪️ 狂風小飛俠", color: "#f97316" },
+      { lv: 14, exp: 500, coins: 30, rank: "⚡ 閃電小超人", color: "#ea580c" },
+      { lv: 15, exp: 550, coins: 40, rank: "❄️ 冰雪魔法使", color: "#f59e0b" },
+      { lv: 16, exp: 600, coins: 40, rank: "🦁 獅鷲小騎士", color: "#eab308" },
+      { lv: 17, exp: 650, coins: 40, rank: "🏹 神準小獵人", color: "#ca8a04" },
+      { lv: 18, exp: 700, coins: 40, rank: "⚔️ 雙劍小達人", color: "#14b8a6" },
+      { lv: 19, exp: 750, coins: 40, rank: "🛡️ 聖光小衛兵", color: "#06b6d4" },
+      { lv: 20, exp: 800, coins: 50, rank: "👑 城堡守衛隊長", color: "#0284c7" },
+      { lv: 21, exp: 860, coins: 50, rank: "🐉 飛龍馴獸師", color: "#2563eb" },
+      { lv: 22, exp: 920, coins: 50, rank: "🦖 恐龍小霸王", color: "#4f46e5" },
+      { lv: 23, exp: 980, coins: 50, rank: "🌋 火山探險家", color: "#7c3aed" },
+      { lv: 24, exp: 1040, coins: 50, rank: "🌌 星空小旅人", color: "#9333ea" },
+      { lv: 25, exp: 1100, coins: 50, rank: "🌠 彗星觀測者", color: "#c026d3" },
+      { lv: 26, exp: 1170, coins: 50, rank: "🏅 青銅大師", color: "#db2777" },
+      { lv: 27, exp: 1240, coins: 50, rank: "🥈 白銀大師", color: "#e11d48" },
+      { lv: 28, exp: 1310, coins: 50, rank: "🥇 黃金大師", color: "#ea580c" },
+      { lv: 29, exp: 1380, coins: 50, rank: "💎 鑽石大師", color: "#d97706" },
+      { lv: 30, exp: 1450, coins: 50, rank: "🏆 榮耀大師", color: "#65a30d" },
+      { lv: 31, exp: 1530, coins: 50, rank: "🧚 森林精靈王", color: "#16a34a" },
+      { lv: 32, exp: 1610, coins: 60, rank: "🦅 鳳凰守護者", color: "#059669" },
+      { lv: 33, exp: 1690, coins: 60, rank: "🦄 幻獸大師", color: "#0d9488" },
+      { lv: 34, exp: 1770, coins: 60, rank: "⚡ 雷神小勇士", color: "#0891b2" },
+      { lv: 35, exp: 1850, coins: 60, rank: "☀️ 太陽神官", color: "#0284c7" },
+      { lv: 36, exp: 1940, coins: 60, rank: "👑 傳說中的勇者", color: "#4f46e5" },
+      { lv: 37, exp: 2030, coins: 60, rank: "🌌 宇宙大探險家", color: "#7c3aed" },
+      { lv: 38, exp: 2120, coins: 60, rank: "🌟 銀河守護神", color: "#be185d" },
+      { lv: 39, exp: 2210, coins: 60, rank: "🐉 萬獸之王", color: "#e11d48" },
+      { lv: "Max", exp: 2300, coins: 100, rank: "✨ 全班的超級英雄", color: "#ffd700" }
     ];
 
-    // 為節省篇幅，此處以簡略 gachaPool 示意，實際部署請貼回你原本的 100 隻寵物陣列
-    const gachaPool = [{"id": 1, "name": "灰虎斑", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABMUlEQVR42u2YsYrCQBCG/4iNvY149VXxbbQT0Yc4rrUVX0FQxM68jVbWd4iQ3jLXOOAtWSe7UUTn/7ol2Qw7/87+swEIIYQQQgghhDyHpOqL3fZncT3+zQ9JTMB7fUdovLoCzdAJP8sVAOBjMi5iAl7Nv8sC7CkgTOezf+P9bgcASHu90vGjsKfAIj/VClh3/vsr4J7Tai18fZfWhOx933MtXlV/aJhz4v5oePN00TIup1O23tCJSxXQasCX2WAfuSjlgzWgKROrhJt5X6a1nSDz7DixrLiqT2i9kJZ5UdjXY2XrTWG7Gx10WgCA7fFc+jy0K3UzL4hfZOZrIFSJ2MyHOjUV8OFmXjJbdc+bceLmowO4tZB6HFwcOrQ7tauAe+poNzP+lajbjcbemUMxVwN/sDOXPxAao7MAAAAASUVORK5CYII="}];
+    // 🌟 完整 100 隻像素萌寵池 (與 app.js 完全同步)
+    const gachaPool = [{"id": 1, "name": "灰虎斑", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABMUlEQVR42u2YsYrCQBCG/4iNvY149VXxbbQT0Yc4rrUVX0FQxM68jVbWd4iQ3jLXOOAtWSe7UUTn/7ol2Qw7/87+swEIIYQQQgghhDyHpOqL3fZncT3+zQ9JTMB7fUdovLoCzdAJP8sVAOBjMi5iAl7Nv8sC7CkgTOezf+P9bgcASHu90vGjsKfAIj/VClh3/vsr4J7Tai18fZfWhOx933MtXlV/aJhz4v5oePN00TIup1O23tCJSxXQasCX2WAfuSjlgzWgKROrhJt5X6a1nSDz7DixrLiqT2i9kJZ5UdjXY2XrTWG7Gx10WgCA7fFc+jy0K3UzL4hfZOZrIFSJ2MyHOjUV8OFmXjJbdc+bceLmowO4tZB6HFwcOrQ7tauAe+poNzP+lajbjcbemUMxVwN/sDOXPxAao7MAAAAASUVORK5CYII="}, {"id": 2, "name": "橘虎斑", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABLklEQVR42u2YsQ4BQRCGf3KFB9CR6ES8iVat4DFodDwGhVrrTUR0EheNUqGQUMgkbG7N7R4R5v+6ze7e5Obf2X/uAEIIIYQQQggh36GUd2Gt2rw+jtPjthQT8F3PEcq/rkASumE/mwMA6oP+NSbgw/63vIA9BYTNpPE0Xq9TAEC7Xcscfwp7CpwO40IBi+7/fwXce1qjNdpl1oScfd+8Fi+vP5TNOfGyl7y8XbSMy+3UXVzoxJkKaDXgy2woopQP1oCmTKwSbuZ9mdZOguyz48Tyxnl9QuuFtMyLwr4eq7u4r7PbjVY6UwDAeTXMnA/tSt3MC+IXwM54DYQqEZv5UKemAj7czEtm8555M06cfDqAWwubyWuHDu1O7Srg3jralxn/ShTtRmO/mUMxVwM3TO+VugtrCWoAAAAASUVORK5CYII="}, {"id": 3, "name": "三花貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABKElEQVR42u2XvQ3CMBCFHxEFAyAaUCpEkxVoEGKLFLAEBQOwBhTswRQ0iIaIn4YB6EKBjKJTjH9IhCK/r4tyjnXv/HwXgBBCCCGEEELIf2jZBva7o7z4fH0cWz4bVvUdRdT0CrRdF1w2WwDAYDHPfTYsrK8kgfAqgPvyreS6BwB4pvuv4dPxrNYEouBuIaW8xLUS5+zGW6jUA/Ke1qEUH8YJAOCUlsd93meH0kro9rOtTHgeUErqkIqb4ugBXw/oMClvux89YFLKVWl59k1Km06CWhfOLKQy/tUjtsrLji87/TBO8kCnUUc6u4lXn3lKz6ySwD1QF7oOb9upWQHbqfXzT4y3JwYr/KR8eJ3YdSr17dCu02njKxBVqaCccxqVQOM8UBfBeeAFW3h9jaNsJPYAAAAASUVORK5CYII="}, {"id": 4, "name": "賓士貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABD0lEQVR42u2YsRLBQBCGNxmPQGGEkkKp0um8Bh4Mr6HTqZQKyoRJwTucwtxMctzcZd0h7v+6S3K52f1v/9uECAAAAAAAAADAd4hsH+w0+6I4vtxOEWdBV++RxHVXoFF1wnm1JiKiZD4TnAUL850EEJ4Ckm6v/RMBxMG5kKvMZ2kOF3pZA6pPm5guh0REtFkcWPd169kqgxrY7belcdIaPPz+eixdH48mqAEvNfB00iqZr9oboQZsM8U9D+TeN2XatBPkvHB6IRnxuzVim3kLhUXY3aj0f9Xfuegyr9ZMuDXgSwlT5k3nARTwteeDOYk/roDO37ndae0VcBZAluZaz8ZfCRfdqKvvBW6P9LcK3AFS1HVEGjm1fAAAAABJRU5ErkJggg=="}, {"id": 5, "name": "粉蝴蝶結白貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABL0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjAIqg//9B/7/7z/wn1g+uYBpqAcUI7EKpUXUUELr6ZtbjMTGBAMDA8O5c+cYGBgYGIyMjBgYGBgYZFrTSDJnNAZgMfBk/gJICCYm4FX/pHoWSkjD+AwqbBD6zi+IAwodRnYMsJCr8c6jq3jlf8DUpV9F4XPsPY0SMyO+FCI5Bn44m1JkIaX6h38MoJf3hEDKLogRc9z+kCWPyz5i64eRVw8QKn1U5LQZSFE34mtiivMAqfXDaB6gVmuU1JBGT/uEQppQSoDpGzk1MczHlOYRYkOeiFLs/8hujVIb4Ap59DwzcvPAQIU8ofpgNAYGKuRHY4DabSVyW6dDPgao5gEVOW2cZfaQ8MCgb41Sq79Abhtp2MYAAG2Cjew3f7TjAAAAAElFTkSuQmCC"}, {"id": 6, "name": "藍領結灰貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABWElEQVR42u2YMU7DUAyG/1Y9AhssXZjaM9AjMDBWqEhcAbGyIq4QiarKmIEjwBnaiaULDEi9QxiCUWvF+CVphcD/t0RPiWPFv/3sF4AQQgghhBBCyO/QS33w+Oi03F6/b157bRzu6z1C/68rMGhq8PY4BwCcXM3KNg637PfyAfEUEO4e7nfWq+USADAaj2vXhyKeAtnmo5PDrvb/XwG9T7u1cHNbWxOS+9Z9z19qf+iH68QXl9Mfdxcv4rI7FYucnbhWAa8GrMg27iNfSlmwBjxlRInn4TkAYLJ+qrXT93XkrUh7mSB2cTqxfLEVGYl0flatpy9olePyflHYmrGKRV7GnkavZ1XEMd/N/WxdXSdq34czlerIC9IvivA14CmRKSVSzwNWzqd2aipgoSP/XQuJOR+mEw8O7UDXwsiYpaRDN51O4yqgdx3vZMa/El2n0bZn5qaEq4FPJ2GdQK06EYIAAAAASUVORK5CYII="}, {"id": 7, "name": "紅圍巾橘貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABG0lEQVR42u2XPQ4BQRzF32622IZKR6ITV9GJE3AMGh130HAC0bmEA4hOQjQSCYrtVmNkTTAfOwjzft1mZ+a/+97+PxYghBBCCCGEEPIdAt2F5VItzV5v96vAJqDtOelplgJAUGjerQ9/3YHIdMNmPAEAVDrt1CZgZj9MlMdh9NAJ/xwQLAfVzyTpVWnmgOC86+cKaLtfVv5/HZDrtIp6b/0yJ1T3n8XT7Q+hd51YVX1UisvrbDs6c8BVf/A+ByLdNxdKHaex0wdQxVPt86cKmVYjgXCs2Eq0qo9ptfN3Go0bQwBAMu8aOWHqrFD6b3MgynuAygnx7d9YmCmv6gd0wJa8ytMB17OS7XTqrwNy1dH9D3CNv7PQu/AuBy4aEYvUjbY48wAAAABJRU5ErkJggg=="}, {"id": 8, "name": "黑貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA70lEQVR42u2Yyw3CMBBExxF0wAXxOdID3UAHlEIH0A09cExAudABh3CyFEWs/NEKY+28WxQ71u541usAhBBCCCGEEELK4GIHrha7Yfz8fN1dzoJa3/E0tSswS53wuFwBAOvjYchZcDRfJQB7Cng22+VfBNCYq0Jame/anlXoqwemdTrE7fwGAOxP86z30nqxytAD0t6OHWfeAy7VA9pVSIIeCCmTq8Q081KmQzvBz7PTC/mIU8+J1D2ecOIPtrtRbaTMS9XKngdKZT50HlCBUpmnAtp36dzutHoF1ALo2j7YYfKvhKYHpGz/WoXqFfgA4mJsoP9r9FoAAAAASUVORK5CYII="}, {"id": 9, "name": "小花白貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABF0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjAIag//9B/7/7z/wn9rmMg31gGEhVqG0iBpK6D19c4uR2JBnYGBgYAjugvAZIHyZ1jSSzBmNARh4Mn8BAwMDA4NMYgJR6RkW0k8YZkEEVNhG8wBFMQADdx5dJUn9DyjNsff0aAxQFAM/nE0pspBS/cM/BtDLe0JARU4bb54gJI/LPmLrhyEfA4yk1sSESh9CIY6ubrQmpjQPUFo/jOYBckOK1JBGT/uEQppQSoDpGzk1MczHlOYRYkOeiFLs/8hujVIb4Ap59DwzcvPAQIU8ofpgNAYGKuRHY4DabSVyW6dDPgao5gEVOW2cZfaQ8MCgb41Sq79Abhtp2MYAAH6yd/AwY4/vAAAAAElFTkSuQmCC"}, {"id": 10, "name": "灰白貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABCklEQVR42u2YQQ6CQAxFi/EIupK1XscjYOIVCFu2xiuYyBG8jq5xYeQOuDCTwCTYocNEnf63G6A000+nLUQAAAAAAAAAAL5D4vrgarFuu+t7c0skDqd6j2H27wrMxxrU54qIiNJd1kocduwn2YA+BQzl8fATG9CnwKl5eDn0tY9fAfucZnMhLz7mBHd/yJ9rfYhPgaGdD0Wqfl5563S56V3fZ9v3t19dyCfSyAHnSmspMrY3UpcD4m5UWonNqSTNOdtOTyU2O/bNEdfIcwqXedHq7ka58106qdmRt3NGbw6EUoKLPFcPoECob15vNxoabm4Y253qVcA+dbjJC38lfLvRqeYFaY8UrQIvMnh5AuTL9aYAAAAASUVORK5CYII="}, {"id": 11, "name": "紅領結白貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABGUlEQVR42u2XLw7CMBTGvxFOQFBAphbMNCdAYRA7AZwMTjCBQXECNIagCKAIlgmSoZosDVu7tmSMfj+3tK/N+17fnwGEEEIIIYQQQpoh0N047I/z4vf1fgxMLnR1jqDT9gh06xpcVmsAwGi5yE0uLNg7ccC/CAhO54OZ4W7v1AH/IpBNJ1YX2tr/fwTkOq0iCuPKnFCtl92n2x863nViVfVRKS7vYye2zQHb/sAcMFVKKP1IEgBAL00/2snr4u2rlFa9BGHnTycWHpcpI5QebDcAgNtsrnWeRbXL/Z5GBfLbz56vypyo22fknPE3B76FSnlVP2AEmlKeEXA9K5lOp62PgDMHojAurdmtcODnp1FX/wu6M5c3EXgDteh6YGh6HO0AAAAASUVORK5CYII="}, {"id": 12, "name": "鈴鐺黑貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABB0lEQVR42u2YTQrCMBCFJ8XewI34s9QLiOA5vEC9gUfxBvY2gngBXbZKQVy5dRE3Boo0TBJGa8n7dqVNh3kvM5mWCAAAAAAAAABAOyjXB4f9qa5fX+9nFRJQ6j2GpOsO9HwXXHY5ERGN1pkOCVhbL5JAfA4YxpPBXySQRNeFpJQviwpdqLEGPvs0x377JCKi5SYNum+L5+oMasC2t12fi74GlG8NSHchG6gBzpnDfBYUcHE8OSnN7QSzLp5ZyGRslFndHs19P3/3/SwN2uMeJ76Oexq1wSnve87YulV8NfAtOOW58wAOtKU8HJD+lg6dTjvvgFgCZVGxEyb+SkjWgE3tX7vQeQdesmxybdL+7foAAAAASUVORK5CYII="}, {"id": 13, "name": "暹羅貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFklEQVR42u2XsQoCMRBE58RO7OzsbbTUUgT/Q0SwsvNL7KwEEf9DEEsttbG3sxNrrRZ0uSW5EDkk87qDS0JmspMNQAghhBBCCCGkHDLfH5uN1uvz+3a/ZiELxppHqPy7A9WiAwadOgBgf/5Wsvj4R5QNpOeAcDmugsbNJvOoG6gkl0KhymvavSlTKLcGdE67zvJzdAIAbIaH3P/Guz4AoLbtAgCW64XXer7OsAZ0qki+S94LWnnWgOWAqwasFLLyXSuvHbBgDbicCb0PtPKW0q6TIOPS6YVkx773hO98lvI6xTTSDafbjcbGUt56N6RXA2Up77oP6EBZytOBWG9p6aGKKp9eL+R7dl3vgNhv5HQd+BXJOfAGTuOAImVonuUAAAAASUVORK5CYII="}, {"id": 14, "name": "藍圍巾虎斑", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABNElEQVR42u2YsQ7BUBSG/0ofwGDDamLwLsam4SHEahWvICFi9C4kNZkZJB36BgycpJpe59I2wv2/7aa9PXr+859zCyCEEEIIIYQQ8h082xubjc41vT7HR++TgGU9R6j9ugL+uxtOyxUAoDUaXj8JmNpfygu4p4Awnc+e1ocoAgB0e73cdVW4p8AivhQKWHT//yuQ7dOqF8aTXE9I7Zuua/Fs50PNuUk8CIOX3UXLuHSn7XrDSZyrgOYBU2bfniMPpUw44wHf9s1FmU3SL/UHaPG0fe50oWxmNC9It9m3QwBAUN891b6WeXm+6YwlXczd06iGZGyf3Nead0zKSqa3/+qByhSQWg0yA3tqWfO2k5oKaB7IKmJb8+5O4qq8IIp0DfNDmw9UoOiXGf+VKPssVBXOeeAG3jiShO0MwLMAAAAASUVORK5CYII="}, {"id": 15, "name": "橘白貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABDklEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8GT+AgYGBgYGmcSE/+RYiKSfKh4YeTEAAzfa5AeFB0ZeDHx5Xk+RhZTqH/4xgF5OEwIaVQ/x5glC8rjsI7Z+GH4xgMvnuELqyeubKHwZUXUU8Sep0LQ/242BkpAezQNE17RoMUJq22jE5QGyW6Pk1sSwUoncPIeub+TUxDAfU5pHiA15QjGsUcXwf2S3RnlSd+Et38ntqaGHPHqeGbl5gFYxQSjkCdUHozFAqzQ/clujtAaE+g2ktk5HbgyglzqEel6joxKUtkap1V8gt400bGMAABNdd+M82mgGAAAAAElFTkSuQmCC"}, {"id": 16, "name": "黑白貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFElEQVR42u2YPQ6CQBCFB6I30MKIlnoAKwsTjqI38CjeQI9iY6g4gJaisdAbWGCx2YSsTliWxb95Xwfssux7zA8QAQAAAAAAAAD4DIHtwH5nlBePz7dD4LKgr/towl93oFV1wmm9ISKiaDHPXRYszPeyAXkOaAbD3ldsIBSXhXwpnx0vyEIvY8DM02UkqzsREU2Xbafr3Hq2zvyfA9zOWWdmO6V0qg6j7ljl++veGBhTHaURA9aV9kn5ar2RuBhw7kZd64HO/84xZ8yT0wvpHdeNEVvlLRzOZXejSbpVFXYSe3kQTnkzZuTGQFNOlClfVg/gQFPvvNxutGm4/O76hSbXATPraAXf/bdCrgNcheTOwwGGB0aGdHpmMHycAAAAAElFTkSuQmCC"}, {"id": 17, "name": "藍花白貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABGUlEQVR42u2XOw6CQBiEB+MR7DRURAtqT2Bp4xH0JHAQEz2CF7Aj8QQWGiujnYmthcla4BaQ4D4NIvM1BNhlszP7PwAIIYQQQggh5MskmRBJJoTv73aaLkxXd2C/Nyyod70dA13lASANp/mD9/1yNjL6Dh2QXFZrAMBgMdc6z1JpbA4AgPS+y58zBiwdkJzOe8MZz/yyZRZyc+AxGTst6Dr//x0o53sVURh/jAnV+6r1dOtD4x0ITCuxKvuoFC+PYyV2jQHX+sAYsFXKvBIXz75KadVJkPPaU4nljl1jRFd5jSwm2t2N+qZK+XLMtDcG6lJeVQ/oQF3K0wHfvZJtd9p4B7xtIArjypzdiA38fDfq63/Btkf6Wwde5Ml52Ki6iJYAAAAASUVORK5CYII="}, {"id": 18, "name": "紅結三花", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABaElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjAIC4KmH7/+nHr7/ieXTCzAN9YBlJFahtIjafwYGBoZTJuoMDAwMDOfOnWNgYGBgMDIygsjv2MxIijnwmHtzi3FExwALsQphIS+VXQkRmNrOwMDAwGB25iY8DyDzcYEn8xcwMDAwMMgkJozmAZJiABayT56XQWIiCCJ+Z91VFHV30PQ527iOlkJULYWetIlhlf8Rsx+vfvSYePjo2WgphDUPoJfTuAAsxFXktCFpPwa7Orj8o6tYYwKXfcTGzMjLA7CQxAXQQ5yQutE8QG4ewAUIhTyx9o3mAUIhRWpIo6d9QiFNKCXA9I2cthDMx5TmEWJDHr3GR6/pVeS0/4+sGCAXcCxxJKue+YGeZ6q0R3geoBXAVcMTW1OPxgCxrVZ4n5gBkidkqhgoCvmRVxOT2iolt4YmtXU65GOAiZohiN7OGR0bpWUeoBUYcXkAABBwl6e5q9JrAAAAAElFTkSuQmCC"}, {"id": 19, "name": "眼鏡虎斑", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABIUlEQVR42u2YsQ6CMBCGD+MjuOnsBO+kD2FcWY2vYKIhjLwNTs46mPAOOOAlSLhc25QYvf9bSNOWpvf3ej8QAQAAAAAAAAD4DonrwOVi3fbbj+aWhCwY6z3M7NcVmPtOuJ8vRES02m7akAV786NswJ4CTH48fLSvdU1ERGmWjbanwp4Cp+bZKbDbj/anb2WqouyewwED5aCAdk9754agjGtd8K0P/6eAtHOOFN8uuXCWWQGpn+ejEkteSMuBPNItouWKmRwIdqOhSgwjr+WcppCdSsw7dq0TmhfSIs8KSx6rKsrWthvV8HWlw8gzkqeylwO+hEa+d8ad6gEU0HJA8kDambfrRqfOhVRxsb7uFApo3wH4KxHLjcb6Znb1XGYUeAFGkpDA93uiDAAAAABJRU5ErkJggg=="}, {"id": 20, "name": "紳士帽貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABLUlEQVR42mNgGAWjYBSMglEwCkbBwAFGWhlspRf1nxh1xy4to8gNTEM9BkY9MOqBke4BFloZfFRRmLhi8NIIjwGiy2BpETWUcv3pm1uMlJT/1KoPRl4MPJm/gIGBgYFBJjGBLAvR9eOKydFSiBCQlZMcrQcGJA9QK+QfP3o+mgew5gH08p4QOD7hNwMDAwODZQErWfK47CM2ZoZfDODyOc6YsT0KCemzEK6MqDqkvH99E02hAwMlIT2aB4iuaTFCnrQ21ojLA2S3RsmtD2DlP9l5Dk3fyGkLwXxMaR4hNuSJiOH/I7s1evzsAUgNa+xAFYfgCnn0PDNy8wCtYoJQyBOqD0ZjgFZpfuS2RmkNcJXv5PbQRgd3kUMQV5k9OipBzTkyarWFSG0jDdsYAACGy32k+KabcAAAAABJRU5ErkJggg=="}, {"id": 21, "name": "長毛白貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABEElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8GT+AgYGBgYGmcSE/+RYiKSfKh4YeTEAA3ceXSVP497TVPXAyIuBH86mFFlIqf7hHwPo5TQhkLILYsQctz9kyeOyj9j6gWnY1sT///9HCRkZUXWiSh8VOW2S1D15fRPVQYyMjCMqDzCSmgfILv9xxAAuMJoHCMUMuTGBHvK4QppQSoDpGzk1MczHpNYTpKZxmPlElGL/R3ZrlNoAV8jjKq1GXh4YqJAnVB+MxsBAhfxoDFC7L01qyA+bGKCaB1TktAm2MAe1BwZ9a5TcPjO12kjDNgYAgxxsHUrEBfEAAAAASUVORK5CYII="}, {"id": 22, "name": "皇冠橘貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABUUlEQVR42u2YsQ4BQRCG50Sh0elIdKLX6RU6j8Bj0FDxDhoeQafwEFrRSU40EgWFbhVuxV2sf+3eCbvzdbd3m737Z/+dmSNiGIZhGIZhmJ9BnBdCnBcCPrduCrFuCttxW3L/Lnj+WXkiIjpNY9dBsROgSMQGRo1onMQ3PuDvIxC88sAr5culWkzRcFUyWrDSOsau98dtgDz5bie444FHSMCeD2fzSMmu0YKP+b0u6SiPPOleBHTZjKvZmjNS2j8PIC6HodWCn85HnnQvAsnzHlEf7N56At1XrYfyg7uZWIVUCp0+SPHkc7pKsweyyg/sAVOlTDOx3PtIabQT5Dx/MrH8YluP6CqPT7F7x+dvNVpoT4iI6Lrsp/IiKuWTnvHXA1lFAikvleaOLG0+VV7VG3ME0qqVVNUp6o39jUDy1NHtA2z/UvhbjabVL5jWSM72Azcnt8DP7kUinQAAAABJRU5ErkJggg=="}, {"id": 23, "name": "黑框眼鏡貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA8UlEQVR42u2XQQoCMQxFM+IR3Onac+khSrfdilcQ9FyudSHMHepCCkMhTlMDdZr/dsNMpySf5CdEAAAAAAAAAADaMJR+uN3s4/T5Od6Hmgu1/pNYLV2BtfTA43ojIqLd8RBrLpycVwnAngKJcD79RQD2FLiMr48Czn9VhntPysr1p0Dep8W1wWW+0Bek/tCfAlzkeaa4LpQUKO1ScGL1GhB2GfM1UD2N1jpx3qVKa45TyI4Tp4h/rZHSzM8pHJyPtqdRbbjMc85urwZaZX7OD6BAq8xDAe1ZSZr5bhRQCyA4L97GsBNLplGtfUF7Q1u8Am8+Imo/RxbwZwAAAABJRU5ErkJggg=="}, {"id": 24, "name": "小鴨帽兜貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABBklEQVR42u2YPQrCQBCFX0QrWxsxWomlvZCTeABrj2LtATyJYG8pqfzBxtbKYi0kiIubn3EkkHlfG2aHeY/JzC5ACCGEEEIIsUqkdZBbT93XBIt99M8CWmYcGPQmHwpfbgeRslrnNMaBdtWA83YMAIgTOEnCd3zKHhA54CtZN3YdmM3vorjdpksHch3w/9OFiq4eL0eWHdH3UL6y86F5DoQqDynlK3s6XgEAw1E/V3lOYq0e8MmUl+5G5npAvI1KJ7G/A1XtOT/OziTOKv61R8oqX+Rwtg3b3YW0CSkfujfY64G6lC+aB3SgLuXpgPZduqryjXFArYA4SdXeevg2KtnftTDXA0/tvWp929tciQAAAABJRU5ErkJggg=="}, {"id": 25, "name": "鯊魚帽兜貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABHElEQVR42u2YLw7CMBjF3wgeQzAIHOEEaBSWAwzJKTgAZyABicOMG6A5AeBIQIEYCX6oEmgo/bOGZev7uWbrmr23r99bAUIIIYQQQipDnKRZnKTZv9arlV2wWtmdKL0DkemN7Wb3Q83L7Ri5LOjrOZVxoG47YbDcAQC2k77T9/02nzXg5IDgfD0AAMabOwBgNWpYjbkL5XXgsRgCAOavMYzGaK3pwE8H5H1aR296AgDsZx2n66r1TPtD9RxQvblKKVlZWXGV8uzEvmpA54htNgquBpzTqMg0tsgZyLbm5HnhdGLxxnlrxFR5ncMiDYebhXyjUl713xBeDRSlvK4f0IGilKcDrqj2d1vleTb6TUFfZz08G3XJ774IrgaeHOmJGK+5C8kAAAAASUVORK5CYII="}, {"id": 26, "name": "青蛙帽兜貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABF0lEQVR42u2YIQ7CMBiF3xaOgMMSFAeYwcENOAUGRbBYgsJwit2AOQwHQC1YHHcogvwhaVL6tzRZRt9nEPQf6Xu89W0AIYQQQgghJFeK0IH1fWUAoK4aAMDj2aquMRpODAAsr3MAwHF8KlJsoOy7AwPtQlFQ+CjZquZlvX09rYN0wEYyYDvjW287wQzEDqZWkg6EMr0souZuszMd+OqA9q4i7Dbb9+dhH/W96/e050OZTReyu4wrAz7FJQOhXYoZUGfCoby2YzEDoW00tkP5lPb9E2Qun5NYdvxrRrTK+xyuK5i8u1BqXMrbmck3A10p7zsP6EBXytOB1M/Sse209w4k20BdNc57Nt9KpHw7naoLhXakv3XgBfg7drX/rN5PAAAAAElFTkSuQmCC"}, {"id": 27, "name": "船長貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABU0lEQVR42u2WvUoDQRSFvw0WPkBIk5BqsXALTS+CiG+RQmt9gnQ2eQLzBr6FhSBYq4UWISCGaCFbWKYQ1kJHyLC7MzvZFMu9X7k7P8w5c+ZeUBRFURRFURRFKlHVCXuH51nZ/8erBwD2Lwal6zzdTaI6DtAS40C3vZMBtHdPatk4fbkB4D2dRqId2PIe2IkB+Epf69n4bz3SKeqAD9+fMwAW487K9+XwtnTe8cFqZu4vxwD0zk7RVyjkFbIdCHXibf6hr1BuBozSLozicT8BYDbMH/f/f/6c60TRfr7OyMuAUbIIW3HXOM1AaAaKcCnvu59mwKVUVaXtu+9S2nUTzDw5vZA58boZ8VXe1XPF/SST5UAo29dHQXVmaWdmlAjPwKYoqvC+lVod8O1aDQt+M9EbsZby8ipx1a40tEJX7U4b70CrTgXtPqdRB2hcBjaFuAz8ANTchZy/uWSAAAAAAElFTkSuQmCC"}, {"id": 28, "name": "海盜貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABIElEQVR42u1ZMQrCQBCchBT2io2FnYiC9voCn6SNnT5Df+ELtFdQxE5QBImdhV2srjBw3l1yieDOdAfZbDKzs7shAEEQBEEQBEH8CoFrQK8zSHwk3h02gY/7hGIUsGV+u18DAPrdYSlKyFGgUWslAFCt17wkftxjAMA1PlGBUrpOUV6Q54HLYgkAeN6mmRK2J+ePs3gPRK4Btswrpo+z5tez+Ekc6WrdtaYVswo65m3z2XpDXhfSMWlSRHcdu1BeD6RhYp4eyOuBrEy7TmJTJag4OZNYvXFej9gyb+5iSGTuQgqV0RwA8FqNvTyIjnndziTPA0UpYWLeNA+oQFE1L2YSl66Arr9n3U7lKpDuOrbfAb4Rivs/4GsXct2R/laBNxKSh8AKJldKAAAAAElFTkSuQmCC"}, {"id": 29, "name": "巫師貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABYklEQVR42mNgGAWjYBSMglEwCqgIqqJu/K+KuvGfXvYxDfUAYxrqMTHkY4CFmiE+rJLQsPEArfPCkI8BRmqn/daOIgYGBgaG6oo+rOrblmkwjsYAOTEgLaKGEtLxbpsosnjhLj8GBgYGhqdvbjGOxsBgKN/JzRsjLw88mb+AgYGBgWHOm5co8lcuX2ZgYGBg0NHVxcqHgRQRcQYGBgYGmcSE0TxAVlsIPeTprX/4xwB6eU8INJSWQ+juThRxWNrHJU/IPmLzxsgrhULiYrCWLoRiBL20WrNoyWgphDUGCOUBXCFLKoDFFC4wmgcIxQy5MYEe8rhCmlBKgOkbOTUxzMfE1hO42kLEhjwshnG1sdYsWvJ/dFwIHyDUKiUU8jAAqy/WjPg8QCogN+RJralHY4BQHkCPEWLT/IipiVlobQF6XtDBUYPDamhSW6ejMUBsz4xhdHSaSqPTpPaZSQUjLg8AAK+prN15/RzvAAAAAElFTkSuQmCC"}, {"id": 30, "name": "太空貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABVElEQVR42mNgGAWjYBSMglEwCkbBKBi5gJFcjfdffP1Pjj5FCW5GanqAacTEACzEFcS5IBoZGRmpEXOUxsjwjwFqhTwh88mNieEbA+ghIy2ihpJ2n765RVaI4TKH3JgY8jHAQqqGJ/MXMDAwMDDIJCaQVQ8g6R+tB8iKARiQlZMcFB4YeTFgWV9JkYWU6h/+MYBeTqPz0cHxCb8hIVvASpY8LvuIrWeGXwwg+RwlJHDGhO1RSEifhXBlRNUh5f3rm2gKHbBqx2XfaB4gNg9g1LQYIU9a22jE5QGi+wM2OoZUqYkfP3qOwj9y5TzWnhmhmIfF0PCviUkNGWIBLAQVJbix5gkiYvj/yG6NHj97AFLDGjtQxSG4Qh49z4y8PEDrmCAU8oTqg9EYoFWaH7mtUVoDXOU7qSE/bGKAah54/Og5zjJ7dFSCmjM01GoLEWojjZgYAAD6Ipm6XJqwqAAAAABJRU5ErkJggg=="}, {"id": 31, "name": "柴犬", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABA0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8OTuLgYGBgYGGWW3/+RYiKSfKh4YeTEAA2cbVQaFB0ZeDLxckkWRhZTqH3YxQLEHjOvvMBjX3yFbfjQPUGrAkwf7UPgyCk4o4k/ioWl/YdpoDNAkBmAhKx4/CxLi0SlY5UfzALVbo+TWxOglEqw1CjOf1NbpyMkD6CFFKUA3DxajxvUMJMXEyK2JxeNnwUue0dboQNYDsFggtbzHTPt3GEZLIXoA9PqD3JAfLYVGPTDQeQC91IGlZXqPVoyc1iiuVim1wIgthQBDgF22kC3JgQAAAABJRU5ErkJggg=="}, {"id": 32, "name": "柯基", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABBElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8GTPLAYGBgYGGZe0/+RYiKSfKh4YeTEAA1d7tAaFB0ZeDHy8MIEiCynVP+xigGIPaJdcY9AuuUa2/GgeoNSAJ69vovBlRNVRxJ/EQ9P+wsDRGKBJDMBClj9+PSTEo1Owyo/mAWq3RsmtidFLJFhrFGY+qa3TkZMH0EOKUoBuHixGtUsYSIqJkVsT88evh5c8o63RgawHYLFAanmPmfavMYyWQvQA6PUHuSE/WgqNemCg8wB6qQNLy/QerRg5rVFcrVJqgRFbCgEAFhBePsZHU60AAAAASUVORK5CYII="}, {"id": 33, "name": "馬爾濟斯", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA0ElEQVR42u2YzwqCQBCHNXyEbsKeliD2EL7/Q0gHCaRT0K13sNMcXFzKbUynvu+44owzP3X+FAUAAAAAAACsQzn3hnp/GDQc3x99qWFn97MKpDJ9vXUqjr0LKsqYV6BKZf58aUfnp2OzyANM+BnmKGFeAQIwH4B3IflHeef63ytQfWogrguSbTnXqhtUYirx2t1orEiuEnHmJeNin17oVf+uPQ+IPVHUu0AvRACmKnEuE+8+E9lXSPVOuVsKPmIC2EoAS09edKPau1GtXal5BZ4CtVJM5JpDXAAAAABJRU5ErkJggg=="}, {"id": 34, "name": "紅貴賓", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA8UlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TUI8BFlJDel2ZCVUsDupi+E+NmBl+MQAL+b5oeRTxoqUPaeIATHsgMUNsTAz5GBj1wJD3QFDXGYagrjNky4/WA5QacGhWFArfLm0ZivihWWoMDAwMDG/u3BqNAZLaQqTWxCIqaljFcYU8rnwx4mpiRnJboeS2idBDHhbiMPNH20KE2u/U7g/AzIPFKKyVOtoWGvXAUKmJyQWYaf/MaI+MLgC9/iA35Ecz8agHBpsHaN3zGm2NUntslFpjpUM+BgDjdlvrOHyA4wAAAABJRU5ErkJggg=="}, {"id": 35, "name": "哈士奇", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABGElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjVcPb6eQYGBgYGY03D/+RYiKSfKh4YeTEAAyFJWVjFJ3TmMzAwMDAUlE+kiwdGXgy0d8+myEJK9Y/GADp4YwVJ8yLHJmJN++jyo3mA2jGwxB/K8IeEtIyoOgMDAwPDk9c3UdQVHBsthWgTA7A0Dyv/MUKexvUB04htjeKqiQmBNfOmMWBrjcLMJ7V1OnLyAHpIUQrQzYPF6Jp500iKiSEfA2R7YEJnPrzkGZIeGDb1ALntfyxpn2G0FKIHQK8/yA350VJo1AMDnQfQSx1YWia3jTTaGiW3VUotMGJLIQBxMmAlYvfyUAAAAABJRU5ErkJggg=="}, {"id": 36, "name": "臘腸", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABBElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TUI8BFlJDWl6KhUpWYzef1JgZfjEAC3l+nh8o4h+/cNDEAej2wGKG2JgY8jFAsQe6/MQYuvzEyJYfLYUoNcA6zAvC2LSALPnRGKDUgKOrtsHTOgMDA0P4jGcMDAwMDCszpFDkR/MAqW0hUmtiXCVN2aZXWMUfPvvDMFoTk9IaRY8RcttE6CEPC3GY+aNtIULtd2r3B2DmIWJ0tC006oGhVROTC9DTPqx0Gi2FaA3Q6w9yQ340E496YKDzAHrrE9YPoN640WhrlLZjo9QaKx3yMQAAl7pX59ZCe1oAAAAASUVORK5CYII="}, {"id": 37, "name": "米格魯", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA8klEQVR42u2YsQ3CMBBFLygjxBWu8Rp0NEyDxBRIzJAhaOhYA2qoyA6hOiSMT06ck4LNf6Vjn+X/k7uLiQAAAAAAAAAAzEM1dsGyWfUaGz+6W6URZ1GsA5LS9+dVZWNrnIoz2TtQS8oft83H+O7UERHReb8OBtocLsFxaT7zvQ/1Y5woz4GhSIrH5sUc+bssVE9VnrOJlJ385+/1rYMDk74BqS74imvVDVRiVOK5u1HfkVQnfOVZcY6PXijWv2v/D3A8dtQah15IFe3eBw5oEXj3UQeSlNOqyKm3FNk7gAMUcwBrnNhhwoFfvBvVuivN3oEXXl9lXDvbY5gAAAAASUVORK5CYII="}, {"id": 38, "name": "大麥町", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA90lEQVR42u2YPQ7CMAyFHcQR2EAtQ8XSK7Chnhqx9QosiAEQbNwhTJFaS5Hz4woa3re1VZ3ovcR2QgQAAAAAAAAA4DuY2B/Wq53VGPj1vhiNOItiHfApfX2cVQZuqlbFmdk7sPQpX283o/f323P0fNh3RER06o9ZE+DjEJGNcaI8B0KJVV7LMTjgyya+7CR9hwO5AbiyXPGplC/XgUH+tRqOSPD68neV2KR2oalrm/dATnEXH72Q1L+HngekysvjOUebqkUvpIJ2zwMHcnF7gme1wdpHHYiqB0653D4/VXnsASnbTHUCgwOhJzPUgV+/G9W6K529Ax+dtHS6GW+uRwAAAABJRU5ErkJggg=="}, {"id": 39, "name": "黃金獵犬", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA/ElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TUI8BFlJD+uoKC6pYrB3B8J8aMTP8YgAW8vtaJFDEnWpe0MQBmPZAYobYmBjyMTDqgSHvAe2IEwzaESfIlh+tByg14O6RIhS+sk0fivjdI1YMDAwMDD+eHBuNAZLaQqTWxBwykJBmn/6JgYGBgeFnJh/ekMeVL0ZcTcxIbiuU3DYResjDQhxm/mhbiFD7ndr9AZh5sBiFtVJH20KjHhgqNTG5ADPtnxjtkdEFoNcf5Ib8aCYe9cBg8wCte16jrVFqj41Sa6x0yMcAAM44XXRG76RHAAAAAElFTkSuQmCC"}, {"id": 40, "name": "邊境牧羊犬", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABC0lEQVR42u2YOxKCQBBEG0tvoIHlJ9QDGBlYxZE8ikcisYg4gIZ+ygBvYIABTjK1KywuItgv47fLTi8zPQCEEEIIIYQQQpohcH1gMlxkPia+3o+Bj3F6bVeg7xrp2Xz8dsA4iQAA61VYNHfmQ5nuKSCR15E+n261vIBB0cxFidYrwAX8bBYqS7x75FlnOzBmH32dCvhWAJv9K//nh9PREgBwSQ/qxpAKOHkh10osFVhjq8i2uvJ3lTio6kKLPJENHXmJuIxPL1Tk3333AwbvRS9UrgInkTXz0At9oyfWlbZEB2bMQrL35TyzUN3YOr2qfynY0HABTX0DOuvIXq7qkajAp64SNf8/6qwCT30+YsgVzZ1yAAAAAElFTkSuQmCC"}, {"id": 41, "name": "俄羅斯藍貓", "kind": "cat", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA+0lEQVR42u2YMQ7CMAxFXcQBGNhgRhwIMcPCxMBhMmWBGeUeLBwAMcPGwA3CFKlEipI6lgLJf1vVupb/l2O3RAAAAAAAAAAAytClPjibLmz/+vm6d5yEUu9xjP7dgfHQgMfxRERE8+3GchL24kUKaM8Bx2q3/4kC2nPgcLlmJcyNr98B/5yOMVnfiIjofV6y7ofypc6H+hwIVR5SylfWaPV1SoWUxySW6oHc+dB8D7C3Ue4kdj3C7Tk/rp1J7CrO7ZFU5WMOG61s29uoNCHl/Z5ptwdKKR+bB3CglPJwQHpXGqp8NQ6IFWC0Cp7Z+CshsY1KfS9wd6RqHfgAOSBs2JPszg8AAAAASUVORK5CYII="}, {"id": 42, "name": "蝴蝶結白狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABG0lEQVR42u1XuwrCQBCcSAo/wE5JFQRJIaa18Wu0tra2ttavsbGNWIggVqKdH2B3FrJCQvTyOMXkZrp7sMvO3N7uAgRBEARBEARBWA+1WCu1WKus63/x16g68U4aMwAQRREAIAzD58XpyAGAdqtrRIXr7ehk8Vd7Bdwk8xK5rDvzcez8PhkacdxcbmL2L7MV0vzrlKhfDsgb3x22sf1+bwAAOJ33Rhz7XoBPfiRHap8DDKDyAfhe8HrPRc6tV8AtayD5Kwnbsm/q17KnDiTrgY7xsnXgXY9EBXSKFFUiybwwLvatU8DN27+bngfEnijqe4FiL8QAqlSJiyLl7YO/0C/wrnfKyzyTmAH8WwDfnrzYjermBFO9kXUKPABTMJo+rW0QqQAAAABJRU5ErkJggg=="}, {"id": 43, "name": "巴哥", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA/0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TsI0BXCF9dkcZVSw29uiiSswM+RhgwRXy8nJSKOIPHz3Da9DDBw+wissrKODVh24PAwPDf1JiYvjFALmAUEjTCgz5GGCiRmmCq0QhRn7ExwDFeUBfR4uBgYGBIalkCwMDAwPDxSvXUMRh9GgM0LomhsUAOpjX4zNaE1OlNYoeI+S2idBDHhbiMPNH20KE2u/U7g/AzIPFqLFH18hqC416YNi0RsntWyOl/dEeGV0Aev1BbsiPZuJRDww2D9C65zXaGqX22Ci1xkqHfAwAAPbJVwJoXNOpAAAAAElFTkSuQmCC"}, {"id": 44, "name": "雪納瑞", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA/ElEQVR42u2WMQoCMRBF/4pHsLMXa/EcdoJo5xXsJWy/V7BTBDvPIXYLi72dd1irgTVG2cSsbsx/XcJkwszPTAYghBBCCCGEEPIbkrqG/d6grK6vt0vicqEvP0IndAW6tgc2hx0AYDmdly4XVs57CSA+BYSVWrcigPgUyPMCALCYTR72t/uj0b6uHRWwRTKZqfRtTYyG40ZrJl4FhHNxMmZc9qUGfL99KqDXgmRaV6SpzP+NAs7TqGtXka6lT6Pi33Y6jacG9Ex9iu5PFM1UaqVE8AowgOD/AVcMbx/sQt9A/z9cM88iZgBtCyBT6dOcQwV8TqOvplJfRNuF7jkGXZSnM+1UAAAAAElFTkSuQmCC"}, {"id": 45, "name": "博美", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABD0lEQVR42u2XMQ6CMBSGX41HcLMzJzAurN7CicR4CA7AIYyJF3HtQtzcmOvmHcpAaqBKSluiSP9vg9I27//pe69EAAAAAAAAAAB+Axv64XqVqPbz41kxnw3HWkez+HcHlq4T5O1ERER8c1Q+G7bmjxJAfA68lLxsJxFAhA7cz2E7hs6fmwPWAJTIlRJ5b8bhWUk8K8l33LZ+vGdgqCpS5F3F06LzXopdM1BdrU4TEbG0YHCgrYTVCa1s0igt94fP47amzFH52Tjg3Y36VmIzI+luVK/v2p3GU4lNpUIx19OO8oycnJh/JUYAU70PhPL+75eELPQNzPrhqzwOMQKYWgC2mxccCO1G+7rSsYg2C9V5vmvqgKWJrgAAAABJRU5ErkJggg=="}, {"id": 46, "name": "比熊", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFElEQVR42u2YvQrCMBSFT8XBB3BTOhVBOohdXXwanZ2dnTvXp3FxrTiIIE6imw/gFocSocGfJK1iyPm2tOSGe06Se1uAEEIIIYQQQmpGpCsh0pXQHdvScF2owHRCp90zUu08XwIA8jwHACRJUiw8Gwd1JOC8A01TpY+nnVbgVrYGANymo0L5DKWxQLH/u4tJad7legj8PgNS+e1+U3o+6A+NHPhEFMZ4t46uE847wAScTyAK48d+tnnPOlA1gHorSbXl87puLf96oaqVWLcOqLAS6zpi64SqvFRcxvfOAe1bSFWqKmo86WgUxoK9EBNwqRLb8mTvg7fQL3jVO5kqz0PMBP4tgW9/ebEbtf03atobeefAHWKoc9qCieECAAAAAElFTkSuQmCC"}, {"id": 47, "name": "小花貴賓", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABHklEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/ymx8En1LIjFhQ6M1PAA01CPARZSQ3pdmQlZFpmxpkEYwV0MDAwMDP8ZDvxnYGBgkGlNQ1H39M0txpEdA7CQ74uWRxEvWvqQIotO/YakfbO1ZQzIIY9pD8N/UmJi+OYBWgFYTFALDPkYoNgDQV1nGIK6zpAtP1oPUGrAoVlRKHy7tGUo4odmqTEwMDAwvLlzazQGSGoLkVoTi6ioYRXHFfK48sWIq4kZyW2FktsmQg95WIjDzB9tC+EC6CFFKUA3DxajQV0jrC006oER1xpFL9UQaf/MaI+MLgC9/iA35Ecz8agHBpsHaN3zGm2NUmtslFDbaMTFAABA42Zzdw+CyQAAAABJRU5ErkJggg=="}, {"id": 48, "name": "吉娃娃", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA9klEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8GTNIgYGBgYGmZC4/+RYiKSfKh4YeTEAA6dWJQwKD4y8GHj2bx9FFlKqf9jFAMUeMAtbwGAWtoBs+dE8QKkBd87NQuGrGKWhiN85Z8XAwMDA8O7OsdEYoEkMwEJWSMUKa4zQKuSHTQyQ3RoltyZGL5FgrVGY+aS2TkdOHkAPKUoBunmwGDULW0BSTIzWxKMeGOh6gFyAJe0zjJZC9ADo9Qe5IT+aiUc9MNg8QOue12hrFFerlFpgxJZCAO98WUxkQU5NAAAAAElFTkSuQmCC"}, {"id": 49, "name": "約克夏", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABL0lEQVR42u2XMW7CQBBFn6O06SgiRXEZegvRIKWMaGhwm5P4AJyEFg6QMhINstyTkggpRbocwCnQFrushb2YKIb/urHlseZ/r2cGhBBCCCGEECKQ3XhS7saTsm7cNjddFzBq+sBD78mr5nrQB6AoCgCSJAFgmG/8zn1/RHIAuG2q9GI2sOLH5Q8An9O7vfIkVrymb8WGNKNsw5nLc8Aon74828q/vXsTuMoei10O37N3pq4TnXdABXS+gDTLSbM8+L76wKkJVvOpFY9el9b11TwG4Gu7lQONZqG6ndhwH8fe61XKV52Lq+vEUegUWuVEnb+WT3GTX7NQ5eblKHXyJufkM46aKVWzkAroSicO5fDbz7WR/Qlu/whVXodYBfy3As69eWkaPbYntDUbXZ0Dv1gWeztTwOlxAAAAAElFTkSuQmCC"}, {"id": 50, "name": "騎士犬", "kind": "dog", "rarity": 1, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA8ElEQVR42u2YsRHCMAxFFS4jxBWu8RCswB0zUGceambgjhUYAmqoyA6hUhEFHbHRkTj5r3Ri6/x/IskmAgAAAAAAAAAwDkXshHW1aS0CP5t7YbHOarYOaEo/XjeTwN4FE2eyd6DUlD/uqs54fWmIiOh82HbG96froEByHtOPQ22ME/NzYChDlZfva04sNguVvyrP2UTLTvI5z6+VLAQHYpHKS8Wt6gYqMSrx2N2odCTVCak8K87roxf61r9bnwd4PXbUu7CsXggbyL4Sp/Lh28eJ7C9ovVPqLQV+YmxgKhvwLqgdJhyY4t2o1V1p9g68AZ4dYr0bFm6VAAAAAElFTkSuQmCC"}, {"id": 51, "name": "藍領巾虎斑", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABNklEQVR42u2XLQ7CQBCFX5saPA40V8CQVHAJVPkRJGgOQ4Lgp4ozoCDBcAUcCTg8hlDUkLbpZra0DYGZz5AFtsvOmzczAIqiKIqiKIqiKMp3cGy/2Ki3ovj6ejs5nxxY1nMI99cV8PJuuCxXAIDmcBB9cmBsfykXkKcAsdiEifV+fwAA+H4nc/3m/iz1AvIU2NaK3bno/v9XIF2nOUa9INMTlPumz7nzbPuDK64T9yfj7OrCKJKuVuvZXDtxpgKcB0yRzQspZUKMBzzbm5Myodcu9Qdw53H75FShdGQ4L1C1OXenAIDgcUzkPhd5er5pxqIqJnca5aCIkU6cd0zKUqTp9e88UJkClKuBn3x/Z5nztp1aFeA8kFbENuflduKqvECKcFNs3ulUFbD9Z1YVcmehqhDngRfrFZD30BpZ1QAAAABJRU5ErkJggg=="}, {"id": 52, "name": "花花三花", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABRElEQVR42u2XIY7CQBiFH4QQDkAwNKgG0ytgCOEEWARrOARuBQgMfs2u2HuA4QgYgoEU1B4ANyuaIXTSYWZKK5p5n5t2ps28N6//X4AQQgghhBBCSkZsdkJsdqLo59arLkzDdmK33U+pd/071myVBwBM1skYyThYzp2eQwck8fcPACD4mFmdZ6l0jK/kQthkBp6puWYgXnVS1+/T7ct1o8E4Nd5/rqSDzEAhDuR14ny50YHMr5D6vdchFQ97EQDgNM2e97h/OWQ6oXufrTP+ZUAqqUNV3DSPGcibAR0m5W3fxwyYlHJVWj37JqVNJ0Gu86cblTt+NyO2ypt6rrAXCT//B1xp/Q5z1Zm7mplF5HkGykJX4W0rNR2w7Vof/9RIMhEs8Jby/lVi1640b4V27U4r70C9SAXVPqdSG6hcBsrCuwz8A7m6j79ZUAOnAAAAAElFTkSuQmCC"}, {"id": 53, "name": "瞇眼奶油貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA7klEQVR42u2XPQ7CMAyF3YojsMHMUtbeB6QeC6ncp2tZmGFjYUcKk6VSKUrqWAqp37dFimvZL/4pEQAAAAAAAACAPFSxF3fbg5uen697JXGo9R2mLl2BzVKDR38lIqL9+eQkDif2KgHYU4C5DReZ4agbgD0F3sdPksNU+/UrMO/TPpq2+6mFpeeQv9j5UJubxKHu48u07x4msbQGtOYDakCaKekk5rcfynToJbCdnUnMEafWSGzmI7qYs72NauPL/Lxm7NZArsyH5gEUyJV5KKC9K0m30+IVUAugaTtvzy4igL/fRrX+F6Q70moV+AIHMnClYArS1wAAAABJRU5ErkJggg=="}, {"id": 54, "name": "紅圍巾黑貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABDElEQVR42u2YTQrCMBSEp6JbVyKIP0u9gBQ8hxfQG3gUb6AX8ByCeAFd+kNBXLl1UVeBIj6bxOdPzXy70qSPvMlM0wKEEEIIIYQQQr5DZDuwWeum2evjeRv5FNR6jqFUdAXKrhMOszkAoDUepT4FM/NVFhCeAoZ2p/ETCygFl0Jand/vEqbQQw/c53Qey+kVADCYVLzuS/VslaEHpL1tOy54D0SuHtBOIQl6QFJm1e+pFI7Xm6edztsJZl44Cvi+kRf1KgBgeLpYpY9r2oV7GnXFKBEL6SN1Xkqrv/HA2xUwe9/VU7Zvairgy6udpwLa39K+p9PCK6C2gP0uyT1h8q+Epgekbn9ahcIrcANXQnadjjg0rAAAAABJRU5ErkJggg=="}, {"id": 55, "name": "大蝴蝶結白貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8GT+AgYGBgYGmcSE/+RYiKSfKh4YeTEAA3ceXSVP497TVPXAyIuBH86mFFlIqf7hHwPo5TQhoCKnjTdPEJLHZR+x9QPTiKuJCZU+hEIcXd1oTUxpHqC0fhjNA+SGFCykOWYehZTv6dZY9aHLw9I+oZAmlBJg+kZOTQzzMa6QgYU0Q4E9hJ5wkCjzKCjt/o/s1ii8bYOe9r//gdA48gSp9Qx6nhm5eYBWgFDIE6oPRmNgoEJ+NAao3VYit3U65GOAah5QkdPGWWYPCQ8M+tYotfoLxLa5RkwMAADSa3ecoQRLMQAAAABJRU5ErkJggg=="}, {"id": 56, "name": "小雞頭灰貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABEElEQVR42u1YMQ6CQBDcMz7BTmLpA3wGr9DGHxBaWuMXTPQVxndYGiuChQl/OApDIhhYvN2IcDMdgWNzMzc7myMCAAAAAAAA1GDT0No0tL+qNxk6YVNN5omIgtW98mwWZwMFWmC0FfjAJXsV2l4NFJAoMJ8tKww/8psTo1r/8bcLZccTEREFm7VTr39bDw+IciDZ7/5iA/4pcMifooLS9eNXoN6nWS9EcasnuPdN9brmg39JzHUfjvH6d0hiqQek+QAPuDLlmsTl2eeY5k5Cuc6fJC53LPVIV+Y7dDGLWwlNNDFf94y/HuiLeS4PoEBfzEMB7VnJdTodvAJqG0iiuLFn41ZC83Zaaxb6dkYarQIF0q1/NBoPzNkAAAAASUVORK5CYII="}, {"id": 57, "name": "圓眼鏡橘貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFUlEQVR42u2YvQrCMBSFT0sHcXar4Cbim7j6BPoYiuAi+hj6BK6+iYibYHFxFHEQ6mKghNakaevfPd9Wkts09+T+pAAhhBBCCCGEkM/g2U4MG+04+Ryd957LgmW9R+H/ugJBXoPjcgUAaA4HscuCCftSNiBPAcVu3vqKDchT4HKaAgC21yh1vFsPX48/7alAlgJ6njbRn90BAOtJkOp5fdx2Pdv64IurxKbs0xkfkGceK3HRGChaHxgDrp5yrcTq7Js8bToJyk5OJVY7Lhojtp43ZzHEsrvRWm8BALhtRqV8SJbn9ZiRGwNVKWHyvKkeUIGqzryYSvx2BbLyu2t3KlcBPevY3gP4V8K1Gy3rvuDaI/2tAg+Lv3kuE1HPgQAAAABJRU5ErkJggg=="}, {"id": 58, "name": "耳機三花", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABZElEQVR42u2XrW4CURCFz24q+gAEU4IiFazgBRCQpgkSV8GKonkDHoA3QIMAUYcnBERfAQTBlJSqikrcIjaXwGR3790fUmDmMyvuX+6Ze2ZmAUEQBEEQBEEQBOF/sEwnPuWePQCovU0yOXjx0QQA7H7XVpp97FuPwIPpRKX8qPEHACi03xMd+D0YAgBc+PuN+2VIBOK8WVTyvpI9/7t355HrXqqv0fulxL7bLNTqrLwgxZTylLiR+Nr+ICirjftli7cHVL7XoRQvFR0AwMYNnncc3y4jPUHPN60P9xeBk5t7Jm9dKRumOB2ffU7P5kWczzQL6TxAFU1KWATiRsJm142mjQRVPkxp3UtQ6/j0QurGpnXCdL8w5WnFp9mvVHQ8XhFIyuOoHstjylt76pmuw9wDl4IqT7OVrh5IBEy71uM/MXxPFLpIpTy/Sqx7s1n1Ruy6UTtLBXUd5lVf4OY8cCnYeeAAXW+LzaTwmKQAAAAASUVORK5CYII="}, {"id": 59, "name": "青圍巾黑貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABDElEQVR42u2YTQrCMBCFX4viBdyIPyvxDh7Evd5AETyEIHoD3XsQ7yBdtUo3XkBc1I2BIsYmcfyped+uNOmQefMmSQFCCCGEEEIIId8hMB3YrPey/PPxtA9cAkp9RxGWXYGK7YTDegMAaI2GmUvA3HyRBfingKLdafzEAkLvupBU5pM4ZRd66IH7Pl3EbnUBAPTHVaf3unimytADuto2Hee9BwJbD0h3IR30gE6Z7nYuEjgazJ5muqgS1Dx/FHDdkWuLCQDgPF0adR/bbufvadQWpQRutW+aeV23+hsPvF0BVfu2njLdqamAK69mngpI36VdT6elV0BsAUmcFp4w+VdC0gO6bH9ahdIrcAVap3VpEj/ZxgAAAABJRU5ErkJggg=="}, {"id": 60, "name": "乳牛貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABDElEQVR42u2XMQ7CMAxF3YojsIGYEAtIcBIWBlY4GawMLOycgAUkWBATgo07hClSGmHipKkgyn9b1KaW/fsdhwgAAAAAAAAAwG8opC922gNlrp+vaxESMNZ3NGXqCrR8NzxWayIi6i4XKiSgsT9KAvkpoBlPRpX1dreRbdwfoiZQZteFbvdLlMD93hBd6KMH7D4trSSnjOs5F0+qDDwgrfhsOq90K3iAU8DlgdhdiAMecCkTqoRdea7Srj9B78tnFtIZ+54Tvv+43e3s7mUoqfKeRl3oykmnVe6cOR3PX70DBTik9wOu8tKTGgqEeqJu5fM7iZu6mdW9oSWvQBmzgq4J868TSM4DTZGdB9773H0Ao09poQAAAABJRU5ErkJggg=="}, {"id": 61, "name": "魔女貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABPElEQVR42mNgGAWjYBSMglEwCqgIorw2/I/y2vCfXvYxDfUAYxrqMTHkY4CFmiE+rJLQsPEArfPCkI8BRmqn/aUzZjEwMDAwRGekYVW/bFsA42gMkBMD0iJqKCFtb9ZFkcUHT5UxMDAwMDx9c4txNAYGQ/lObt4YeXngyfwFDAwMDAxz3rwky8IUEXEGBgYGBpnEhNE8QFZbiNyQp5b+4R8D6OU9IdBQWg6huzvJksdlH7F5Y/jFAC6f4wqpJ69vovBlRNVRxFMSAiBpf8EGBkpCejQPEAvQY4TUNtaIywNkt0ZxlSrEllrk5jl0fSOnJob5mNI8QmzIE4rhhtLy/6PjQtQEuEIePc+M3DwwUCFPqD4YjYGBCvnRGCAXEOo3kNo6HR2dRg5BXGX26PwANUenqdUWIrWNNGxjAACcXIyr+X9aZQAAAABJRU5ErkJggg=="}, {"id": 62, "name": "小紅帽貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA9UlEQVR42u2YPQ7CMAyFXxADExMbAxtwANSDcBwOwHE4COoBKBsDGxMTW5kikKWQn1qKqN+3VY0b+T25dgIQQgghhBBCCKmDS124XKz77+f74+pKNtT6jmfy7w5McwPOuw0AoGnRl2z4ie9UErDngFSyNnYdmO9fRXHP04wO/HRA/qdjbA83AMDluCp6H9ovtT+Mz4FQ5iGlpLJS8ZDy7MRaNRBzJHc2MlcDxdNoaSeWM1Buzck4O53YZzy0RlKVjznsp2G7s5A2IeVD5wZ7NVBL+Vg/oAO1lKcD2mfpXOVH44BaAk3bqd31mHLADb3b1MZcDbwBWlxp7tNX4C8AAAAASUVORK5CYII="}, {"id": 63, "name": "飛行員貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABG0lEQVR42u2XMQrCMBSG/4qDB+im4KYeRARvoeDu4qIH0MErCLp5BBcPom6Cbq6CW10MlNCSNL4q+v5vS9M0zfvzv7wAhBBCCCGEEEK+Q+T7Yj1uJen29XaKQiaU+o6h8usKVIsOuKw3AIDGcJAAwGh/BACsu+3M9+3+1HiRBehTYLmdAADGvRgAcH89N20bu9+Ml6KiLgsd5k2RiTuzM7NQpgfsPO0byTxlXP158/kqQw8UjTg9IO0Bm6JZih4IjVToeWD2vivSrp1gxumphcyK3/WIb+TdWQyJzmrUUOsvAACP3VTkR/Iib3tGrwfKUsIVedd5QAXK2vNqTuKPK+C6NxStTvUqYGcd33uANHqqUan7QmiN9LcKPAFnYH/zDNNf1gAAAABJRU5ErkJggg=="}, {"id": 64, "name": "貝雷帽貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABPUlEQVR42u2YPQ4BQRzF34rCAURDVKLZXqURkWjcQMElFA7gGhRuoNG5gFZBNMRH4wC6VchsmOyaj92NbOb92p3Zyb43b/7/HYAQQgghhJDccu0Pgmt/EPxr/ULeBfRsFDcZX12vPDqQhgNp7fPWdv/93sfBc9qBoqlyl/kCAFAbj6wWTDrfXQdC7pO3krMKAOA53Pwc3m33WAdSOYWq5WbwqbyMqROn842nUGQGhNIqhOKNug8AOA6jx4XPz7tIJ+LW03XGvQwIJeOQFVeNYwZsMxCHSnnd9ZgBlVKmSst7X6W0aieIee70QuKLk2ZEV3m54suVvlH3A0e7UUNKy45VnXnKmZn6jmcgK+IqvG6lpgO6XWv4T4x3JmpTJFLe3Zs53a7UtkKbdqe5d6CQpoJyn8Pb6SwzkBXOZeAFYZqGYNzbCsgAAAAASUVORK5CYII="}, {"id": 65, "name": "花冠貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABQElEQVR42u2XIU/EMBiGnyMogsQQCBgCp9EkYIE/cRg89iAhZ7B4zN2vAAsKR4K7EMyREQwShSmiLOEalm5dydj1fdy6tUvfd+/XbyCEEEIIIYQQohk6ZR9cWdo0P6+zhw27wNr11BrDsTEAvYXDX++blwMDsLr9DMDr+1Onzgbm2u7AfNUJ2ekVVsHjacVv7uz4zhYAZ7nil7cGYLS/awce77/X+bQOneyRtAOVM5ANRwB8vJ0HvXBxeWCdOuopA0EZCFU+1vzZd8Ct9z66/QkA44v1oPtF7yubjfSqUJGSZRV3n1MVqpsBF5/yykCsbrSq0u6371Pa9yXk89I5ifMd181IWeX9VQyTZi/0VxQp72Ym3Qw0pbzvPJADTSkvB2L3SqHdaesdiLaBbn9SWLNbsYF/343G+l8I7ZFm1oEvNQGFAI6ZIosAAAAASUVORK5CYII="}, {"id": 66, "name": "毛帽貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABCklEQVR42u2YOw6CQBRF7xiWgLHQWrfjEjRhAxaEltZYuAESXYLrsdbChD1AgdOQTObjQwJzT0PBfO+b95kBCCGEEEIImQ3Nl3/Nt5i6YMq3w7V6iKh7yvaKFgCQuDZcp1vRc63He9dPRR9wjS6DLEApRR9wYbPcAQBetzsAoKo/QRNm6aob73hgHvCygCZUean+87eAb7wv86L7Xs5B/03zueaHePKAVsqkpKvi/XbRZ+JEuuaxKU8f+NUHQpXun32b0raToPvFk4n1jqXuBTblHaJYE2ctNBQm5fs+E68PjKW8LR/QAmMpTwtI10qh1enkLSC2gTIvjDGbr9OSr9PSb6Sh94DZWKAFmyl1l9QS1zAAAAAASUVORK5CYII="}, {"id": 67, "name": "天使貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABIElEQVR42u1ZOQ7CMBBcRzwBKiJKKEKbT/AKkPIsJHgFn6CFAkoEFTT0SKYAI7LCmNiOIrIzZZL1yjN7jBQiAAAAAAAAuVCxDtKHif6YYLBSdV4gEa8AZ94wbnsOBYB/7YF+d1iq6dNl71XTsc5pTQ90qgYcF0siIkpnU+2T8C0eU8hLAYPteu4XuMEeCFPgOr4FJQyNb78CfE67kOXF155wvbfl+3U/JOI2sWv6uBjn33GmtdZlF6uUQg/UuR94vrQ3emzs866kiE2JRKwb9d3EpvZf3ujJNIdRwgbTO3I2sblxaI/w83hpV5h2WrYbjQ0b87xn5PZAU8y7PBEUaIp5KBDbK1VlvjUKRLtAlhfWmY3/AzH/D8TyQi6PJEaBO8VgfgLKF6mkAAAAAElFTkSuQmCC"}, {"id": 68, "name": "小惡魔貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABCUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8GT+AgYGBgYGmcSE/+RYiKSfKh4YeTEAA7JykoPCA0wjrhSiVsg/fvR8tBTCmgfQy2lC4LhvNAMDAwOD5ealZMnjso/YmBnNA7jSNrHq0EO6KmoDSoy0LQtgHFkxQCgPULsUwgXi3boYiIkJphHbGiU3JtBDHj2kYWDhrjK85sDyzsiJAWrVyIRqYFJLu5HbGqU2wBXyuEqrYZMHWAZ7yBNqE43GwECF/GgMULsvTW4PbcjHANU88PjRc4ItzNFRCWrmAVyhTe9YGPIxAAAUc3GeW2CFQwAAAABJRU5ErkJggg=="}, {"id": 69, "name": "聖誕貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABNklEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjFTASKqGpx6+/6npAOkdmxkp0c801GOAheiQElGjasibnbmJEqPkxgTTiMkD/////08TBzAyMiKbD+OP5gF0ICOqzsDAwMDwZP4CBgYGBgbL+kqyLDze2A4xLzEBa0yM5gFCpZCsnCRVLH786DmkFHpza7QeoKi8Pz7hNyRPFLCSJY/LPmJjZvjFAC6f44wZ26OQkD6LVlq9vomm0IGBkpAezQPEAsyQJ6+NNWLyACO5IUVufQAr/8nOc2j6Rk5bCOZjavULCIU8ETH8f2TFAEYNe/YApIY1dqBO3xhHyKPnmZGbB2gVE4RCnlB9MBoDtErzI7c1SmuAq3wnt4c25GOAah54/Og5zjJ7SHhgyIxOU3uMlNIe2pCPAQD1O38Emsk5wgAAAABJRU5ErkJggg=="}, {"id": 70, "name": "小獅子貓", "kind": "cat", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABHUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2CgACO5Gk9W6P8nR5950VGanqAacTEALkhTusYGf4xAAv5oDnfUcSfvrlFVshJi6ihxOS6FE6KYmLIxwALqWn+yfwFDAwMDAwyiQlk5Qkk/VjtIzUmhm8MEAJX51gNCg+MvBj4+HcWRRZSqn/41wPo5TShtK+dcgxvnsAlDxPHBYitZ4ZvTYxeD8BqYkKlD6EYQVcHq4nJbRuN5gFywWgeoLQ1Sm5MoIc8rtYooZQAi6HhXxOTGjLEAlgImndgz4OESzGG/yO7NUptgCvkcZVWIycPDHTIE6oPRmNgoEJ+NAao3ZcmNeSHTQxQzQPaKccItjBHRyWoMT9ArbYQpf2AYRMDAJvhgqlqvjdcAAAAAElFTkSuQmCC"}, {"id": 71, "name": "藍圍巾哈士奇", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABG0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjVcPb6eQYGBgYGY03D/+RYiKSfKh4YeTEAAyFJWYPCAyMvBtq7Z1NkIaX6h10MUOyBN1b5DG+s8smWH80DlBqwxB/K8IeEsoyoOgMDAwPDk9c3UdQVHBuNAdrEQEH5RAYGBgaGCZ352EMeKj+aB6jVGnVYc5MqFh8IUUdpjcLMJ7V1OnJiAD0miG0LvfGC5A2RbZC8sGbeNKwhDzMPXX60FMIFYKUOsaUMLCYYoCE8WgpRmgfILe/XoMUAuWl/NA9QqydHbsiP9gdGPTDQeQC91IGlZXqPVozceoDaYMSWQgBKgmQZ8vlq1gAAAABJRU5ErkJggg=="}, {"id": 72, "name": "飛行員柴犬", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABJElEQVR42u2XPQrCQBCFX4JHCFhoISh6gNxAxEPYpBHByiMEa28QbLyGiDfwAEoEi1gIttax0BFdLdxkQwj7vm7/Ztl5uzOzACGEEEIIIYSQcnD+ndjwuul7+3w9OFk2NGVHcKuuQE13QXJcAwCa7WEKAOPNHgCwHPR+zlfH39YbOYB9CiymIwDAbOgBAG7PfmmrqOOy3hSudVFoN+8Y2dgPY0YhIwfww/jlzSzjjEJ5DSSn7Ue72ep/9CfBo/+ymlCBQhQQz9aD6KciRXne3jwgZM0HakSSPCD2dfOCPW9A9VReVHuiqB9CSwl7M3E9iF6Rp9KlROXzgKigG++/73626pQK6KLmj7z/Av4HeICy3oAadeQum/ozsxr9tyo1hbVR6A4y2W0Tp4St7wAAAABJRU5ErkJggg=="}, {"id": 73, "name": "粉領結貴賓", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA+klEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TsI0BXCF959FVqlisIqdNlZgZ8jHAgivkL14/jyKur2lIEwdgsec/KTEx5GNg1AND3gMqcto4SxRi5Ed8DLBQagB6vQALbZg4teqN0Zp4tCYe6NYoeozAYoJj5lEGBgYGhh/p1lj1ocujhzwsxGHmj7aFCLXfceUNWEgzFNhD6AkHSTIPFqMqctojqy1EcT2Akfa//4HQOPLEaD1A7RggF2BJ+6M9MroAXG0nckcpRvsDox4YLB6gdc9rtDVK7bFRao2VDvkYAADUf1/j2qVHdwAAAABJRU5ErkJggg=="}, {"id": 74, "name": "笑咪咪黃金", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABA0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TUI8BFlJD+uoKC6pYrB3B8J8aMTP8YgAW8vtaJFDEnWpe0MQBmPZAYobYmBjyMTDqgSHrAe2IEwzaESfI5o/GAKF6gBCA1QccMlYMDAwMDHePQGhlmz4ovwhN/WgeIK0tRGpNDIsJ9umfGBgYGBh+ZvIxMDAwMPx4cgxnHhqtiUlpjaLHCLltIvSQh4U4zPzRthCh9ju1+wMw82AxCmuljraFRj0w2GtiSgFm2j8x2iOjC0CvP8gN+dFMPOqBweYBWvW4RlujtBobpdZY6ZCPAQBXWWF74CBD9gAAAABJRU5ErkJggg=="}, {"id": 75, "name": "伯恩山犬", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABJUlEQVR42u2YPQrCQBCFX0RbKxXEn9IcQBFEBO8g3s9evIONCKIH0NIfBLWytYhF3CJDYrLJBjF5HwgJa2bNvN15swKEEEIIIYQQQn6DpftAo9JxTEx8eRwsE3EK/65AUTfTrXb9a8D1bgkAGHTHYXM7JpTJngIq8zLTp+M1lR/go6ijo8TfK5D4BWZT9xN3nFUoaQB7+HIv5iXf6iPHqYBpBTBafeq/e9us2gCA830vvjimAlq9kK4TKweWBDlykK/kzokt3S5007ONTNzf7j0ZV/GpQFQlwrpSxaJWBgBMbk/P2peZV/HkOH3AQN/vUaJvuKvN7x6QThtVCVn/46597gFTJ7C4meeJjC/w6z0gq45ay1EdmgokVSCon0/r/6PMKvAGMeZq3nInrU4AAAAASUVORK5CYII="}, {"id": 76, "name": "傑克羅素", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA9UlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TsI0BXCH95PVNqlgsI6pOlZgZ8jHAgivk+3xEUMSLtrwhy4KdpQ545THtYfhPSkwM+RiguQfcuw8wuHcfGLoeoHseILc0wVU64ZRfoD4aA1SJAfSQRQ9xatUbIycGYOUvrDwmOUaiU0hSj16/jLiamJHcVii5aRu9DQQLcZj5o20hQu13avcHYObBYlRGVH20LTTqgSFVE5MLsKT90R4ZXQCuthO5oxSjmXjUA4PFAzKi6jjHekZjYDCOjVJrrHTIxwAAw+ZfPOqxkNEAAAAASUVORK5CYII="}, {"id": 77, "name": "頭巾柴犬", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkViF0iJq/5H5T9/cYiTHQmqZAwNMQz0GWEjV8OTuLgYGBgYGGWW3/+RYiKSfgYGBgeG/f9x/BgYGBsaNixhHZAyQnAeeWFtQ1wFkhvzIzQMv3d5QxWLj+jujeYCsGMAVkmcbVciSH80DlBrw5ME+FL6MghOK+JN4aN5ZmEYTD4zGACxkxeNnYY0RWoX8yK2JYQBXqUJsqYXeGoWZT2rrdOTkAfSQohSgmweLUeN6BpJiYsjHANkeEI+fBS95hqQHhk09AIsFUst7zLR/h2G0FKIHQK8/yA350VJo1AMDnQfQSx1CPa/RGKC0NYqrVUotMGJLIQCxFmn6MUIFwwAAAABJRU5ErkJggg=="}, {"id": 78, "name": "小花白狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABCUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/ymx8En1LIjFhQ6M1PAA01CPARZSQ/rOo6tkWcQx8yiEEdzFwMDAwPCf4cB/BgYGBpnWNBR1T9/cYhxRMcCIK+QvXj+PIq6vaUhRDKDHBCzkcdlDbEwM3zxAK/Aj3RrCaKWOeUM+Bij2gIqcNoOKnDbZ8qP1AKUGoJdKsNCGiVNaao28eoBWNTG2vIENjNbExMYIuTGBHvKwEIeZP+JigOhSCD2kKAXo5sFiVEVO+/+IaguNemDEtUbRSzWktM8wWgrRA+BqO5Ea8qOZeNQDg80DtO55jbZGqTU2SqhtNOJiAADex14JQhaAQAAAAABJRU5ErkJggg=="}, {"id": 79, "name": "澳洲牧羊犬", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABLklEQVR42u2YMQ6CMBiFH8YDOOiks44aL+ABGOQAJE5egLAbduMFnEh6ABYP4AUMjjrrpIM3wAFrQiMqWKLI+yagoeX/X+n/WoAQQgghhBBCyHcwsr7QbnYjHQMfz3tDRz+1v1UgLdOz+ULLwJ7raFGm9ArU0zLfHwwTz7fhJnEfCAEAsGz7ow9Qx0GIKIsS/6fAu2TNvC7FqIDKumECAEaX1dN2yy4mACogxvIqznSn1QMAHE47AMD01rr0qcB7CtzX39t6/IqlH8/96cRMZF5tT0OtL5WrxEZeF5rXE6keSGZc9k8v9Mq/694PyP6kop7rVMsLFRZAIMTd/5QygNJU4rxu9cHc546sUOT/oNaPvJmnAkXv4CqjgLYAPNdJPethHfjFs1FdZ6WlV+AKB5NspjiHal4AAAAASUVORK5CYII="}, {"id": 80, "name": "滑雪狗狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABJElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2DYgP9QQC/7mIZ6gDGSquGphy9VQld6x2bG0RhgYGBgITrERNSomq5h5j19c4txNA8QW7rQxAGMjIyjeYAYICOqzsDAwMDwZM8sBgYGBoaPFyaQZSG/QQHEPJe00XqApBiAAXJDnlr6R2PA//56FH5DIpSej109bnn10RggKwY2KgailirykBg50IBWWr2+iVef9mgeIDMGMEqVhZCQ5Y9fjzXkYfKj/QFK20LordGrPVpkWahdcg21fwFtjZLbOh05eQA9pCgF6ObBYlS7hIGkmBjyMTDqgSFfD1DaJ0ak/WsMo6UQPQB6/UFuyI9m4lEPDDYPaJdcw2jnjMYALUanqT1Git42GnExAAByU2Ifn8MtAgAAAABJRU5ErkJggg=="}, {"id": 81, "name": "牛仔狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2CgACO5GlcW2P8nR1/4hIOM1PQA01CPgVEPDDRgIVWDtIjafwYGBoZDV56TZSFM/9M3txhHYwBfKURuKUMpILWUGn55AJZGL97/iCK+8Og3BgYGBob6MDmqWNy46hEDAwMDQ7w1F0V5ZLQYHfXAQHugcdUjeHomR360JqbUgKMrslD41hHTUMTdgiDiu9ZtGY0BkmpiWHmMDnDVA25BPljFcYU8rnxBahuJacT0yNBjhNwaGT3kYSFObit15JRC6CFFKUA3DxajjasYRttCox4YUjUxuQAz7T9iGC2F6AHQ6w9yQ340E496YLB5gNY9r9HWKKF+ArXaRiMuBgAq12Vgp1Yt9AAAAABJRU5ErkJggg=="}, {"id": 82, "name": "雨衣狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA/UlEQVR42u2YrQ7CMBSFz8g8ZsEwjWAJAoncM+0xeCYkEkHCBBoMqeEJhrokXFjStQ376flkl7W797T33BUghBBCCCGEENIPSdcXltmqCbHw3VyTEPPMJqtAc941vXzQ5phEpUDatsefp8XHeFHVAIDbIQuycF4aAMBlv/65vu0ZmZ4CtmiFbJlvH0EDGL0C3gEUVf0+Hy7Po1cg9Z1AVxHJtozr51TA1onbeh7xAd8qJD7g2yPNoulGtSKujqwzLxnv6sDxVSGdqVD/AzKfKJqXiKsXYgCjd2JXvve+AavQP9D+4Zp5HmIGMLQA8tK0dphUYIh3o6HuSkevwAsMZlpWLsAVNgAAAABJRU5ErkJggg=="}, {"id": 83, "name": "探險狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABBElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjFTASKqGExuq/lPDYouANkZqmMM01GNg1AODNg9Ii6ihpPUZbXY0cUBG1SEU/tM3txhHdgzAQn5fiwSKuFPNCwYGBgaGqyssqGKxdsQJBnz2EBsTo5l41AMD7QHtiBPw9EyO/IiPARZKDbh7pAiFr2zThyJ+94gVAwMDA8OPJ8dGY4CimhgGcNUDHDJWWMVxhTyufDFaExMbI+TWyOghDwtxmPkjLgaILoXQQ4pSgG4eLEa1Ixj+j7aFRj0wlGpicgFm2j/BMFoK0QOg1x/khvxoJh71wGDzAK17XqOtUUL9BGq1jUZcDAAAF71dJEPaaykAAAAASUVORK5CYII="}, {"id": 84, "name": "水手狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABAUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN/////08VixkZGalhDtOwjQFpETWUkFaJ3kUTB9xZ6obCf/rmFuPIjgFYyO9rkUARd6p5wcDAwMBwdYUFVSzWjjjBgM8eYmNiyMfAqAeGvAe0I07A0zM58iM+BlgoNeDukSIUvrJNH4r43SNWDAwMDAw/nhwbjQGKamIYwFUPcMhYYRXHFfK48sVoTUxsjJBbI6OHPCzEYeaPuBgguhRCDylKAbp5sBjVjmD4P9oWGvXAUKqJyQWYaf8Ew2gpRA+AXn+QG/KjmXjUA4PNA7TueY22Rgn1E6jVNhpxMQAA8OhdILOw24gAAAAASUVORK5CYII="}, {"id": 85, "name": "派對狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABKUlEQVR42mNgGAWjYBSMglEwCkbBMAL/6zf9/1+/6T+97GMaDXI0EH3g///oA/9HY2DUA0MFsFAz7TMwMDAsUfKGCED5Sx0YGUdjgJoxIC2ihreEibm3lSj1T9/cYhyNAQYGBkZSQ/rOo6so/JRTkEicY/YHqzm45FXktBmoETPDLwZgIX/x+nkUcX1NQ6wxQC6AxQAue4iNidGKbNQDA+0BFTltnCUKMfKjNTGlBqCXSrDQholTq9QaOTEAK3/1NQ3J6lU9iU5hYGBgYPhBpHpYuT9aE5PaCiU3baOXSLAQh5k/4mKA6FIIPaQoBejmwWJURU77/2hbaNQDQ3FUgty+NVLaZxgthegBcLWdyB2lGM3Eox4YLB6gdc9rtDVK7NgopW2jERcDAK4NdQR/It4iAAAAAElFTkSuQmCC"}, {"id": 86, "name": "眼鏡米格魯", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA70lEQVR42u2XPQ7CMAyFXcQR2onO5BpsLJwGiVMgcYYeogsb14AZJnqHMrlqDVbb4PKTvG+MFFvxS/wcIgAAAAAAAAAA3yEZu2GRLmuLxLfqkljEmQWrgFbp6/1skjjPnIkyf6/AXKv8YZN21rdlRUREx92qs77enwYlkvuY5zxUj1EiPAX64Io3d7hwL9+IdsebN1Q4QhfyUcC3u0xFvApofsAKWPkFnBhO/CvTqFTEVwlZea44x8cs1De/W/8HOF7LwTELmaJNofCBd//EVl1ITq/oQlMjlfOtfDAK4ADBHCDP3Md/Y3H7gDXRdqEHv1tfW+/rrVwAAAAASUVORK5CYII="}, {"id": 87, "name": "花環狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABU0lEQVR42u2XPUsDQRCGnwuprK1isAq2gkUKEWxCQOwUUqfyF9iIbSQg/gKrrS3sVBAbIVhYCJZKypjK2laLOIFdPM/kzo+471PO7Afzzs7uLAghhBBCCCGE+B2SSScszC+9AgzuagBUV/qev9N7AKA9t/mh3+Yli+dJEQGU/m0GTOmQwf4xAMPlGwAuK3sjxS+uPbtRuV8FwG2sA9Acdj179WDHG//0/JjEnQFT/vSo4dm3dq8AuD1pF7JxveX4bJ+vZmLmM6AAZj6AesuNz/M0/ugzUM67QHgrmdpmL+rW0kucpnjedyAkupc4tQZCJSwj1sOwfTjqffprXm+T1gvZePdy9u5x3j5pGY+3BrJqw2rButFxl1nreUqbPTz7ofK2XujXO5BFqLDVRJOueqEfycC05D37ykDRvdOkyus/oAD+WgDf/fNSL5T1T8hLtLfQG0J5fwhtuvgiAAAAAElFTkSuQmCC"}, {"id": 88, "name": "墨鏡狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABBklEQVR42u2YsQrCMBRFb8XdpU46K9ivUdzdXASnfoaT4OLmLvo1FnTWyS5+QR0kSFJKTHlq29wzJiRp3s3ruwlACCGEEEIIIeQ/BK4DeuEgk1j4ll4CiXladVeg7Rrp02oksnAUI5NQpnkKqMgf5qHWPtmmX/mA/DovZT5Vork5YD/DCQBgulgDAPabpZYjtn4p/FVAoSJrKlPUL42/Cqiz3JkdtfZ+dwgAuN7PWvtjN6YCTl7ItRKbStgib+aKt5U4KOtCy/7PzciriKv56YVs/l36PqDme1dwz7wQN1B7L1SW/NlPeCP7CWb9KBt5JjE3ULUNRHFS6DCpQBXfRqXeSmuvwBMilGROKHAbfgAAAABJRU5ErkJggg=="}, {"id": 89, "name": "護目鏡狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABGklEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMDCAkVQN0iJq/6lh8dM3txipYQ7TUI8BFlJDuj5MDoXPV7abgYGBgeFTlytWc3DJN65i+E+NmBl+MQAL+XhrLhTxhUe/MTAwMDB8+PANNYShNLo4sfKY9kDsJzYmhm8ewAUEBFBDDJa20cWJlR/xpRDFHmhc9YihcdUjsuVH6wFKDTi6IguFbx0xDUXcLQgivmvdltEYIKktRGxNDANuQT5YxXGFPK58MeJqYkZyW6G4YoKYUgtbiMPMH20LEWq/U7s/ADMPFqOwVuqIaQuNemDI18TkAsy0/2i0R0YXgF5/kBvyo5l41AODzQO07nmNtkapPTZKrbHSIR8DAA2ab39EiWMMAAAAAElFTkSuQmCC"}, {"id": 90, "name": "恐龍帽兜狗", "kind": "dog", "rarity": 2, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABA0lEQVR42mNgGAWjYBSMglEwCkbBKBgFo2DIgf/nrf7/P2/1n1w+tQDTUA9IFmoZxGh4jBEfn1ZgyMcAyaEkLaJGlXT89M0txtEYwJcHcIV0yAkXqli8xoLhPzViZvjFACzkr66wQBHXjjhBEwdg2gOJGWJjYuTWA40PvpClr16BZ7QeoKoHtCNO4M0fhORH6wHqlyInUMTR5UdjgFAMwMpfWHlMaYwQk4dGdE3MSG4rlNw20RqLPVhDHGb+aFuIUPud2v0BmHmwGIW1UkdMW2jUA8NmVILcvjUi7e8Z7ZHRBaDXH+SG/GgmHvXAYPPAGos9GO2c0RgYzGOj1BorHfIxAAC/Q3VBe7LGVQAAAABJRU5ErkJggg=="}, {"id": 91, "name": "國王黑貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABQElEQVR42u2YOxKCMBCGN46WdjSOj9ILWElv7xHwBh7BI1jb6BHoPYAlvaXi2DBjQWmxNsAYh7jhJUL26whhMvy7/2YTAIZhGIZhGIb5GzB0EUMXyXmejejZWHS8KJ2mC959Vx4AAB476Vn0l4KKhDSwmUXjgL/4gcZHQKR5IE35oTWVFPWPVq4FR4tAer4FZ0F58lsmtMcDSUiInPf3h0hJJ9eCyfcrB3SUpzzZvgjoMp4MqjVnpHTrPSB0J8ZVqCzlr5e7VhUyZydW1XuK0/YJAADzdS/Xe9V6upFhD6hyW3ee8R4QWT1QdhVSwR6gIpM3Ep/Kq5SmMiH+zpxeKP7jrPtE1hzPsOOj2d1o2aiUV1Ur8zxQl/Kx0nwiq1t51dnYnJ24qpOZbnfKHtBVsKrbCnNu5or281SfD3w7LfMCN1a6FpumcasAAAAASUVORK5CYII="}, {"id": 92, "name": "粉花白貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABIklEQVR42u2YLw7CMBjF3whHwEGmCAYLJ0BhOAMEQ4IlQRI8lgRD4AzznACNISgCjgPgiig1C03/JsvY+5kmW7uu7/Xr920AIYQQQgghhDgiVpkQq0wU/R61sgtZt+3YbHQEADzmG3lhupNOQLqQrEeJy3MUz9c1oQNO9Bqy3c8AAK3t4qeyOh6Hoxw3GTMG/Bz4l4OAQC3b2vN6cxTKMiB96AfNGHo+P93wPY0UbTTroyF+8Xrvm4+2/xQegcS10ysU9JW8Xw/ZuLQGMhjUp4xEBoDvkrn975JadNOUOOqk4nVikNjxFZ5i1NMVLsajY1O+XzMVDcGilLelA/oQFHK04HYtZJvdVp6B6ItoJ12tWc2/43GqEZjfS/41kh/68AHdAh0nRk3yxQAAAAASUVORK5CYII="}, {"id": 93, "name": "鈴鐺銀虎斑", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABPklEQVR42u2Xv04CQRDGP4g1icYOS8MbWEt1pfEJUO4JCKXUtpd7ApE3MJRU+BrGUjsjrd1RDcHNTmb3uIuR/X7d5nZusvPNn12AEEIIIYQQQsjf0And2D8fVPvrz6+3Th2HTf1H6P53BU5iDT7mzwCAi/F9Vcfhnn0jB0hPAeHpZflr/bpeAwCuh0Pvesfmu9EDpKfA6vTsIIeH2h+/Am6ftshvb7w1Ibmvfbf8hc6HbnKT+G4y9XcXQxG3Wy3KgpPYq4BVA1pkYxGlNFgDljKXs1Uth++PWVCkrUwQu3QmsZxYIvNw9ePdl/VyAMBsOfJ2qzww8lJr2h1rURZVWjWgRcjCjaB0H1cB7b9at0qvBmJR3wOBOR86qamAhht5iayV87F3JCoQWwvWLTb2dkoFQl9mbZHuJG6L5GpgC0hNlONH84yCAAAAAElFTkSuQmCC"}, {"id": 94, "name": "星星三花", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABXklEQVR42u2YMW7CQBBFv1GKNHSIJhYSEkrjK6RBUXoOQAGXoOAAOUQaUuQA3IBcggaliWWgQaKgodsU1iJ5xLC7xkYiM6+zsBftn/3zxwYURVEURVEURQzmMDfmMDdVrde4d0Eebqk8AGD/UbiOmoNIdAW8d//Uei6c2/VuFV1Tibg7uWoduR7IZp8AgHg8KtdJvtuVbkBgF9rmZzd7z5U8DhcXb399eat1A/+vC3H92XYhqzwltBK/6Ua7UMEDXFLafs0p3uskAICf4fk/OP2eLs9WguZLaM7I84BVkoMq7rpPvAci18xDcSnri60Ah1wP+E6jZStBleeUdp0E+5ycWcju2KVM6Hqc8jTxadL3OonRd2IfHr/6QR6z3jpSz0wT4R6oCy7haVJzE4JWwAXtHhlyT8RTBCnPfU+Sk8ShU2nZhObyQT3gq2DVlTkdFeYbqlwP1EXoG9rdV+APxyCxyJ4bovcAAAAASUVORK5CYII="}, {"id": 95, "name": "獨角獸貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABTElEQVR42mNgGAWjYBSMglEwCkbBKBgFVAP/b3j9/3/D6z+97GMa6gGG4YH/nzf8//95w/8h64GhBliQQ56BgYGB4f0sFD4jbwAjKQZ+vPBsNAZIAYzY8gC2kJcWUUPJF0/f3GLEVQoxMDAwMGpswypPrDmE3DN8YwAXgIXck/kLGBgYGBhkEhPIshBdP86YRMuTDIJpDNhiYviUQqSCO4+ukqdx72nikgY0pId9HiA5Bn44m1JkIan6CdVDwy8G0MtpQoBj5lFIyKZbkyWPyz5C9cPIrQcIlT4qctoMpKgjNqRH8wCt6ofRPEBuSJFbE8PSPqGQJpQSYPpGTk0M8zGleYTYkCeiFPs/sluj1Aa4Qh49z4zcPDBQIQ8LaVz9gtEYoFfI4xqvGjk1ManlNLk1NKFRitE8QGk/gOykMuJH5qjVXyC3jTRs+wMAfAqyJK39tGoAAAAASUVORK5CYII="}, {"id": 96, "name": "星空貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABFElEQVR42u2XMQ7CMAxFfyuOwAYzCxdA4g7lCrB0qVgYOQQL6sICVyh3qMQFWJjLhrhCGVBQhRqSJkEI+b+talwrtr/tAoQQQgghhBBCfkNke3DQH9XN5+vtErk4DPUdRfzvGeh1Naj2BwDAcDGvXRw27INcQF4GFLPpEQCQ704AgCydWFreg14gFteFVOR9KcqEXahVA+992kS+XT01sNw4vdf5s80MNaCrbdtz1ICvBnTz4aUBw5ygBly3SNd5oGrfFGlTJSg7ObuQurGvRmwjX53XH7VTlEktexvVTubO22n7nMnSds3I1YAtvpHvOqmZga7aKMZhIi9vEutq1rXrhNpOqQEVedv/gNDI1cC3EKeBB6YjggukDs1bAAAAAElFTkSuQmCC"}, {"id": 97, "name": "月亮貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABJ0lEQVR42u2XOw7CMAyGHcQRGJCoOlUsndnYuAUTXIJDcAmYuAUbGzMLYkIgMXAAtjBFqiIZmzSlNPa3Va3r2H/9KICiKIqiKIqitIXhPjgajG31+v48mxCHsd7j6HVdgf63BrfNFgAAsuXChjis2EcJQJ4Cjsv1FGa4P0YNQJ4Cr9mklsO69ukr4PdpjCIvP9YGdZ/yx50P6SmARe5nCutCLvPcLqWTOLQGYs0H8TUQvI2GTmK/O3FrDlNIziR2EdetEW7mKYWLvLSyt9HYYJnHJrq8Gmgr89Q8UAXayny6Ctjb2gIAmGxlmnBIbbF+5qnzdF6BaAEUeYn27E4E8HfbKPbtxdqFqB2JW4vp/w+4TPz8YMwuKOePzPE4zBtRZDjdGZFd6A2HtoRPM8TMfwAAAABJRU5ErkJggg=="}, {"id": 98, "name": "粉翅膀貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABCUlEQVR42u2XPQ7CMAyFnYoVJpjIDPepegA4GRwAcR+YYYIJDhAGmqoNCklTo9L6fVvVOJb96p8SAQAAAAAAAADoBxV7cDlfmfrz9X5WKQ657rFkQ1dg0tbgstsTEZHebkyKw5o9SwDyFKgyeTimGT4frAEIVGA66+axq/3oFXD7dAhd5F9rIvTe5y92PmTiJnGo+4Qy7p5zM22MaSiilFKogV/OB9efXqzf99xODUV8SmRit9HUSWy//eqeMtMf50olfNjakTOJbcRda8S9z/20W3Q7I3sb5caXebdm5NZAX5kP7URQoK/MQwHuXalt5kejAFsAusi9PXsQAfz9Nsr1vxC7I4lR4AUVkm8Rk3FyTQAAAABJRU5ErkJggg=="}, {"id": 99, "name": "花冠三花", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABaElEQVR42u2XIU/DQBzF35YJgiYYlqoGRB16CRCCAL7CxDB47MBgZvEYJvYZQAKC4EgQJITM0BQUH2DBHOJ2C730uLt2C2nu/Vyvd9fce339/wsQQgghhBBCCPkfGq4T11bWxe/r7CmWG0TXuT2uXoUAgN7yYeF9kR4IAGhvjgEAH19vjSoHaNbdgZbvguz0ElLB47ziN/dyvLMBADhTil/cCQAY7m/JgefH6T7f0qGTbQTtgHcGssFqbnzSvf1z3W5nL3f9cD6QTh31mIG5OFDWiff0kw4UfoX0770JpXgcJQCAcbd43ux++lLohOl5rs6ElwGlpAldcds8ZqBsBkzYlHd9HjNgU8pXaf3dtyltexPUunC6UXXiqhlxVd7Wc8VRIsL8H/BlabRTqs5M9Mz0k8AzsChMFd61UtMB16519k8NmYl2H5WUD68S+3alZSu0b3daewea81RQ73NqdYDaZWBRBJeBH8TxleQfxnyvAAAAAElFTkSuQmCC"}, {"id": 100, "name": "國王橘貓", "kind": "cat", "rarity": 3, "sit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABLUlEQVR42mNgGAWjYBSMglEwCkbBKBgFo2DIgf/nrf7/P2/1n1JxSgHTUA9IFmrEBIpAgzFUnOE/PTww5GOAkViF0iJqKCH6ZLcIWRbKuL5B4T99c4txNA+QAp7MXwANyQSyLITrT0wYzQMUlUI32uQHhQdGXgx8eV5PkYWU6h/+MYBe3hMCGlUP8eYJQvK47CO2fhh5NTGh0odQiKOrG62JKc0DlNYPo3mA1JB6cqWKKhbL6LThDWlCKQGmb/jHwA0rL5SQcL51h6K2EKz02aumgip+bBsjOaXdyG2Ncni2MzAwMDD82F5JFYfgCnlYSA/bPEDxqASlMYErTxFbU4/GALmA0pAfjQFqt5XQ6weNN7dG+8R4AXqpQ2w/YHRUgloxgKuGxCU+GgM4AAB6q4wD3bBfuAAAAABJRU5ErkJggg=="}];
 
-    // 🎮 功能 2.2：Web Audio API 原生電動過關音效 (瑪利歐風格) 與 小提示音
+    let currentStudent = null;
+    let currentPartnerPet = gachaPool[0];
+    let currentFocusedTaskKey = null;
+
+    function getTodayStr() {
+      return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    }
+
+    function showToastMsg(msg) {
+      const t = document.getElementById('stToast');
+      if (!t) return;
+      t.innerText = msg;
+      t.classList.add('show');
+      clearTimeout(window._stToastTimer);
+      window._stToastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // 🎮 Web Audio API 音效引擎
     let audioCtx = null;
     window.playNativeSound = function(type = 'clear') {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const master = audioCtx.createGain();
-            master.gain.value = 0.2; // 音量控制
-            master.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const master = audioCtx.createGain();
+        master.gain.value = 0.22;
+        master.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
 
-            const playTone = (freq, wave, startTime, duration) => {
-                const osc = audioCtx.createOscillator();
-                osc.type = wave;
-                osc.frequency.setValueAtTime(freq, startTime);
-                osc.connect(master);
-                osc.start(startTime);
-                osc.stop(startTime + duration);
-            };
+        const playTone = (freq, wave, startTime, duration) => {
+          const osc = audioCtx.createOscillator();
+          osc.type = wave;
+          osc.frequency.setValueAtTime(freq, startTime);
+          osc.connect(master);
+          osc.start(startTime);
+          osc.stop(startTime + duration);
+        };
 
-            if (type === 'tick') {
-                // 打勾輕快提示音
-                playTone(880, 'sine', now, 0.1);
-                playTone(1760, 'sine', now + 0.1, 0.15);
-            } else if (type === 'chomp') {
-                // 吃餅乾音效
-                playTone(300, 'triangle', now, 0.1);
-                playTone(400, 'triangle', now + 0.1, 0.1);
-            } else {
-                // 瑪利歐風格過關琶音 (計時器/番茄鐘時間到)
-                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-                    playTone(freq, 'square', now + i * 0.1, i === 3 ? 0.5 : 0.1);
-                });
-            }
-        } catch(e) { console.log('Audio error:', e); }
+        if (type === 'tick') {
+          playTone(880, 'sine', now, 0.08);
+          playTone(1760, 'sine', now + 0.08, 0.12);
+        } else if (type === 'chomp') {
+          playTone(320, 'triangle', now, 0.09);
+          playTone(440, 'triangle', now + 0.1, 0.1);
+        } else if (type === 'error') {
+          playTone(220, 'sawtooth', now, 0.14);
+          playTone(165, 'sawtooth', now + 0.15, 0.22);
+        } else {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            playTone(freq, 'square', now + i * 0.11, i === 3 ? 0.55 : 0.11);
+          });
+        }
+      } catch(e) {}
     };
 
     window.playStudentPetCry = function(kind = 'cat') {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const n = audioCtx.currentTime + 0.01;
-            const r = 0.94 + Math.random() * 0.16;
-            const master = audioCtx.createGain();
-            master.gain.value = 0.6;
-            master.connect(audioCtx.destination);
-            
-            const osc = audioCtx.createOscillator();
-            osc.type = kind === 'dog' ? 'sawtooth' : 'triangle';
-            if (kind === 'dog') {
-                osc.frequency.setValueAtTime(420 * r, n);
-                osc.frequency.exponentialRampToValueAtTime(190 * r, n + 0.13);
-                osc.start(n); osc.stop(n + 0.18);
-            } else {
-                osc.frequency.setValueAtTime(680 * r, n);
-                osc.frequency.exponentialRampToValueAtTime(1120 * r, n + 0.18);
-                osc.frequency.exponentialRampToValueAtTime(640 * r, n + 0.58);
-                osc.start(n); osc.stop(n + 0.62);
-            }
-            const g = audioCtx.createGain();
-            g.gain.setValueAtTime(0.001, n);
-            g.gain.exponentialRampToValueAtTime(0.3, n + 0.05);
-            g.gain.exponentialRampToValueAtTime(0.001, n + 0.6);
-            osc.connect(g).connect(master);
-        } catch (e) {}
-    };
-
-    // 🐾 功能 3.2：餵食互動
-    window.feedPet = function() {
-        const wrap = document.getElementById('petSanctuaryInner');
-        const petImg = document.getElementById('stActivePetImg');
-        const heart = document.createElement('div');
-        heart.className = 'heart-float';
-        heart.innerText = '💖';
-        heart.style.left = (petImg.offsetLeft + petImg.offsetWidth/2 - 12) + 'px';
-        heart.style.top = (petImg.offsetTop - 10) + 'px';
-        wrap.appendChild(heart);
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const n = audioCtx.currentTime + 0.01;
+        const r = 0.94 + Math.random() * 0.16;
+        const master = audioCtx.createGain();
+        master.gain.value = 0.55;
+        master.connect(audioCtx.destination);
         
-        window.playNativeSound('chomp');
-        setTimeout(() => heart.remove(), 1000);
-    };
-
-    // 🐾 功能 3.1：寵物隨機動態 (每 6 秒骰一次)
-    setInterval(() => {
-        const petImg = document.getElementById('stActivePetImg');
-        // 若在未解鎖的迷霧狀態中，不播放動畫
-        if (!petImg || petImg.closest('.is-fogged:not(.unsealed)')) return;
-        
-        const anims = ['pet-bob', 'pet-walk', 'pet-scratch'];
-        petImg.classList.remove(...anims);
-        petImg.classList.add(anims[Math.floor(Math.random() * anims.length)]);
-    }, 6000);
-
-    // 🔄 功能 2.1：手動破霧解封
-    window.manualUnseal = function() {
-        const overlay = document.getElementById('petFogOverlay');
-        const inner = document.getElementById('petSanctuaryInner');
-        const petImg = document.getElementById('stActivePetImg');
-        
-        if (overlay) overlay.classList.add('clearing');
-        if (inner) inner.classList.add('unsealed');
-        
-        // 恢復點擊叫聲互動
-        if (petImg) petImg.onclick = () => window.playStudentPetCry('cat'); 
-        window.playNativeSound('clear');
-    };
-
-    // 🎒 功能 1.1：書包打勾功能
-    window.togglePack = function(btn) {
-        btn.classList.toggle('checked');
-        const icon = btn.querySelector('i');
-        if (btn.classList.contains('checked')) {
-            icon.className = 'bi bi-check-circle-fill';
-            window.playNativeSound('tick');
+        const osc = audioCtx.createOscillator();
+        osc.type = kind === 'dog' ? 'sawtooth' : 'triangle';
+        if (kind === 'dog') {
+          osc.frequency.setValueAtTime(420 * r, n);
+          osc.frequency.exponentialRampToValueAtTime(190 * r, n + 0.13);
+          osc.start(n); osc.stop(n + 0.18);
         } else {
-            icon.className = 'bi bi-circle';
+          osc.frequency.setValueAtTime(680 * r, n);
+          osc.frequency.exponentialRampToValueAtTime(1120 * r, n + 0.18);
+          osc.frequency.exponentialRampToValueAtTime(640 * r, n + 0.58);
+          osc.start(n); osc.stop(n + 0.62);
         }
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.001, n);
+        g.gain.exponentialRampToValueAtTime(0.3, n + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, n + 0.6);
+        osc.connect(g).connect(master);
+      } catch (e) {}
     };
 
-    // ⏱️ 功能 1.2：專注任務快速啟動
-    window.openFocusTimer = function(taskName) {
-        openTool('timer');
-        document.getElementById('toolTitle').innerHTML = `<i class='bi bi-hourglass-split'></i> 專注：${taskName}`;
+    // ============================================================
+    // 🍪 升級 4：每日免費 3 塊餅乾 + 專注計時連動獲得能量餅乾
+    // ============================================================
+    function getCookieStoreKey() {
+      return `hw_cookies_${uid}_${no}_${getTodayStr()}`;
+    }
+    function getCookieCount() {
+      const val = localStorage.getItem(getCookieStoreKey());
+      if (val === null) {
+        localStorage.setItem(getCookieStoreKey(), '3');
+        return 3;
+      }
+      return Math.max(0, parseInt(val) || 0);
+    }
+    function setCookieCount(cnt) {
+      localStorage.setItem(getCookieStoreKey(), String(Math.max(0, cnt)));
+      updateCookieUI();
+    }
+    function updateCookieUI() {
+      const cnt = getCookieCount();
+      const txtEl = document.getElementById('cookieCountTxt');
+      const btnEl = document.getElementById('btnFeedPet');
+      if (txtEl) txtEl.innerText = cnt;
+      if (btnEl) {
+        if (cnt <= 0) {
+          btnEl.classList.add('empty');
+          btnEl.innerHTML = `🍪 賺餅乾 (0)`;
+        } else {
+          btnEl.classList.remove('empty');
+          btnEl.innerHTML = `🍪 餵食 (<span id="cookieCountTxt">${cnt}</span>)`;
+        }
+      }
+    }
+
+    window.feedPet = function() {
+      const cnt = getCookieCount();
+      if (cnt <= 0) {
+        window.playNativeSound('error');
+        showPetBubble("餅乾吃光囉！去專注計時滿 5 分鐘賺餅乾吧 ⏱️");
+        showToastMsg("🍪 今日免費餅乾已用完！完成 5 分鐘專注計時即可獲得 +1 塊餅乾！");
+        window.openTool('timer');
+        return;
+      }
+      setCookieCount(cnt - 1);
+
+      const track = document.getElementById('petMeadowTrack');
+      const walker = document.getElementById('petWalkerBox');
+      const heart = document.createElement('div');
+      heart.className = 'heart-float';
+      heart.innerText = '💖';
+      heart.style.left = walker ? walker.style.left : '50%';
+      heart.style.bottom = '55px';
+      track.appendChild(heart);
+      
+      window.playNativeSound('chomp');
+      const feedLines = [
+        "阿姆阿姆～餅乾超好吃！🍪",
+        "謝謝主人！能量滿滿 100%！✨",
+        "太幸福啦～最喜歡主人了！💖"
+      ];
+      showPetBubble(feedLines[Math.floor(Math.random() * feedLines.length)]);
+      setTimeout(() => heart.remove(), 950);
+    };
+
+    // ============================================================
+    // 🌿 升級 3：橫向草地漫步舞台 ＋ 對話氣泡
+    // ============================================================
+    let petPosPercent = 50;
+    function showPetBubble(text) {
+      const bubble = document.getElementById('petSpeechBubble');
+      if (!bubble) return;
+      bubble.innerText = text;
+      bubble.classList.add('show');
+      clearTimeout(window._petBubbleTimer);
+      window._petBubbleTimer = setTimeout(() => bubble.classList.remove('show'), 3200);
+    }
+
+    window.interactWithPet = function() {
+      const wrap = document.getElementById('petSanctuaryWrap');
+      if (!wrap || wrap.classList.contains('is-fogged')) return;
+      window.playStudentPetCry(currentPartnerPet.kind);
+      const coins = (currentStudent && currentStudent.coins) || 0;
+      const needCoins = 10 - (coins % 10);
+      const talkLines = [
+        `主人太棒了！所有任務都討伐完畢！👑`,
+        `再存 ${needCoins} 枚金幣，就能請老師幫我抽新夥伴囉！🎰`,
+        `點右上角「百獸圖鑑」看看還有哪些神秘夥伴！📖`,
+        `專注計時滿 5 分鐘會掉好吃的能量餅乾喔！🍪`,
+        `${currentPartnerPet.name} 陪你一起成為超級英雄！✨`
+      ];
+      showPetBubble(talkLines[Math.floor(Math.random() * talkLines.length)]);
+    };
+
+    // 橫向草地自動巡邏漫步計時器
+    setInterval(() => {
+      const wrap = document.getElementById('petSanctuaryWrap');
+      const walker = document.getElementById('petWalkerBox');
+      const petImg = document.getElementById('stActivePetImg');
+      if (!wrap || !walker || !petImg || wrap.classList.contains('is-fogged')) return;
+
+      const roll = Math.random();
+      petImg.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch');
+
+      if (roll < 0.62) {
+        // 左右橫向漫步
+        const nextPos = Math.floor(18 + Math.random() * 64); // 18% ~ 82%
+        const movingRight = nextPos > petPosPercent;
+        petPosPercent = nextPos;
+        walker.style.left = `${petPosPercent}%`;
+        petImg.style.transform = movingRight ? 'scaleX(-1)' : 'scaleX(1)';
+        petImg.classList.add('pet-waddle');
+        setTimeout(() => {
+          petImg.classList.remove('pet-waddle');
+          petImg.classList.add('pet-bob');
+        }, 2400);
+      } else if (roll < 0.82) {
+        // 原地歪頭抓癢
+        petImg.classList.add('pet-scratch');
+        setTimeout(() => {
+          petImg.classList.remove('pet-scratch');
+          petImg.classList.add('pet-bob');
+        }, 1200);
+      } else {
+        // 開心彈跳 + 隨機冒泡
+        petImg.classList.add('pet-bob');
+        if (Math.random() < 0.45) {
+          showPetBubble(currentPartnerPet.kind === 'dog' ? "汪汪！草地好舒服～🌿" : "喵～今天也是零欠交全冠王！☀️");
+        }
+      }
+    }, 3600);
+
+    // ============================================================
+    // 🔄 升級 1：向公會申請重新鑑定（真實讀取 Firebase 防作弊）
+    // ============================================================
+    window.verifyAndUnseal = async function() {
+      const btn = document.getElementById('btnVerifyUnseal');
+      const overlay = document.getElementById('petFogOverlay');
+      if (!btn || !uid || !no) return;
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 正在向公會鑑定訂正狀態...`;
+
+      try {
+        const docSnap = await getDoc(doc(db, "public_boards", uid));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const latestStudent = data.summary.find(s => s.no === no);
+          document.getElementById('updateTime').innerText = `最後更新：${data.lastUpdated}`;
+
+          if (latestStudent) {
+            const debts = latestStudent.debts || [];
+            if (debts.length === 0) {
+              // 🎉 老師已在後台勾選完成！播放破霧動畫與過關音效
+              window.playNativeSound('clear');
+              if (overlay) overlay.classList.add('clearing');
+              setTimeout(() => {
+                renderFullStudentCard(latestStudent);
+                showPetBubble("太棒啦！迷霧散開了，主人辛苦了！💖");
+              }, 480);
+              return;
+            } else {
+              // ⚠️ 老師還沒勾選完成，搖晃提醒並更新最新剩餘數量
+              window.playNativeSound('error');
+              if (overlay) {
+                overlay.classList.remove('shake-reject');
+                void overlay.offsetWidth;
+                overlay.classList.add('shake-reject');
+              }
+              renderFullStudentCard(latestStudent);
+              showToastMsg(`⚠️ 公會紀錄還有 ${debts.length} 項未消掉喔！請先拿給老師檢查蓋章！`);
+            }
+          }
+        }
+      } catch (err) {
+        showToastMsg("❌ 網路連線失敗，請稍後再試");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-shield-check"></i> 我訂正完了！向公會申請重新鑑定`;
+      }
+    };
+
+    // ============================================================
+    // 🏅 升級 2：渲染個人榮耀徽章櫃
+    // ============================================================
+    function renderBadgeCabinet(student, uniquePetCount) {
+      const cabinet = document.getElementById('badgeCabinet');
+      if (!cabinet) return;
+      const isCrown = (student.debts || []).length === 0;
+      const exp = student.exp || 0;
+      const coins = student.coins || 0;
+
+      const badges = [
+        { icon: "👑", name: "全冠王", desc: "目前零欠交", unlocked: isCrown },
+        { icon: "⚔️", name: "資深勇者", desc: "達 Lv.5 (100EXP)", unlocked: exp >= 100 },
+        { icon: "💰", name: "小富翁", desc: "持有 30 枚金幣", unlocked: coins >= 30 },
+        { icon: "🐾", name: "馴獸大師", desc: `收服 ${uniquePetCount}/5 種`, unlocked: uniquePetCount >= 5 }
+      ];
+
+      cabinet.innerHTML = badges.map(b => `
+        <div class="honor-badge ${b.unlocked ? 'unlocked' : ''}">
+          <span class="b-icon">${b.icon}</span>
+          <span class="b-name">${b.name}</span>
+          <span class="b-desc">${b.desc}</span>
+        </div>
+      `).join('');
+    }
+
+    // 📖 100 格百獸圖鑑 Modal
+    window.openFullDexModal = function() {
+      if (!currentStudent) return;
+      const grid = document.getElementById('fullDexGrid');
+      const countEl = document.getElementById('dexModalCount');
+      const petsArr = Array.isArray(currentStudent.pets) ? currentStudent.pets : [];
+      const counts = {};
+      petsArr.forEach(pid => {
+        const norm = String(pid).startsWith('p') ? parseInt(String(pid).slice(1)) : pid;
+        counts[norm] = (counts[norm] || 0) + 1;
+      });
+      countEl.innerText = Object.keys(counts).length;
+
+      grid.innerHTML = gachaPool.map(pet => {
+        const cnt = counts[pet.id] || 0;
+        const unlocked = cnt > 0;
+        const isPartner = unlocked && String(pet.id) === String(currentPartnerPet.id);
+        return `
+          <div class="dex-cell ${unlocked ? '' : 'locked'} ${isPartner ? 'active-partner' : ''}"
+               onclick="${unlocked ? `window.previewStudentOwnedPet(${pet.id}); window.closeFullDexModal();` : ''}">
+            <span style="font-size:9px; font-family:monospace; font-weight:900; opacity:0.55; align-self:flex-start;">#${String(pet.id).padStart(3,'0')}</span>
+            <img src="${pet.sit}" class="pixel-pet" style="width:42px; height:42px; object-fit:contain; ${unlocked ? '' : 'filter:brightness(0) opacity(0.22);'}">
+            <span style="font-size:11px; font-weight:900; color:#3E2723; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center;">
+              ${unlocked ? pet.name : '？？？'}
+            </span>
+            ${cnt > 1 ? `<span style="position:absolute; top:3px; right:5px; font-size:10px; font-weight:900; color:#e11d48;">×${cnt}</span>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('fullDexModal').classList.add('show');
+    };
+
+    window.closeFullDexModal = function() {
+      document.getElementById('fullDexModal').classList.remove('show');
     };
 
     function renderStudentPetSanctuary(student) {
-        const wrap = document.getElementById('petSanctuaryWrap');
-        const fogReason = document.getElementById('petFogReasonText');
-        const petImg = document.getElementById('stActivePetImg');
-        const petName = document.getElementById('stActivePetName');
-        const miniDex = document.getElementById('stPetMiniDex');
-        if (!wrap || !petImg || !petName) return;
+      const wrap = document.getElementById('petSanctuaryWrap');
+      const overlay = document.getElementById('petFogOverlay');
+      const fogReason = document.getElementById('petFogReasonText');
+      const petImg = document.getElementById('stActivePetImg');
+      const petName = document.getElementById('stActivePetName');
+      const miniDex = document.getElementById('stPetMiniDex');
+      if (!wrap || !petImg || !petName) return;
 
-        const debts = student.debts || [];
-        const hasDebts = debts.length > 0;
-        const petsArr = Array.isArray(student.pets) ? student.pets : [];
-        const counts = {};
-        petsArr.forEach(pid => {
-            const norm = String(pid).startsWith('p') ? parseInt(String(pid).slice(1)) : pid;
-            counts[norm] = (counts[norm] || 0) + 1;
-        });
+      const debts = student.debts || [];
+      const hasDebts = debts.length > 0;
+      const petsArr = Array.isArray(student.pets) ? student.pets : [];
+      const counts = {};
+      petsArr.forEach(pid => {
+        const norm = String(pid).startsWith('p') ? parseInt(String(pid).slice(1)) : pid;
+        counts[norm] = (counts[norm] || 0) + 1;
+      });
+      const uniqueCount = Object.keys(counts).length;
 
-        const rawActive = student.activePet || (petsArr.length > 0 ? petsArr[petsArr.length - 1] : null);
-        const normActive = rawActive && String(rawActive).startsWith('p') ? parseInt(String(rawActive).slice(1)) : rawActive;
-        const partnerPet = (normActive ? gachaPool.find(p => String(p.id) === String(normActive)) : null) || gachaPool[(student.no || 1) % gachaPool.length];
-        const isApprentice = !normActive;
+      // 同步更新榮耀徽章櫃
+      renderBadgeCabinet(student, uniqueCount);
+      updateCookieUI();
 
-        petImg.src = partnerPet.sit;
-        petName.innerText = isApprentice ? `${partnerPet.name} (見習陪伴夥伴)` : `夥伴：${partnerPet.name} (已收集 ${Object.keys(counts).length}/100 種)`;
+      const rawActive = student.activePet || (petsArr.length > 0 ? petsArr[petsArr.length - 1] : null);
+      const normActive = rawActive && String(rawActive).startsWith('p') ? parseInt(String(rawActive).slice(1)) : rawActive;
+      currentPartnerPet = (normActive ? gachaPool.find(p => String(p.id) === String(normActive)) : null) || gachaPool[(student.no || 1) % gachaPool.length];
+      const isApprentice = !normActive;
 
-        // 🐾 功能 3.3：扭蛋集氣條
-        const coins = student.coins || 0;
-        const gachaProgress = (coins % 10) * 10; 
-        const gachaBarHtml = `
-            <div class="gacha-bar-wrap">
-                <div class="gacha-bar-fill" style="width:${gachaProgress}%"></div>
-                <div class="gacha-text">扭蛋集氣進度：${coins % 10} / 10 枚金幣</div>
-            </div>`;
+      petImg.src = currentPartnerPet.sit;
+      petName.innerText = isApprentice ? `${currentPartnerPet.name} (見習陪伴夥伴)` : `夥伴：${currentPartnerPet.name} (已收服 ${uniqueCount}/100 種)`;
 
-        if (hasDebts) {
-            wrap.classList.add('is-fogged');
-            const redoCount = debts.filter(d => d.st === 2).length;
-            const missCount = debts.filter(d => d.st === 0).length;
-            fogReason.innerHTML = `目前還有 <b style="color:#be123c;">${missCount} 項未交、${redoCount} 項需訂正</b><br>專心完成作業後，點擊下方按鈕解封萌寵！💪`;
-            petImg.onclick = null;
-            miniDex.innerHTML = gachaBarHtml; // 鎖定時也能看進度
+      const coins = student.coins || 0;
+      const gachaProgress = (coins % 10) * 10; 
+      const gachaBarHtml = `
+        <div class="gacha-bar-wrap">
+          <div class="gacha-bar-fill" style="width:${gachaProgress}%"></div>
+          <div class="gacha-text">扭蛋集氣進度：${coins % 10} / 10 枚金幣</div>
+        </div>`;
+
+      if (hasDebts) {
+        wrap.classList.add('is-fogged');
+        if (overlay) overlay.classList.remove('clearing');
+        const redoCount = debts.filter(d => d.st === 2).length;
+        const missCount = debts.filter(d => d.st === 0).length;
+        fogReason.innerHTML = `目前還有 <b style="color:#be123c;">${missCount} 項未交、${redoCount} 項需訂正</b><br>拿給老師檢查勾選後，點擊下方按鈕即可破霧解封！💪`;
+        miniDex.innerHTML = gachaBarHtml;
+      } else {
+        wrap.classList.remove('is-fogged');
+        const entries = Object.entries(counts);
+        let dexHtml = "";
+        if (entries.length === 0) {
+          dexHtml = `<span style="font-size:11px; color:#365314; font-weight:bold;">💡 存滿 10 枚金幣即可請老師幫你轉扭蛋收服專屬萌寵！</span>`;
         } else {
-            wrap.classList.remove('is-fogged');
-            petImg.onclick = () => { window.playStudentPetCry(partnerPet.kind); };
-            
-            const entries = Object.entries(counts);
-            let dexHtml = "";
-            if (entries.length === 0) {
-                dexHtml = `<span style="font-size:11px; color:#365314; font-weight:bold;">💡 存滿 10 枚金幣即可請老師幫你轉扭蛋收服專屬萌寵！</span>`;
-            } else {
-                dexHtml = entries.map(([pid, cnt]) => {
-                    const pObj = gachaPool.find(x => String(x.id) === String(pid));
-                    if (!pObj) return '';
-                    const isCur = String(pObj.id) === String(partnerPet.id);
-                    return `<span class="pet-mini-chip ${isCur ? 'active-chip' : ''}" onclick="window.previewStudentOwnedPet(${pObj.id})">
-                        <img src="${pObj.sit}" class="pixel-pet" style="width:20px; height:20px; object-fit:contain;">
-                        <span>${pObj.name}${cnt > 1 ? ` ×${cnt}` : ''}</span>
-                    </span>`;
-                }).join('');
-            }
-            miniDex.innerHTML = dexHtml + gachaBarHtml;
+          dexHtml = entries.map(([pid, cnt]) => {
+            const pObj = gachaPool.find(x => String(x.id) === String(pid));
+            if (!pObj) return '';
+            const isCur = String(pObj.id) === String(currentPartnerPet.id);
+            return `<span class="pet-mini-chip ${isCur ? 'active-chip' : ''}" onclick="window.previewStudentOwnedPet(${pObj.id})">
+              <img src="${pObj.sit}" class="pixel-pet" style="width:20px; height:20px; object-fit:contain;">
+              <span>${pObj.name}${cnt > 1 ? ` ×${cnt}` : ''}</span>
+            </span>`;
+          }).join('');
         }
+        miniDex.innerHTML = dexHtml + gachaBarHtml;
+      }
     }
 
     window.previewStudentOwnedPet = function(pid) {
-        const pObj = gachaPool.find(x => String(x.id) === String(pid));
-        if (!pObj) return;
-        document.getElementById('stActivePetImg').src = pObj.sit;
-        document.getElementById('stActivePetName').innerText = `夥伴：${pObj.name}`;
-        window.playStudentPetCry(pObj.kind);
+      const pObj = gachaPool.find(x => String(x.id) === String(pid));
+      if (!pObj) return;
+      currentPartnerPet = pObj;
+      document.getElementById('stActivePetImg').src = pObj.sit;
+      document.getElementById('stActivePetName').innerText = `夥伴：${pObj.name}`;
+      window.playStudentPetCry(pObj.kind);
+      showPetBubble(`嗨主人！我是 ${pObj.name}！✨`);
+    };
+
+    // ============================================================
+    // 🎒 書包打包記憶 & 🔥 升級 5：任務緊急度分級與完成回報印章
+    // ============================================================
+    function getPackStorageKey(book) {
+      return `hw_pack_${uid}_${no}_${getTodayStr()}_${book}`;
+    }
+    window.togglePack = function(btn, bookKey) {
+      btn.classList.toggle('checked');
+      const icon = btn.querySelector('i');
+      const isChecked = btn.classList.contains('checked');
+      localStorage.setItem(getPackStorageKey(bookKey), isChecked ? '1' : '0');
+
+      if (isChecked) {
+        icon.className = 'bi bi-check-circle-fill';
+        window.playNativeSound('tick');
+        // 檢查是否全部打包完畢
+        const allItems = document.querySelectorAll('.pack-item');
+        const allChecked = Array.from(allItems).every(el => el.classList.contains('checked'));
+        if (allChecked && allItems.length > 0) {
+          confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
+          showToastMsg("🎒 書包整理完畢！準備安心放學！");
+        }
+      } else {
+        icon.className = 'bi bi-circle';
+      }
+    };
+
+    function getTaskDoneStorageKey(taskKey) {
+      return `hw_selfdone_${uid}_${no}_${taskKey}`;
+    }
+    window.toggleSelfDoneTask = function(taskKey) {
+      const cur = localStorage.getItem(getTaskDoneStorageKey(taskKey)) === '1';
+      localStorage.setItem(getTaskDoneStorageKey(taskKey), cur ? '0' : '1');
+      if (!cur) {
+        window.playNativeSound('tick');
+        showToastMsg("✅ 已蓋上完成印章！記得拿去給老師檢查喔！");
+      }
+      if (currentStudent) renderTaskListArea(currentStudent);
+    };
+
+    window.openFocusTimer = function(taskTitle, taskKey) {
+      currentFocusedTaskKey = taskKey || null;
+      window.openTool('timer');
+      document.getElementById('toolTitle').innerHTML = `<i class='bi bi-hourglass-split'></i> 專注：${taskTitle}`;
     };
 
     function updateExpUI(exp) {
-        let currentLevel = levelConfig[0];
-        let nextLevel = levelConfig[1];
-        let isMax = false;
-        for (let i = 0; i < levelConfig.length; i++) {
-            if (exp >= levelConfig[i].exp) {
-                currentLevel = levelConfig[i];
-                nextLevel = levelConfig[i + 1] || currentLevel;
-            }
+      let currentLevel = levelConfig[0];
+      let nextLevel = levelConfig[1];
+      let isMax = false;
+      for (let i = 0; i < levelConfig.length; i++) {
+        if (exp >= levelConfig[i].exp) {
+          currentLevel = levelConfig[i];
+          nextLevel = levelConfig[i + 1] || currentLevel;
         }
-        if (currentLevel.lv === "Max" || nextLevel === currentLevel) isMax = true;
-        document.getElementById('stRank').innerHTML = `<span style="color:${currentLevel.color};">Lv.${currentLevel.lv} ${currentLevel.rank}</span>`;
-        const barFill = document.getElementById('expBarFill');
-        const expText = document.getElementById('expText');
-        if (isMax) {
-            barFill.style.width = '100%'; expText.innerText = `MAX (已達最高等級)`;
-        } else {
-            const percentage = Math.min(100, Math.max(0, ((exp - currentLevel.exp) / (nextLevel.exp - currentLevel.exp)) * 100));
-            setTimeout(() => { barFill.style.width = `${percentage}%`; }, 100);
-            expText.innerText = `距離下一級還差 ${nextLevel.exp - exp} 點`;
-        }
+      }
+      if (currentLevel.lv === "Max" || nextLevel === currentLevel) isMax = true;
+      document.getElementById('stRank').innerHTML = `<span style="color:${currentLevel.color};">Lv.${currentLevel.lv} ${currentLevel.rank}</span>`;
+      const barFill = document.getElementById('expBarFill');
+      const expText = document.getElementById('expText');
+      if (isMax) {
+        barFill.style.width = '100%'; expText.innerText = `MAX (已達最高等級)`;
+      } else {
+        const percentage = Math.min(100, Math.max(0, ((exp - currentLevel.exp) / (nextLevel.exp - currentLevel.exp)) * 100));
+        setTimeout(() => { barFill.style.width = `${percentage}%`; }, 100);
+        expText.innerText = `距離下一級還差 ${nextLevel.exp - exp} 點`;
+      }
     }
 
     function fireConfetti() {
-        setTimeout(() => { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fca5a5', '#fcd34d', '#86efac', '#93c5fd', '#d8b4fe'] }); }, 300); 
+      setTimeout(() => { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fca5a5', '#fcd34d', '#86efac', '#93c5fd', '#d8b4fe'] }); }, 300); 
+    }
+
+    function calcOverdueDays(dateStr) {
+      if (!dateStr) return 0;
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return 0;
+      const taskDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      const tParts = getTodayStr().split('-');
+      const todayDate = new Date(parseInt(tParts[0]), parseInt(tParts[1]) - 1, parseInt(tParts[2]));
+      return Math.max(0, Math.floor((todayDate - taskDate) / (1000 * 60 * 60 * 24)));
+    }
+
+    function renderTaskListArea(student) {
+      if (student.debts.length === 0) {
+        document.getElementById('btnRecommend').classList.remove('btn-locked');
+        document.getElementById('btnRecommend').title = "好站推薦";
+        document.getElementById('taskListArea').innerHTML = `<div class="success-msg"><i class="bi bi-shield-fill-check success-icon"></i>太棒了！<br>所有任務皆已順利討伐完畢！</div>`;
+        fireConfetti();
+      } else {
+        document.getElementById('btnRecommend').classList.add('btn-locked');
+        document.getElementById('btnRecommend').title = "作業繳齊後解鎖";
+        
+        const bookSummary = {};
+        const bookKeywords = ["數習", "數練", "數作", "國習", "國作", "甲本", "乙本", "聯絡簿", "聽寫", "生字", "圈詞", "造詞", "學習單", "作文本", "閱讀", "英文"];
+        student.debts.forEach(d => {
+          let exactBook = null;
+          const titleStr = d.title || "";
+          for (let kw of bookKeywords) { if (titleStr.includes(kw)) { exactBook = kw; break; } }
+          if (!exactBook) {
+            const match = titleStr.trim().match(/^[\u4e00-\u9fa5]+/);
+            if (match && !["完成", "寫", "訂正", "背", "帶", "交"].includes(match[0])) exactBook = match[0].substring(0, 3); 
+          }
+          const finalCategory = exactBook || d.subject || "未分類";
+          bookSummary[finalCategory] = (bookSummary[finalCategory] || 0) + 1;
+        });
+
+        const packHtml = Object.entries(bookSummary).map(([book, count]) => {
+          const isChecked = localStorage.getItem(getPackStorageKey(book)) === '1';
+          const safeBook = book.replace(/'/g, "\\'");
+          return `<span class="pack-item ${isChecked ? 'checked' : ''}" onclick="window.togglePack(this, '${safeBook}')">
+            <i class="bi ${isChecked ? 'bi-check-circle-fill' : 'bi-circle'}"></i> ${book}(${count})
+          </span>`;
+        }).join('');
+        
+        let html = `
+          <div class="summary-box">
+            <div class="summary-title"><i class="bi bi-backpack"></i> 帶回家書包確認清單 (點擊打勾打包)</div>
+            <div class="pack-items-container">${packHtml}</div>
+          </div>
+          <div class="debt-title">
+            <span><i class="bi bi-exclamation-triangle-fill"></i> 待處理任務 (${student.debts.length})</span>
+            <span style="font-size:11px; color:var(--muted); font-weight:bold;">寫完可蓋綠色印章提醒自己</span>
+          </div>`;
+        
+        student.debts.sort((a, b) => a.date < b.date ? 1 : -1);
+        student.debts.forEach((d, idx) => {
+          const taskKey = encodeURIComponent(`${d.date || ''}_${d.subject || ''}_${d.title || idx}`);
+          const isSelfDone = localStorage.getItem(getTaskDoneStorageKey(taskKey)) === '1';
+          const overdueDays = calcOverdueDays(d.date);
+          const isUrgent = overdueDays >= 3;
+
+          const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
+          const dateTxt = d.date ? `<div style="font-size:12px; color:#888; margin-top:4px;"><i class="bi bi-calendar"></i> 發布於：${d.date}</div>` : '';
+          const urgentHtml = isUrgent ? `<div class="urgent-tag"><i class="bi bi-fire"></i> 緊急討伐 (已拖欠 ${overdueDays} 天)</div>` : '';
+          const safeTitle = (d.title || '').replace(/'/g, "\\'");
+
+          html += `
+            <div class="task-item ${isUrgent ? 'is-urgent' : ''} ${isSelfDone ? 'self-done' : ''}" id="taskCard_${taskKey}">
+              <div class="task-header">
+                <div class="task-name">
+                  <span class="badge subj">${d.subject || '一般'}</span>${d.title}
+                  ${dateTxt}
+                  ${urgentHtml}
+                  <div class="self-done-stamp"><i class="bi bi-patch-check-fill"></i> 我已在座位寫完，待老師檢查</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                  ${badge}
+                  <div class="task-btn-group">
+                    <button class="quick-timer-btn" onclick="window.openFocusTimer('${safeTitle}', '${taskKey}')">
+                      <i class="bi bi-stopwatch"></i> 專注
+                    </button>
+                    <button class="self-check-btn" onclick="window.toggleSelfDoneTask('${taskKey}')">
+                      <i class="bi bi-check2-circle"></i> ${isSelfDone ? '已寫完' : '標記寫完'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+        });
+        document.getElementById('taskListArea').innerHTML = html;
+      }
+    }
+
+    function renderFullStudentCard(student) {
+      currentStudent = student;
+      document.getElementById('stNo').innerText = student.no;
+      document.getElementById('stName').innerText = student.name;
+      document.getElementById('stExp').innerText = student.exp || 0;
+      document.getElementById('stCoin').innerText = student.coins || 0;
+      updateExpUI(student.exp || 0);
+      renderStudentPetSanctuary(student);
+      renderTaskListArea(student);
     }
 
     async function loadData() {
-        if (!uid || !no) { document.getElementById('loading').innerHTML = "❌ 掃描的 QR Code 網址有誤"; return; }
-        try {
-            const docSnap = await getDoc(doc(db, "public_boards", uid));
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('contentArea').classList.remove('hidden');
-            document.getElementById('fabTools').classList.remove('hidden');
+      if (!uid || !no) { document.getElementById('loading').innerHTML = "❌ 掃描的 QR Code 網址有誤"; return; }
+      try {
+        const docSnap = await getDoc(doc(db, "public_boards", uid));
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('contentArea').classList.remove('hidden');
+        document.getElementById('fabTools').classList.remove('hidden');
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const student = data.summary.find(s => s.no === no);
-                document.getElementById('updateTime').innerText = `最後更新：${data.lastUpdated}`;
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const student = data.summary.find(s => s.no === no);
+          document.getElementById('updateTime').innerText = `最後更新：${data.lastUpdated}`;
 
-                if (student) {
-                    document.getElementById('stNo').innerText = student.no;
-                    document.getElementById('stName').innerText = student.name;
-                    document.getElementById('stExp').innerText = student.exp || 0;
-                    document.getElementById('stCoin').innerText = student.coins || 0;
-                    updateExpUI(student.exp || 0);
-                    renderStudentPetSanctuary(student);
-                    
-                    if (student.debts.length === 0) {
-                        document.getElementById('btnRecommend').classList.remove('btn-locked');
-                        document.getElementById('btnRecommend').title = "好站推薦";
-                        document.getElementById('taskListArea').innerHTML = `<div class="success-msg"><i class="bi bi-shield-fill-check success-icon"></i>太棒了！<br>所有任務皆已順利討伐完畢！</div>`;
-                        fireConfetti();
-                    } else {
-                        document.getElementById('btnRecommend').classList.add('btn-locked');
-                        document.getElementById('btnRecommend').title = "作業繳齊後解鎖";
-                        
-                        const bookSummary = {};
-                        const bookKeywords = ["數習", "數練", "數作", "國習", "國作", "甲本", "乙本", "聯絡簿", "聽寫", "生字", "圈詞", "造詞", "學習單", "作文本", "閱讀", "英文"];
-                        student.debts.forEach(d => {
-                            let exactBook = null;
-                            const titleStr = d.title || "";
-                            for (let kw of bookKeywords) { if (titleStr.includes(kw)) { exactBook = kw; break; } }
-                            if (!exactBook) {
-                                const match = titleStr.trim().match(/^[\u4e00-\u9fa5]+/);
-                                if (match && !["完成", "寫", "訂正", "背", "帶", "交"].includes(match[0])) exactBook = match[0].substring(0, 3); 
-                            }
-                            const finalCategory = exactBook || d.subject || "未分類";
-                            bookSummary[finalCategory] = (bookSummary[finalCategory] || 0) + 1;
-                        });
-
-                        // 🎒 功能 1.1 渲染書包清單按鈕
-                        const packHtml = Object.entries(bookSummary).map(([book, count]) => 
-                            `<span class="pack-item" onclick="window.togglePack(this)"><i class="bi bi-circle"></i> ${book}(${count})</span>`
-                        ).join('');
-                        
-                        let html = `
-                            <div class="summary-box">
-                                <div class="summary-title"><i class="bi bi-backpack"></i> 帶回家書包確認清單 (點擊打勾)</div>
-                                <div class="pack-items-container">${packHtml}</div>
-                            </div>
-                            <div class="debt-title"><i class="bi bi-exclamation-triangle-fill"></i> 待處理任務 (${student.debts.length})</div>`;
-                        
-                        student.debts.sort((a, b) => a.date < b.date ? 1 : -1);
-                        student.debts.forEach(d => {
-                            const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
-                            const dateTxt = d.date ? `<div style="font-size:12px; color:#888; margin-top:4px;"><i class="bi bi-calendar"></i> 發布於：${d.date}</div>` : '';
-                            
-                            // ⏱️ 功能 1.2 任務專注按鈕
-                            const timerBtnHtml = `<button class="quick-timer-btn" onclick="window.openFocusTimer('${d.title}')"><i class="bi bi-stopwatch"></i> 專注</button>`;
-                            
-                            html += `<div class="task-item">
-                                        <div class="task-header">
-                                            <div class="task-name"><span class="badge subj">${d.subject}</span>${d.title}${dateTxt}</div>
-                                            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
-                                                ${badge}
-                                                ${timerBtnHtml}
-                                            </div>
-                                        </div>
-                                     </div>`;
-                        });
-                        document.getElementById('taskListArea').innerHTML = html;
-                    }
-                } else { document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;color:red;'>找不到該座號的冒險者</h3>"; }
-            } else { document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;'>尚未發布資料</h3>"; }
-        } catch (error) { console.error(error); document.getElementById('loading').innerHTML = "❌ 連線失敗，請檢查網路狀態"; }
+          if (student) {
+            renderFullStudentCard(student);
+          } else {
+            document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;color:red;'>找不到該座號的冒險者</h3>";
+          }
+        } else {
+          document.getElementById('contentArea').innerHTML = "<h3 style='text-align:center;'>尚未發布資料</h3>";
+        }
+      } catch (error) {
+        console.error(error);
+        document.getElementById('loading').innerHTML = "❌ 連線失敗，請檢查網路狀態";
+      }
     }
     loadData();
 
-    // 拖曳面板
+    // ============================================================
+    // ⏱️ 懸浮拖曳計時面板 (與能量餅乾獎勵、任務完成蓋章連動)
+    // ============================================================
     const panel = document.getElementById('toolPanel');
     const handle = document.getElementById('dragHandle');
     let isDragging = false, offsetX = 0, offsetY = 0;
 
     function startDrag(e) {
-        isDragging = true;
-        const rect = panel.getBoundingClientRect();
-        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        offsetX = clientX - rect.left; offsetY = clientY - rect.top;
-        panel.style.transform = 'none'; panel.style.left = rect.left + 'px'; panel.style.top = rect.top + 'px';
+      if (e.target.closest('#closePanel')) return;
+      isDragging = true;
+      const rect = panel.getBoundingClientRect();
+      const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+      const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+      offsetX = clientX - rect.left; offsetY = clientY - rect.top;
+      panel.style.transform = 'none'; panel.style.left = rect.left + 'px'; panel.style.top = rect.top + 'px';
     }
     function doDrag(e) {
-        if (!isDragging) return; e.preventDefault();
-        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        panel.style.left = (clientX - offsetX) + 'px'; panel.style.top = (clientY - offsetY) + 'px';
+      if (!isDragging) return; e.preventDefault();
+      const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+      const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+      panel.style.left = (clientX - offsetX) + 'px'; panel.style.top = (clientY - offsetY) + 'px';
     }
     function endDrag() { isDragging = false; }
 
     handle.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', doDrag); document.addEventListener('mouseup', endDrag);
     handle.addEventListener('touchstart', startDrag, { passive: false }); document.addEventListener('touchmove', doDrag, { passive: false }); document.addEventListener('touchend', endDrag);
 
-    // 計時器邏輯
-    let toolInterval; let timeInSeconds = 0; let isRunning = false; let currentMode = 'stopwatch'; let pomoState = 'work';
-    const WORK_MINUTES = 25; const BREAK_MINUTES = 5;
-    const timeDisplay = document.getElementById('timeDisplay'); const btnStartPause = document.getElementById('btnStartPause');
-    const minInput = document.getElementById('minInput'); const pomoStatus = document.getElementById('pomodoroStatus');
+    let toolInterval;
+    let timeInSeconds = 0;
+    let initialTargetSeconds = 0;
+    let isRunning = false;
+    let currentMode = 'stopwatch';
+    let pomoState = 'work';
+    const WORK_MINUTES = 25;
+    const BREAK_MINUTES = 5;
+    const timeDisplay = document.getElementById('timeDisplay');
+    const btnStartPause = document.getElementById('btnStartPause');
+    const minInput = document.getElementById('minInput');
+    const pomoStatus = document.getElementById('pomodoroStatus');
 
     function formatTime(sec) {
-        const m = Math.floor(sec / 60).toString().padStart(2, '0');
-        const s = (sec % 60).toString().padStart(2, '0');
-        return `${m}:${s}`;
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
     }
     function updateDisplay() { timeDisplay.innerText = formatTime(timeInSeconds); }
 
     window.openTool = function(mode) {
-        currentMode = mode; isRunning = false; clearInterval(toolInterval);
-        btnStartPause.innerText = "開始"; btnStartPause.className = "btn-start";
-        panel.classList.remove('hidden');
-        panel.style.transform = 'translateX(-50%)'; panel.style.left = '50%'; panel.style.top = '15%';
-        document.getElementById('timerInputs').classList.add('hidden'); pomoStatus.classList.add('hidden');
+      currentMode = mode; isRunning = false; clearInterval(toolInterval);
+      if (mode !== 'timer') currentFocusedTaskKey = null;
+      btnStartPause.innerText = "開始"; btnStartPause.className = "btn-start";
+      panel.classList.remove('hidden');
+      panel.style.transform = 'translateX(-50%)'; panel.style.left = '50%'; panel.style.top = '15%';
+      document.getElementById('timerInputs').classList.add('hidden'); pomoStatus.classList.add('hidden');
 
-        if (mode === 'stopwatch') {
-            document.getElementById('toolTitle').innerHTML = "<i class='bi bi-stopwatch'></i> 專注碼表"; timeInSeconds = 0;
-        } else if (mode === 'timer') {
-            document.getElementById('toolTitle').innerHTML = "<i class='bi bi-hourglass-split'></i> 倒數計時器";
-            document.getElementById('timerInputs').classList.remove('hidden');
-            timeInSeconds = (parseInt(minInput.value) || 10) * 60;
-        } else if (mode === 'pomodoro') {
-            document.getElementById('toolTitle').innerHTML = "🍅 番茄鐘工作法"; pomoStatus.classList.remove('hidden');
-            pomoState = 'work'; pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
-            pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2";
-            timeInSeconds = WORK_MINUTES * 60;
-        }
-        updateDisplay();
-    }
+      if (mode === 'stopwatch') {
+        document.getElementById('toolTitle').innerHTML = "<i class='bi bi-stopwatch'></i> 專注碼表";
+        timeInSeconds = 0;
+        initialTargetSeconds = 0;
+      } else if (mode === 'timer') {
+        document.getElementById('toolTitle').innerHTML = "<i class='bi bi-hourglass-split'></i> 倒數計時器";
+        document.getElementById('timerInputs').classList.remove('hidden');
+        timeInSeconds = (parseInt(minInput.value) || 10) * 60;
+        initialTargetSeconds = timeInSeconds;
+      } else if (mode === 'pomodoro') {
+        document.getElementById('toolTitle').innerHTML = "🍅 番茄鐘工作法";
+        pomoStatus.classList.remove('hidden');
+        pomoState = 'work'; pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
+        pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2";
+        timeInSeconds = WORK_MINUTES * 60;
+        initialTargetSeconds = timeInSeconds;
+      }
+      updateDisplay();
+    };
 
-    document.getElementById('btnStopwatch').addEventListener('click', () => openTool('stopwatch'));
-    document.getElementById('btnTimer').addEventListener('click', () => openTool('timer'));
-    document.getElementById('btnPomodoro').addEventListener('click', () => openTool('pomodoro'));
+    document.getElementById('btnStopwatch').addEventListener('click', () => window.openTool('stopwatch'));
+    document.getElementById('btnTimer').addEventListener('click', () => window.openTool('timer'));
+    document.getElementById('btnPomodoro').addEventListener('click', () => window.openTool('pomodoro'));
     document.getElementById('closePanel').addEventListener('click', () => panel.classList.add('hidden'));
 
     minInput.addEventListener('change', (e) => {
-        if (!isRunning && currentMode === 'timer') { timeInSeconds = (parseInt(e.target.value) || 1) * 60; updateDisplay(); }
+      if (!isRunning && currentMode === 'timer') {
+        timeInSeconds = Math.max(1, parseInt(e.target.value) || 1) * 60;
+        initialTargetSeconds = timeInSeconds;
+        updateDisplay();
+      }
     });
 
+    function onFocusCompleteReward() {
+      // 🍪 若倒數設定滿 5 分鐘 (300秒)，自動獎勵 +1 塊能量餅乾
+      if (initialTargetSeconds >= 300) {
+        setCookieCount(getCookieCount() + 1);
+        showToastMsg("🎉 專注挑戰成功！獲得 1 塊能量餅乾 🍪！");
+      }
+      // ✅ 若是從特定任務卡點擊「專注」，自動詢問是否蓋上「已在座位寫完」印章
+      if (currentFocusedTaskKey) {
+        localStorage.setItem(getTaskDoneStorageKey(currentFocusedTaskKey), '1');
+        if (currentStudent) renderTaskListArea(currentStudent);
+      }
+    }
+
     btnStartPause.addEventListener('click', () => {
-        if (isRunning) {
-            clearInterval(toolInterval); isRunning = false; btnStartPause.innerText = "繼續"; btnStartPause.className = "btn-start";
-        } else {
-            isRunning = true; btnStartPause.innerText = "暫停"; btnStartPause.className = "btn-pause";
-            toolInterval = setInterval(() => {
-                if (currentMode === 'stopwatch') {
-                    timeInSeconds++;
+      if (isRunning) {
+        clearInterval(toolInterval); isRunning = false; btnStartPause.innerText = "繼續"; btnStartPause.className = "btn-start";
+      } else {
+        isRunning = true; btnStartPause.innerText = "暫停"; btnStartPause.className = "btn-pause";
+        toolInterval = setInterval(() => {
+          if (currentMode === 'stopwatch') {
+            timeInSeconds++;
+          } else {
+            if (timeInSeconds > 0) timeInSeconds--;
+            if (timeInSeconds === 0) {
+              window.playNativeSound('clear');
+              if (currentMode === 'pomodoro') {
+                if (pomoState === 'work') {
+                  onFocusCompleteReward();
+                  pomoState = 'break'; pomoStatus.innerHTML = `☕ 休息時間 (${BREAK_MINUTES}分)`;
+                  pomoStatus.style.color = "#059669"; pomoStatus.style.background = "#d1fae5";
+                  timeInSeconds = BREAK_MINUTES * 60;
                 } else {
-                    if (timeInSeconds > 0) timeInSeconds--;
-                    if (timeInSeconds === 0) {
-                        window.playNativeSound('clear'); // 🎮 時間到播放原生過關音效
-                        if (currentMode === 'pomodoro') {
-                            if (pomoState === 'work') {
-                                pomoState = 'break'; pomoStatus.innerHTML = `☕ 休息時間 (${BREAK_MINUTES}分)`;
-                                pomoStatus.style.color = "#059669"; pomoStatus.style.background = "#d1fae5";
-                                timeInSeconds = BREAK_MINUTES * 60;
-                            } else {
-                                pomoState = 'work'; pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
-                                pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2";
-                                timeInSeconds = WORK_MINUTES * 60;
-                            }
-                        } else {
-                            clearInterval(toolInterval); isRunning = false;
-                            btnStartPause.innerText = "時間到！"; btnStartPause.className = "btn-start";
-                        }
-                    }
+                  pomoState = 'work'; pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
+                  pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2";
+                  timeInSeconds = WORK_MINUTES * 60;
                 }
-                updateDisplay();
-            }, 1000);
-        }
+              } else {
+                clearInterval(toolInterval); isRunning = false;
+                btnStartPause.innerText = "時間到！"; btnStartPause.className = "btn-start";
+                onFocusCompleteReward();
+              }
+            }
+          }
+          updateDisplay();
+        }, 1000);
+      }
     });
 
     document.getElementById('btnReset').addEventListener('click', () => {
-        clearInterval(toolInterval); isRunning = false; btnStartPause.innerText = "開始"; btnStartPause.className = "btn-start";
-        if (currentMode === 'stopwatch') { timeInSeconds = 0; } 
-        else if (currentMode === 'timer') { timeInSeconds = (parseInt(minInput.value) || 10) * 60; } 
-        else if (currentMode === 'pomodoro') {
-            pomoState = 'work'; pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
-            pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2"; timeInSeconds = WORK_MINUTES * 60;
-        }
-        updateDisplay();
+      clearInterval(toolInterval); isRunning = false; btnStartPause.innerText = "開始"; btnStartPause.className = "btn-start";
+      if (currentMode === 'stopwatch') { timeInSeconds = 0; } 
+      else if (currentMode === 'timer') {
+        timeInSeconds = (parseInt(minInput.value) || 10) * 60;
+        initialTargetSeconds = timeInSeconds;
+      } else if (currentMode === 'pomodoro') {
+        pomoState = 'work'; pomoStatus.innerHTML = `🍅 專注時間 (${WORK_MINUTES}分)`;
+        pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2";
+        timeInSeconds = WORK_MINUTES * 60;
+        initialTargetSeconds = timeInSeconds;
+      }
+      updateDisplay();
     });
   </script>
 </body>
