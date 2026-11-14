@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.7.0.1🛡️</title>
+  <title>🛡️ 冒險者公會 v.7.0.2🛡️</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧙‍♂️</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -459,7 +459,293 @@
 @media (min-width: 1400px) {
     .persistent-sidebar { left: calc(50% - 660px); }
 }
-  </style>
+  
+    /* ============================================================
+       🏰 登記首頁：全冠王萌寵漫步牧場 & 極速登記台
+       ============================================================ */
+    .nav-btn.active-view {
+      background: var(--primary) !important;
+      color: #fff !important;
+      border-style: solid !important;
+      border-color: var(--text-main) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .nav-btn.active-view .nav-text {
+      max-width: 150px;
+      opacity: 1;
+      margin-left: 6px;
+    }
+
+    .meadow-card {
+      background: var(--card);
+      border: 2px solid var(--tbl-border);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .meadow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .meadow-stage {
+      position: relative;
+      width: 100%;
+      height: 165px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid #7cb342;
+      background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 62%, #aed581 62%, #8bc34a 100%);
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.08);
+      user-select: none;
+      cursor: pointer;
+    }
+    html[data-theme='dark'] .meadow-stage {
+      background: linear-gradient(180deg, #1e293b 0%, #334155 62%, #365314 62%, #1a2e05 100%);
+      border-color: #4d7c0f;
+    }
+    .meadow-ground-decor {
+      position: absolute;
+      inset: 62% 0 0 0;
+      background-image: radial-gradient(rgba(255,255,255,0.35) 2px, transparent 2px);
+      background-size: 28px 18px;
+      pointer-events: none;
+    }
+    .meadow-clouds {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      opacity: 0.65;
+      pointer-events: none;
+      font-size: 22px;
+    }
+    .meadow-empty-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #33691e;
+      font-weight: 900;
+      font-size: 15px;
+      text-align: center;
+      padding: 12px;
+      pointer-events: none;
+    }
+    html[data-theme='dark'] .meadow-empty-hint { color: #dcfce7; }
+
+    .meadow-pet-actor {
+      position: absolute;
+      bottom: 14px;
+      left: 0;
+      width: 68px;
+      height: 68px;
+      will-change: transform;
+      cursor: pointer;
+      z-index: 5;
+      transition: filter 0.15s;
+    }
+    .meadow-pet-actor:hover {
+      filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.9));
+      z-index: 20 !important;
+    }
+    .meadow-pet-sprite {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      transform-origin: bottom center;
+    }
+    .meadow-pet-label {
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.92);
+      border: 1.5px solid #65a30d;
+      color: #365314;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 1px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .meadow-pet-cheer {
+      position: absolute;
+      top: -44px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      font-weight: 900;
+      pointer-events: none;
+      animation: floatUpAndFade 1s ease-out forwards;
+      z-index: 25;
+    }
+    .meadow-toy-ball {
+      position: absolute;
+      bottom: 18px;
+      width: 28px;
+      height: 28px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 12;
+      transition: transform 0.2s;
+    }
+
+    /* 首頁快速委託膠囊與大座號按鈕 */
+    .home-quest-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scrollbar-width: thin;
+    }
+    .home-quest-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 2px solid var(--tbl-border);
+      background: var(--bg);
+      color: var(--text-main);
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .home-quest-pill:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .home-quest-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--text-main);
+      box-shadow: 0 3px 0 var(--text-light);
+    }
+
+    .home-seat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+      gap: 10px;
+      padding: 12px;
+      background: var(--bg);
+      border: 2px solid var(--tbl-border);
+      border-radius: 12px;
+    }
+    .home-seat-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 2px solid var(--tbl-border);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s;
+      position: relative;
+      user-select: none;
+    }
+    .home-seat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .home-seat-card:active { transform: scale(0.96); }
+    .home-seat-card.cleared-crown {
+      border-color: #84cc16;
+      background: linear-gradient(145deg, var(--card), #f7fee7);
+    }
+    html[data-theme='dark'] .home-seat-card.cleared-crown {
+      background: linear-gradient(145deg, var(--card), #1a2e05);
+    }
+
+    /* ============================================================
+       📊 榮耀統計頁面樣式
+       ============================================================ */
+    .stats-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .stats-kpi-card {
+      background: var(--bg);
+      border: 2px solid var(--tbl-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+    .stats-kpi-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .stats-two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .stats-bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+    .stats-bar-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .stats-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .rank-podium-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rank-podium-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1.5px solid var(--tbl-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+</style>
 </head>
 <body>
   
@@ -528,15 +814,69 @@
               </div>
               <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理 (多裝置同步時使用)"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
+        <button class="btn ghost nav-btn active-view" id="btnNavHome" title="登記首頁 (全冠王萌寵牧場)"><i class="bi bi-house-heart-fill"></i> <span class="nav-text">登記首頁</span></button>
         <button class="btn ghost nav-btn" id="btnNavDashboard" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
         <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
+        <button class="btn ghost nav-btn" id="btnNavStats" title="榮耀統計"><i class="bi bi-bar-chart-line-fill"></i> <span class="nav-text">榮耀統計</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSidebar" title="快速狀態欄"><i class="bi bi-layout-sidebar-inset-reverse"></i> <span class="nav-text">速覽</span></button>
         <div id="saveStatusIndicator" style="margin-left: 8px; font-size: 14px; display: flex; align-items: center;"><i class="bi bi-hourglass"></i></div>
       </div>
     </header>
 
-    <section id="view-dashboard" class="view show">
+    <!-- 🌟 新增：獨立登記首頁 (含全冠王萌寵漫步牧場 & 快速登記台) -->
+    <section id="view-home" class="view show">
+      <div class="meadow-card">
+        <div class="meadow-header">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h2 style="margin:0; border:none; padding:0; font-size:18px; color:#365314; display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-tree-fill" style="color:#65a30d;"></i> 討伐全冠王・萌寵散步草地
+            </h2>
+            <span id="meadowCrownCountBadge" style="background:#dcfce7; color:#166534; border:1.5px solid #86efac; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900;">
+              👑 0 位全冠王夥伴散步中
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); font-weight:bold;">
+            <span>💡 零欠交作業即可讓代表夥伴上台散步！點擊草地可丟玩具球、點寵物可互動</span>
+            <button class="btn sm ghost" onclick="window.throwMeadowBall()" style="padding:3px 10px; border-radius:999px; font-size:12px;"><i class="bi bi-dribbble"></i> 丟玩具球</button>
+          </div>
+        </div>
+
+        <div id="meadowStage" class="meadow-stage" onclick="window.handleMeadowStageClick(event)">
+          <div class="meadow-clouds"><span>☁️</span><span>⛅</span><span>☁️</span><span>🦋</span></div>
+          <div class="meadow-ground-decor"></div>
+          <div id="meadowEmptyHint" class="meadow-empty-hint" style="display:none;">
+            🌱 目前草地上還沒有夥伴喔！只要完成所有委託（零欠交）並設定代表夥伴，你的小動物就會上台走來走去！
+          </div>
+          <div id="meadowActorsContainer"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+          <h2 style="margin:0; border:none; padding:0;"><i class="bi bi-check2-square"></i> 今日委託極速登記台</h2>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="btn sm" onclick="document.getElementById('btnOpenNewQuestWindowSidebar').click()"><i class="bi bi-plus-lg"></i> 發布新委託</button>
+            <button class="btn sm ghost" id="btnHomeMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
+            <button class="btn sm ghost" onclick="window.switchView('view-dashboard')"><i class="bi bi-columns-gap"></i> 完整看板模式</button>
+          </div>
+        </div>
+
+        <!-- 快速切換委託膠囊列 -->
+        <div id="homeQuestPills" class="home-quest-pills"></div>
+
+        <!-- 選中委託之小組快速回報與進度條 -->
+        <div id="homeQuestSubBar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin:8px 0 10px; padding:8px 12px; background:var(--tbl-alt); border-radius:8px; border:1px dashed var(--tbl-border);">
+          <div id="homeGroupQuickBtns" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"></div>
+          <div id="homeQuestProgressText" style="font-size:13px; font-weight:900; color:var(--primary);"></div>
+        </div>
+
+        <!-- 座號大按鈕網格 -->
+        <div id="homeSeatGrid" class="home-seat-grid"></div>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="view">
       <div class="dashboard-layout">
        <aside class="dash-sidebar">
           <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -692,6 +1032,62 @@
                  <button class="btn" id="btnApplyTeachers"><i class="bi bi-check-circle"></i> 儲存變更</button>
             </div>
         </div>
+    </section>
+
+    <!-- 🌟 新增：公會榮耀統計與戰報分析頁 -->
+    <section id="view-stats" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; border-bottom:2px dashed var(--tbl-border); padding-bottom:10px;">
+          <h2 style="margin:0; border:none; padding:0;"><i class="bi bi-bar-chart-line-fill"></i> 公會榮耀戰報 & 統計中心</h2>
+          <span class="muted" style="font-weight:bold;">即時彙整全班委託完勝率、小組積分與萌寵收服數據</span>
+        </div>
+
+        <!-- 頂部 4 大 KPI 指標 -->
+        <div id="statsKpiGrid" class="stats-kpi-grid"></div>
+
+        <!-- 雙欄圖表區：各科委託完勝率 & 小組積分爭霸 -->
+        <div class="stats-two-col">
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 12px; font-size:16px; color:var(--primary); display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-journal-check"></i> 各科目委託完勝率
+            </h3>
+            <div id="statsSubjectBars"></div>
+          </div>
+
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 12px; font-size:16px; color:var(--primary); display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-people-fill"></i> 小組榮耀積分榜 (平均 EXP & 完勝率)
+            </h3>
+            <div id="statsGroupRanking" class="rank-podium-list"></div>
+          </div>
+        </div>
+
+        <!-- 三大正向榮譽殿堂 -->
+        <div class="stats-two-col" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#d97706;"><i class="bi bi-lightning-charge-fill"></i> 傳奇冒險王 (最高 EXP TOP 5)</h3>
+            <div id="statsTopExpList" class="rank-podium-list"></div>
+          </div>
+
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#b45309;"><i class="bi bi-coin"></i> 公會首富榜 (最多金幣 TOP 5)</h3>
+            <div id="statsTopCoinList" class="rank-podium-list"></div>
+          </div>
+
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#1b8a97;"><i class="bi bi-hearts"></i> 萌寵飼育大師 (圖鑑解鎖 TOP 5)</h3>
+            <div id="statsTopPetList" class="rank-podium-list"></div>
+          </div>
+        </div>
+
+        <!-- 導師專屬：各任務欠交熱點診斷 -->
+        <details style="background:var(--tbl-alt); border:2px dashed var(--tbl-border); border-radius:12px; padding:12px; margin-top:8px;">
+          <summary style="font-weight:900; cursor:pointer; color:var(--text-light); display:flex; align-items:center; gap:6px;">
+            <i class="bi bi-clipboard2-pulse-fill" style="color:var(--danger);"></i> 導師診斷面板：目前未清委託熱點一覽 (點擊展開)
+          </summary>
+          <div id="statsPendingTasksTable" style="margin-top:12px; overflow-x:auto;"></div>
+        </details>
+      </div>
     </section>
 
 <footer class="app-footer no-print">
