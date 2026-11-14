@@ -318,7 +318,7 @@ async function syncToCloud() {
                         }
                     });
                     // 🌟 這裡新增了 exp 與 coins 資料
-                    return { no: s.no, name: s.name, exp: s.exp || 0, coins: s.coins || 0, debts: debts };
+                    return { no: s.no, name: s.name, exp: s.exp || 0, coins: s.coins || 0, pets: s.pets || [], activePet: s.activePet || null, debts: debts };
                 });
 
                 promises.push(setDoc(doc(db, "public_boards", currentUser.uid), { 
@@ -3710,6 +3710,11 @@ window.openGachaPetDetail = function(petId) {
     partnerBtn.disabled = isPartner;
     partnerBtn.innerText = isPartner ? '✓ 目前代表夥伴' : '設為代表夥伴';
 
+    const synthBtn = document.getElementById('btnSynthesizePetFromDetail');
+    if (synthBtn) {
+        synthBtn.style.display = ownedMap[pet.id] >= 3 ? 'inline-flex' : 'none';
+    }
+
     document.getElementById('gachaPetDetailOverlay').classList.add('show');
     playPetCrySound(pet.kind);
 };
@@ -3740,22 +3745,271 @@ window.setPartnerPetFromDetail = function() {
 
 
 // ==========================================
-// 🏰 獨立登記首頁：全冠王萌寵漫步牧場 & 極速登記台引擎
+// 🔄 A. 圖鑑內「誤抽退還 (+10金幣)」與「三合一神秘轉生」
 // ==========================================
-let meadowActors = {}; // key: studentIdx, value: { sidx, no, name, pet, x, dir, mode, timer, frameTimer, frameIdx, jumpY, el, spriteEl }
+window.refundPetFromDetail = function() {
+    if (currentSummonStudentIdx === null || !currentDetailPetId) return;
+    const student = data.roster[currentSummonStudentIdx];
+    const pet = gachaPool.find(p => String(p.id) === String(currentDetailPetId));
+    if (!student || !pet || !Array.isArray(student.pets)) return;
+
+    if (!confirm(`確定要移除【${student.name}】的 1 隻「${pet.name}」，並退還 ${SUMMON_COST} 枚金幣嗎？`)) return;
+
+    // 從學生 pets 陣列移除一隻該寵物 (相容 'p1' 或 1 格式)
+    const targetIdx = student.pets.findIndex(pid => {
+        const norm = String(pid).startsWith('p') ? parseInt(String(pid).slice(1)) : pid;
+        return String(norm) === String(pet.id);
+    });
+    if (targetIdx === -1) return;
+    student.pets.splice(targetIdx, 1);
+
+    // 若代表夥伴被退光了，自動切換成剩餘最後一隻或 null
+    const ownedMapAfter = getStudentOwnedMap(student);
+    if (!ownedMapAfter[pet.id] && String(student.activePet) === String(pet.id)) {
+        if (student.pets.length > 0) {
+            const lastRaw = student.pets[student.pets.length - 1];
+            student.activePet = String(lastRaw).startsWith('p') ? parseInt(String(lastRaw).slice(1)) : lastRaw;
+        } else {
+            student.activePet = null;
+        }
+    }
+
+    window.changeCoin(currentSummonStudentIdx, SUMMON_COST, `退還扭蛋 [${pet.name}]`, true);
+    playCoinSound();
+    showToast(`🔄 已移除 1 隻【${pet.name}】，並退還 ${student.name} ${SUMMON_COST} 枚金幣！`);
+
+    triggerAutoSave();
+    updateGachaHeaderAndStats();
+    renderGachaBookGrid();
+    if (ownedMapAfter[pet.id] > 0) {
+        window.openGachaPetDetail(pet.id);
+    } else {
+        window.closeGachaPetDetail();
+    }
+    renderAll();
+};
+
+window.synthesizeDuplicatePet = function() {
+    if (currentSummonStudentIdx === null || !currentDetailPetId) return;
+    const student = data.roster[currentSummonStudentIdx];
+    const pet = gachaPool.find(p => String(p.id) === String(currentDetailPetId));
+    if (!student || !pet) return;
+
+    const ownedMap = getStudentOwnedMap(student);
+    if ((ownedMap[pet.id] || 0) < 3) {
+        showToast('⚠️ 需要收集滿 3 隻相同夥伴才能進行三合一神秘轉生喔！');
+        return;
+    }
+
+    if (!confirm(`✨ 確定要消耗 3 隻【${pet.name}】，進行「三合一神秘轉生」嗎？
+(保證獲得一隻尚未解鎖或稀有/夢幻級萌寵！)`)) return;
+
+    // 移除 3 隻該寵物
+    let removed = 0;
+    student.pets = (student.pets || []).filter(pid => {
+        if (removed >= 3) return true;
+        const norm = String(pid).startsWith('p') ? parseInt(String(pid).slice(1)) : pid;
+        if (String(norm) === String(pet.id)) {
+            removed++;
+            return false;
+        }
+        return true;
+    });
+
+    // 優先從「尚未擁有」且稀有度 >= 2 的池子挑選，若全齊則從稀有/夢幻池挑選
+    const afterMap = getStudentOwnedMap(student);
+    let unownedRare = gachaPool.filter(p => !afterMap[p.id] && p.rarity >= 2);
+    let unownedAny = gachaPool.filter(p => !afterMap[p.id]);
+    let rarePool = gachaPool.filter(p => p.rarity >= 2 && String(p.id) !== String(pet.id));
+    const finalPool = unownedRare.length > 0 ? unownedRare : (unownedAny.length > 0 ? unownedAny : rarePool);
+    const newPet = finalPool[Math.floor(Math.random() * finalPool.length)] || gachaPool[0];
+
+    student.pets.push(newPet.id);
+    student.activePet = newPet.id;
+
+    logAction(currentSummonStudentIdx, 0, '轉生', `3隻[${pet.name}]轉生為[${newPet.name}]`);
+    playStarSound();
+    playPetCrySound(newPet.kind);
+    if (typeof confetti !== 'undefined') {
+        confetti({ particleCount: 120, spread: 90, origin: { y: 0.55 } });
+    }
+    showToast(`🌟 轉生大成功！${student.name} 獲得了【${newPet.name}】！`);
+
+    triggerAutoSave();
+    updateGachaHeaderAndStats();
+    renderGachaBookGrid();
+    window.openGachaPetDetail(newPet.id);
+    renderAll();
+};
+
+// ==========================================
+// ⚡ D. 每日例行作業：聯絡簿 (自動帶入日期 + 頁碼)
+// ==========================================
+function formatShortDateMD(dateStr) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+    }
+    return dateStr;
+}
+
+window.updateContactBookPreview = function() {
+    const dateVal = document.getElementById('ipDate')?.value || getTaipeiDateString();
+    const md = formatShortDateMD(dateVal);
+    const pageVal = (document.getElementById('ipContactBookPage')?.value || '').trim();
+    const previewEl = document.getElementById('routineContactDatePreview');
+    const titleStr = pageVal ? `${md} 聯絡簿 P.${pageVal}` : `${md} 聯絡簿`;
+    if (previewEl) previewEl.innerText = titleStr;
+    return titleStr;
+};
+
+window.StepContactBookPage = function(delta) {
+    const ip = document.getElementById('ipContactBookPage');
+    if (!ip) return;
+    let cur = parseInt(ip.value);
+    if (isNaN(cur)) {
+        cur = parseInt(localStorage.getItem('hwLastContactPage') || '1');
+    } else {
+        cur = Math.max(1, cur + delta);
+    }
+    ip.value = cur;
+    localStorage.setItem('hwLastContactPage', String(cur));
+    const titleStr = window.updateContactBookPreview();
+    const ipTitle = document.getElementById('ipTitle');
+    if (ipTitle) ipTitle.value = titleStr;
+};
+
+window.quickCreateContactBookQuest = function() {
+    let t = document.getElementById('ipTeacherSelect')?.value;
+    if (t === 'custom') t = document.getElementById('ipTeacherCustom')?.value.trim();
+    if (!t) t = (data.teachers && data.teachers[0]) ? data.teachers[0] : '公會長';
+
+    const d = document.getElementById('ipDate')?.value || getTaipeiDateString();
+    const pageIp = document.getElementById('ipContactBookPage');
+    const pageVal = pageIp ? pageIp.value.trim() : '';
+    if (pageVal) {
+        localStorage.setItem('hwLastContactPage', pageVal);
+    }
+    const titleStr = window.updateContactBookPreview();
+
+    if (!data.teachers.includes(t)) data.teachers.push(t);
+    const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
+
+    const newQuest = {
+        id: Date.now(),
+        title: titleStr,
+        teacher: t,
+        subject: '聯絡簿',
+        date: d,
+        assignedIndices: isAll ? 'all' : [...newAssignmentAssignedIndices],
+        statuses: Array(data.roster.length).fill(0),
+        cheered: false
+    };
+    data.assignments.push(newQuest);
+    currentAssignmentId = newQuest.id;
+
+    triggerAutoSave();
+    renderAll();
+    document.getElementById('panelNewQuest').classList.remove('show');
+    playSuccessSound();
+    showToast(`📓 已一鍵發布【${titleStr}】！`);
+};
+
+// 綁定打開「發布新委託」視窗時，自動預填上次聯絡簿頁碼 +1 與今日日期預覽
+document.getElementById('btnOpenNewQuestWindowSidebar')?.addEventListener('click', () => {
+    const lastPage = localStorage.getItem('hwLastContactPage');
+    const pageIp = document.getElementById('ipContactBookPage');
+    if (pageIp && lastPage && !pageIp.value) {
+        const nextP = parseInt(lastPage);
+        if (!isNaN(nextP)) pageIp.value = nextP + 1;
+    }
+    window.updateContactBookPreview();
+});
+document.getElementById('ipDate')?.addEventListener('change', () => {
+    window.updateContactBookPreview();
+});
+
+// ==========================================
+// 🏰 獨立登記首頁：全冠王萌寵漫步牧場 (含日夜時段 + 待清休息帳篷) & 極速登記台引擎
+// ==========================================
+let meadowActors = {};
 let meadowAnimFrameId = null;
 let meadowLastTime = 0;
-let meadowBall = null; // { x, el, timeoutId }
+let meadowBall = null;
+let meadowTimeOverride = 'auto'; // 'auto' | 'morning' | 'noon' | 'evening'
+let isSelfCheckinLock = false;   // B. 學生自助繳交鎖 (只准 灰0 <-> 黃1)
+let isHomeOnlyUnfinished = false; // 只看未完成座號篩選
+
+function getEffectiveMeadowTimePeriod() {
+    if (meadowTimeOverride !== 'auto') return meadowTimeOverride;
+    const nowStr = new Date().toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
+    const [hh, mm] = nowStr.split(':').map(Number);
+    const totalMin = hh * 60 + (mm || 0);
+    // 12:00 ~ 13:30 午休時間：全員趴下睡午覺💤
+    if (totalMin >= 12 * 60 && totalMin <= 13 * 60 + 30) return 'noon';
+    // 15:30 ~ 18:30 放學夕陽時段
+    if (totalMin >= 15 * 60 + 30 && totalMin < 18 * 60 + 30) return 'evening';
+    // 18:30 ~ 06:00 夜間星光時段
+    if (totalMin >= 18 * 60 + 30 || totalMin < 6 * 60) return 'night';
+    return 'morning';
+}
+
+window.cycleMeadowTimeMode = function() {
+    const order = ['auto', 'morning', 'noon', 'evening', 'night'];
+    const nextIdx = (order.indexOf(meadowTimeOverride) + 1) % order.length;
+    meadowTimeOverride = order[nextIdx];
+    applyMeadowTimeTheme();
+    syncMeadowActors();
+    const labelMap = {
+        auto: '🕒 自動時段跟隨',
+        morning: '☀️ 晨間活力草地',
+        noon: '💤 午休靜音睡覺模式',
+        evening: '🌇 放學夕陽晚霞',
+        night: '🌙 夜間星光營地'
+    };
+    showToast(`切換草原時段：${labelMap[meadowTimeOverride]}`);
+};
+
+function applyMeadowTimeTheme() {
+    const stage = document.getElementById('meadowStage');
+    const sky = document.getElementById('meadowSkyDecor');
+    const badge = document.getElementById('meadowTimeBadge');
+    if (!stage) return;
+
+    const period = getEffectiveMeadowTimePeriod();
+    stage.classList.remove('time-morning', 'time-noon', 'time-evening', 'time-night');
+    stage.classList.add(`time-${period}`);
+
+    const autoSuffix = meadowTimeOverride === 'auto' ? ' (自動)' : ' (手動)';
+    if (period === 'noon') {
+        if (sky) sky.innerHTML = '<span>🌤️</span><span>💤</span><span>🍃</span><span>💤</span>';
+        if (badge) badge.innerText = `💤 午休睡覺時段${autoSuffix}`;
+    } else if (period === 'evening') {
+        if (sky) sky.innerHTML = '<span>🌇</span><span>🐦</span><span>☁️</span><span>🍂</span>';
+        if (badge) badge.innerText = `🌇 放學夕陽草地${autoSuffix}`;
+    } else if (period === 'night') {
+        if (sky) sky.innerHTML = '<span>🌙</span><span>✨</span><span>⭐</span><span>🦉</span>';
+        if (badge) badge.innerText = `🌙 星光營地${autoSuffix}`;
+    } else {
+        if (sky) sky.innerHTML = '<span>☁️</span><span>⛅</span><span>☁️</span><span>🦋</span>';
+        if (badge) badge.innerText = `☀️ 晨間活力草地${autoSuffix}`;
+    }
+}
 
 function isStudentAllCleared(sidx) {
+    if (!data || !data.roster) return false;
     const activeAssigns = (data.assignments || []).filter(a => !a.archived);
     const todayStr = getTaipeiDateString();
+    let skipTodayRedo = false;
+    try { skipTodayRedo = !!hideTodayRedo; } catch (e) { skipTodayRedo = false; }
+
     for (let a of activeAssigns) {
         const indices = a.assignedIndices || 'all';
-        if (indices === 'all' || indices.includes(sidx)) {
+        if (indices === 'all' || (Array.isArray(indices) && indices.includes(sidx))) {
             const st = (a.statuses || [])[sidx] || 0;
             if (st === 0 || st === 2) {
-                if (typeof hideTodayRedo !== 'undefined' && hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                if (skipTodayRedo && st === 2 && a.date === todayStr) continue;
                 return false;
             }
         }
@@ -3770,23 +4024,30 @@ function getStudentPartnerPetObj(student, fallbackIdx = 0) {
         const found = gachaPool.find(p => String(p.id) === String(pid));
         if (found) return found;
     }
-    // 若該生達成全冠王但還沒抽過扭蛋，指派一隻預設見習小貓小狗陪伴散步！
     return gachaPool[fallbackIdx % 4] || gachaPool[0];
 }
 
 function syncMeadowActors() {
+    applyMeadowTimeTheme();
     const stage = document.getElementById('meadowStage');
     const container = document.getElementById('meadowActorsContainer');
     const emptyHint = document.getElementById('meadowEmptyHint');
     const badge = document.getElementById('meadowCrownCountBadge');
+    const restPen = document.getElementById('meadowRestPen');
+    const restList = document.getElementById('meadowRestList');
+    const restCount = document.getElementById('meadowRestCount');
     if (!stage || !container) return;
 
-    const stageWidth = Math.max(300, stage.clientWidth - 76);
+    const penWidth = restPen && restPen.offsetWidth ? restPen.offsetWidth + 16 : 255;
+    const stageWidth = Math.max(220, stage.clientWidth - penWidth - 72);
     const clearedIndices = [];
+    const restingIndices = [];
 
     (data.roster || []).forEach((s, idx) => {
         if (isStudentAllCleared(idx)) {
             clearedIndices.push(idx);
+        } else {
+            restingIndices.push(idx);
         }
     });
 
@@ -3797,6 +4058,22 @@ function syncMeadowActors() {
         emptyHint.style.display = clearedIndices.length === 0 ? 'flex' : 'none';
     }
 
+    // 渲染右側「⛺ 待清休息帳篷」裡睡覺冒泡泡的寵物
+    if (restCount) restCount.innerText = `(${restingIndices.length})`;
+    if (restPen) {
+        restPen.style.display = restingIndices.length === 0 ? 'none' : 'flex';
+    }
+    if (restList) {
+        restList.innerHTML = restingIndices.map(sidx => {
+            const st = data.roster[sidx];
+            const pet = getStudentPartnerPetObj(st, sidx);
+            return `<div class="meadow-rest-item" title="${st.no}.${st.name} 還有委託待完成，完成後【${pet.name}】就能跳進草地奔跑！" onclick="window.showRestPetHint(${sidx})">
+                <img src="${pet.sit}" class="pixel-pet" alt="">
+                <span>${st.no}.${st.name}💤</span>
+            </div>`;
+        }).join('');
+    }
+
     // 移除不再是全冠王的角色
     Object.keys(meadowActors).forEach(k => {
         const numKey = parseInt(k);
@@ -3805,6 +4082,8 @@ function syncMeadowActors() {
             delete meadowActors[k];
         }
     });
+
+    const isNoonNap = getEffectiveMeadowTimePeriod() === 'noon';
 
     // 新增或更新全冠王角色
     clearedIndices.forEach((sidx, orderIdx) => {
@@ -3824,11 +4103,15 @@ function syncMeadowActors() {
             el.appendChild(spriteEl);
             el.onclick = (e) => {
                 e.stopPropagation();
+                if (getEffectiveMeadowTimePeriod() === 'noon') {
+                    showToast(`🤫 噓～現在是午休時間，${student.name} 的【${pet.name}】正在睡午覺💤`);
+                    return;
+                }
                 window.cheerMeadowActor(sidx, true);
             };
             container.appendChild(el);
 
-            const startX = Math.min(stageWidth - 10, Math.max(10, ((orderIdx * 97 + 35) % stageWidth)));
+            const startX = Math.min(stageWidth - 10, Math.max(10, ((orderIdx * 83 + 25) % stageWidth)));
             meadowActors[sidx] = {
                 sidx,
                 no: student.no,
@@ -3837,7 +4120,7 @@ function syncMeadowActors() {
                 hasOwnPet,
                 x: startX,
                 dir: orderIdx % 2 === 0 ? 1 : -1,
-                mode: Math.random() < 0.65 ? 'walk' : 'sit',
+                mode: isNoonNap ? 'sit' : (Math.random() < 0.65 ? 'walk' : 'sit'),
                 timer: 1.5 + Math.random() * 3,
                 frameTimer: 0,
                 frameIdx: Math.floor(Math.random() * 4),
@@ -3851,19 +4134,27 @@ function syncMeadowActors() {
             meadowActors[sidx].name = student.name;
             meadowActors[sidx].pet = pet;
             meadowActors[sidx].hasOwnPet = hasOwnPet;
+            if (isNoonNap) meadowActors[sidx].mode = 'sit';
         }
 
         const actor = meadowActors[sidx];
-        actor.labelEl.innerHTML = `👑 ${actor.no}.${actor.name}`;
-        actor.el.title = `${actor.no}.${actor.name} 的夥伴：${pet.name}${hasOwnPet ? '' : ' (見習夥伴)'}（點我互動！）`;
+        actor.labelEl.innerHTML = `👑 ${actor.no}.${actor.name}${isNoonNap ? ' 💤' : ''}`;
+        actor.el.title = `${actor.no}.${actor.name} 的夥伴：${pet.name}${hasOwnPet ? '' : ' (見習夥伴)'}`;
         updateActorSpriteVisual(actor);
     });
 }
 
+window.showRestPetHint = function(sidx) {
+    const s = data.roster[sidx];
+    if (!s) return;
+    const pet = getStudentPartnerPetObj(s, sidx);
+    showToast(`⛺ ${s.no}.${s.name} 的【${pet.name}】正在帳篷休息💤 只要把未交/待訂正委託完成就會衝上草地囉！`);
+};
+
 function updateActorSpriteVisual(actor) {
     if (!actor || !actor.spriteEl || !actor.pet) return;
     const pet = actor.pet;
-    const flipScale = actor.dir === 1 ? -1 : 1; // 原圖預設面朝左(dir=-1)，往右走時水平翻轉(scaleX(-1))
+    const flipScale = actor.dir === 1 ? -1 : 1;
 
     if ((actor.mode === 'walk' || actor.mode === 'chase') && pet.walk) {
         const f = actor.frameIdx % 4;
@@ -3901,9 +4192,18 @@ function stepMeadowLoop(timestamp) {
     meadowLastTime = timestamp;
 
     const stage = document.getElementById('meadowStage');
-    const maxX = stage ? Math.max(80, stage.clientWidth - 74) : 500;
+    const restPen = document.getElementById('meadowRestPen');
+    const penW = (restPen && restPen.style.display !== 'none') ? (restPen.offsetWidth + 16) : 0;
+    const maxX = stage ? Math.max(80, stage.clientWidth - penW - 74) : 450;
+    const isNoonNap = getEffectiveMeadowTimePeriod() === 'noon';
 
     Object.values(meadowActors).forEach(actor => {
+        if (isNoonNap) {
+            actor.mode = 'sit';
+            updateActorSpriteVisual(actor);
+            return;
+        }
+
         actor.timer -= dt;
         actor.frameTimer += dt;
 
@@ -3912,7 +4212,8 @@ function stepMeadowLoop(timestamp) {
         }
 
         if (actor.mode === 'chase' && meadowBall) {
-            const dx = meadowBall.x - actor.x;
+            const targetBallX = Math.min(maxX, meadowBall.x);
+            const dx = targetBallX - actor.x;
             if (Math.abs(dx) > 14) {
                 actor.dir = dx > 0 ? 1 : -1;
                 actor.x += actor.dir * 82 * dt;
@@ -3955,7 +4256,6 @@ function stepMeadowLoop(timestamp) {
                 actor.timer = 2.0 + Math.random() * 3.5;
             }
         } else {
-            // sit
             if (actor.timer <= 0) {
                 const r = Math.random();
                 actor.mode = r < 0.65 ? 'walk' : 'scratch';
@@ -3996,7 +4296,6 @@ window.cheerMeadowActor = function(sidx, playSound = true) {
     actor.mode = 'scratch';
     actor.timer = 1.8;
 
-    // 跳躍動畫
     let start = performance.now();
     function jumpStep(now) {
         const p = Math.min(1, (now - start) / 420);
@@ -4007,7 +4306,6 @@ window.cheerMeadowActor = function(sidx, playSound = true) {
     }
     requestAnimationFrame(jumpStep);
 
-    // 頭頂冒愛心/星星
     const cheerEl = document.createElement('div');
     cheerEl.className = 'meadow-pet-cheer';
     const icons = ['💖', '✨', '🎵', '🌟', '🐾'];
@@ -4017,15 +4315,21 @@ window.cheerMeadowActor = function(sidx, playSound = true) {
 };
 
 window.throwMeadowBall = function(targetX = null) {
+    if (getEffectiveMeadowTimePeriod() === 'noon') {
+        showToast('🤫 午休時間小動物們正在睡覺，下午再丟球陪牠們玩吧！');
+        return;
+    }
     const stage = document.getElementById('meadowStage');
+    const restPen = document.getElementById('meadowRestPen');
     if (!stage) return;
     if (meadowBall && meadowBall.el) {
         clearTimeout(meadowBall.timeoutId);
         meadowBall.el.remove();
     }
 
-    const stageW = stage.clientWidth;
-    const x = targetX !== null ? Math.max(24, Math.min(stageW - 24, targetX)) : Math.floor(40 + Math.random() * Math.max(100, stageW - 80));
+    const penW = (restPen && restPen.style.display !== 'none') ? (restPen.offsetWidth + 20) : 0;
+    const stageW = Math.max(120, stage.clientWidth - penW);
+    const x = targetX !== null ? Math.max(24, Math.min(stageW - 24, targetX)) : Math.floor(40 + Math.random() * Math.max(60, stageW - 80));
     const ballEl = document.createElement('div');
     ballEl.className = 'meadow-toy-ball';
     ballEl.style.left = `${x}px`;
@@ -4051,9 +4355,38 @@ window.throwMeadowBall = function(targetX = null) {
 };
 
 window.handleMeadowStageClick = function(e) {
-    if (e.target.closest('.meadow-pet-actor')) return;
+    if (e.target.closest('.meadow-pet-actor') || e.target.closest('.meadow-rest-pen')) return;
     const rect = e.currentTarget.getBoundingClientRect();
     window.throwMeadowBall(e.clientX - rect.left);
+};
+
+// ==========================================
+// 🔒 B. 學生自助繳交鎖 & 只看未完成座號篩選
+// ==========================================
+window.toggleSelfCheckinLock = function() {
+    isSelfCheckinLock = !isSelfCheckinLock;
+    const btn = document.getElementById('btnToggleSelfCheckinLock');
+    if (btn) {
+        btn.classList.toggle('student-lock-on', isSelfCheckinLock);
+        btn.innerHTML = isSelfCheckinLock
+            ? '<i class="bi bi-lock-fill"></i> 🙋‍♂️ 學生自助繳交模式 (只准灰↔黃，防誤觸綠燈)'
+            : '<i class="bi bi-person-vcard"></i> 👑 導師批改模式 (點我切換學生自助鎖)';
+    }
+    showToast(isSelfCheckinLock
+        ? '🔒 已開啟【學生自助繳交鎖】：點擊座號只會在「未交(灰) ↔ 已回報(黃)」間切換，防止學生誤點成綠燈！'
+        : '👑 已切換回【導師完整批改模式】：可自由循環 灰→黃→橘→綠 四種狀態！');
+};
+
+window.toggleHomeOnlyUnfinished = function() {
+    isHomeOnlyUnfinished = !isHomeOnlyUnfinished;
+    const btn = document.getElementById('btnToggleHomeUnfinished');
+    if (btn) {
+        btn.classList.toggle('active', isHomeOnlyUnfinished);
+        btn.innerHTML = isHomeOnlyUnfinished
+            ? '<i class="bi bi-funnel-fill"></i> 顯示全部座號'
+            : '<i class="bi bi-funnel-fill"></i> 只看未完成';
+    }
+    renderHomeView();
 };
 
 function renderHomeView() {
@@ -4085,7 +4418,6 @@ function renderHomeView() {
 
     const currentA = activeAssigns.find(a => a.id == currentAssignmentId) || activeAssigns[0];
 
-    // 渲染膠囊切換列
     pillsCon.innerHTML = activeAssigns.map(a => {
         const indices = a.assignedIndices || 'all';
         let missing = 0;
@@ -4110,7 +4442,6 @@ function renderHomeView() {
         </button>`;
     }).join('');
 
-    // 渲染小組快速按鈕與進度
     const indices = currentA.assignedIndices || 'all';
     const totalAssigned = indices === 'all' ? data.roster.length : indices.length;
     const completedCount = (currentA.statuses || []).filter((s, i) => s === 3 && (indices === 'all' || indices.includes(i))).length;
@@ -4135,13 +4466,13 @@ function renderHomeView() {
         };
     }
 
-    // 渲染座號大按鈕網格
     gridCon.innerHTML = data.roster.map((s, i) => {
         const isAssigned = (indices === 'all') || (indices && indices.includes(i));
         const st = (currentA.statuses || [])[i] || 0;
         const allCleared = isStudentAllCleared(i);
         const partnerPet = getStudentPartnerPetObj(s, i);
         const hasPet = s.activePet || (s.pets && s.pets.length > 0);
+        const isDimmed = isHomeOnlyUnfinished && (st === 1 || st === 3);
 
         let oldDebts = [];
         if (isAssigned) {
@@ -4156,11 +4487,11 @@ function renderHomeView() {
             });
         }
 
-        const debtBadge = oldDebts.length > 0
+        const debtBadge = (oldDebts.length > 0 && !isSelfCheckinLock)
             ? `<div class="debt-badge" title="還有 ${oldDebts.length} 項其他未完成委託" onclick="window.openQuickDebtMenu(event, ${i}, '${encodeURIComponent(JSON.stringify(oldDebts))}')">${oldDebts.length}</div>`
             : '';
 
-        return `<div class="home-seat-card ${allCleared ? 'cleared-crown' : ''} ${!isAssigned ? 'not-assigned' : ''}" onclick="window.handleHomeSeatClick(${currentA.id}, ${i})">
+        return `<div class="home-seat-card ${allCleared ? 'cleared-crown' : ''} ${!isAssigned ? 'not-assigned' : ''} ${isDimmed ? 'dimmed-done' : ''}" onclick="window.handleHomeSeatClick(${currentA.id}, ${i})">
             <div style="position:relative; flex-shrink:0;">
                 ${debtBadge}
                 <div class="seat s${st}" style="width:48px; height:48px; font-size:18px;">${s.no}</div>
@@ -4185,10 +4516,29 @@ window.selectHomeQuest = function(aid) {
 };
 
 window.handleHomeSeatClick = function(aid, sidx) {
+    const a = data.assignments.find(x => x.id == aid);
+    if (!a) return;
     const wasCleared = isStudentAllCleared(sidx);
-    window.toggleStatus(aid, sidx);
-    const nowCleared = isStudentAllCleared(sidx);
+    const curSt = (a.statuses || [])[sidx] || 0;
 
+    if (isSelfCheckinLock) {
+        // 學生自助繳交鎖：只允許 0(未交) <-> 1(已回報)，若已是 2(再訂正) 或 3(討伐成功) 則提示需由老師批改
+        if (curSt === 0) {
+            window.updateStatus(aid, sidx, 1);
+        } else if (curSt === 1) {
+            window.updateStatus(aid, sidx, 0);
+        } else if (curSt === 2) {
+            showToast('📝 「待訂正」作業請交給老師檢查後，由老師切換為綠燈喔！');
+            return;
+        } else if (curSt === 3) {
+            showToast('✅ 此作業已經討伐成功（綠燈）囉！');
+            return;
+        }
+    } else {
+        window.toggleStatus(aid, sidx);
+    }
+
+    const nowCleared = isStudentAllCleared(sidx);
     if (nowCleared) {
         setTimeout(() => {
             window.cheerMeadowActor(sidx, !wasCleared);
@@ -4205,7 +4555,7 @@ window.quickGroupSubmitHome = function(aid, groupNum) {
             const isAssigned = (a.assignedIndices === 'all') || (a.assignedIndices && a.assignedIndices.includes(i));
             if (isAssigned) {
                 const oldSt = (a.statuses || [])[i] || 0;
-                if (oldSt === 0 || oldSt === 2) {
+                if (oldSt === 0 || (!isSelfCheckinLock && oldSt === 2)) {
                     window.updateStatus(a.id, i, 1);
                     changed = true;
                 }
@@ -4238,7 +4588,6 @@ function renderStatsView() {
     let totalCoinsAll = 0;
     const classUnlockedPets = new Set();
 
-    // 各科目統計
     const subjMap = {};
     activeAssigns.forEach(a => {
         const sub = a.subject || '一般';
@@ -4273,10 +4622,9 @@ function renderStatsView() {
 
     const overallRate = totalTaskSlots > 0 ? Math.round((clearedTaskSlots / totalTaskSlots) * 100) : 100;
 
-    // 1. 頂部 4 張 KPI 卡片
     kpiGrid.innerHTML = `
         <div class="stats-kpi-card">
-            <div class="stats-kpi-icon" style="background:linear-gradient(135deg, #16a34a, #15803d);"><i class="bi bi-PatchCheck-fill bi-patch-check-fill"></i></div>
+            <div class="stats-kpi-icon" style="background:linear-gradient(135deg, #16a34a, #15803d);"><i class="bi bi-patch-check-fill"></i></div>
             <div>
                 <div style="font-size:12px; color:var(--muted); font-weight:bold;">全班委託完勝率 (綠燈)</div>
                 <div style="font-size:24px; font-weight:900; color:var(--success);">${overallRate}% <span style="font-size:12px; color:var(--muted);">(${clearedTaskSlots}/${totalTaskSlots})</span></div>
@@ -4305,7 +4653,6 @@ function renderStatsView() {
         </div>
     `;
 
-    // 2. 各科目委託完勝率長條圖
     const subjEntries = Object.entries(subjMap);
     if (subjEntries.length === 0) {
         subjBars.innerHTML = '<div class="muted" style="padding:12px;">尚無委託資料</div>';
@@ -4325,7 +4672,6 @@ function renderStatsView() {
         }).join('');
     }
 
-    // 3. 小組積分爭霸榜
     const groupMap = {};
     data.roster.forEach((s, i) => {
         const g = s.group || 1;
@@ -4358,7 +4704,6 @@ function renderStatsView() {
         </div>
     `).join('');
 
-    // 4. 三大榮譽榜 TOP 5
     const renderTopList = (arr, valFormatter) => arr.slice(0, 5).map((item, idx) => {
         const pet = getStudentPartnerPetObj(item.s, item.idx);
         return `<div class="rank-podium-item">
@@ -4388,7 +4733,6 @@ function renderStatsView() {
         it => `<span style="color:#1b8a97;">🐾 ${it.uniquePets} 種</span>`
     );
 
-    // 5. 導師專屬未清委託熱點表
     const taskHotspots = activeAssigns.map(a => {
         const indices = a.assignedIndices || 'all';
         const missingNos = [];
