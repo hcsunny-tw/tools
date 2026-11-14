@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.7.0.2🛡️</title>
+  <title>🛡️ 冒險者公會 v.6.3.0🛡️</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧙‍♂️</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -745,6 +745,117 @@
       border-radius: 10px;
       padding: 8px 12px;
     }
+
+    /* ============================================================
+       🌅 v5 升級：日夜動態草原、待清補血柵欄、學生自助繳交鎖
+       ============================================================ */
+    .meadow-stage.time-morning {
+      background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 62%, #aed581 62%, #8bc34a 100%);
+      border-color: #7cb342;
+    }
+    .meadow-stage.time-noon {
+      background: linear-gradient(180deg, #fef3c7 0%, #fde68a 62%, #9ccc65 62%, #689f38 100%);
+      border-color: #d97706;
+    }
+    .meadow-stage.time-evening {
+      background: linear-gradient(180deg, #fbcfe8 0%, #fed7aa 62%, #7cb342 62%, #558b2f 100%);
+      border-color: #ea580c;
+    }
+    .meadow-stage.time-night {
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 62%, #365314 62%, #1a2e05 100%);
+      border-color: #4d7c0f;
+    }
+
+    /* 右側：待清補血見習木柵欄區 */
+    .meadow-rest-pen {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      top: 32px;
+      width: 245px;
+      max-width: 38%;
+      background: rgba(255, 251, 235, 0.78);
+      border: 2.5px dashed #b45309;
+      border-radius: 12px;
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      z-index: 8;
+      backdrop-filter: blur(2px);
+      pointer-events: auto;
+    }
+    html[data-theme='dark'] .meadow-rest-pen,
+    .meadow-stage.time-night .meadow-rest-pen {
+      background: rgba(30, 41, 59, 0.82);
+      border-color: #f59e0b;
+      color: #fef3c7;
+    }
+    .meadow-rest-pen-title {
+      font-size: 11px;
+      font-weight: 900;
+      color: #92400e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed rgba(180, 83, 9, 0.35);
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+    }
+    html[data-theme='dark'] .meadow-rest-pen-title,
+    .meadow-stage.time-night .meadow-rest-pen-title {
+      color: #fcd34d;
+    }
+    .meadow-rest-pen-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      overflow-y: auto;
+      align-content: flex-start;
+      flex: 1;
+      scrollbar-width: none;
+    }
+    .meadow-rest-pen-list::-webkit-scrollbar { display: none; }
+    .meadow-rest-item {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 2px 5px;
+      font-size: 10px;
+      font-weight: 900;
+      color: #78350f;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .meadow-rest-item:hover { transform: scale(1.06); }
+    .meadow-rest-item img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      filter: grayscale(35%) opacity(0.85);
+    }
+
+    /* 學生自助繳交鎖與只看未完成篩選 */
+    .mode-switch-btn.student-lock-on {
+      background: #0284c7 !important;
+      color: #fff !important;
+      border-color: #0369a1 !important;
+      box-shadow: 0 2px 0 #075985;
+    }
+    .filter-unfin-btn.active {
+      background: #ea580c !important;
+      color: #fff !important;
+      border-color: #c2410c !important;
+    }
+    .home-seat-card.dimmed-done {
+      opacity: 0.28;
+      transform: scale(0.95);
+      filter: grayscale(60%);
+    }
+
 </style>
 </head>
 <body>
@@ -814,10 +925,10 @@
               </div>
               <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
         <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理 (多裝置同步時使用)"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
-        <button class="btn ghost nav-btn active-view" id="btnNavHome" title="登記首頁 (全冠王萌寵牧場)"><i class="bi bi-house-heart-fill"></i> <span class="nav-text">登記首頁</span></button>
-        <button class="btn ghost nav-btn" id="btnNavDashboard" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
-        <button class="btn ghost nav-btn" id="btnNavStudentStatus" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
-        <button class="btn ghost nav-btn" id="btnNavStats" title="榮耀統計"><i class="bi bi-bar-chart-line-fill"></i> <span class="nav-text">榮耀統計</span></button>
+        <button class="btn ghost nav-btn active-view" id="btnNavHome" onclick="window.switchView('view-home')" title="登記首頁 (全冠王萌寵牧場)"><i class="bi bi-house-heart-fill"></i> <span class="nav-text">登記首頁</span></button>
+        <button class="btn ghost nav-btn" id="btnNavDashboard" onclick="window.switchView('view-dashboard')" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
+        <button class="btn ghost nav-btn" id="btnNavStudentStatus" onclick="window.switchView('view-student-status')" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
+        <button class="btn ghost nav-btn" id="btnNavStats" onclick="window.switchView('view-stats')" title="榮耀統計"><i class="bi bi-bar-chart-line-fill"></i> <span class="nav-text">榮耀統計</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
         <button class="btn ghost nav-btn" id="btnOpenSidebar" title="快速狀態欄"><i class="bi bi-layout-sidebar-inset-reverse"></i> <span class="nav-text">速覽</span></button>
         <div id="saveStatusIndicator" style="margin-left: 8px; font-size: 14px; display: flex; align-items: center;"><i class="bi bi-hourglass"></i></div>
@@ -835,26 +946,46 @@
             <span id="meadowCrownCountBadge" style="background:#dcfce7; color:#166534; border:1.5px solid #86efac; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900;">
               👑 0 位全冠王夥伴散步中
             </span>
+            <span id="meadowTimeBadge" onclick="window.cycleMeadowTimeMode()" title="點擊可手動切換：自動時段 / 晨間 / 午休睡覺 / 放學夕陽" style="cursor:pointer; background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900;">
+              ☀️ 晨間草地 (點我切換時段)
+            </span>
           </div>
           <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); font-weight:bold;">
-            <span>💡 零欠交作業即可讓代表夥伴上台散步！點擊草地可丟玩具球、點寵物可互動</span>
+            <span>💡 零欠交上草地奔跑，未交齊在右側帳篷休息💤</span>
             <button class="btn sm ghost" onclick="window.throwMeadowBall()" style="padding:3px 10px; border-radius:999px; font-size:12px;"><i class="bi bi-dribbble"></i> 丟玩具球</button>
           </div>
         </div>
 
-        <div id="meadowStage" class="meadow-stage" onclick="window.handleMeadowStageClick(event)">
-          <div class="meadow-clouds"><span>☁️</span><span>⛅</span><span>☁️</span><span>🦋</span></div>
+        <div id="meadowStage" class="meadow-stage time-morning" onclick="window.handleMeadowStageClick(event)">
+          <div id="meadowSkyDecor" class="meadow-clouds"><span>☁️</span><span>⛅</span><span>☁️</span><span>🦋</span></div>
           <div class="meadow-ground-decor"></div>
-          <div id="meadowEmptyHint" class="meadow-empty-hint" style="display:none;">
-            🌱 目前草地上還沒有夥伴喔！只要完成所有委託（零欠交）並設定代表夥伴，你的小動物就會上台走來走去！
+          <div id="meadowEmptyHint" class="meadow-empty-hint" style="display:none; padding-right:250px;">
+            🌱 目前草地上還沒有全冠王喔！只要把待清委託補齊，右邊休息區的夥伴就會跳進大草原奔跑！
           </div>
           <div id="meadowActorsContainer"></div>
+
+          <!-- 💤 欠交待清夥伴休息圍欄 -->
+          <div id="meadowRestPen" class="meadow-rest-pen" onclick="event.stopPropagation()">
+            <div class="meadow-rest-pen-title">
+              <span>⛺ 待清休息帳篷 <b id="meadowRestCount">(0)</b></span>
+              <span style="font-size:10px; opacity:0.8;">補齊即上場💤</span>
+            </div>
+            <div id="meadowRestList" class="meadow-rest-pen-list"></div>
+          </div>
         </div>
       </div>
 
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
-          <h2 style="margin:0; border:none; padding:0;"><i class="bi bi-check2-square"></i> 今日委託極速登記台</h2>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h2 style="margin:0; border:none; padding:0;"><i class="bi bi-check2-square"></i> 今日委託極速登記台</h2>
+            <button class="btn sm ghost mode-switch-btn" id="btnToggleSelfCheckinLock" onclick="window.toggleSelfCheckinLock()" title="開啟後：點擊座號只會在「灰燈(未交) ↔ 黃燈(已回報)」間切換，防止學生誤點成綠燈！">
+              <i class="bi bi-person-VCard"></i> 👑 導師批改模式 (點我切換學生自助鎖)
+            </button>
+            <button class="btn sm ghost filter-unfin-btn" id="btnToggleHomeUnfinished" onclick="window.toggleHomeOnlyUnfinished()" title="將已過關的座號半透明縮小，只凸顯未交與待訂正座號">
+              <i class="bi bi-funnel-fill"></i> 只看未完成
+            </button>
+          </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <button class="btn sm" onclick="document.getElementById('btnOpenNewQuestWindowSidebar').click()"><i class="bi bi-plus-lg"></i> 發布新委託</button>
             <button class="btn sm ghost" id="btnHomeMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
@@ -1229,6 +1360,23 @@
   <div id="panelNewQuest" class="modal-overlay">
       <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header"><h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2><button class="modal-close-btn">&times;</button></div>
+          <!-- ⚡ 新增：每日例行聯絡簿（日期＋頁碼）極速填入 / 一鍵發布區 -->
+          <div style="background:#fffbef; border:2px dashed #f59e0b; border-radius:10px; padding:10px; margin-bottom:10px;">
+              <div style="font-size:12px; font-weight:900; color:#b45309; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="bi bi-lightning-charge-fill"></i> 每日例行作業：聯絡簿 (自動帶入今日日期 + 頁碼)</span>
+              </div>
+              <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                  <span id="routineContactDatePreview" style="font-size:13px; font-weight:900; color:var(--primary); background:#fff; padding:4px 8px; border-radius:6px; border:1px solid #fcd34d;">聯絡簿</span>
+                  <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:130px;">
+                      <button type="button" class="btn sm ghost" style="padding:4px 8px;" onclick="window.StepContactBookPage(-1)" title="頁碼 -1">-1</button>
+                      <input type="text" id="ipContactBookPage" placeholder="頁碼 (如 32 或 32-33)" style="padding:5px 8px; font-size:13px; text-align:center;" oninput="window.updateContactBookPreview()">
+                      <button type="button" class="btn sm ghost" style="padding:4px 8px;" onclick="window.StepContactBookPage(1)" title="頁碼 +1">+1</button>
+                  </div>
+                  <button type="button" class="btn sm" style="background:#d97706; border-color:#b45309;" onclick="window.quickCreateContactBookQuest()">
+                      <i class="bi bi-send-check-fill"></i> 一鍵發布聯絡簿
+                  </button>
+              </div>
+          </div>
           <div class="field" style="margin-top:4px;">
               <label style="font-size:12px;">發布導師</label>
               <select id="ipTeacherSelect" style="padding:6px;"></select>
@@ -2056,9 +2204,17 @@
                       </div>
                       <div id="detailPetName" style="font-size:20px; font-weight:900;">灰虎斑</div>
                       <div id="detailPetMeta" style="font-size:12px; opacity:0.75; font-weight:bold; text-align:center; line-height:1.5;"></div>
-                      <div style="display:flex; gap:8px; margin-top:8px; width:100%; justify-content:center;">
+                      <div style="display:flex; gap:8px; margin-top:8px; width:100%; justify-content:center; flex-wrap:wrap;">
                           <button class="gacha-sub-btn" onclick="window.closeGachaPetDetail()">返回</button>
                           <button class="gacha-cta-btn" id="btnSetPartnerFromDetail" style="height:42px; padding:0 18px; font-size:13px;" onclick="window.setPartnerPetFromDetail()">設為代表夥伴</button>
+                      </div>
+                      <div style="display:flex; gap:6px; margin-top:6px; width:100%; justify-content:center; flex-wrap:wrap; border-top:1px dashed rgba(74,46,34,0.15); padding-top:8px;">
+                          <button class="btn sm" id="btnSynthesizePetFromDetail" onclick="window.synthesizeDuplicatePet()" style="display:none; background:linear-gradient(135deg, #9333ea, #ec4899); border:none; color:#fff; border-radius:999px; font-size:12px; padding:4px 12px;">
+                              ✨ 三合一神秘轉生 (消耗3隻換新寵)
+                          </button>
+                          <button class="btn sm ghost warn" id="btnRefundPetFromDetail" onclick="window.refundPetFromDetail()" style="border-radius:999px; font-size:11px; padding:3px 10px; color:#b91c1c; border-color:#fca5a5; background:#fff1f2;" title="導師測試或學生誤抽時，可收回此隻萌寵並退還 10 枚金幣">
+                              <i class="bi bi-arrow-counterclockwise"></i> 誤抽退還 (+10 💰)
+                          </button>
                       </div>
                   </div>
               </div>
