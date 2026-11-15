@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🛡️ 冒險者公會 v.6.3.0🛡️</title>
+  <title>🛡️ 冒險者公會 v.7.1.1🛡️</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧙‍♂️</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -856,6 +856,14 @@
       filter: grayscale(60%);
     }
 
+
+    /* 📊 今日戰績列 */
+    .today-stats-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-bottom:10px; padding:8px 14px; background:var(--card); border:2px solid var(--tbl-border); border-radius:var(--radius); box-shadow:var(--shadow); color:var(--text-main); font-size:14px; }
+    .today-stats-bar .ts-title { font-weight:900; color:var(--primary); font-size:15px; }
+    .today-stats-bar .ts-chip { background:var(--tbl-head); border:1.5px solid var(--tbl-border); border-radius:999px; padding:3px 12px; font-weight:bold; }
+    .today-stats-bar .ts-chip b { font-size:18px; color:var(--primary); margin:0 2px; }
+    .today-stats-bar .ts-sub { font-size:12px; color:var(--muted); font-weight:bold; }
+    .today-stats-bar .ts-titles { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -898,6 +906,10 @@
     <!-- 內容區塊 (包裝起來方便隱藏) -->
     <div id="psContentWrapper">
         <div class="ps-section">
+            <div class="ps-title"><i class="bi bi-lightning-charge-fill"></i> 今日戰績</div>
+            <div id="psTodayStats" style="font-size:13px; font-weight:bold; line-height:1.6;"></div>
+        </div>
+        <div class="ps-section">
             <div class="ps-title"><i class="bi bi-trophy-fill"></i> 討伐全冠王</div>
             <div id="psClearedList" class="ps-list"></div>
         </div>
@@ -937,6 +949,2249 @@
 
     <!-- 🌟 新增：獨立登記首頁 (含全冠王萌寵漫步牧場 & 快速登記台) -->
     <section id="view-home" class="view show">
+      <!-- 📊 今日戰績：今天消滅幾個委託、批改幾份作業 -->
+      <div id="todayStatsBar" class="today-stats-bar"></div>
+      <div class="meadow-card">
+        <div class="meadow-header">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h2 style="margin:0; border:none; padding:0; font-size:18px; color:#365314; display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-tree-fill" style="color:#65a30d;"></i> 討伐全冠王・萌寵散步草地
+            </h2>
+            <span id="meadowCrownCountBadge" style="background:#dcfce7; color:#166534; border:1.5px solid #86efac; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900;">
+              👑 0 位全冠王夥伴散步中
+            </span>
+            <span id="meadowTimeBadge" onclick="window.cycleMeadowTimeMode()" title="點擊可手動切換：自動時段 / 晨間 / 午休睡覺 / 放學夕陽" style="cursor:pointer; background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900;">
+              ☀️ 晨間草地 (點我切換時段)
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); font-weight:bold;">
+            <span>💡 零欠交上草地奔跑，未交齊在右側帳篷休息💤</span>
+            <button class="btn sm ghost" onclick="window.throwMeadowBall()" style="padding:3px 10px; border-radius:999px; font-size:12px;"><i class="bi bi-dribbble"></i> 丟玩具球</button>
+          </div>
+        </div>
+
+        <div id="meadowStage" class="meadow-stage time-morning" onclick="window.handleMeadowStageClick(event)">
+          <div id="meadowSkyDecor" class="meadow-clouds"><span>☁️</span><span>⛅</span><span>☁️</span><span>🦋</span></div>
+          <div class="meadow-ground-decor"></div>
+          <div id="meadowEmptyHint" class="meadow-empty-hint" style="display:none; padding-right:250px;">
+            🌱 目前草地上還沒有全冠王喔！只要把待清委託補齊，右邊休息區的夥伴就會跳進大草原奔跑！
+          </div>
+          <div id="meadowActorsContainer"></div>
+
+          <!-- 💤 欠交待清夥伴休息圍欄 -->
+          <div id="meadowRestPen" class="meadow-rest-pen" onclick="event.stopPropagation()">
+            <div class="meadow-rest-pen-title">
+              <span>⛺ 待清休息帳篷 <b id="meadowRestCount">(0)</b></span>
+              <span style="font-size:10px; opacity:0.8;">補齊即上場💤</span>
+            </div>
+            <div id="meadowRestList" class="meadow-rest-pen-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h2 style="margin:0; border:none; padding:0;"><i class="bi bi-check2-square"></i> 今日委託極速登記台</h2>
+            <button class="btn sm ghost mode-switch-btn" id="btnToggleSelfCheckinLock" onclick="window.toggleSelfCheckinLock()" title="開啟後：點擊座號只會在「灰燈(未交) ↔ 黃燈(已回報)」間切換，防止學生誤點成綠燈！">
+              <i class="bi bi-person-VCard"></i> 👑 導師批改模式 (點我切換學生自助鎖)
+            </button>
+            <button class="btn sm ghost filter-unfin-btn" id="btnToggleHomeUnfinished" onclick="window.toggleHomeOnlyUnfinished()" title="將已過關的座號半透明縮小，只凸顯未交與待訂正座號">
+              <i class="bi bi-funnel-fill"></i> 只看未完成
+            </button>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="btn sm" onclick="document.getElementById('btnOpenNewQuestWindowSidebar').click()"><i class="bi bi-plus-lg"></i> 發布新委託</button>
+            <button class="btn sm ghost" id="btnHomeMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
+            <button class="btn sm ghost" onclick="window.switchView('view-dashboard')"><i class="bi bi-columns-gap"></i> 完整看板模式</button>
+          </div>
+        </div>
+
+        <!-- 快速切換委託膠囊列 -->
+        <div id="homeQuestPills" class="home-quest-pills"></div>
+
+        <!-- 選中委託之小組快速回報與進度條 -->
+        <div id="homeQuestSubBar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin:8px 0 10px; padding:8px 12px; background:var(--tbl-alt); border-radius:8px; border:1px dashed var(--tbl-border);">
+          <div id="homeGroupQuickBtns" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"></div>
+          <div id="homeQuestProgressText" style="font-size:13px; font-weight:900; color:var(--primary);"></div>
+        </div>
+
+        <!-- 座號大按鈕網格 -->
+        <div id="homeSeatGrid" class="home-seat-grid"></div>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="view">
+      <div class="dashboard-layout">
+       <aside class="dash-sidebar">
+          <div class="sidebar-header" style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <button id="btnToggleFilter" class="btn ghost sm icon-only" style="flex: 0 0 auto;" onclick="document.getElementById('filterPanel').classList.toggle('show');" title="篩選條件"><i class="bi bi-funnel"></i></button>
+              <button class="btn sm" id="btnOpenNewQuestWindowSidebar" style="flex: 1;" title="發布新委託"><i class="bi bi-plus-lg"></i> 新增任務</button>
+          </div>
+          <div id="filterPanel" class="filter-panel">
+              <div style="margin-bottom: 8px;"><select id="teacherFilter" style="width:100%; padding:6px;"><option value="all">所有導師</option></select></div>
+              <div style="margin-bottom: 8px;"><select id="subjectFilter" style="width:100%; padding:6px;"><option value="all">所有科目</option></select></div>
+              <button id="btnClearFilter" class="btn sm secondary" style="width:100%; justify-content:center;"><i class="bi bi-arrow-counterclockwise"></i> 重置</button>
+          </div>
+          <div id="sideAssignmentList" class="side-list-container"></div>
+        </aside>
+        <main class="dash-main">
+          <div id="dashEmptyState">
+              <i class="bi bi-arrow-left-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+              <p style="font-weight:bold;">請從左側選擇一張委託</p>
+          </div>
+          <div id="dashDetailPanel">
+             <div class="assignment-bar" style="border-bottom: 2px solid var(--tbl-border); padding-bottom:12px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div class="title" id="dashDetailTitle" style="font-size:20px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:8px;"></div>
+                    <div class="field" style="display: flex; flex-direction: row; align-items: center; gap: 8px; margin: 0;">
+                        <label style="margin:0; color:var(--muted);"><i class="bi bi-zoom-in"></i> 顯示比例</label>
+                        <input type="range" id="rangeSize" min="40" max="100" value="56" style="padding: 0; width: 120px;">
+                    </div>
+                </div>
+                <div class="actions" style="margin-top:12px; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn sm ghost" id="btnMarkAllYellow"><i class="bi bi-check-circle-fill"></i> 全員回報</button>
+                    <button class="btn sm ghost" id="btnMarkAllOrange"><i class="bi bi-exclamation-circle-fill"></i> 全員再戰</button>
+                    <button class="btn sm warn ghost" id="btnRecountCurrent"><i class="bi bi-arrow-counterclockwise"></i> 重新清點</button>
+                    <button class="btn sm warn ghost" id="btnDeleteCurrent" style="margin-left:auto;"><i class="bi bi-trash3"></i> 刪除</button>
+                </div>
+                
+                <!-- ⭐ 快速小組繳交按鈕區 -->
+                <div id="groupQuickActions" style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; padding:8px; background:var(--tbl-alt); border-radius:6px; border:1px dashed var(--tbl-border);"></div>
+                
+            </div>
+
+            <div id="dashGridContainer" class="grid"></div>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <section id="view-student-status" class="view">
+      <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              
+              <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+                  <h2 id="studentStatusHeaderTitle" style="margin:0;"><i class="bi bi-clipboard2-check"></i> 冒險者狀態</h2>
+                  <div style="display:flex; align-items:center; gap:4px; background:var(--bg); border:1px dashed var(--tbl-border); padding:4px 10px; border-radius:8px;">
+                      <span style="font-size:13px; font-weight:900; color:var(--text-main);"><i class="bi bi-funnel-fill"></i> 排</span>
+                      <select id="selStudentSort" style="border:none; background:transparent; font-weight:900; font-size:14px; padding:2px; outline:none; color:var(--primary); cursor:pointer;">
+                          <option value="no">座號</option>
+                          <option value="exp">等級 (EXP)</option>
+                          <option value="coins">金幣</option>
+                          <option value="debts">欠交任務數</option>
+                      </select>
+                      <button class="btn sm ghost icon-only" id="btnSortDirection" style="border:none; background:transparent; color:var(--text-main); padding:2px 6px;" title="切換正/反序"><i class="bi bi-sort-numeric-down"></i></button>
+                     <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
+                    <button class="btn sm ghost" id="btnToggleClearStudents" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="隱藏無欠款者"><i class="bi bi-eye-slash"></i> </button>
+                    <button class="btn sm ghost" id="btnToggleDebtSort" style="border:none; background:transparent; padding:2px 6px; color:var(--primary); font-weight:bold;" title="任務排序切換：依日期 / 依科目"><i class="bi bi-tags-fill"></i> </button>
+                    <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
+                    <button class="btn sm ghost" id="btnToggleTodayRedo" style="border:none; background:transparent; padding:2px 6px; color:var(--muted); font-weight:bold;" title="切換：顯示 / 隱藏「今日需訂正」"><i class="bi bi-calendar-check"></i> </button>
+                  </div>
+              </div>
+
+              <div class="actions" style="margin:0;">
+                  <button class="btn sm" id="btnGreenAllExpPlus" style="background:#16a34a; border-color:#15803d;"><i class="bi bi-stars"></i> 綠燈全體 +1</button>
+                  <button class="btn sm" id="btnAllClearedPlus" style="background:#ca8a04; border-color:#a16207; color:#fff;"><i class="bi bi-trophy-fill"></i> 全冠王 +1</button>
+                  <button class="btn sm secondary" id="btnToggleBatchExp"><i class="bi bi-magic"></i> 加扣分模式</button>
+                  <button class="btn sm secondary ghost" id="btnToggleBatchMode"><i class="bi bi-printer"></i> 批量列印卷軸</button>
+                  <button class="btn sm" id="btnBatchSelectAll" style="display:none;"><i class="bi bi-check-all"></i> 全選</button>
+                  <button class="btn sm" id="btnBatchExport" style="display:none;"><i class="bi bi-printer"></i> 匯出選取</button>
+              </div>
+          </div>
+          
+          <div id="batchExpToolbar" class="batch-exp-toolbar">
+              <span style="font-weight:900; color:var(--primary);">✨ 批次給予金幣：</span>
+              
+              <select id="selBatchPlus" class="tool-input" style="width: auto; padding: 4px; font-size: 13px;"></select>
+              <button class="btn sm" onclick="window.applySelectedBatchCoin('plus')">加分</button>
+              
+              <select id="selBatchMinus" class="tool-input" style="width: auto; padding: 4px; font-size: 13px; margin-left: 8px;"></select>
+              <button class="btn sm warn" onclick="window.applySelectedBatchCoin('minus')">扣分</button>
+              
+              <div style="width: 1px; height: 20px; background: var(--tbl-border); margin: 0 8px;"></div>
+              
+              <div style="display: flex; gap: 4px; align-items: center;">
+                  <input type="number" id="customExpVal" style="width:70px; padding:4px;" placeholder="分數">
+                  <input type="text" id="customExpReason" style="width:120px; padding:4px;" placeholder="輸入原因...">
+                  <button class="btn sm" onclick="window.applyCustomBatchCoin()"><i class="bi bi-check-lg"></i> 送出</button>
+              </div>
+          </div>
+          
+          <div id="studentStatusOverviewContainer"></div>
+          <div id="studentStatusContainer" style="margin-top:12px;"></div>
+      </div>
+    </section>
+
+    <section id="view-attendance" class="view">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                <h2><i class="bi bi-calendar-check"></i> 每日點名 (公會長用)</h2>
+                <div style="display:flex; gap:8px;">
+                    <input type="date" id="attDatePicker" style="width: auto;">
+                    <button class="btn sm secondary" id="btnExportAttendance"><i class="bi bi-file-earmark-excel"></i> 下載報表</button>
+                </div>
+            </div>
+            <div class="att-stats-bar">
+                <div class="att-stat-item"><div class="att-stat-val" style="color:var(--success)" id="statPresent">0</div><div class="att-stat-label">出席</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#854d0e" id="statLate">0</div><div class="att-stat-label">遲到</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#1e40af" id="statEarly">0</div><div class="att-stat-label">早退</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:var(--danger)" id="statSick">0</div><div class="att-stat-label">病假</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#4b5563" id="statPersonal">0</div><div class="att-stat-label">事假</div></div>
+                <div class="att-stat-item"><div class="att-stat-val" style="color:#6b21a8" id="statOfficial">0</div><div class="att-stat-label">公假</div></div>
+            </div>
+            <div id="attendanceList"></div>
+            <div class="actions" style="justify-content: flex-end; margin-top: 16px;">
+                <button class="btn" id="btnSaveAttendance"><i class="bi bi-check-lg"></i> 確認送出點名單</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-roster" class="view">
+        <div class="roster-tabs">
+            <button id="tabBtnStudents" class="tab-btn active"><i class="bi bi-person-lines-fill"></i> 冒險者名冊</button>
+            <button id="tabBtnTeachers" class="tab-btn"><i class="bi bi-person-badge"></i> 公會長名冊</button>
+        </div>
+        <div id="roster-content-students" class="roster-content show">
+            <div class="roster-grid" id="rosterEditor"></div>
+            <div class="actions" style="margin-top:16px; justify-content:space-between; border-top:1px dashed var(--tbl-border); padding-top:12px;">
+                <button class="btn sm secondary" id="btnAddStudentRow"><i class="bi bi-plus-lg"></i> 新增一行</button>
+                <div style="display:flex; gap:8px;">
+                      <details id="detailsRosterPaste" style="display:inline-block;"><summary class="btn sm ghost" style="list-style:none; cursor:pointer;">📜 貼上名單</summary>
+                        <div style="position:absolute; bottom:60px; right:20px; background:var(--card); padding:12px; border:2px solid var(--primary); border-radius:8px; width:250px; z-index:100; box-shadow: var(--shadow);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-weight:bold; font-size:14px; color:var(--primary);">大量貼上名單</span>
+                                <button id="btnCloseRosterPaste" class="btn ghost sm icon-only" style="border:none; padding:2px 6px;"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                            <textarea id="taRosterPaste" rows="10" style="width:100%;" placeholder="一行一個姓名..."></textarea>
+                            <button class="btn sm secondary" id="btnLoadFromPaste" style="width:100%; margin-top:8px;">取代 / 附加名單</button>
+                        </div>
+                     </details>
+                     <button class="btn" id="btnApplyRoster"><i class="bi bi-check-circle"></i> 儲存變更</button>
+                </div>
+            </div>
+        </div>
+        <div id="roster-content-teachers" class="roster-content">
+            <div class="roster-grid" id="teacherEditor"></div>
+            <div class="actions" style="margin-top:16px; justify-content:flex-end;">
+                 <button class="btn" id="btnApplyTeachers"><i class="bi bi-check-circle"></i> 儲存變更</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 🌟 新增：公會榮耀統計與戰報分析頁 -->
+    <section id="view-stats" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; border-bottom:2px dashed var(--tbl-border); padding-bottom:10px;">
+          <h2 style="margin:0; border:none; padding:0;"><i class="bi bi-bar-chart-line-fill"></i> 公會榮耀戰報 & 統計中心</h2>
+          <span class="muted" style="font-weight:bold;">即時彙整全班委託完勝率、小組積分與萌寵收服數據</span>
+        </div>
+
+        <!-- 頂部 4 大 KPI 指標 -->
+        <div id="statsKpiGrid" class="stats-kpi-grid"></div>
+
+        <!-- 雙欄圖表區：各科委託完勝率 & 小組積分爭霸 -->
+        <div class="stats-two-col">
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 12px; font-size:16px; color:var(--primary); display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-journal-check"></i> 各科目委託完勝率
+            </h3>
+            <div id="statsSubjectBars"></div>
+          </div>
+
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 12px; font-size:16px; color:var(--primary); display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-people-fill"></i> 小組榮耀積分榜 (平均 EXP & 完勝率)
+            </h3>
+            <div id="statsGroupRanking" class="rank-podium-list"></div>
+          </div>
+        </div>
+
+        <!-- 三大正向榮譽殿堂 -->
+        <div class="stats-two-col" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#d97706;"><i class="bi bi-lightning-charge-fill"></i> 傳奇冒險王 (最高 EXP TOP 5)</h3>
+            <div id="statsTopExpList" class="rank-podium-list"></div>
+          </div>
+
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#b45309;"><i class="bi bi-coin"></i> 公會首富榜 (最多金幣 TOP 5)</h3>
+            <div id="statsTopCoinList" class="rank-podium-list"></div>
+          </div>
+
+          <div style="background:var(--bg); border:2px solid var(--tbl-border); border-radius:12px; padding:14px;">
+            <h3 style="margin:0 0 10px; font-size:15px; color:#1b8a97;"><i class="bi bi-hearts"></i> 萌寵飼育大師 (圖鑑解鎖 TOP 5)</h3>
+            <div id="statsTopPetList" class="rank-podium-list"></div>
+          </div>
+        </div>
+
+        <!-- 導師專屬：各任務欠交熱點診斷 -->
+        <details style="background:var(--tbl-alt); border:2px dashed var(--tbl-border); border-radius:12px; padding:12px; margin-top:8px;">
+          <summary style="font-weight:900; cursor:pointer; color:var(--text-light); display:flex; align-items:center; gap:6px;">
+            <i class="bi bi-clipboard2-pulse-fill" style="color:var(--danger);"></i> 導師診斷面板：目前未清委託熱點一覽 (點擊展開)
+          </summary>
+          <div id="statsPendingTasksTable" style="margin-top:12px; overflow-x:auto;"></div>
+        </details>
+      </div>
+    </section>
+
+<footer class="app-footer no-print">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i class="bi bi-shield-check"></i> 冒險者公會管理系統
+            </div>
+            
+            <p class="footer-author"> Designed & Developed by 彭彭老師 | Inspired by Teacher 靚</p>
+            
+            <a href="https://sites.google.com/view/sunnypeng/" target="_blank" class="footer-link">
+                <i class="bi bi-house-heart-fill"></i> 造訪老師的魔法小島
+            </a>
+
+            <div class="copyright">
+                © 2026 ADVENTURER GUILD PROJECT v6.2.0. ALL RIGHTS RESERVED.
+            </div>
+        </div>
+    </footer>
+  </div>
+
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header"><h2><i class="bi bi-palette"></i> 外觀設定</h2><button class="modal-close-btn">&times;</button></div>
+        <div class="field" style="margin-bottom: 20px;">
+            <label>選擇公會風格主題：</label>
+            <div class="theme-options" id="themeOptionsContainer" style="margin-top: 8px;">
+                <div class="theme-option" data-theme="guild" title="探險公會 (預設)"></div>
+                <div class="theme-option" data-theme="warm-cute" title="溫暖可愛" style="background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%);"></div>
+                <div class="theme-option" data-theme="christmas" title="聖誕節" style="background: linear-gradient(135deg, #d32f2f, #2e7d32);"></div>
+                <div class="theme-option" data-theme="blue" title="皇家藍" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);"></div>
+                <div class="theme-option" data-theme="orange" title="活力橘" style="background: linear-gradient(135deg, #f97316, #ea580c);"></div>
+                <div class="theme-option" data-theme="green" title="護眼綠" style="background: linear-gradient(135deg, #2e7d32, #66bb6a);"></div>
+            </div>
+        </div>
+        <div class="field" style="margin-bottom: 20px;">
+            <label>環境光線：</label>
+            <div class="dark-mode-toggle" style="margin-top: 4px; display: flex; align-items: center; justify-content: space-between; background: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--tbl-border);">
+                <span style="font-weight: bold;"><i class="bi bi-moon-stars-fill"></i> 夜間營火模式</span>
+                <label class="switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="coinSettingsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
+        <div class="modal-header"><h2><i class="bi bi-coin"></i> 加扣分項目設定</h2><button class="modal-close-btn">&times;</button></div>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button class="btn sm" style="flex:1;" id="btnCoinTabPlus">加分項目</button>
+            <button class="btn sm ghost" style="flex:1;" id="btnCoinTabMinus">扣分項目</button>
+        </div>
+        <div id="coinConfigList" style="flex: 1; overflow-y: auto; padding: 4px;"></div>
+        <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
+            <div style="display: flex; gap: 8px;">
+                <input type="number" id="ipNewCoinVal" placeholder="分數 (如: 1)" style="flex:1;">
+                <input type="text" id="ipNewCoinReason" placeholder="原因 (如: 作業優良)" style="flex:2;">
+                <button class="btn sm" id="btnAddCoinPreset"><i class="bi bi-plus-lg"></i> 新增</button>
+            </div>
+        </div>
+        <div class="modal-footer" style="margin-top: 16px;"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnSaveCoinSettings"><i class="bi bi-save"></i> 儲存設定</button></div>
+    </div>
+  </div>
+  
+<div id="adminProfileModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 630px;">
+          
+          <div class="modal-header" style="margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
+              <h2><i class="bi bi-person-badge-fill"></i> 公會長執務室</h2>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: auto;">
+                  <button class="btn sm secondary" id="btnExportJSON" title="匯出整個公會的資料備份"><i class="bi bi-cloud-arrow-down-fill"></i> 備份下載</button>
+                  <button class="btn sm ghost" id="btnImportJSONTrigger" title="從電腦檔案還原公會資料"><i class="bi bi-cloud-arrow-up-fill"></i> 備份載入</button>
+                  <input type="file" id="ipImportJSON" accept=".json" style="display: none;">
+                  
+                  <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 2px;"></div>
+                  <button class="btn sm" id="btnAdminAttendance" title="點名簿"><i class="bi bi-book"></i> 點名簿</button>
+                  <button class="modal-close-btn">&times;</button>
+              </div>
+          </div>
+
+          <div class="roster-tabs" style="margin-bottom: 16px; border-bottom: 2px solid var(--tbl-border);">
+              <button class="tab-btn admin-tab-btn active" data-target="adminTab-debts"><i class="bi bi-shield-exclamation"></i> 狀態追蹤</button>
+              <button class="tab-btn admin-tab-btn" data-target="adminTab-settings"><i class="bi bi-gear"></i> 系統設定</button>
+              <button class="tab-btn admin-tab-btn" data-target="adminTab-data"><i class="bi bi-database"></i> 歷史與日誌</button>
+          </div>
+
+          <div id="adminTab-debts" class="admin-tab-content" style="display: block;">
+              <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+                  <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">📊 冒險者欠款名單 (未回報/再挑戰 > 5)</h3>
+                  <div id="adminDebtList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+              </div>
+          </div>
+
+          <div id="adminTab-settings" class="admin-tab-content" style="display: none;">
+              <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+                <div style="background: #fffbef; padding: 16px; border-radius: 8px; border: 2px dashed #fcd34d; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
+                  <h3 style="margin:0 0 10px; font-size: 16px; color: #d97706;"><i class="bi bi-star-fill"></i> 班級共同星星 (全班獎勵)</h3>
+                  <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                      <button class="btn sm warn ghost icon-only" id="btnMinusClassStar" style="border-radius: 50%; width: 36px; height: 36px;"><i class="bi bi-dash-lg"></i></button>
+                      <span id="adminClassStarCount" style="font-size: 28px; font-weight: 900; color: #f59e0b; min-width: 40px; text-align: center; text-shadow: 1px 1px 0px #fef3c7;">0</span>
+                      <button class="btn sm ghost icon-only" id="btnPlusClassStar" style="border-radius: 50%; width: 36px; height: 36px; color: #d97706; border-color: #fcd34d; background: #fef3c7;" title="加一顆星星"><i class="bi bi-plus-lg"></i></button>
+                      
+                      <button class="btn sm secondary" id="btnResetClassStar" style="margin-left: auto;"><i class="bi bi-arrow-counterclockwise"></i> 歸零</button>
+                  </div>
+              </div>
+                   <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">⚙️ 核心名冊與設定管理</h3>
+                   <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                       <button class="btn sm secondary" id="btnAdminRoster" title="設定學生與導師名冊"><i class="bi bi-people"></i> 進入公會名冊</button>
+                       <button class="btn sm secondary" id="btnOpenCoinSettings"><i class="bi bi-coin"></i> 設定加扣分項目</button>
+                   </div>
+              </div>
+              
+              <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
+                    <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <button class="btn ghost warn" id="btnClearAssignments" style="justify-content:center;"><i class="bi bi-fire"></i> 銷毀所有契約 (保留名單)</button>
+                        <button class="btn warn" id="btnResetAll" style="justify-content:center;"><i class="bi bi-radioactive"></i> 另闢新公會 (全部重置)</button>
+                    </div>
+              </div>
+          </div>
+
+          <div id="adminTab-data" class="admin-tab-content" style="display: none;">
+              <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+                   <h3 style="margin:0 0 10px; font-size: 16px; color: var(--primary);">🗄️ 歷史封存紀錄與 加扣分日誌</h3>
+                   <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                       <button class="btn sm secondary" id="btnDownloadArchive" title="下載封存任務 (CSV)"><i class="bi bi-file-earmark-spreadsheet"></i> 下載封存任務 (CSV)</button>
+                       <button class="btn sm secondary" id="btnDownloadExpLogs" title="下載加扣分紀錄 (CSV)"><i class="bi bi-file-earmark-text"></i> 下載加扣分紀錄 (CSV)</button>
+                   </div>
+              </div>
+          </div>
+
+          <div class="modal-footer" style="border-top: 2px dashed var(--tbl-border); padding-top: 16px; margin-top: 20px; justify-content: space-between;">
+              <span class="muted" style="align-self: center;">工作辛苦了！</span>
+              <button class="btn ghost" id="btnLogout" style="color: var(--danger); border-color: var(--danger);"><i class="bi bi-box-arrow-right"></i> 登出系統</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="panelNewQuest" class="modal-overlay">
+      <div class="modal-content" style="max-width: 500px;">
+          <div class="modal-header"><h2><i class="bi bi-plus-circle-dotted"></i> 發布新委託</h2><button class="modal-close-btn">&times;</button></div>
+          <!-- ⚡ 新增：每日例行聯絡簿（日期＋頁碼）極速填入 / 一鍵發布區 -->
+          <div style="background:#fffbef; border:2px dashed #f59e0b; border-radius:10px; padding:10px; margin-bottom:10px;">
+              <div style="font-size:12px; font-weight:900; color:#b45309; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="bi bi-lightning-charge-fill"></i> 每日例行作業：聯絡簿 (自動帶入今日日期 + 頁碼)</span>
+              </div>
+              <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                  <span id="routineContactDatePreview" style="font-size:13px; font-weight:900; color:var(--primary); background:#fff; padding:4px 8px; border-radius:6px; border:1px solid #fcd34d;">聯絡簿</span>
+                  <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:130px;">
+                      <button type="button" class="btn sm ghost" style="padding:4px 8px;" onclick="window.StepContactBookPage(-1)" title="頁碼 -1">-1</button>
+                      <input type="text" id="ipContactBookPage" placeholder="頁碼 (如 32 或 32-33)" style="padding:5px 8px; font-size:13px; text-align:center;" oninput="window.updateContactBookPreview()">
+                      <button type="button" class="btn sm ghost" style="padding:4px 8px;" onclick="window.StepContactBookPage(1)" title="頁碼 +1">+1</button>
+                  </div>
+                  <button type="button" class="btn sm" style="background:#d97706; border-color:#b45309;" onclick="window.quickCreateContactBookQuest()">
+                      <i class="bi bi-send-check-fill"></i> 一鍵發布聯絡簿
+                  </button>
+              </div>
+          </div>
+          <div class="field" style="margin-top:4px;">
+              <label style="font-size:12px;">發布導師</label>
+              <select id="ipTeacherSelect" style="padding:6px;"></select>
+              <input id="ipTeacherCustom" type="text" placeholder="輸入姓名" style="display:none; margin-top:4px;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+              <label style="font-size:12px;">日期</label>
+              <input id="ipDate" type="date" style="padding:6px;">
+          </div>
+        
+          <div class="field" style="margin-top:4px;">
+               <label style="font-size:12px;">內容</label>
+               <div style="display:flex; gap:4px; margin-bottom:4px;">
+                   <select id="selSubject" style="padding:6px; flex:1;"><option value="">📂 科目...</option></select>
+                   <select id="selPresetTask" style="padding:6px; flex:1.5;"><option value="">📜 常用...</option></select>
+                   <button class="btn ghost sm" id="btnOpenQuestSettings" style="padding: 4px 8px; color:var(--primary); border-color:var(--primary);"><i class="bi bi-gear-fill"></i></button>
+               </div>
+               <div style="display:flex; gap:4px;">
+                   <input id="ipTitle" type="text" placeholder="任務內容..." style="padding:6px; flex:1;" />
+                   <button class="btn sm ghost" id="btnToggleKeypad" style="padding: 6px 10px;"><i class="bi bi-keyboard"></i></button>
+               </div>
+               
+               <div class="vk-container" id="virtualKeypad" style="display:none;">
+                   <div class="vk-numpad">
+                       <div class="vk-btn" data-val="1">1</div><div class="vk-btn" data-val="2">2</div><div class="vk-btn" data-val="3">3</div>
+                       <div class="vk-btn" data-val="4">4</div><div class="vk-btn" data-val="5">5</div><div class="vk-btn" data-val="6">6</div>
+                       <div class="vk-btn" data-val="7">7</div><div class="vk-btn" data-val="8">8</div><div class="vk-btn" data-val="9">9</div>
+                       <div class="vk-btn" data-val="-">-</div><div class="vk-btn" data-val="0">0</div><div class="vk-btn" data-val="~">~</div>
+                   </div>
+                   <div class="vk-actions">
+                       <div class="vk-btn danger" data-val="backspace"><i class="bi bi-backspace-fill"></i></div>
+                       <div class="vk-grid-2">
+                           <div class="vk-btn" data-val="P." style="font-size:14px; padding:8px 2px;">P</div><div class="vk-btn" data-val="L." style="font-size:14px; padding:8px 2px;">L</div>
+                           <div class="vk-btn" data-val="U." style="font-size:14px; padding:8px 2px;">U</div><div class="vk-btn" data-val="CH." style="font-size:12px; padding:8px 2px;">CH</div>
+                           <div class="vk-btn" data-val="習作" style="font-size:13px; padding:8px 2px;">習</div><div class="vk-btn" data-val="考卷" style="font-size:13px; padding:8px 2px;">卷</div>
+                       </div>
+                       <div class="vk-btn" data-val="space" style="font-size:14px;">空白</div>
+                   </div>
+               </div>
+          </div>
+          <div class="field" style="margin-top:12px; border-top:1px dashed var(--tbl-border); padding-top:12px;">
+              <button class="btn ghost sm" id="btnOpenAssignModal">指定派發對象...</button>
+              <div id="assignStatusText" style="font-size:12px; margin-top:4px; color:var(--muted); font-weight:bold;">發布給：全體冒險者</div>
+          </div>
+          <button class="btn" id="btnCreate" style="margin-top:16px; width:100%; justify-content:center; font-size:16px;"><i class="bi bi-send-fill"></i> 確認發布</button>
+      </div>
+  </div>
+
+  <div id="questSettingsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; height: 80vh; display: flex; flex-direction: column;">
+        <div class="modal-header"><h2><i class="bi bi-journal-plus"></i> 編輯任務選單</h2><button class="modal-close-btn">&times;</button></div>
+        <div id="questConfigList" style="flex: 1; overflow-y: auto; padding: 4px;"></div>
+        <div style="background: var(--bg); padding: 12px; border-radius: 8px; border: 2px dashed var(--primary); margin-top: 10px;">
+            <div style="display: flex; gap: 8px;"><input type="text" id="ipNewSubject" placeholder="輸入新科目名稱..." style="flex:1;"><button class="btn sm" id="btnAddSubject"><i class="bi bi-plus-lg"></i> 新增科目</button></div>
+        </div>
+        <div class="modal-footer" style="margin-top: 16px;"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnSaveQuestSettings"><i class="bi bi-save"></i> 儲存設定</button></div>
+    </div>
+  </div>
+
+  <div id="assignStudentModal" class="modal-overlay">
+      <div class="modal-content"><div class="modal-header"><h2><i class="bi bi-person-check-fill"></i> 指派任務對象</h2><button class="modal-close-btn">&times;</button></div>
+          <div class="actions" style="margin-top: 0; margin-bottom: 12px;"><button class="btn sm" id="btnAssignSelectAll">全選</button><button class="btn sm ghost" id="btnAssignDeselectAll">取消</button></div>
+          <div id="assignStudentListContainer" class="assign-student-list"></div>
+          <div class="modal-footer" style="margin-top: 16px;"><button class="btn ghost modal-close-btn">取消</button><button class="btn" id="btnConfirmAssign">確認指派</button></div>
+      </div>
+  </div>
+
+  <div id="deleteChoiceModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 450px;">
+          <div class="modal-header"><h2 style="color: var(--danger);"><i class="bi bi-exclamation-triangle-fill"></i> 處置委託</h2><button class="modal-close-btn">&times;</button></div>
+          <div class="delete-choice-card">
+              <p style="font-size: 18px; font-weight: bold; margin: 0;">您打算如何處理這張委託單？</p><div id="deleteTargetTitle" style="color: var(--primary); font-weight: bold;"></div>
+              <div class="delete-desc"><strong>📦 封印至倉庫 (封存)：</strong><br>委託將從看板移除，但在「執務室」可以下載紀錄。</div>
+              <div class="delete-desc"><strong>🔥 銷毀契約 (刪除)：</strong><br>資料將永久消失，無法復原。</div>
+              <div class="delete-choice-actions"><button class="btn btn-archive" id="btnConfirmArchive"><i class="bi bi-archive-fill"></i> 封印</button><button class="btn btn-destroy" id="btnConfirmDelete"><i class="bi bi-fire"></i> 銷毀</button></div>
+          </div>
+      </div>
+  </div>
+
+  <div id="statusPicker">
+      <button class="status-option-btn sp-1" data-status="1"><span class="dot s1"></span> 已回報</button>
+      <button class="status-option-btn sp-2" data-status="2"><span class="dot s2"></span> 再挑戰</button>
+      <button class="status-option-btn sp-3" data-status="3"><span class="dot s3"></span> 討伐成功</button>
+  </div>
+  
+  <div id="quickDebtMenu"><div id="quickDebtTitle" style="font-size: 14px; font-weight: 900; color: var(--danger); margin-bottom: 6px; border-bottom: 2px dashed var(--danger); padding-bottom: 4px;">待清舊帳</div><div id="quickDebtList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div></div>
+
+<div class="toolbox-container">
+      <div class="toolbox-menu" id="toolboxMenu">
+          <h3 style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary); border-bottom: 2px dashed var(--tbl-border); padding-bottom: 8px;"><i class="bi bi-tools"></i> 實用小工具</h3>
+          <div class="toolbox-grid">
+              <button class="toolbox-btn" id="btnOpenStopwatch"><i class="bi bi-clock-history"></i> 碼表</button>
+              <button class="toolbox-btn" id="btnOpenTimer"><i class="bi bi-stopwatch"></i> 計時器</button>
+              <button class="toolbox-btn" id="btnOpenHgTimer"><i class="bi bi-hourglass-split" style="color: #e5a95b;"></i> 沙漏計時</button>
+              <button class="toolbox-btn" id="btnOpenNumDice"><i class="bi bi-123"></i> 數字骰</button>
+              <button class="toolbox-btn" id="btnOpenAlphaDice"><i class="bi bi-alphabet"></i> 字母骰</button>
+              <button class="toolbox-btn" id="btnOpenDraw"><i class="bi bi-gift"></i> 抽籤轉盤</button>
+              <button class="toolbox-btn" id="btnOpenMarquee"><i class="bi bi-broadcast"></i> 跑馬燈</button>
+              <button class="toolbox-btn" id="btnOpenDecibel"><i class="bi bi-mic"></i> 分貝偵測</button>
+              <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
+              <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
+              <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
+              <button class="toolbox-btn" id="btnOpenApple"><i class="bi bi-apple" style="color: #ef4444;"></i> 午飯蘋果</button>
+              <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
+              <button class="toolbox-btn" onclick="window.open('https://www.youtube.com/watch?v=4QBBPuxTPoY&list=PLsYcWPis8Nh3sSijq2qR61_KM-tRatuFj&index=3', '_blank')"><i class="bi bi-youtube" style="color: #ef4444;"></i> 沉浸暖身</button>
+          </div>
+      </div>
+      <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
+  </div>
+  
+  <div id="panelRecess" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-backpack"></i> 下課準備</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body"><div id="recessChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div></div>
+  </div>
+
+  <div id="panelDismissal" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學準備</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body"><div id="dismissalChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div></div>
+  </div>
+  
+<div id="panelApple" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-apple"></i> 午餐紀律挑戰</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body" style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card);">
+          <div id="appleStatusText" style="font-size: 5cqi; font-weight: 900; color: var(--primary); margin-bottom: 2cqi;">保護三顆蘋果！</div>
+          
+          <div id="appleContainer" style="font-size: 15cqi; display: flex; justify-content: center; gap: 4cqi; min-height: 20cqi; align-items: center; width: 100%;">
+              </div>
+          
+          <div style="display:flex; gap:2cqi; margin-top:auto; width: 100%;">
+              <button class="tool-btn ghost" id="btnAppleReset" style="flex:1; font-size: 4cqi;"><i class="bi bi-arrow-counterclockwise"></i> 重置蘋果</button>
+              <button class="tool-btn" id="btnAppleTest" style="flex:1; font-size: 4cqi;" title="測試彩帶特效"><i class="bi bi-magic"></i> 測試成功</button>
+          </div>
+      </div>
+  </div>
+
+  
+<div id="panelBGM" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-music-note-beamed"></i> 背景音樂</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <audio id="bgmPlayer" loop preload="none"></audio>
+          
+          <div style="display:flex; flex-direction:column; gap:2cqi;">
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Relaxing_Piano_Music/Relaxing_Piano_Music.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
+              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Carefree/Carefree.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:2cqi; margin-top:3cqi; background: var(--bg); padding: 2cqi; border-radius: 2cqi; border: 1px dashed var(--tbl-border);">
+              <i class="bi bi-volume-down" style="font-size: 5cqi; color: var(--muted);"></i>
+              <input type="range" id="bgmVolume" min="0" max="1" step="0.05" value="0.4" style="flex:1;">
+              <i class="bi bi-volume-up" style="font-size: 5cqi; color: var(--muted);"></i>
+          </div>
+          
+          <div style="display:flex; gap:2cqi; margin-top:auto;">
+              <button class="tool-btn" id="btnPlayBGM" style="flex:2;"><i class="bi bi-play-fill"></i> 播放</button>
+              <button class="tool-btn warn ghost" id="btnStopBGM" style="flex:1;"><i class="bi bi-stop-fill"></i> 停止■</button>
+          </div>
+      </div>
+  </div>
+  
+<div id="panelMarquee" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-broadcast"></i> 跑馬燈</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div class="quick-marquee-tags">
+              <button class="quick-tag" id="btnQuickDebtMarquee"><i class="bi bi-lightning-charge-fill"></i> 自動抓取聯絡簿未交</button>
+          </div>
+          
+          <input type="text" id="mqTextInput" class="tool-input" placeholder="輸入公告內容..." style="text-align: left;">
+          
+          <div style="display:flex; align-items:center; gap:3cqi;">
+              <label style="flex:1;">顏色</label><input type="color" id="mqColorInput" value="#FFD700" style="flex:2; height:8cqi; padding:0; border:none; cursor:pointer;">
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:3cqi;">
+              <label style="flex:1;">速度<span style="font-size:10px;color:var(--muted);display:block;">(0為靜止置中)</span></label>
+              <input type="range" id="mqSpeedInput" min="0" max="40" value="15" style="flex:2;">
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:3cqi;">
+              <label style="flex:1;">字體</label><input type="range" id="mqSizeInput" min="20" max="150" value="48" style="flex:2;">
+          </div>
+          <div style="display:flex; gap:2cqi; margin-top:auto;">
+              <button class="tool-btn" id="btnMqShow" style="flex:1;"><i class="bi bi-play-fill"></i> 播放</button>
+              <button class="tool-btn warn" id="btnMqHide" style="flex:1;">關閉</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="panelTimer" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 計時器</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+           <div id="timerDisplay" class="timer-display-box">00:00</div>
+           <div style="display:flex; gap:2cqi; justify-content: center;">
+              <button class="tool-btn ghost btn-timer-preset" data-min="1" style="flex:1;">+1分</button>
+              <button class="tool-btn ghost btn-timer-preset" data-min="5" style="flex:1;">+5分</button>
+              <button class="tool-btn ghost btn-timer-preset" data-min="10" style="flex:1;">+10分</button>
+           </div>
+           <div style="display:flex; gap:2cqi; align-items:center;">
+               <input type="number" id="timerInput" class="tool-input" placeholder="分" style="flex:1;">
+               <span style="font-weight:bold;">:</span>
+               <input type="number" id="timerInputSec" class="tool-input" placeholder="秒" style="flex:1;">
+           </div>
+           <div style="display:flex; gap:2cqi; margin-top:auto;">
+               <button class="tool-btn" id="btnTimerStart" style="flex:2;"><i class="bi bi-play-fill"></i> 開始</button>
+               <button class="tool-btn warn" id="btnTimerReset" style="flex:1;"><i class="bi bi-arrow-counterclockwise"></i></button>
+           </div>
+      </div>
+  </div>
+
+<div id="panelHgTimer" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-hourglass-split"></i> 沙漏計時器</span><button class="tool-close">&times;</button></div>
+      
+      <style>
+               .hg-pbtn {
+              background: transparent; border: 1.5cqi solid var(--btn-color); color: var(--text-main);
+              padding: 1.5cqi 0; width: 100%; border-radius: 2cqi; font-size: 3.5cqi; font-weight: 800;
+              cursor: pointer; transition: all 0.25s;
+          }
+          .hg-pbtn:hover { background: var(--btn-color); color: #fff; transform: translateX(-3px); }
+          .hg-pbtn.active { background: var(--btn-color); color: #fff; transform: scale(1.08); border-color: var(--text-main); }
+          
+          #hg-stream {
+              position: absolute; top: 50%; left: 50%; width: 0.8cqi; height: 21cqi;
+              background: var(--hg-sand-color, #4CAF50); transform: translateX(-50%) rotate(0deg); transform-origin: top center;
+              opacity: 0; z-index: 1; transition: background 0.4s ease, opacity 0.3s ease, transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          }
+          #hg-stream.active { opacity: 0.9; }
+          #hg-stream.active::after {
+              content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4cqi;
+              background: rgba(255,255,255,0.5); border-radius: 1cqi;
+              animation: hgDropDown 0.45s cubic-bezier(0.5, 0, 1, 0.5) infinite;
+          }
+          @keyframes hgDropDown {
+              0% { top: 0; opacity: 1; transform: scaleY(1); }
+              80% { top: 80%; opacity: 1; transform: scaleY(1.6); }
+              100% { top: 100%; opacity: 0; transform: scaleY(0.5); }
+          }
+          .hg-icon-btn {
+              background: transparent; border: 0.5cqi solid var(--primary); color: var(--primary);
+              width: 10cqi; height: 10cqi; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+              cursor: pointer; transition: transform 0.2s;
+          }
+          .hg-icon-btn:hover { transform: translateY(-2px) scale(1.05); }
+      </style>
+
+      <div class="tool-body" id="hgTimerBody" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 3cqi; overflow: hidden; padding-top: 5cqi;">
+          
+          <div style="display: flex; flex-direction: column; gap: 2cqi; width: 15cqi;">
+              <button class="hg-pbtn" style="--btn-color: #FF5252;" onclick="window.applyHgPreset(10, '#FF5252', this)">10秒</button>
+              <button class="hg-pbtn" style="--btn-color: #FF9800;" onclick="window.applyHgPreset(30, '#FF9800', this)">30秒</button>
+              <button class="hg-pbtn active" style="--btn-color: #4CAF50;" onclick="window.applyHgPreset(60, '#4CAF50', this)">1分</button>
+              <button class="hg-pbtn" style="--btn-color: #2196F3;" onclick="window.applyHgPreset(180, '#2196F3', this)">3分</button>
+              <button class="hg-pbtn" style="--btn-color: #9C27B0;" onclick="window.applyHgPreset(300, '#9C27B0', this)">5分</button>
+              <input type="number" id="hg-time-input" style="width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--primary); color: var(--text-main); font-size: 3.5cqi; font-weight: 800; text-align: center; padding: 1cqi 0; outline: none; margin-top: 1cqi;" value="60" min="1" placeholder="自訂">
+          </div>
+
+          <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+              <div style="width: 100%; height: 50cqi; display: flex; align-items: center; justify-content: center;">
+                  <div id="hg-wrapper" onclick="window.flipHourglassPanel()" title="點擊翻轉" style="position: relative; transform: scale(var(--hg-scale, 1)) rotate(var(--hg-rot, 0deg)); transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer;">
+                      
+                      <div id="hg-stream"></div>
+                      
+                      <div style="display: flex; flex-direction: column; align-items: center; width: 25cqi; position: relative; z-index: 2;">
+                          <div style="width: 100%; height: 2.5cqi; background-color: var(--primary); border-radius: 1.5cqi;"></div>
+                          <div style="width: 22cqi; height: 22cqi; background: rgba(0,0,0,0.03); border: 0.8cqi solid var(--primary); clip-path: polygon(0 0, 100% 0, 60% 100%, 40% 100%); border-bottom: none; border-radius: 1.5cqi 1.5cqi 0 0; margin-bottom: -0.5cqi; position: relative; overflow: hidden;">
+                              <div id="hg-sand-a" style="background-color: var(--hg-sand-color, #4CAF50); width: 100%; position: absolute; left: 0; transition: background 0.4s ease;"></div>
+                          </div>
+                          <div style="width: 22cqi; height: 22cqi; background: rgba(0,0,0,0.03); border: 0.8cqi solid var(--primary); clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); border-top: none; border-radius: 0 0 1.5cqi 1.5cqi; margin-top: -0.5cqi; position: relative; overflow: hidden;">
+                              <div id="hg-sand-b" style="background-color: var(--hg-sand-color, #4CAF50); width: 100%; position: absolute; left: 0; transition: background 0.4s ease;"></div>
+                          </div>
+                          <div style="width: 100%; height: 2.5cqi; background-color: var(--primary); border-radius: 1.5cqi;"></div>
+                      </div>
+                  </div>
+              </div>
+              <div style="font-family: 'Courier New', monospace; font-size: 8cqi; font-weight: 900; line-height: 1; color: var(--primary); margin-top: 3cqi;" id="hg-time-display">01:00</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4cqi; width: 12cqi; align-items: center;">
+              <button class="hg-icon-btn" onclick="window.resetHgTimer()" title="重設">
+                  <svg viewBox="0 0 24 24" style="width: 5cqi; height: 5cqi; fill: currentColor;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+              </button>
+              <button class="hg-icon-btn" onclick="window.flipHourglassPanel()" title="中途翻轉沙漏">
+                  <svg viewBox="0 0 24 24" style="width: 5cqi; height: 5cqi; fill: currentColor;"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+              </button>
+              <button id="hg-play-btn" class="hg-icon-btn" onclick="window.toggleHgTimer()" title="播放/暫停" style="background: var(--primary); color: #fff;">
+                  <svg id="hg-play-icon" viewBox="0 0 24 24" style="width: 6cqi; height: 6cqi; fill: currentColor;"><path d="M8 5v14l11-7z"/></svg>
+                  <svg id="hg-pause-icon" viewBox="0 0 24 24" style="width: 6cqi; height: 6cqi; fill: currentColor; display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+          </div>
+      </div>
+  </div>
+  
+
+  <div id="panelStopwatch" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-clock-history"></i> 碼表</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+           <div id="swDisplay" class="timer-display-box" style="font-size: 12cqi;">00:00:00</div>
+           <div style="display:flex; gap:2cqi; margin-top:auto;">
+               <button class="tool-btn" id="btnSwStart" style="flex:2;"><i class="bi bi-play-fill"></i> 開始</button>
+               <button class="tool-btn warn" id="btnSwReset" style="flex:1;"><i class="bi bi-arrow-counterclockwise"></i></button>
+           </div>
+      </div>
+  </div>
+
+  <div id="panelNumDice" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-123"></i> 數字骰</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div id="numDiceResult" class="dice-box">?</div>
+          <div style="display:flex; gap:2cqi; align-items:center;">
+              <span style="white-space:nowrap; font-weight:bold;">範圍：</span>
+              <input type="number" id="diceMin" class="tool-input" value="1"> - <input type="number" id="diceMax" class="tool-input" value="6">
+          </div>
+          <button class="tool-btn" id="btnRollNumDice" style="margin-top:auto;"><i class="bi bi-dice-5-fill"></i> 擲骰子</button>
+      </div>
+  </div>
+
+  <div id="panelAlphaDice" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-alphabet"></i> 字母骰</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div id="alphaDiceResult" class="dice-box">?</div>
+          <button class="tool-btn" id="btnRollAlphaDice" style="margin-top:auto;"><i class="bi bi-dice-5-fill"></i> 擲字母</button>
+      </div>
+  </div>
+
+  <div id="panelDraw" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-gift"></i> 幸運抽籤</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body">
+          <div class="draw-tabs">
+              <div class="draw-tab active" id="tabBasicDraw">文字模式</div>
+              <div class="draw-tab" id="tabWheelDraw">轉盤模式</div>
+          </div>
+          
+          <div id="viewBasicDraw">
+              <div id="luckyDrawResult" class="dice-box" style="font-size:12cqi;">???</div>
+              <button class="tool-btn" id="btnLuckyDraw" style="width:100%; margin-top:2cqi;"><i class="bi bi-dice-5-fill"></i> 抽出一位冒險者</button>
+          </div>
+          
+          <div id="viewWheelDraw" style="display:none; text-align:center;">
+              <div class="wheel-wrapper">
+                  <div class="wheel-pointer"></div>
+                  <div class="wheel-container" id="wheelCanvas"></div>
+              </div>
+              <div id="wheelWinnerName" style="font-size:6cqi; font-weight:900; color:var(--danger); height:8cqi;"></div>
+              <button class="tool-btn" id="btnSpinWheel" style="width:100%; margin-top:2cqi;"><i class="bi bi-arrow-repeat"></i> 旋轉輪盤</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="panelDecibel" class="tool-window">
+      <div class="tool-header"><span><i class="bi bi-mic"></i> 分貝偵測器</span><button class="tool-close">&times;</button></div>
+      <div class="tool-body" style="justify-content:center; align-items:center;">
+          <i class="bi bi-mic-fill" id="micIcon" style="font-size:15cqi; color:var(--muted); transition:0.2s;"></i>
+          <div class="decibel-bar-container">
+              <div class="decibel-bar" id="decibelBar"></div>
+              <div class="decibel-text" id="decibelText">等待麥克風...</div>
+          </div>
+          <button class="tool-btn" id="btnToggleMic" style="margin-top:4cqi; width:100%;"><i class="bi bi-play-circle"></i> 啟動偵測</button>
+      </div>
+  </div>
+
+<div id="quickSidebar" class="quick-sidebar">
+    <div class="quick-sidebar-header">
+        <h3 style="margin: 0; font-size: 16px; color: var(--primary);"><i class="bi bi-list-stars"></i> 冒險者速覽</h3>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn sm ghost icon-only" id="btnToggleSidebarEdit" title="解鎖快速加扣分"><i class="bi bi-lock-fill"></i></button>
+            <button class="btn sm warn icon-only" id="btnCloseSidebar"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+    <div id="quickSidebarList" class="quick-sidebar-list">
+    </div>
+</div>
+
+  
+  
+  
+  <style>
+    /* ============================================================
+       🐾 Bubble Check 風格：立體扭蛋機 & 像素萌寵圖鑑樣式
+       ============================================================ */
+    .pixel-pet {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    .gacha-modal-box {
+      max-width: 450px !important;
+      border-radius: 28px !important;
+      border: 4px solid #fff !important;
+      background: linear-gradient(165deg, #fff8ec 0%, #ffeef3 50%, #e2f2ff 100%) !important;
+      color: #4a2e22 !important;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45) !important;
+      padding: 16px !important;
+      overflow: hidden !important;
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh !important;
+    }
+    html[data-theme='dark'] .gacha-modal-box {
+      background: linear-gradient(165deg, #2c1810 0%, #3e2723 60%, #1e293b 100%) !important;
+      color: #FDF5E6 !important;
+      border-color: #8B4513 !important;
+    }
+    .gacha-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .gacha-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.65);
+      border: 2px solid #fff;
+      border-radius: 999px;
+      padding: 4px;
+    }
+    html[data-theme='dark'] .gacha-tabs {
+      background: rgba(0,0,0,0.35);
+      border-color: #5D4037;
+    }
+    .gacha-tab-btn {
+      border: none;
+      background: transparent;
+      color: rgba(74,46,34,0.65);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    html[data-theme='dark'] .gacha-tab-btn { color: #E6D2B5; }
+    .gacha-tab-btn.active {
+      background: #2fb0bb;
+      color: #fff;
+      box-shadow: 0 2px 0 #1b8a97;
+    }
+    .gacha-student-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid #fff;
+      border-radius: 16px;
+      padding: 8px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(74,46,34,0.06);
+    }
+    html[data-theme='dark'] .gacha-student-banner {
+      background: rgba(0,0,0,0.3);
+      border-color: #5D4037;
+    }
+    .gacha-stage-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 280px;
+      aspect-ratio: 300 / 400;
+      margin: 0 auto;
+      user-select: none;
+    }
+    .gacha-cta-btn {
+      height: 46px;
+      border-radius: 999px;
+      background: #2fb0bb;
+      border: none;
+      padding: 0 28px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #fff;
+      box-shadow: 0 5px 0 #1b8a97;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .gacha-cta-btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+    .gacha-cta-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #1b8a97; }
+    .gacha-cta-btn:disabled {
+      background: #9fd3d8;
+      box-shadow: 0 5px 0 #86bfc4;
+      cursor: not-allowed;
+      opacity: 0.75;
+    }
+    .gacha-sub-btn {
+      height: 42px;
+      border-radius: 999px;
+      border: 2px solid #bfe9ec;
+      background: #fff;
+      padding: 0 18px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #1b8a97;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .gacha-sub-btn:hover { background: #f0fdfe; }
+    .gacha-reveal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 24px;
+      background: rgba(255, 248, 236, 0.96);
+      padding: 12px;
+      animation: fadeIn 0.25s ease;
+    }
+    html[data-theme='dark'] .gacha-reveal-overlay {
+      background: rgba(44, 24, 16, 0.96);
+    }
+    .gacha-reveal-overlay.show { display: flex; }
+    .gacha-book-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 4px 2px;
+      overflow-y: auto;
+      max-height: 52vh;
+    }
+    @media (min-width: 480px) {
+      .gacha-book-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
+    .gacha-book-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 16px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.82);
+      padding: 4px 4px 6px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    html[data-theme='dark'] .gacha-book-item {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .gacha-book-item.locked {
+      background: rgba(255,255,255,0.35);
+      border-color: rgba(201,162,126,0.45);
+      cursor: default;
+    }
+    .gacha-book-item.active-partner {
+      border-color: #2fb0bb;
+      background: #e3f8f9;
+      box-shadow: 0 0 0 2px rgba(47,176,187,0.3);
+    }
+    html[data-theme='dark'] .gacha-book-item.active-partner {
+      background: rgba(47,176,187,0.25);
+    }
+    .gacha-book-item:not(.locked):hover {
+      transform: translateY(-2px);
+      border-color: #2fb0bb;
+    }
+    .gacha-filter-pill {
+      border-radius: 999px;
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.75);
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #4a2e22;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .gacha-filter-pill.active {
+      border-color: #2fb0bb;
+      background: #2fb0bb;
+      color: #fff;
+    }
+    @keyframes capFloat0 { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-3px) rotate(-3deg); } }
+    @keyframes capFloat1 { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-4px) rotate(3deg); } }
+    .cap-idle-0 { animation: capFloat0 1.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+    .cap-idle-1 { animation: capFloat1 1.9s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+    @keyframes petBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    .pet-bob-anim { animation: petBob 2.4s ease-in-out infinite; }
+  </style>
+
+  <!-- 🌟 Bubble Check 風格：立體扭蛋機與百種萌寵圖鑑 Modal -->
+  <div id="summonModal" class="modal-overlay">
+      <div class="modal-content gacha-modal-box">
+          <!-- 頂部切換列 -->
+          <div class="gacha-top-bar">
+              <div class="gacha-tabs">
+                  <button class="gacha-tab-btn active" id="tabGachaMachine" onclick="window.switchGachaTab('machine')">扭蛋機</button>
+                  <button class="gacha-tab-btn" id="tabGachaBook" onclick="window.switchGachaTab('book')">圖鑑 <span id="gachaBookProgress">0/100</span></button>
+              </div>
+              <button class="modal-close-btn" style="background:#fff; color:#4a2e22; border:2px solid #e5e7eb; width:34px; height:34px; box-shadow:none;">&times;</button>
+          </div>
+
+          <!-- 學生資訊與金幣餘額 -->
+          <div class="gacha-student-banner">
+              <div style="display:flex; align-items:center; gap:8px;">
+                  <img id="summonPartnerPreview" src="" alt="" class="pixel-pet" style="width:32px; height:32px; display:none;">
+                  <span id="summonStudentName" style="font-size:16px; font-weight:900;">冒險者</span>
+              </div>
+              <div style="font-size:14px; font-weight:900; color:#b45309; background:#fffbeb; border:1.5px solid #fcd34d; padding:3px 10px; border-radius:999px;">
+                  💰 <span id="summonStudentCoins">0</span> 金幣
+              </div>
+          </div>
+
+          <!-- 視圖 1：立體扭蛋機 -->
+          <div id="gachaViewMachine" style="display:flex; flex-direction:column; align-items:center; gap:8px; overflow-y:auto; padding-bottom:4px;">
+              <div id="gachaMachineShakeWrap" class="gacha-stage-wrap">
+                  <svg viewBox="0 0 300 400" style="width:100%; height:100%; overflow:visible;" aria-hidden="true">
+                      <defs>
+                          <linearGradient id="cap-shade" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#fff" stop-opacity=".4"/>
+                              <stop offset=".4" stop-color="#fff" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".3"/>
+                          </linearGradient>
+                          <linearGradient id="cap-side" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0" stop-color="#000" stop-opacity=".16"/>
+                              <stop offset=".3" stop-color="#fff" stop-opacity=".22"/>
+                              <stop offset=".65" stop-color="#fff" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".2"/>
+                          </linearGradient>
+                          <radialGradient id="cap-glass" cx=".32" cy=".28" r=".85">
+                              <stop offset="0" stop-color="#fff" stop-opacity=".42"/>
+                              <stop offset=".5" stop-color="#eaf7ff" stop-opacity=".12"/>
+                              <stop offset="1" stop-color="#b9def2" stop-opacity=".38"/>
+                          </radialGradient>
+                          <radialGradient id="cap-inner" cx=".5" cy=".2" r=".9">
+                              <stop offset="0" stop-color="#000" stop-opacity=".05"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".32"/>
+                          </radialGradient>
+                          <clipPath id="gacha-dome-clip">
+                              <rect x="36" y="62" width="228" height="164" rx="26"/>
+                          </clipPath>
+                          <linearGradient id="gm-body" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#8be1e6"/>
+                              <stop offset="1" stop-color="#47b6c1"/>
+                          </linearGradient>
+                          <linearGradient id="gm-body-side" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
+                              <stop offset=".12" stop-color="#fff" stop-opacity="0"/>
+                              <stop offset=".88" stop-color="#000" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#000" stop-opacity=".14"/>
+                          </linearGradient>
+                          <linearGradient id="gm-lid" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#b2eef0"/>
+                              <stop offset="1" stop-color="#63cbd3"/>
+                          </linearGradient>
+                          <linearGradient id="gm-glass" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#c4e4f6"/>
+                              <stop offset=".35" stop-color="#e9f7ff"/>
+                              <stop offset="1" stop-color="#cfe9f7"/>
+                          </linearGradient>
+                          <linearGradient id="gm-top-shade" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#0a3c50" stop-opacity=".22"/>
+                              <stop offset="1" stop-color="#0a3c50" stop-opacity="0"/>
+                          </linearGradient>
+                          <linearGradient id="gm-floor" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#0a3c50" stop-opacity="0"/>
+                              <stop offset="1" stop-color="#0a3c50" stop-opacity=".28"/>
+                          </linearGradient>
+                          <linearGradient id="gm-house" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#626d77"/>
+                              <stop offset="1" stop-color="#3a4249"/>
+                          </linearGradient>
+                          <radialGradient id="gm-dial" cx=".38" cy=".32" r=".8">
+                              <stop offset="0" stop-color="#a9b3bb"/>
+                              <stop offset="1" stop-color="#56616b"/>
+                          </radialGradient>
+                          <linearGradient id="gm-handle" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#eef2f5"/>
+                              <stop offset="1" stop-color="#a3adb6"/>
+                          </linearGradient>
+                          <linearGradient id="gm-exit" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0" stop-color="#0f4950"/>
+                              <stop offset="1" stop-color="#2a8792"/>
+                          </linearGradient>
+                          <filter id="gm-drop" x="-10%" y="-10%" width="120%" height="125%">
+                              <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#0e4a55" flood-opacity=".28"/>
+                          </filter>
+                      </defs>
+
+                      <ellipse cx="150" cy="393" rx="132" ry="8" fill="#4a2e22" opacity=".16"/>
+                      <g filter="url(#gm-drop)">
+                          <rect x="22" y="246" width="256" height="130" rx="14" fill="url(#gm-body)" stroke="#1b8a97" stroke-width="3.5"/>
+                          <rect x="22" y="246" width="256" height="130" rx="14" fill="url(#gm-body-side)"/>
+                          <rect x="14" y="370" width="272" height="18" rx="8" fill="#3aa5b0" stroke="#1b8a97" stroke-width="3.5"/>
+                          <path d="M22 375H278" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>
+                          <rect x="22" y="48" width="256" height="196" rx="16" fill="url(#gm-body)" stroke="#1b8a97" stroke-width="3.5"/>
+                          <rect x="22" y="48" width="256" height="196" rx="16" fill="url(#gm-body-side)"/>
+                      </g>
+
+                      <!-- 機身螺絲 -->
+                      <g><circle cx="36" cy="262.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="36" cy="262" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M33.8 262h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+                      <g><circle cx="264" cy="262.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="264" cy="262" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M261.8 262h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+                      <g><circle cx="36" cy="358.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="36" cy="358" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M33.8 358h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+                      <g><circle cx="264" cy="358.8" r="4.6" fill="#1b6f7a" opacity=".35"/><circle cx="264" cy="358" r="4.5" fill="#e6ecef" stroke="#7d8a93" stroke-width="1.5"/><path d="M261.8 358h4.4" stroke="#7d8a93" stroke-width="1.5"/></g>
+
+                      <!-- 轉盤投幣區 -->
+                      <rect x="50" y="262" width="80" height="92" rx="18" fill="url(#gm-house)" stroke="#2f363c" stroke-width="3"/>
+                      <path d="M58 270Q90 264 122 270" stroke="#fff" stroke-opacity=".18" stroke-width="3" fill="none" stroke-linecap="round"/>
+                      <rect x="64" y="268" width="52" height="8" rx="3" fill="#252b30"/>
+                      <circle cx="90" cy="314" r="33" fill="#000" opacity=".25"/>
+                      
+                      <!-- 旋轉把手 -->
+                      <g id="gachaDialKnob" style="transform-box:fill-box; transform-origin:center; cursor:pointer;" onclick="window.triggerGachaSpin()">
+                          <circle cx="90" cy="312" r="32" fill="url(#gm-dial)" stroke="#2f363c" stroke-width="2.5"/>
+                          <rect x="62" y="304" width="56" height="20" rx="10" fill="#000" opacity=".22"/>
+                          <rect x="62" y="301" width="56" height="20" rx="10" fill="url(#gm-handle)" stroke="#3b434b" stroke-width="3"/>
+                          <g fill="none" stroke="#eef3f6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M80 291Q90 286 100 291M96 287l5 4-5 3"/>
+                              <path d="M100 333Q90 338 80 333M84 337l-5-4 5-3"/>
+                          </g>
+                      </g>
+
+                      <g transform="translate(32 352)">
+                          <circle cy="2" r="19" fill="#0e4a55" opacity=".2"/>
+                          <circle r="19" fill="#f3fbfb" stroke="#1b8a97" stroke-width="2.5"/>
+                          <text y="6.5" text-anchor="middle" font-size="17" font-weight="900" fill="#1b6f7a">扭</text>
+                      </g>
+
+                      <!-- 出蛋口 -->
+                      <rect x="166" y="264" width="90" height="90" rx="20" fill="#9eeaee" stroke="#1b8a97" stroke-width="3"/>
+                      <path d="M172 272Q211 266 250 272" stroke="#fff" stroke-opacity=".55" stroke-width="3" fill="none" stroke-linecap="round"/>
+                      <path d="M178 346V300Q178 276 211 276Q244 276 244 300V346Z" fill="url(#gm-exit)"/>
+                      <path d="M178 300Q178 276 211 276Q244 276 244 300V308Q244 286 211 286Q178 286 178 308Z" fill="#000" opacity=".25"/>
+                      <path d="M178 346H244L238 336H184Z" fill="#0c4047" opacity=".7"/>
+
+                      <!-- 玻璃櫥窗與裡面的扭蛋球 -->
+                      <rect x="36" y="62" width="228" height="164" rx="26" fill="url(#gm-glass)"/>
+                      <g clip-path="url(#gacha-dome-clip)">
+                          <rect x="36" y="186" width="228" height="40" fill="url(#gm-floor)"/>
+                          <g id="gachaDomeCapsules"></g>
+                          <rect x="36" y="62" width="228" height="26" fill="url(#gm-top-shade)"/>
+                          <path d="M70 62H122L58 226H36V150Z" fill="#fff" opacity=".2"/>
+                          <path d="M132 62H148L84 226H68Z" fill="#fff" opacity=".12"/>
+                      </g>
+                      <rect x="36" y="62" width="228" height="164" rx="26" fill="none" stroke="#1b8a97" stroke-width="3"/>
+                      <rect x="39.5" y="65.5" width="221" height="157" rx="22.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5"/>
+
+                      <!-- 櫥窗頂部標牌 -->
+                      <rect x="58" y="76" width="184" height="38" rx="19" fill="#0e4a55" opacity=".18"/>
+                      <rect x="58" y="74" width="184" height="38" rx="19" fill="#1f6f87" fill-opacity=".92" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/>
+                      <text x="150" y="90" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">每次召喚消耗 <tspan fill="#ffd84a" font-size="13.5">10</tspan> 枚金幣</text>
+                      <text x="150" y="105" text-anchor="middle" font-size="11" font-weight="700" fill="#e0f2fe" id="gachaBannerSubText">共有 100 隻可愛貓狗夥伴等你收集</text>
+
+                      <!-- 機頂蓋 -->
+                      <rect x="12" y="239" width="276" height="16" rx="6" fill="#0e4a55" opacity=".2"/>
+                      <rect x="12" y="236" width="276" height="16" rx="6" fill="url(#gm-lid)" stroke="#1b8a97" stroke-width="3.5"/>
+                      <path d="M20 240H280" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>
+                      <rect x="10" y="12" width="280" height="44" rx="12" fill="#0e4a55" opacity=".18"/>
+                      <rect x="8" y="8" width="284" height="44" rx="12" fill="url(#gm-lid)" stroke="#1b8a97" stroke-width="3.5"/>
+                      <path d="M20 14H280" stroke="#fff" stroke-opacity=".65" stroke-width="2.5" stroke-linecap="round"/>
+                      <path d="M20 44H280" stroke="#1b8a97" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+
+                  <!-- 掉落至洞口的待開扭蛋 -->
+                  <button id="gachaDroppedCapsule" onclick="window.openDroppedCapsule()" title="點擊打開扭蛋！" style="display:none; position:absolute; left:70.3%; top:81.5%; width:18%; aspect-ratio:1; transform:translate(-50%,-50%); border:none; background:transparent; padding:0; cursor:pointer; z-index:12;">
+                      <svg viewBox="-27 -27 54 54" style="width:100%; height:100%; overflow:visible;" id="gachaDroppedCapsuleSvg"></svg>
+                  </button>
+
+                  <!-- 開蛋破殼與寵物揭曉層 -->
+                  <div id="gachaRevealOverlay" class="gacha-reveal-overlay">
+                      <div style="position:relative; width:155px; height:155px; display:flex; align-items:center; justify-content:center;">
+                          <div style="position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle, rgba(255,224,140,0.92), rgba(255,224,140,0) 68%);"></div>
+                          <img id="gachaRevealPetImg" src="" alt="" class="pixel-pet" style="position:relative; width:82%; height:82%; object-fit:contain; z-index:2; cursor:pointer;" onclick="window.playCurrentPetCry()" title="點我聽叫聲！">
+                          <svg viewBox="-30 -30 60 60" style="position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:3; pointer-events:none;" id="gachaSplitCapsuleSvg"></svg>
+                      </div>
+                      <div id="gachaRevealInfo" style="display:none; flex-direction:column; align-items:center; gap:4px; width:100%;">
+                          <div style="display:flex; align-items:center; gap:6px;">
+                              <span id="gachaRevealRarity" style="border-radius:999px; padding:2px 10px; font-size:11px; font-weight:900; color:#fff;">普通</span>
+                              <span id="gachaRevealNo" style="font-family:monospace; font-size:12px; font-weight:800; opacity:0.6;">No.001</span>
+                          </div>
+                          <div id="gachaRevealName" style="font-size:22px; font-weight:900; letter-spacing:0.05em;">灰虎斑</div>
+                          <div id="gachaRevealKind" style="font-size:12px; opacity:0.7; font-weight:bold;">種類：貓咪</div>
+                          <div id="gachaRevealBadge" style="margin-top:2px; transform:rotate(-5deg); border-radius:10px; border:2.5px solid #ff6b7d; background:rgba(255,255,255,0.85); padding:2px 10px; font-size:13px; font-weight:900; color:#ff6b7d;">收藏成功！新夥伴</div>
+                          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center;">
+                              <button class="gacha-sub-btn" id="btnSetPartnerFromReveal" onclick="window.setPartnerPetFromReveal()"><i class="bi bi-heart-fill" style="color:#ff6b7d;"></i> 設為代表夥伴</button>
+                              <button class="gacha-cta-btn" style="height:42px; padding:0 22px; font-size:14px;" onclick="window.resetGachaMachineView()">收下</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- 底部統計與操作按鈕 -->
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; font-size:12px; font-weight:800; width:100%;">
+                  <span style="background:rgba(255,255,255,0.8); border:2px solid #fff; border-radius:999px; padding:4px 12px;">
+                      已收集 <b id="gachaOwnedStat" style="color:#1b8a97;">0</b> / 100
+                  </span>
+                  <span id="gachaLastDrawnStat" style="background:rgba(255,255,255,0.8); border:2px solid #fff; border-radius:999px; padding:4px 12px; display:inline-flex; align-items:center; gap:4px;">
+                      尚未抽過扭蛋
+                  </span>
+              </div>
+              <button class="gacha-cta-btn" id="btnDoSummon" onclick="window.handleMainGachaBtn()" style="width:85%; max-width:260px; margin-top:2px;">
+                  轉一下把手 (10 💰)
+              </button>
+          </div>
+
+          <!-- 視圖 2：百種萌寵圖鑑 -->
+          <div id="gachaViewBook" style="display:none; flex-direction:column; gap:10px; position:relative; min-height:360px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                  <button class="gacha-filter-pill active" data-filter="all" onclick="window.setGachaBookFilter('all')">全部</button>
+                  <button class="gacha-filter-pill" data-filter="cat" onclick="window.setGachaBookFilter('cat')">🐱 貓咪</button>
+                  <button class="gacha-filter-pill" data-filter="dog" onclick="window.setGachaBookFilter('dog')">🐶 狗狗</button>
+                  <span style="margin-left:auto; font-size:11px; opacity:0.65; font-weight:bold;">點擊已解鎖夥伴可聽叫聲與設為代表</span>
+              </div>
+              <div id="gachaBookGrid" class="gacha-book-grid"></div>
+
+              <!-- 圖鑑詳細資訊彈窗 -->
+              <div id="gachaPetDetailOverlay" class="gacha-reveal-overlay" onclick="window.closeGachaPetDetail()">
+                  <div onclick="event.stopPropagation()" style="background:#fff8ec; border:4px solid #fff; border-radius:24px; padding:16px; width:90%; max-width:280px; display:flex; flex-direction:column; align-items:center; gap:6px; box-shadow:0 16px 40px rgba(74,46,34,0.28); color:#4a2e22;">
+                      <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                          <span id="detailPetNo" style="font-family:monospace; font-size:12px; font-weight:800; opacity:0.6;">No.001</span>
+                          <span id="detailPetRarity" style="border-radius:999px; padding:2px 10px; font-size:11px; font-weight:900; color:#fff;">普通</span>
+                      </div>
+                      <div style="position:relative; width:120px; height:120px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.playDetailPetCry()" title="點我聽叫聲！">
+                          <div style="position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle, rgba(255,224,140,0.85), rgba(255,224,140,0) 68%);"></div>
+                          <img id="detailPetImg" src="" alt="" class="pixel-pet pet-bob-anim" style="position:relative; width:90%; height:90%; object-fit:contain;">
+                      </div>
+                      <div id="detailPetName" style="font-size:20px; font-weight:900;">灰虎斑</div>
+                      <div id="detailPetMeta" style="font-size:12px; opacity:0.75; font-weight:bold; text-align:center; line-height:1.5;"></div>
+                      <div style="display:flex; gap:8px; margin-top:8px; width:100%; justify-content:center; flex-wrap:wrap;">
+                          <button class="gacha-sub-btn" onclick="window.closeGachaPetDetail()">返回</button>
+                          <button class="gacha-cta-btn" id="btnSetPartnerFromDetail" style="height:42px; padding:0 18px; font-size:13px;" onclick="window.setPartnerPetFromDetail()">設為代表夥伴</button>
+                      </div>
+                      <div style="display:flex; gap:6px; margin-top:6px; width:100%; justify-content:center; flex-wrap:wrap; border-top:1px dashed rgba(74,46,34,0.15); padding-top:8px;">
+                          <button class="btn sm" id="btnSynthesizePetFromDetail" onclick="window.synthesizeDuplicatePet()" style="display:none; background:linear-gradient(135deg, #9333ea, #ec4899); border:none; color:#fff; border-radius:999px; font-size:12px; padding:4px 12px;">
+                              ✨ 三合一神秘轉生 (消耗3隻換新寵)
+                          </button>
+                          <button class="btn sm ghost warn" id="btnRefundPetFromDetail" onclick="window.refundPetFromDetail()" style="border-radius:999px; font-size:11px; padding:3px 10px; color:#b91c1c; border-color:#fca5a5; background:#fff1f2;" title="導師測試或學生誤抽時，可收回此隻萌寵並退還 10 枚金幣">
+                              <i class="bi bi-arrow-counterclockwise"></i> 誤抽退還 (+10 💰)
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-Hant-TW" data-theme="light" data-color-theme="guild">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🛡️ 冒險者公會 v7.1.1🛡️</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧙‍♂️</text></svg>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    
+    /* ============================================================
+       🚨 核心視圖控制 & 變數
+       ============================================================ */
+    .view { display: none !important; } 
+    .view.show { display: block !important; animation: fadeIn .3s ease; }
+    @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+    :root, html[data-color-theme='guild'] {
+      --primary: #8B4513; --accent: #CD853F; --ring: rgba(139, 69, 19, 0.3);
+      --bg: #F4E4BC; --card: #FDF5E6; 
+      --tbl-head: #E6D2B5; --tbl-alt: #FAF0E6; --tbl-hover: #DEB887; --tbl-border: #D2B48C;
+      --text-main: #3E2723; --text-light: #5D4037; --muted: #8D6E63;
+      --success: #556B2F; --danger: #8B0000;
+      --progress-bar: #32CD32; 
+      --shadow: 3px 3px 0px rgba(93, 64, 55, 0.2);
+      --radius: 8px; --seat: 56px; --seat-font: 16px; 
+    }
+    
+    html[data-color-theme='guild'] body {
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    html[data-color-theme='guild'] .btn { border: 2px solid #5D4037; box-shadow: 2px 2px 0px #5D4037; }
+    html[data-color-theme='guild'] .btn:active { box-shadow: none; transform: translate(2px, 2px); }
+    html[data-color-theme='guild'] .card::before { content: ""; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 100px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 50%; filter: blur(2px); z-index: -1; }
+
+    /* 其他主題設定... */
+    html[data-theme='dark'] { --primary: #D2691E; --bg: #2C1810; --card: #3E2723; --text-main: #E6D2B5; --tbl-head: #4E342E; --tbl-alt: #3E2723; --tbl-hover: #5D4037; --tbl-border: #5D4037; }
+    html[data-color-theme='christmas'] { --primary: #d32f2f; --accent: #2e7d32; --bg: #fffbf7; --card: rgba(255, 255, 255, 0.95); --tbl-head: #e8f5e9; --tbl-alt: #fff; --tbl-hover: #ffebee; --tbl-border: #c8e6c9; --text-main: #1e293b; --text-light: #475569; --muted:#64748b; --shadow:0 8px 30px rgba(211,47,47,.1); --radius:16px; --success:#2e7d32; --danger:#d32f2f; }
+    html[data-color-theme='blue'] { --primary: #2563eb; --accent: #1d4ed8; --bg: #eff6ff; --card: #fff; --tbl-head: #dbeafe; --tbl-alt: #f1f5f9; --tbl-hover: #eff6ff; --tbl-border: #bfdbfe; --text-main: #1e3a8a; --text-light: #3b82f6; --muted: #64748b; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
+    html[data-color-theme='orange'] { --primary: #f97316; --accent: #ea580c; --bg: #fff7ed; --card: #fff; --tbl-head: #ffedd5; --tbl-alt: #fafaf9; --tbl-hover: #fff7ed; --tbl-border: #fed7aa; --text-main: #7c2d12; --text-light: #ea580c; --muted: #9a3412; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
+    html[data-color-theme='green'] { --primary: #2e7d32; --accent: #4caf50; --bg: #e8f5e9; --card: #fff; --tbl-head: #c8e6c9; --tbl-alt: #f1f8e9; --tbl-hover: #e8f5e9; --tbl-border: #a5d6a7; --text-main: #1b5e20; --text-light: #2e7d32; --muted: #388e3c; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --radius: 8px; }
+    html[data-color-theme='warm-cute'] { --primary: #8FA781; --accent: #D4A373; --bg: #FAEDCD; --card: #FEFAE0; --tbl-head: #E9EDC9; --tbl-alt: #FEFAE0; --tbl-hover: #E9EDC9; --tbl-border: #CCD5AE; --text-main: #582F0E; --text-light: #7F4F24; --muted: #A68A64; --shadow: 0 4px 12px rgba(88, 47, 14, 0.08); --radius: 16px; --success: #6B9080; --danger: #E5989B;}
+    html[data-color-theme='warm-cute'] body { background-image: radial-gradient(#D4A373 1.5px, transparent 1.5px); background-size: 25px 25px; }
+    html[data-color-theme='warm-cute'] .card { border: 2px dashed var(--tbl-border); }
+    html[data-color-theme='warm-cute'] .btn { border-radius: 20px; box-shadow: 0 3px 0 var(--text-light); border: none; }
+    html[data-color-theme='warm-cute'] .btn:active { box-shadow: 0 0 0 var(--text-light); transform: translateY(3px); }
+    html[data-color-theme='warm-cute'] .seat { border-radius: 50%; }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; margin:0; font-family:"Microsoft JhengHei", sans-serif; transition: background-color .3s, color .3s; background: var(--bg); color: var(--text-main); }
+    .wrap{ max-width:1200px; margin:0 auto; padding:0 12px 96px; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    header { 
+        position: sticky; top: 0; z-index: 4000; 
+        background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        padding: 12px; margin: 0 -12px 16px -12px; border-bottom: 2px dashed var(--primary); 
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transform: translateZ(0);
+    }
+    html[data-theme='dark'] header { background: rgba(44,24,16,0.85); }
+
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .logo{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:24px; background: var(--primary); box-shadow:var(--shadow); }
+    h1{ margin:0; font-size:clamp(18px,2.2vw,24px); font-weight:800; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+    .muted{ color:var(--muted); font-size:12px; }
+    
+    .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:16px; border:1px solid var(--tbl-border); position: relative; }
+    .card h2{ margin:0 0 12px; font-size:18px; color: var(--primary); border-bottom: 1px solid var(--tbl-border); padding-bottom: 8px; display:flex; align-items:center; gap:8px;}
+    .field{ display:flex; flex-direction:column; gap:4px; }
+    label{ font-weight:800; font-size:13px; color: var(--text-light); }
+    input:not([type="checkbox"]), select, textarea { background:var(--bg); color: var(--text-main); border:2px solid var(--tbl-border); border-radius:4px; padding:10px; font-size:14px; outline:none; width: 100%; font-weight: bold; }
+    input:focus, select:focus{ border-color:var(--primary); }
+    
+    .actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    header .actions {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
+    }
+    header .actions::-webkit-scrollbar { display: none; }
+    .btn{ border:2px solid var(--text-light); border-radius:6px; padding:8px 16px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--primary); color:#fff; font-size:14px; transition: all 0.2s;}
+    .btn.ghost{ background:var(--card); color:var(--text-light); border:2px dashed var(--tbl-border); }
+    .btn.sm{ font-size:12px; padding:4px 10px; }
+    .btn.icon-only { padding: 4px 8px; font-size: 14px; }
+    .btn.warn { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); } 
+    .btn:active{ transform:translateY(2px); box-shadow:none; }
+
+    .nav-btn { padding: 8px 14px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; }
+    .nav-btn:hover { transform: none !important; }
+    .nav-btn .nav-text { max-width: 0; opacity: 0; overflow: hidden; display: inline-block; transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease; vertical-align: middle; }
+    .nav-btn:hover .nav-text { max-width: 150px; opacity: 1; margin-left: 6px; }
+    
+    .user-badge { font-size: 14px; font-weight: bold; color: var(--text-light); opacity: 0.8; background: var(--bg); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--tbl-border); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; }
+    .user-badge:hover { opacity: 1; transform: scale(1.05); border-color: var(--primary); }
+    
+    .grid{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(calc(var(--seat) + 70px), 1fr)); background:var(--bg); border:2px solid var(--tbl-border); border-radius:var(--radius); padding:10px; }
+    .seatItem{ display:flex; align-items:center; gap:8px; position: relative; }
+    .seatItem.not-assigned { opacity: 0.35; filter: grayscale(80%); pointer-events: none; }
+    .seat{ width:var(--seat); height:var(--seat); border-radius:12px; display:grid; place-items:center; font-weight:900; font-size:var(--seat-font); border:2px solid #5D4037; cursor:pointer; box-shadow:var(--shadow); transition:transform .06s; position:relative;}
+    .seat:active{ transform:scale(.95); }
+    .s0{ background:#d6d3d1; color:#44403c; } .s1{ background:#fef9c3; color:#713f12; } 
+    .s2{ background:#fdba74; color:#9a3412; } .s3{ background:#86efac; color:#14532d; } 
+    .seatName{ flex:1; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .exp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 2px 6px; border-radius: 12px; font-size: 11px; font-weight: 900; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); border: 1px solid #b45309; }
+    .rank-text { font-size: 11px; opacity: 0.9; margin-left: 2px; }
+
+    .assignment-tooltip { position: fixed; background: var(--card); border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 9999; display: none; pointer-events: none; min-width: 180px; max-width: 300px; animation: fadeIn 0.15s ease-out; }
+    .assignment-tooltip h4 { margin: 0 0 8px; font-size: 18px; font-weight: 900; color: var(--primary); border-bottom: 1px dashed var(--muted); padding-bottom: 4px; }
+    .assignment-tooltip ul { padding: 0; margin: 0; list-style: none; font-size: 16px; font-weight: bold; line-height: 1.5; }
+    .assignment-tooltip li { margin-bottom: 4px; word-wrap: break-word; }
+    .assignment-tooltip .t-miss { color: var(--muted); }
+    .assignment-tooltip .t-redo { color: var(--accent); }
+
+    .draw-rolling { animation: shakeBlur 0.1s infinite alternate; color: var(--muted) !important; transform: scale(1.05); border-color: var(--muted) !important; }
+    .draw-winner { animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; color: var(--danger) !important; background: #fff8e1 !important; border-color: var(--danger) !important; box-shadow: 0 0 15px rgba(211, 47, 47, 0.4); }
+    @keyframes shakeBlur { 0% { transform: translateX(-2px) translateY(1px) scale(1.05); filter: blur(0.5px); } 100% { transform: translateX(2px) translateY(-1px) scale(1.05); filter: blur(1px); } }
+    @keyframes popBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes starPop { 0% { transform: scale(1); } 50% { transform: scale(1.5) rotate(15deg); color: #fbbf24; } 100% { transform: scale(1); } }
+    .star-pop-anim { animation: starPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes floatUpAndFade { 
+        0% { transform: translateY(0) scale(0.5); opacity: 1; } 
+        50% { transform: translateY(-30px) scale(1.2); opacity: 1; } 
+        100% { transform: translateY(-60px) scale(1.5); opacity: 0; } 
+    }
+    .floating-emoji {
+        position: fixed;
+        pointer-events: none;
+        z-index: 21000;
+        font-size: 28px;
+        animation: floatUpAndFade 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    }
+
+    #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+    #loginBox { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; border: 3px double var(--primary); max-width: 90%; width: 400px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; display: none; justify-content: center; align-items: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 3px double var(--primary); position: relative; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px dashed var(--primary); padding-bottom: 10px; }
+    .modal-close-btn { background: var(--danger); color: #fff; border: 2px solid #8B0000; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .modal-close-btn:hover { transform: scale(1.1) rotate(90deg); }
+
+    .roster-tabs { display: flex; gap: 4px; margin-bottom: 0; }
+    .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 800; cursor: pointer; color: var(--text-light); border-radius: 8px 8px 0 0; border-bottom: 3px solid transparent; transition: all .2s; }
+    .tab-btn.active { background: var(--card); color: var(--primary); border-bottom-color: var(--primary); }
+    .roster-content { display: none; background: var(--card); padding: 16px; border-radius: 0 0 8px 8px; border: 1px solid var(--tbl-border); border-top: none; }
+    .roster-content.show { display: block; }
+
+    .dashboard-layout { display: flex; gap: 16px; align-items: flex-start; height: calc(100vh - 120px); overflow: hidden; }
+    .dash-sidebar { flex: 0 0 240px; display: flex; flex-direction: column; gap: 12px; height: 100%; overflow: hidden; }
+    .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto; }
+    .side-list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; padding-right: 4px; border-top: 1px dashed var(--tbl-border); padding-top: 8px; }
+    .side-item { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .side-item.active { background: var(--primary); color: #fff; border-color: var(--text-main); }
+    .side-item-title { font-weight: 900; font-size: 15px; margin-bottom: 4px; }
+    .side-item-meta { font-size: 12px; display: flex; justify-content: space-between; }
+    #dashDetailPanel { display: none; background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 16px; min-height: 400px; }
+    #dashDetailPanel.show { display: block; }
+    #dashEmptyState { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--muted); border: 2px dashed var(--tbl-border); border-radius: 8px; }
+
+    .att-card { display: flex; align-items: center; padding: 10px; border-bottom: 1px dashed var(--tbl-border); gap: 10px; background: var(--card); margin-bottom: 6px; border-radius: 6px; }
+    .att-no { font-weight: 900; width: 40px; text-align: center; font-size: 18px; color: var(--primary); }
+    .att-name { flex: 1; font-weight: bold; font-size: 16px; display: flex; align-items: center; }
+    .att-btn { border: 1px solid var(--tbl-border); background: #fff; color: var(--muted); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; min-width: 60px; }
+    .att-btn.active[data-status="0"] { background: var(--success); color: #fff; border-color: var(--success); }
+    .att-btn.active[data-status="1"] { background: #d97706; color: #fff; border-color: #d97706; }
+    .att-btn.active[data-status="2"] { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .att-btn.active[data-status="3"] { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .att-btn.active[data-status="4"] { background: #6b21a8; color: #fff; border-color: #6b21a8; }
+    .att-btn.active[data-status="5"] { background: #4b5563; color: #fff; border-color: #4b5563; }
+    .att-stats-bar { display: flex; gap: 8px; margin-bottom: 16px; background: var(--tbl-alt); padding: 10px; border-radius: 8px; border: 1px solid var(--tbl-border); }
+    .att-stat-item { flex: 1; text-align: center; border-right: 1px solid var(--tbl-border); }
+    .att-stat-val { font-size: 20px; font-weight: 900; }
+    .att-stat-label { font-size: 12px; color: var(--muted); font-weight: bold; }
+
+    .student-status-grid { 
+        display: grid; 
+        grid-template-columns: repeat(5, minmax(0, 1fr)); 
+        gap: 15px; 
+        padding: 10px 0; 
+    }
+    @media (max-width: 1200px) { .student-status-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 992px)  { .student-status-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 768px)  { .student-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 480px)  { .student-status-grid { grid-template-columns: 1fr; } }
+    .d-student-card { background: #fff; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 12px; transition: transform 0.2s, box-shadow 0.2s; position: relative; display: flex; flex-direction: column; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); }
+    .d-student-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); border-color: var(--primary); }
+    .d-avatar { border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: #fff; cursor: pointer; border: 2px solid rgba(0,0,0,0.2); transition: transform 0.1s; flex-shrink: 0; }
+    .d-avatar:active { transform: scale(0.9); }
+    
+    .batch-exp-toolbar { display: none; background: var(--card); border: 2px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 16px; align-items: center; gap: 10px; flex-wrap: wrap; animation: fadeIn 0.2s; }
+    .batch-exp-toolbar.show { display: flex; }
+
+    .task-item-hover { 
+        transition: background 0.2s, padding 0.2s; 
+        border-radius: 4px; 
+        font-size: 14px !important;
+        padding: 6px 0 !important;
+    }
+    .task-item-hover:hover { background: var(--tbl-hover); padding-left: 6px !important; padding-right: 4px !important; margin-left: -6px; margin-right: -4px; }
+
+    .status-overview { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 15px; margin-bottom: 16px; }
+    .overview-card { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .overview-card.success { grid-column: span 3; } 
+    .overview-card.danger { grid-column: span 2; }  
+    
+    @media (max-width: 1200px) { 
+        .status-overview { grid-template-columns: repeat(4, minmax(0, 1fr)); } 
+        .overview-card.success { grid-column: span 2; } 
+        .overview-card.danger { grid-column: span 2; } 
+    }
+    @media (max-width: 992px) { 
+        .status-overview { display: flex; flex-direction: column; gap: 15px; } 
+    }
+    .overview-card.success { border-color: var(--success); background: #f0fdf4; }
+    .overview-card.danger { border-color: var(--danger); background: #fef2f2; }
+    .overview-header { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+    .overview-nums { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
+    .num-badge { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: bold; font-size: 22px; border: 2px solid rgba(255,255,255,0.5); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+    .overview-card.success .num-badge { background: var(--success); color: #fff; }
+    .overview-card.danger .num-badge { background: var(--danger); color: #fff; }
+    .overview-icon-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; pointer-events: none; }
+
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 8px; max-height: 50vh; overflow-y: auto; }
+    .roster-item, .teacher-item { display: flex; align-items: center; gap: 8px; padding: 4px; border-bottom: 1px dashed var(--tbl-border); }
+    .roster-no-input { flex: 0 0 60px; min-width: 0; }
+    .roster-name-input, .teacher-name-input { flex: 1; min-width: 0; }
+    
+    .pill { display: inline-flex; gap: 4px; align-items: center; padding: 2px 6px; border-radius: 6px; font-weight: bold; color: #fff; white-space: nowrap; font-size: 11px; }
+    .p-gray { background: #e5e7eb; color: #374151; } 
+    .p-yellow { background: #fef9c3; color: #854d0e; } 
+    .p-orange { background: #ffedd5; color: #9a3412; } 
+    .p-green { background: #dcfce7; color: #166534; } 
+
+    .toolbox-container { position: fixed; bottom: 30px; right: 30px; z-index: 5000; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+    .toolbox-toggle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 3px solid #fff; transition: transform 0.3s; z-index: 5002; }
+    .toolbox-toggle.active { transform: rotate(45deg); background: var(--danger); border-color: #ffcccc; }
+    .fab-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--tbl-border); background: var(--card); color: var(--primary); display: grid; place-items: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    
+    .tool-window { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; min-width: 250px; min-height: 250px; max-width: 90vw; max-height: 90vh; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; flex-direction: column; z-index: 5005; resize: both; overflow: hidden; container-type: inline-size; }
+    .tool-window.show { display: flex; animation: popIn 0.2s ease; }
+    .tool-header { background: var(--primary); color: #fff; padding: 2cqi 4cqi; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: grab; user-select: none; font-size: 5cqi; }
+    .tool-header:active { cursor: grabbing; }
+    .tool-close { background: none; border: none; color: #fff; font-size: 6cqi; cursor: pointer; opacity: 0.8; }
+    .tool-body { padding: 4cqi; display: flex; flex-direction: column; gap: 3cqi; flex: 1; overflow-y: auto; font-size: 4.5cqi; }
+    
+    .tool-window .checklist-item { background: var(--card); border: 2px dashed var(--primary); border-radius: 2cqi; padding: 3cqi; display: flex; align-items: center; gap: 3cqi; font-size: 4.5cqi; font-weight: 900; cursor: pointer; }
+    .tool-window .checklist-item.done { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
+    .tool-btn { padding: 2cqi 4cqi; font-size: 4.5cqi; border-radius: 2cqi; cursor: pointer; background: var(--primary); color: #fff; border: 2px solid var(--text-light); font-weight: bold; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 2cqi; transition: filter 0.2s; }
+    .tool-btn:hover { filter: brightness(1.1); }
+    .tool-btn.warn { background: var(--danger); border-color: #550000; }
+    .tool-btn.ghost { background: transparent; color: var(--text-main); border: 2px dashed var(--tbl-border); }
+    .tool-input { font-size: 4.5cqi; padding: 2cqi; border-radius: 1.5cqi; border: 2px solid var(--tbl-border); width: 100%; font-family: "Courier New", monospace; text-align: center; font-weight: bold; }
+    
+    .dice-box { font-size: 30cqi; font-weight: 900; text-align: center; height: 40cqi; display: grid; place-items: center; background: #fff; border: 1cqi dashed var(--primary); border-radius: 4cqi; margin: 2cqi 0; color: var(--danger); box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+    .dice-rolling { animation: shakeBlur 0.1s infinite alternate; color: var(--muted); transform: scale(1.05); border-color: var(--muted); }
+    .decibel-bar-container { width: 100%; height: 8cqi; background: rgba(0,0,0,0.1); border-radius: 4cqi; overflow: hidden; margin-top: 2cqi; border: 2px solid var(--tbl-border); position: relative; }
+    .decibel-bar { height: 100%; width: 0%; background: var(--success); transition: width 0.1s, background-color 0.1s; }
+    .decibel-text { position: absolute; width: 100%; text-align: center; font-size: 4cqi; font-weight: 900; line-height: 8cqi; color: #333; top: 0; left: 0; mix-blend-mode: overlay; }
+    .timer-display-box { font-size: 15cqi; font-family: "Courier New", monospace; font-weight: 900; text-align: center; color: var(--primary); background: var(--bg); border: 1cqi dashed var(--tbl-border); border-radius: 3cqi; padding: 2cqi 0; margin-bottom: 2cqi; }
+    
+    .wheel-wrapper { position: relative; width: 60cqi; height: 60cqi; margin: 2cqi auto; }
+    .wheel-container { width: 100%; height: 100%; border-radius: 50%; border: 2cqi solid var(--primary); overflow: hidden; transition: transform 4s cubic-bezier(0.25, 0.1, 0.15, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .wheel-pointer { position: absolute; top: -3cqi; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 4cqi solid transparent; border-right: 4cqi solid transparent; border-top: 8cqi solid var(--danger); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+    .draw-tabs { display: flex; gap: 1cqi; margin-bottom: 2cqi; }
+    .draw-tab { flex: 1; padding: 2cqi; text-align: center; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; font-size: 4cqi; }
+    .draw-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .marquee-container { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.85); overflow: hidden; z-index: 9999; padding: 8px 0; pointer-events: none; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .marquee-content { display: inline-block; white-space: nowrap; font-weight: 900; padding-left: 100%; animation: marquee-anim linear infinite; text-shadow: 2px 2px 0px #000; }
+    @keyframes marquee-anim { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    .quick-marquee-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .quick-tag { background: var(--bg); border: 1px solid var(--tbl-border); padding: 4px 8px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .quick-tag:hover { background: var(--primary); color: #fff; }
+
+    #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+    
+    .toast-container { position: fixed; bottom: 20px; right: 20px; left: auto; transform: none; z-index: 6000; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
+    .toast-msg { background: rgba(50, 50, 50, 0.95); color: #fff; padding: 10px 16px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: bold; min-width: auto; max-width: 320px; justify-content: space-between; pointer-events: auto; font-size: 13px; border-left: 4px solid var(--primary); backdrop-filter: blur(4px); }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+
+    #quickDebtMenu { display: none; position: fixed; background: var(--card); border: 3px solid var(--danger); border-radius: 8px; padding: 12px; z-index: 20000; box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: 260px; flex-direction: column; }
+    #quickDebtMenu.show { display: flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .quick-debt-item { background: var(--bg); border: 1px solid var(--tbl-border); padding: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; }
+    .quick-debt-item:hover { border-color: var(--success); background: #f0fdf4; transform: translateX(2px); }
+    
+    #statusPicker { display: none; position: fixed; background: var(--card); border: 3px solid var(--primary); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 10px; z-index: 20000; width: 160px; flex-direction: column; gap: 8px; }
+    #statusPicker.show { display: flex; }
+    .status-option-btn { border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; text-align: left; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; color: #3e2723; }
+    .status-option-btn.sp-1 { background: #fef9c3; color: #854d0e; border-color: #facc15; }
+    .status-option-btn.sp-2 { background: #ffedd5; color: #9a3412; border-color: #fb923c; }
+    .status-option-btn.sp-3 { background: #dcfce7; color: #166534; border-color: #4ade80; }
+
+    .debt-badge { position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; display: grid; place-items: center; border: 2px solid var(--card); z-index: 10; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s; pointer-events: auto; }
+    .debt-badge:hover { transform: scale(1.2) rotate(10deg); }
+
+    .assign-student-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid var(--tbl-border); border-radius: 6px; cursor: pointer; background: var(--bg); transition: background .2s; }
+    .assign-student-item:hover { background: var(--tbl-hover); }
+
+    .theme-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+    .theme-option { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--tbl-border); cursor: pointer; transition: transform .1s, border-color .1s; }
+    .theme-option.active { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
+    .theme-option[data-theme="guild"] { background: linear-gradient(135deg, #8B4513, #CD853F); }
+    .theme-option[data-theme="warm-cute"] { background: linear-gradient(135deg, #FAEDCD 40%, #8FA781 60%); border-radius: 50%; }
+    .theme-option[data-theme="christmas"] { background: linear-gradient(135deg, #d32f2f, #2e7d32); }
+    .theme-option[data-theme="blue"] { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .theme-option[data-theme="orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .theme-option[data-theme="green"] { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
+
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    @media print { .no-print, .floating-clock { display: none !important; } }
+    
+    .delete-choice-card { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .delete-desc { background: var(--bg); border: 1px dashed var(--tbl-border); padding: 10px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+    .delete-choice-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+    .btn-archive { background: var(--success); border-color: var(--success); color: #fff; }
+    .btn-destroy { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+    .d-student-card.selectable { cursor: pointer; transition: all 0.2s; border: 2px dashed var(--tbl-border); }
+    .d-student-card.selectable:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
+    .d-student-card.selected { background-color: #fffaf0; border: 3px solid var(--primary); transform: scale(1.02); box-shadow: 0 4px 15px rgba(139, 69, 19, 0.25); }
+    .d-student-card.selected::after { content: '✔'; position: absolute; top: 8px; right: 8px; font-size: 24px; color: var(--primary); font-weight: 900; text-shadow: 1px 1px 0px #fff; z-index: 10; pointer-events: none; }
+    .batch-export-checkbox, .batch-exp-checkbox { display: none !important; }
+
+    .toolbox-menu { position: absolute; bottom: 75px; right: 0; background: var(--card); border: 3px solid var(--primary); border-radius: 12px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 300px; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; transform-origin: bottom right; z-index: 5001; }
+    .toolbox-menu.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+    .toolbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .toolbox-btn { display: flex; align-items: center; gap: 8px; padding: 10px; background: var(--bg); border: 2px solid var(--tbl-border); border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--text-main); transition: all 0.2s; font-size: 13px; text-decoration: none; justify-content: flex-start; }
+    .toolbox-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-2px); }
+    .toolbox-btn i { font-size: 18px; }
+
+    .filter-panel { display: none; background: var(--card); border: 2px dashed var(--tbl-border); padding: 10px; border-radius: 8px; margin-bottom: 12px; }
+    .filter-panel.show { display: block; animation: fadeIn 0.2s ease; }
+
+    .vk-container { display: flex; gap: 12px; margin-top: 8px; background: var(--tbl-alt); padding: 12px; border-radius: 8px; border: 1px dashed var(--tbl-border); }
+    .vk-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; }
+    .vk-actions { display: flex; flex-direction: column; gap: 6px; width: 110px; }
+    .vk-btn { background: var(--card); border: 2px solid var(--tbl-border); border-radius: 6px; padding: 12px 4px; font-size: 16px; font-weight: 900; cursor: pointer; color: var(--text-main); text-align: center; transition: all .1s; box-shadow: 0 3px 0 var(--tbl-border); user-select: none; display: grid; place-items: center; }
+    .vk-btn:active { transform: translateY(3px); box-shadow: none; background: var(--tbl-hover); }
+    .vk-btn.danger { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; box-shadow: 0 3px 0 #fca5a5; }
+    .vk-btn.danger:active { background: #fecaca; box-shadow: none; }
+    .vk-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+    .quest-config-card { 
+        background: var(--card); border: 2px solid var(--tbl-border); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 2px 2px 0px rgba(93, 64, 55, 0.1);
+    }
+    .quest-config-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed var(--tbl-border); padding-bottom: 8px; margin-bottom: 12px; }
+    .quest-config-title { font-size: 16px; font-weight: 900; color: var(--primary); }
+    .quest-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .quest-tag { background: var(--bg); border: 1px solid var(--tbl-border); color: var(--text-main); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 1px 1px 3px rgba(0,0,0,0.05); }
+    .quest-tag .btn-del-task { color: var(--danger); cursor: pointer; transition: transform 0.2s; font-size: 14px; }
+    .quest-tag .btn-del-task:hover { transform: scale(1.2); }
+    .quest-add-row { display: flex; gap: 8px; align-items: center; background: var(--bg); padding: 8px; border-radius: 6px; border: 1px dashed var(--tbl-border); }
+
+    body { transition: padding-right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    body.sidebar-open { padding-right: 340px; }
+
+    .toast-container { z-index: 7000 !important; }
+
+    .quick-sidebar { position: fixed; top: 0; right: -340px; width: 340px; height: 100vh; background: var(--card); border-left: 3px solid var(--primary); box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 6000; transition: right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
+    .quick-sidebar.show { right: 0; }
+    .quick-sidebar-header { padding: 12px 16px; border-bottom: 2px dashed var(--tbl-border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
+    .quick-sidebar-list { flex: 1; overflow-y: auto; padding: 10px; display: grid; gap: 6px; align-content: start; }
+    .qs-item { display: flex; flex-direction: column; justify-content: center; padding: 6px 8px; border: 2px solid var(--tbl-border); border-radius: 6px; background: var(--bg); transition: transform 0.2s, border-color 0.2s; }
+    .qs-item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+
+    .app-footer { margin-top: auto; padding: 32px 12px 20px; text-align: center; border-top: 2px dashed var(--primary); background: linear-gradient(to bottom, transparent, var(--card)); color: var(--text-light); position: relative; }
+    .footer-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .footer-brand { font-size: 15px; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+    .footer-author { font-size: 13px; font-weight: bold; margin: 0; }
+    .footer-link { display: inline-flex; align-items: center; gap: 6px; margin: 4px 0; padding: 6px 16px; background: var(--bg); border: 2px solid var(--tbl-border); border-radius: 20px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 13px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 2px 2px 0px var(--tbl-border); }
+    .footer-link:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(139, 69, 19, 0.15); border-color: var(--primary); background: #fff; color: var(--primary); }
+    .footer-link i { font-size: 14px; }
+    .copyright { font-size: 11px; opacity: 0.6; margin-top: 2px; font-family: 'Courier New', monospace; }
+/* ⭐ 常駐狀態側邊欄樣式 (全覽無捲軸版) */
+.persistent-sidebar {
+    position: fixed;
+    left: 10px;
+    top: 80px;
+    width: auto;           /* 讓寬度根據內容彈性微調 */
+    min-width: 55px;       /* 維持最基本的細長感 */
+    max-width: 100px;      /* 若人多，最多長到能容納2~3排號碼 */
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 12px 6px;     /* 減少左右內距，看起來更緊湊 */
+    box-shadow: var(--shadow);
+    z-index: 3500;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* ✂️ 已經將 max-height 與 overflow-y 移除，永遠不會再出現捲動軸 */
+}
+
+.ps-section { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 8px; 
+    border-bottom: 2px dashed var(--tbl-border);
+    padding-bottom: 12px;
+}
+.ps-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.ps-title {
+    writing-mode: vertical-rl; /* 標題維持垂直直排 */
+    text-orientation: upright; 
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--primary);
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ps-title i {
+    writing-mode: horizontal-tb;
+}
+
+.ps-section:nth-child(2) .ps-title { color: var(--danger); }
+
+.ps-list {
+    display: flex;
+    flex-direction: row;  /* 改為橫向排列 */
+    flex-wrap: wrap;      /* 滿了自動換行往下疊 */
+    gap: 4px;             /* 縮小號碼之間的間距 */
+    justify-content: center;
+    width: 100%;
+}
+
+/* ⭐ 稍微縮小號碼球，讓人多時可以一顆挨著一顆，不用捲動也能全覽 */
+.ps-list .num-badge {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 12px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-width: 1px; /* 邊框變細一點，視覺更精緻 */
+}
+
+@media (min-width: 1400px) {
+    .persistent-sidebar { left: calc(50% - 660px); }
+}
+  
+    /* ============================================================
+       🏰 登記首頁：全冠王萌寵漫步牧場 & 極速登記台
+       ============================================================ */
+    .nav-btn.active-view {
+      background: var(--primary) !important;
+      color: #fff !important;
+      border-style: solid !important;
+      border-color: var(--text-main) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .nav-btn.active-view .nav-text {
+      max-width: 150px;
+      opacity: 1;
+      margin-left: 6px;
+    }
+
+    .meadow-card {
+      background: var(--card);
+      border: 2px solid var(--tbl-border);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .meadow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .meadow-stage {
+      position: relative;
+      width: 100%;
+      height: 165px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid #7cb342;
+      background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 62%, #aed581 62%, #8bc34a 100%);
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.08);
+      user-select: none;
+      cursor: pointer;
+    }
+    html[data-theme='dark'] .meadow-stage {
+      background: linear-gradient(180deg, #1e293b 0%, #334155 62%, #365314 62%, #1a2e05 100%);
+      border-color: #4d7c0f;
+    }
+    .meadow-ground-decor {
+      position: absolute;
+      inset: 62% 0 0 0;
+      background-image: radial-gradient(rgba(255,255,255,0.35) 2px, transparent 2px);
+      background-size: 28px 18px;
+      pointer-events: none;
+    }
+    .meadow-clouds {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      opacity: 0.65;
+      pointer-events: none;
+      font-size: 22px;
+    }
+    .meadow-empty-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #33691e;
+      font-weight: 900;
+      font-size: 15px;
+      text-align: center;
+      padding: 12px;
+      pointer-events: none;
+    }
+    html[data-theme='dark'] .meadow-empty-hint { color: #dcfce7; }
+
+    .meadow-pet-actor {
+      position: absolute;
+      bottom: 14px;
+      left: 0;
+      width: 68px;
+      height: 68px;
+      will-change: transform;
+      cursor: pointer;
+      z-index: 5;
+      transition: filter 0.15s;
+    }
+    .meadow-pet-actor:hover {
+      filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.9));
+      z-index: 20 !important;
+    }
+    .meadow-pet-sprite {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      transform-origin: bottom center;
+    }
+    .meadow-pet-label {
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.92);
+      border: 1.5px solid #65a30d;
+      color: #365314;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 1px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .meadow-pet-cheer {
+      position: absolute;
+      top: -44px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      font-weight: 900;
+      pointer-events: none;
+      animation: floatUpAndFade 1s ease-out forwards;
+      z-index: 25;
+    }
+    .meadow-toy-ball {
+      position: absolute;
+      bottom: 18px;
+      width: 28px;
+      height: 28px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 12;
+      transition: transform 0.2s;
+    }
+
+    /* 首頁快速委託膠囊與大座號按鈕 */
+    .home-quest-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scrollbar-width: thin;
+    }
+    .home-quest-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 2px solid var(--tbl-border);
+      background: var(--bg);
+      color: var(--text-main);
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .home-quest-pill:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .home-quest-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--text-main);
+      box-shadow: 0 3px 0 var(--text-light);
+    }
+
+    .home-seat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+      gap: 10px;
+      padding: 12px;
+      background: var(--bg);
+      border: 2px solid var(--tbl-border);
+      border-radius: 12px;
+    }
+    .home-seat-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 2px solid var(--tbl-border);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s;
+      position: relative;
+      user-select: none;
+    }
+    .home-seat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .home-seat-card:active { transform: scale(0.96); }
+    .home-seat-card.cleared-crown {
+      border-color: #84cc16;
+      background: linear-gradient(145deg, var(--card), #f7fee7);
+    }
+    html[data-theme='dark'] .home-seat-card.cleared-crown {
+      background: linear-gradient(145deg, var(--card), #1a2e05);
+    }
+
+    /* ============================================================
+       📊 榮耀統計頁面樣式
+       ============================================================ */
+    .stats-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .stats-kpi-card {
+      background: var(--bg);
+      border: 2px solid var(--tbl-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+    .stats-kpi-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .stats-two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .stats-bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+    .stats-bar-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .stats-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .rank-podium-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rank-podium-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1.5px solid var(--tbl-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+
+    /* ============================================================
+       🌅 v5 升級：日夜動態草原、待清補血柵欄、學生自助繳交鎖
+       ============================================================ */
+    .meadow-stage.time-morning {
+      background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 62%, #aed581 62%, #8bc34a 100%);
+      border-color: #7cb342;
+    }
+    .meadow-stage.time-noon {
+      background: linear-gradient(180deg, #fef3c7 0%, #fde68a 62%, #9ccc65 62%, #689f38 100%);
+      border-color: #d97706;
+    }
+    .meadow-stage.time-evening {
+      background: linear-gradient(180deg, #fbcfe8 0%, #fed7aa 62%, #7cb342 62%, #558b2f 100%);
+      border-color: #ea580c;
+    }
+    .meadow-stage.time-night {
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 62%, #365314 62%, #1a2e05 100%);
+      border-color: #4d7c0f;
+    }
+
+    /* 右側：待清補血見習木柵欄區 */
+    .meadow-rest-pen {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      top: 32px;
+      width: 245px;
+      max-width: 38%;
+      background: rgba(255, 251, 235, 0.78);
+      border: 2.5px dashed #b45309;
+      border-radius: 12px;
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      z-index: 8;
+      backdrop-filter: blur(2px);
+      pointer-events: auto;
+    }
+    html[data-theme='dark'] .meadow-rest-pen,
+    .meadow-stage.time-night .meadow-rest-pen {
+      background: rgba(30, 41, 59, 0.82);
+      border-color: #f59e0b;
+      color: #fef3c7;
+    }
+    .meadow-rest-pen-title {
+      font-size: 11px;
+      font-weight: 900;
+      color: #92400e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed rgba(180, 83, 9, 0.35);
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+    }
+    html[data-theme='dark'] .meadow-rest-pen-title,
+    .meadow-stage.time-night .meadow-rest-pen-title {
+      color: #fcd34d;
+    }
+    .meadow-rest-pen-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      overflow-y: auto;
+      align-content: flex-start;
+      flex: 1;
+      scrollbar-width: none;
+    }
+    .meadow-rest-pen-list::-webkit-scrollbar { display: none; }
+    .meadow-rest-item {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 2px 5px;
+      font-size: 10px;
+      font-weight: 900;
+      color: #78350f;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .meadow-rest-item:hover { transform: scale(1.06); }
+    .meadow-rest-item img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      filter: grayscale(35%) opacity(0.85);
+    }
+
+    /* 學生自助繳交鎖與只看未完成篩選 */
+    .mode-switch-btn.student-lock-on {
+      background: #0284c7 !important;
+      color: #fff !important;
+      border-color: #0369a1 !important;
+      box-shadow: 0 2px 0 #075985;
+    }
+    .filter-unfin-btn.active {
+      background: #ea580c !important;
+      color: #fff !important;
+      border-color: #c2410c !important;
+    }
+    .home-seat-card.dimmed-done {
+      opacity: 0.28;
+      transform: scale(0.95);
+      filter: grayscale(60%);
+    }
+
+
+    /* 📊 今日戰績列 */
+    .today-stats-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-bottom:10px; padding:8px 14px; background:var(--card); border:2px solid var(--tbl-border); border-radius:var(--radius); box-shadow:var(--shadow); color:var(--text-main); font-size:14px; }
+    .today-stats-bar .ts-title { font-weight:900; color:var(--primary); font-size:15px; }
+    .today-stats-bar .ts-chip { background:var(--tbl-head); border:1.5px solid var(--tbl-border); border-radius:999px; padding:3px 12px; font-weight:bold; }
+    .today-stats-bar .ts-chip b { font-size:18px; color:var(--primary); margin:0 2px; }
+    .today-stats-bar .ts-sub { font-size:12px; color:var(--muted); font-weight:bold; }
+    .today-stats-bar .ts-titles { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+</style>
+</head>
+<body>
+  
+  <div id="topMarquee" class="marquee-container" style="display:none;"><div id="marqueeText" class="marquee-content"></div></div>
+  <canvas id="confettiCanvas"></canvas>
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="assignmentTooltip" class="assignment-tooltip"></div>
+  
+  <div id="attendanceReminderModal" class="modal-overlay">
+      <div class="modal-content" style="text-align: center; border: 4px double var(--danger);">
+          <div class="modal-header" style="border-bottom: none; justify-content: center;"><h2 style="color: var(--danger); font-size: 24px;"><i class="bi bi-exclamation-diamond-fill"></i> 緊急任務</h2></div>
+          <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">本日點名尚未完成！<br><span style="font-size: 14px; color: var(--muted);">確認冒險者安危是公會長的首要職責。</span></p>
+          <button class="btn" id="btnGoToAttendance" style="width: 100%; justify-content: center; font-size: 18px;">立刻點名</button>
+          <button class="btn ghost sm" style="margin-top: 10px; width: 100%; border: none;" onclick="document.getElementById('attendanceReminderModal').classList.remove('show')">稍後再說</button>
+      </div>
+  </div>
+
+  <div id="loginOverlay">
+      <div id="loginBox">
+          <div class="logo" style="margin: 0 auto 20px; width: 80px; height: 80px; font-size: 40px;">🛡️</div>
+          <h1>冒險者公會 (ProT版) 登入</h1>
+          <p class="muted">請出示您的公會長證件 (Google 帳號)</p>
+          <button id="btnLogin" class="btn" style="font-size: 18px; padding: 12px 24px; width: 100%; justify-content: center;"><i class="bi bi-google"></i> 使用 Google 登入</button>
+      </div>
+  </div>
+
+  <div class="wrap no-print" style="display:none; flex-direction:column;" id="mainApp">
+    <header>
+<!-- ⭐ 常駐狀態側邊欄 -->
+<div id="persistentSidebar" class="persistent-sidebar no-print">
+    <!-- 拖曳把手與收合按鈕 -->
+    <div id="psDragHandle" style="cursor: grab; display: flex; justify-content: space-between; align-items: center; color: var(--muted); padding-bottom: 6px; border-bottom: 1px dashed var(--tbl-border); margin-bottom: 8px;">
+        <i class="bi bi-grip-horizontal" style="flex:1; text-align:center; font-size: 16px;"></i>
+        <button id="btnTogglePs" class="btn sm ghost icon-only" style="border:none; padding: 0 4px;" title="收合/展開">
+            <i class="bi bi-arrows-collapse"></i>
+        </button>
+    </div>
+    
+    <!-- 內容區塊 (包裝起來方便隱藏) -->
+    <div id="psContentWrapper">
+        <div class="ps-section">
+            <div class="ps-title"><i class="bi bi-lightning-charge-fill"></i> 今日戰績</div>
+            <div id="psTodayStats" style="font-size:13px; font-weight:bold; line-height:1.6;"></div>
+        </div>
+        <div class="ps-section">
+            <div class="ps-title"><i class="bi bi-trophy-fill"></i> 討伐全冠王</div>
+            <div id="psClearedList" class="ps-list"></div>
+        </div>
+        <div class="ps-section">
+            <div class="ps-title"><i class="bi bi-bandaid-fill"></i> 需補血成員</div>
+            <div id="psHelpList" class="ps-list"></div>
+        </div>
+    </div>
+</div>
+      <div class="brand">
+        <div class="logo"><i class="bi bi-shield-shaded"></i></div>
+        <div>
+          <h1>
+              冒險者公會 
+              <span style="font-size: 14px; background: var(--tbl-head); color: var(--primary); padding: 2px 6px; border-radius: 4px; vertical-align: middle;">ProT版</span>
+              <span id="headerClock" style="font-family: 'Courier New', monospace; font-size: 16px; margin-left: 12px; color: var(--text-light); background: var(--card); padding: 2px 10px; border-radius: 12px; border: 1px solid var(--tbl-border); display: inline-flex; align-items: center; gap: 6px;"><i class="bi bi-clock"></i> <span id="fcTime">00:00:00</span></span>
+          </h1>
+          <div class="muted" style="margin-top: 4px;">狀態循環：灰＝未接取 → 黃＝已回報 → 橘＝再挑戰 → 綠＝討伐成功</div>
+        </div>
+      </div>
+      <div class="actions">
+        <span id="userEmailDisplay" class="user-badge" title="點擊查看執務室"><i class="bi bi-person-circle"></i> <span class="nav-text">執務室</span></span>
+              <div id="classStarDisplay" class="user-badge" style="cursor: default; background: #fffbef; border-color: #fcd34d; color: #f59e0b;" title="班級表現星星">
+                  <i class="bi bi-star-fill"></i> <span id="classStarCountText" style="font-size: 16px; font-weight: 900; margin-left: 2px;">0</span>
+              </div>
+              <div style="width:1px; height:16px; background:var(--tbl-border); margin:0 4px;"></div>
+        <button class="btn ghost nav-btn" id="btnRefreshData" title="手動重新整理 (多裝置同步時使用)"><i class="bi bi-arrow-clockwise"></i><span class="nav-text">重整</span></button>
+        <button class="btn ghost nav-btn active-view" id="btnNavHome" onclick="window.switchView('view-home')" title="登記首頁 (全冠王萌寵牧場)"><i class="bi bi-house-heart-fill"></i> <span class="nav-text">登記首頁</span></button>
+        <button class="btn ghost nav-btn" id="btnNavDashboard" onclick="window.switchView('view-dashboard')" title="委託看板"><i class="bi bi-columns-gap"></i> <span class="nav-text">委託看板</span></button>
+        <button class="btn ghost nav-btn" id="btnNavStudentStatus" onclick="window.switchView('view-student-status')" title="冒險者狀態"><i class="bi bi-backpack4"></i> <span class="nav-text">冒險者狀態</span></button>
+        <button class="btn ghost nav-btn" id="btnNavStats" onclick="window.switchView('view-stats')" title="榮耀統計"><i class="bi bi-bar-chart-line-fill"></i> <span class="nav-text">榮耀統計</span></button>
+        <button class="btn ghost nav-btn" id="btnOpenSettings" title="外觀設定"><i class="bi bi-palette"></i> <span class="nav-text">設定</span></button>
+        <button class="btn ghost nav-btn" id="btnOpenSidebar" title="快速狀態欄"><i class="bi bi-layout-sidebar-inset-reverse"></i> <span class="nav-text">速覽</span></button>
+        <div id="saveStatusIndicator" style="margin-left: 8px; font-size: 14px; display: flex; align-items: center;"><i class="bi bi-hourglass"></i></div>
+      </div>
+    </header>
+
+    <!-- 🌟 新增：獨立登記首頁 (含全冠王萌寵漫步牧場 & 快速登記台) -->
+    <section id="view-home" class="view show">
+      <!-- 📊 今日戰績：今天消滅幾個委託、批改幾份作業 -->
+      <div id="todayStatsBar" class="today-stats-bar"></div>
       <div class="meadow-card">
         <div class="meadow-header">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
