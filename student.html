@@ -85,19 +85,76 @@
         overflow: hidden;
         padding: 16px 20px;
       }
-      #contentArea {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .board-grid {
-        display: grid;
-        grid-template-columns: 380px 1fr;
-        gap: 20px;
-        height: 100%;
-        overflow: hidden;
-      }
+/* ============================================================
+   📐 新版局：上方橫幅萌寵 + 下方左右雙欄
+   ============================================================ */
+/* 調整內容區的 Flex 垂直排版 */
+#contentArea {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 萌寵橫幅區域 (放在頂部) */
+.pet-sanctuary-wrap {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 2.5px solid #84cc16;
+  background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 58%, #bef264 58%, #84cc16 100%);
+  padding: 10px 15px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+  transition: all 0.4s ease;
+  min-height: 160px; /* 橫幅高度適中 */
+  display: flex;
+  flex-direction: column;
+}
+
+.pet-sanctuary-inner {
+  display: grid;
+  grid-template-columns: 1fr 280px; /* 左側廣闊草地，右側圖鑑與集氣條 */
+  gap: 15px;
+  align-items: end;
+  height: 100%;
+}
+
+.pet-left-stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.pet-right-stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+
+/* 讓草地舞台變寬 */
+.pet-meadow-track {
+  position: relative;
+  width: 100%;
+  height: 90px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* 調整下方網格 */
+.board-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr; /* 左個人資料 / 右任務 */
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
       .left-pane {
         height: 100%;
         justify-content: space-between;
@@ -465,12 +522,27 @@
       filter: drop-shadow(0 4px 5px rgba(0,0,0,0.18));
       transition: transform 0.2s;
     }
-    @keyframes petHappyBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-    @keyframes petWalkStep { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
-    @keyframes petScratchAnim { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
-    .pet-bob { animation: petHappyBob 1.8s ease-in-out infinite; }
-    .pet-waddle { animation: petWalkStep 0.45s ease-in-out infinite; }
-    .pet-scratch { animation: petScratchAnim 0.35s ease-in-out infinite; }
+/* ============================================================
+   🐾 優化萌寵動畫 (參考 index.html 的 Hop 與 Sway)
+   ============================================================ */
+@keyframes petHappyBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes petWalkStep { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
+@keyframes petScratchAnim { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
+/* 新增：興奮跳躍與左右搖擺 */
+@keyframes petHop { 
+  0%, 100% { transform: translateY(0) scale(1); } 
+  50% { transform: translateY(-15px) scale(1.05); } 
+}
+@keyframes petSway {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+
+.pet-bob { animation: petHappyBob 1.8s ease-in-out infinite; }
+.pet-waddle { animation: petWalkStep 0.45s ease-in-out infinite; }
+.pet-scratch { animation: petScratchAnim 0.35s ease-in-out infinite; }
+.pet-hop { animation: petHop 0.4s ease-in-out infinite; }
+.pet-sway { animation: petSway 2s ease-in-out infinite; transform-origin: bottom center;}
 
     @keyframes heartPop { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-45px) scale(1.6); } }
     .heart-float { position: absolute; font-size: 22px; animation: heartPop 0.9s forwards ease-out; pointer-events: none; z-index: 20; }
@@ -727,91 +799,100 @@
     <div class="card" id="mainCard">
       <div id="loading"><i class="bi bi-hourglass-split" style="font-size: 32px; display:block; margin-bottom: 10px;"></i>正在聯絡公會...</div>
       
-      <div id="contentArea" class="hidden">
-        <!-- 🌟 左右雙欄容器 (平板橫向免捲動) -->
-        <div class="board-grid">
-          
-          <!-- 👈 左欄：個人狀態、榮耀徽章、萌寵漫步小窩 -->
-          <div class="left-pane">
-            <div class="profile-top-row">
-              <div class="avatar-circle" id="stNo"></div>
-              <div class="profile-name-col">
-                <h2 id="stName">載入中</h2>
-                <div id="stRank" style="font-size:13px; font-weight:bold; margin-top:2px;"></div>
-              </div>
-              <div class="stats-mini-row">
-                <div class="stat-box">
-                  <div class="title">⭐ EXP</div>
-                  <div class="value val-exp" id="stExp">0</div>
-                </div>
-                <div class="stat-box">
-                  <div class="title">💰 金幣</div>
-                  <div class="value val-coin" id="stCoin">0</div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="exp-progress-wrapper">
-              <div class="exp-bar-bg">
-                <div class="exp-bar-fill" id="expBarFill"></div>
-                <div class="exp-text" id="expText">計算中...</div>
-              </div>
-            </div>
+<div id="contentArea" class="hidden">
+  
+  <!-- 🐾 上方橫幅：萌寵夥伴漫步小窩 -->
+  <div id="petSanctuaryWrap" class="pet-sanctuary-wrap is-fogged">
+    <!-- 迷霧覆蓋層 (保持原樣) -->
+    <div class="pet-fog-overlay" id="petFogOverlay">
+      <div class="pet-fog-badge"><i class="bi bi-lock-fill"></i> 萌寵夥伴迷霧封印中</div>
+      <div id="petFogReasonText" style="font-size:12px; font-weight:bold; color:#57534e; line-height:1.45;">載入中...</div>
+      <button class="btn-unseal" id="btnVerifyUnseal" onclick="window.verifyAndUnseal()">
+        <i class="bi bi-shield-check"></i> 我訂正完了！向公會申請重新鑑定
+      </button>
+    </div>
 
-            <!-- 🏅 個人榮耀徽章櫃 -->
-            <div id="badgeCabinet" class="badge-cabinet"></div>
-
-            <!-- 🐾 萌寵夥伴橫向漫步小窩 -->
-            <div id="petSanctuaryWrap" class="pet-sanctuary-wrap is-fogged">
-              <div class="pet-fog-overlay" id="petFogOverlay">
-                <div class="pet-fog-badge"><i class="bi bi-lock-fill"></i> 萌寵夥伴迷霧封印中</div>
-                <div id="petFogReasonText" style="font-size:12px; font-weight:bold; color:#57534e; line-height:1.45;">
-                  載入中...
-                </div>
-                <button class="btn-unseal" id="btnVerifyUnseal" onclick="window.verifyAndUnseal()">
-                  <i class="bi bi-shield-check"></i> 我訂正完了！向公會申請重新鑑定
-                </button>
-              </div>
-
-              <div class="pet-sanctuary-inner" id="petSanctuaryInner">
-                <div class="pet-top-bar">
-                  <span class="pet-status-pill">👑 全冠王專屬小窩</span>
-                  <div class="pet-action-btns">
-                    <button class="btn-feed" id="btnFeedPet" onclick="window.feedPet()">
-                      🍪 餵食 (<span id="cookieCountTxt">3</span>)
-                    </button>
-                    <button class="btn-open-dex" onclick="window.openFullDexModal()">
-                      <i class="bi bi-book-half"></i> 百獸圖鑑
-                    </button>
-                  </div>
-                </div>
-
-                <!-- 🌿 橫向草地漫步舞台 + 對話氣泡 -->
-                <div class="pet-meadow-track" id="petMeadowTrack" onclick="window.interactWithPet()">
-                  <div class="meadow-clouds-mini"><span>☁️</span><span>⛅</span><span>🦋</span></div>
-                  <div class="meadow-flowers-mini"><span>🌼</span><span>🌱</span><span>🌷</span><span>🍀</span></div>
-                  <div class="pet-walker-box" id="petWalkerBox">
-                    <div class="pet-speech-bubble" id="petSpeechBubble">主人今天也要加油喔！</div>
-                    <img id="stActivePetImg" src="" alt="萌寵夥伴" class="pixel-pet pet-stage-avatar pet-bob">
-                  </div>
-                </div>
-                
-                <div id="stActivePetName" style="font-size:13px; font-weight:900; color:#14532d; z-index:3;">載入中...</div>
-                <div id="stPetMiniDex" class="pet-mini-dex"></div>
-                <div id="stGachaBarBox" style="width:100%; display:flex; justify-content:center;"></div>
-              </div>
-            </div>
-
-            <div id="updateTime" style="text-align: center; font-size: 11px; color: var(--muted); font-weight: bold;"></div>
+    <!-- 萌寵橫向佈局 -->
+    <div class="pet-sanctuary-inner" id="petSanctuaryInner">
+      
+      <!-- 左側：草地漫步區與互動按鈕 -->
+      <div class="pet-left-stage">
+        <div class="pet-top-bar">
+          <span class="pet-status-pill">👑 全冠王專屬小窩</span>
+          <div class="pet-action-btns">
+            <button class="btn-feed" id="btnFeedPet" onclick="window.feedPet()">
+              🍪 餵食 (<span id="cookieCountTxt">3</span>)
+            </button>
+            <button class="btn-open-dex" onclick="window.openFullDexModal()">
+              <i class="bi bi-book-half"></i> 百獸圖鑑
+            </button>
           </div>
+        </div>
 
-          <!-- 👉 右欄：書包確認清單 ＋ 待處理任務 (同項目自動前後歸類) -->
-          <div class="right-pane">
-            <div id="taskListArea"></div>
+        <div class="pet-meadow-track" id="petMeadowTrack" onclick="window.interactWithPet()">
+          <div class="meadow-clouds-mini"><span>☁️</span><span>⛅</span><span>🦋</span></div>
+          <div class="meadow-flowers-mini"><span>🌼</span><span>🌱</span><span>🌷</span><span>🍀</span></div>
+          <div class="pet-walker-box" id="petWalkerBox">
+            <div class="pet-speech-bubble" id="petSpeechBubble">主人今天也要加油喔！</div>
+            <img id="stActivePetImg" src="" alt="萌寵夥伴" class="pixel-pet pet-stage-avatar pet-bob">
           </div>
-
         </div>
       </div>
+
+      <!-- 右側：名稱、圖鑑晶片與集氣條 -->
+      <div class="pet-right-stats">
+        <div id="stActivePetName" style="font-size:14px; font-weight:900; color:#14532d; text-align:right;">載入中...</div>
+        <div id="stPetMiniDex" class="pet-mini-dex" style="justify-content:flex-end;"></div>
+        <div id="stGachaBarBox" style="width:100%;"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🌟 下方雙欄：個人資料與任務清單 -->
+  <div class="board-grid">
+    
+    <!-- 👈 左欄：個人狀態與徽章 -->
+    <div class="left-pane">
+      <div class="profile-top-row">
+        <div class="avatar-circle" id="stNo"></div>
+        <div class="profile-name-col">
+          <h2 id="stName">載入中</h2>
+          <div id="stRank" style="font-size:13px; font-weight:bold; margin-top:2px;"></div>
+        </div>
+        <div class="stats-mini-row">
+          <div class="stat-box">
+            <div class="title">⭐ EXP</div>
+            <div class="value val-exp" id="stExp">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="title">💰 金幣</div>
+            <div class="value val-coin" id="stCoin">0</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="exp-progress-wrapper">
+        <div class="exp-bar-bg">
+          <div class="exp-bar-fill" id="expBarFill"></div>
+          <div class="exp-text" id="expText">計算中...</div>
+        </div>
+      </div>
+
+      <!-- 🏅 個人榮耀徽章櫃 -->
+      <div id="badgeCabinet" class="badge-cabinet"></div>
+      
+      <!-- 更新時間移至此處底部 -->
+      <div id="updateTime" style="text-align: center; font-size: 11px; color: var(--muted); font-weight: bold; margin-top:auto;"></div>
+    </div>
+
+    <!-- 👉 右欄：待處理任務 -->
+    <div class="right-pane">
+      <div id="taskListArea"></div>
+    </div>
+
+  </div>
+</div>
     </div>
   </div>
 
@@ -1104,6 +1185,36 @@
       showPetBubble(talkLines[Math.floor(Math.random() * talkLines.length)]);
     };
 
+// 豐富的對話詞庫 (配合新動畫)
+    window.interactWithPet = function() {
+      const wrap = document.getElementById('petSanctuaryWrap');
+      if (!wrap || wrap.classList.contains('is-fogged')) return;
+      window.playStudentPetCry(currentPartnerPet.kind);
+      
+      const petImg = document.getElementById('stActivePetImg');
+      
+      // 點擊時觸發跳躍與開心搖擺
+      petImg.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch');
+      petImg.classList.add('pet-hop');
+      setTimeout(() => {
+        petImg.classList.remove('pet-hop');
+        petImg.classList.add('pet-sway');
+      }, 800);
+
+      const coins = (currentStudent && currentStudent.coins) || 0;
+      const needCoins = 10 - (coins % 10);
+      const talkLines = [
+        `主人太棒了！所有任務都討伐完畢！👑`,
+        `再存 ${needCoins} 枚金幣，就能請老師抽新夥伴囉！🎰`,
+        `點右邊「百獸圖鑑」看看還有哪些夥伴！📖`,
+        `專注計時滿 5 分鐘會掉好吃的能量餅乾喔！🍪`,
+        `${currentPartnerPet.name} 陪你一起成為超級英雄！✨`,
+        `呼嚕呼嚕～最喜歡主人了！💖`
+      ];
+      showPetBubble(talkLines[Math.floor(Math.random() * talkLines.length)]);
+    };
+
+    // 自動漫步與行為循環
     setInterval(() => {
       const wrap = document.getElementById('petSanctuaryWrap');
       const walker = document.getElementById('petWalkerBox');
@@ -1111,32 +1222,56 @@
       if (!wrap || !walker || !petImg || wrap.classList.contains('is-fogged')) return;
 
       const roll = Math.random();
-      petImg.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch');
+      // 清除所有動態 Class
+      petImg.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch', 'pet-hop', 'pet-sway');
 
-      if (roll < 0.62) {
-        const nextPos = Math.floor(18 + Math.random() * 64);
+      if (roll < 0.5) {
+        // 🐾 行走：因為上方橫幅變寬了，擴大行走範圍 (10% ~ 90%)
+        const nextPos = Math.floor(10 + Math.random() * 80);
         const movingRight = nextPos > petPosPercent;
         petPosPercent = nextPos;
+        
+        // 根據距離動態調整移動時間 (更自然)
+        const moveTime = Math.max(1.5, Math.abs(nextPos - petPosPercent) * 0.05); 
+        walker.style.transition = `left ${moveTime}s linear`;
         walker.style.left = `${petPosPercent}%`;
+        
         petImg.style.transform = movingRight ? 'scaleX(-1)' : 'scaleX(1)';
         petImg.classList.add('pet-waddle');
+        
         setTimeout(() => {
           petImg.classList.remove('pet-waddle');
           petImg.classList.add('pet-bob');
-        }, 2400);
-      } else if (roll < 0.82) {
+        }, moveTime * 1000);
+
+      } else if (roll < 0.7) {
+        // 🐾 抓癢
         petImg.classList.add('pet-scratch');
         setTimeout(() => {
           petImg.classList.remove('pet-scratch');
           petImg.classList.add('pet-bob');
         }, 1200);
+
+      } else if (roll < 0.85) {
+        // 🐾 原地小跳躍 (參考 index.html 的 Hop)
+        petImg.classList.add('pet-hop');
+        setTimeout(() => {
+          petImg.classList.remove('pet-hop');
+          petImg.classList.add('pet-bob');
+        }, 1000);
+
       } else {
-        petImg.classList.add('pet-bob');
-        if (Math.random() < 0.45) {
-          showPetBubble(currentPartnerPet.kind === 'dog' ? "汪汪！草地好舒服～🌿" : "喵～今天也是零欠交全冠王！☀️");
+        // 🐾 開心搖擺並說話
+        petImg.classList.add('pet-sway');
+        if (Math.random() < 0.5) {
+          showPetBubble(currentPartnerPet.kind === 'dog' ? "汪汪！今天也要努力喔～🌿" : "喵～想吃能量餅乾！☀️");
         }
+        setTimeout(() => {
+          petImg.classList.remove('pet-sway');
+          petImg.classList.add('pet-bob');
+        }, 2000);
       }
-    }, 3600);
+    }, 4500); // 放慢一點讓動畫播完
 
     // ============================================================
     // 🔄 向公會申請重新鑑定（真實讀取 Firebase 防作弊）
