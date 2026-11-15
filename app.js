@@ -330,29 +330,25 @@ function getRankHtml(exp) {
     }
     function renderTodayStats() {
         const bar = document.getElementById('todayStatsBar');
-        const ps = document.getElementById('psTodayStats');
-        if (!bar && !ps) return;
+        if (!bar) return;
         const s = getTodayStats();
         const graded = s.passed + s.redo;
         const cleared = s.clearedTitles.length;
         const teachers = Object.keys(s.byTeacher);
-        const tip = [
-            cleared ? '今日消滅：' + s.clearedTitles.join('、') : '今天還沒有消滅任何委託',
-            teachers.length > 1 ? '各公會長：' + teachers.map(t => `${t} 批改${s.byTeacher[t].graded}份/消滅${s.byTeacher[t].cleared}件`).join('；') : ''
-        ].filter(Boolean).join('\n');
 
-        if (bar) {
-            bar.title = tip;
-            bar.innerHTML = `
-                <span class="ts-title">⚔️ 今日戰績</span>
-                <span class="ts-chip">🗡️ 消滅委託 <b>${cleared}</b> 件</span>
-                <span class="ts-chip">📝 批改作業 <b>${graded}</b> 份</span>
-                <span class="ts-sub">✅ 過關 ${s.passed}　🔁 需訂正 ${s.redo}</span>
-                ${cleared ? `<span class="ts-sub ts-titles">${escapeHtml(s.clearedTitles.slice(0, 3).join('、'))}${cleared > 3 ? ' …等' : ''}</span>` : ''}`;
-        }
-        if (ps) {
-            ps.innerHTML = `<div>🗡️ 消滅委託 <b>${cleared}</b> 件</div><div>📝 批改作業 <b>${graded}</b> 份</div><div style="font-size:11px;opacity:.7;">✅ ${s.passed}　🔁 ${s.redo}</div>`;
-        }
+        const clearedRow = cleared
+            ? `<div class="ts-row">🗡️ 今日消滅：${s.clearedTitles.map(t => escapeHtml(t)).join('、')}</div>`
+            : `<div class="ts-row" style="opacity:.7;">今天還沒有消滅任何委託，加油！</div>`;
+        const teacherRow = teachers.length > 1
+            ? `<div class="ts-row">👤 ${teachers.map(t => `${escapeHtml(t)}：批改 ${s.byTeacher[t].graded} 份／消滅 ${s.byTeacher[t].cleared} 件`).join('　｜　')}</div>`
+            : '';
+
+        bar.innerHTML = `
+            <span class="ts-title">⚔️ 今日老師戰績</span>
+            <span class="ts-chip">🗡️ 消滅委託 <b>${cleared}</b> 件</span>
+            <span class="ts-chip">📝 批改作業 <b>${graded}</b> 份</span>
+            <span class="ts-sub">✅ 過關 ${s.passed}　🔁 需訂正 ${s.redo}</span>
+            ${clearedRow}${teacherRow}`;
     }
     window.renderTodayStats = renderTodayStats;
 
@@ -801,7 +797,6 @@ function getRankHtml(exp) {
         }
         // 加入這一行：每次重新渲染畫面時，都更新左側常駐欄
         updatePersistentSidebar(); 
-        renderTodayStats();
     }
     window.renderAll = renderAll;
 
@@ -4857,6 +4852,7 @@ window.quickGroupSubmitHome = function(aid, groupNum) {
 // 📊 公會榮耀戰報 & 統計中心引擎
 // ==========================================
 function renderStatsView() {
+    renderTodayStats();   // 今日老師戰績（只在榮耀統計頁最下方顯示）
     const kpiGrid = document.getElementById('statsKpiGrid');
     const subjBars = document.getElementById('statsSubjectBars');
     const groupRank = document.getElementById('statsGroupRanking');
