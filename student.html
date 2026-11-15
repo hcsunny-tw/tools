@@ -1448,13 +1448,13 @@
       const badges = [
         // 勤勞
         { icon: "👑", name: "全冠王", desc: "目前零欠交", unlocked: isCrown },
-        // 等級
-        { icon: "❄️", name: "冰雪魔法使", desc: "達 Lv.15 (550EXP)", unlocked: exp >= 550 },
+        // 等級（依班上目前 EXP 350~564 分布，往期末逐步拉開）
+        { icon: "💧", name: "水波小精靈", desc: "達 Lv.12 (400EXP)", unlocked: exp >= 400 },
+        { icon: "⚡", name: "閃電小超人", desc: "達 Lv.14 (500EXP)", unlocked: exp >= 500 },
+        { icon: "🦅", name: "獅鷲小騎士", desc: "達 Lv.16 (600EXP)", unlocked: exp >= 600 },
+        { icon: "⚔️", name: "雙劍小達人", desc: "達 Lv.18 (700EXP)", unlocked: exp >= 700 },
         { icon: "🏰", name: "城堡守衛隊長", desc: "達 Lv.20 (800EXP)", unlocked: exp >= 800 },
         { icon: "🌠", name: "彗星觀測者", desc: "達 Lv.25 (1100EXP)", unlocked: exp >= 1100 },
-        { icon: "🏆", name: "榮耀大師", desc: "達 Lv.30 (1450EXP)", unlocked: exp >= 1450 },
-        { icon: "☀️", name: "太陽神官", desc: "達 Lv.35 (1850EXP)", unlocked: exp >= 1850 },
-        { icon: "🐉", name: "萬獸之王", desc: "達 Lv.39 (2210EXP)", unlocked: exp >= 2210 },
         // 金幣
         { icon: "🪙", name: "小存錢筒", desc: "持有 100 枚金幣", unlocked: coins >= 100 },
         { icon: "💰", name: "小富翁", desc: "持有 350 枚金幣", unlocked: coins >= 350 },
