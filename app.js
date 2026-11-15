@@ -183,7 +183,7 @@ function getRankHtml(exp) {
     };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let app, db, auth;
@@ -400,8 +400,33 @@ function getRankHtml(exp) {
         };
     }
 
+    // runTransaction 改成「用到才載入」：就算載入失敗也只影響同步的防衝突，不會讓整個程式（含登入）掛掉
+    let _runTransactionFn;
+    async function getRunTransaction() {
+        if (_runTransactionFn === undefined) {
+            try {
+                const mod = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                _runTransactionFn = mod.runTransaction || null;
+            } catch (e) {
+                console.warn('runTransaction 載入失敗，改用一般比對寫入', e);
+                _runTransactionFn = null;
+            }
+        }
+        return _runTransactionFn;
+    }
+
     async function guardedWrite(key, payload) {
         const ref = syncRef(key);
+        const runTransaction = await getRunTransaction();
+        if (!runTransaction) {
+            // 備援：非原子，但仍會先比對雲端版本再寫入
+            const snap = await getDoc(ref);
+            const cur = snap.exists() ? (snap.data()._rev || 0) : 0;
+            if (cur !== remoteRev[key]) return { ok: false, key, cur };
+            const next = cur + 1;
+            await setDoc(ref, { ...payload, _rev: next, _device: DEVICE_ID, _updatedAt: Date.now() });
+            return { ok: true, key, next };
+        }
         return runTransaction(db, async (tx) => {
             const snap = await tx.get(ref);
             const cur = snap.exists() ? (snap.data()._rev || 0) : 0;
@@ -673,6 +698,7 @@ function getRankHtml(exp) {
             alert('❌ 登入失敗\n\n【錯誤代碼】' + (e.code || '無') + '\n' + (hints[e.code] || (e.message || e)));
         }
     });
+    window.__guildLoginReady = true;   // 診斷用：登入按鈕已綁定
     document.getElementById('btnLogout').addEventListener('click', () => { if(confirm("確定要登出？")) signOut(auth).then(() => window.location.reload()); });
 
     function initApp() {
