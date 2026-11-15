@@ -97,55 +97,6 @@
   overflow: hidden;
 }
 
-/* 萌寵橫幅區域 (放在頂部) */
-.pet-sanctuary-wrap {
-  position: relative;
-  width: 100%;
-  flex-shrink: 0;
-  border-radius: 16px;
-  border: 2.5px solid #84cc16;
-  background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 58%, #bef264 58%, #84cc16 100%);
-  padding: 8px 12px;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
-  transition: all 0.4s ease;
-  min-height: 120px; /* 橫幅高度適中 */
-  display: flex;
-  flex-direction: column;
-}
-
-.pet-sanctuary-inner {
-  display: grid;
-  grid-template-columns: 1fr 280px; /* 左側廣闊草地，右側圖鑑與集氣條 */
-  gap: 15px;
-  align-items: end;
-  height: 100%;
-}
-
-.pet-left-stage {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: space-between;
-}
-
-.pet-right-stats {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 6px;
-  height: 100%;
-}
-
-/* 讓草地舞台變寬 */
-.pet-meadow-track {
-  position: relative;
-  width: 100%;
-  height: 30px;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
 /* 調整下方網格 */
 .board-grid {
   display: grid;
@@ -277,36 +228,29 @@
     .honor-badge .b-desc { font-size: 9px; font-weight: bold; color: #92400e; opacity: 0.85; white-space: nowrap; }
 
     /* ============================================================
-       🐾 左欄底部：橫向草地漫步舞台、對話氣泡、重新鑑定與防連點餵食
+       🐾 萌寵橫幅（精簡版）：整條約 110px，把空間還給下方作業區
        ============================================================ */
     .pixel-pet { image-rendering: pixelated; image-rendering: crisp-edges; }
     .pet-sanctuary-wrap {
       position: relative;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      border-radius: 16px;
+      flex: 0 0 auto;
+      border-radius: 14px;
       border: 2.5px solid #84cc16;
       background: linear-gradient(180deg, #dff6ff 0%, #f0fdf4 58%, #bef264 58%, #84cc16 100%);
-      padding: 10px 10px 8px;
+      padding: 6px 10px;
       overflow: hidden;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
-      transition: all 0.4s ease;
-      min-height: 195px;
+      transition: border-color 0.4s ease, background 0.4s ease;
     }
-    .pet-sanctuary-wrap.is-fogged {
-      border-color: #d6d3d1;
-      background: #f5f5f4;
-    }
+    .pet-sanctuary-wrap.is-fogged { border-color: #d6d3d1; background: #f5f5f4; }
     .pet-sanctuary-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%;
-      gap: 4px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
       transition: filter 0.5s ease, opacity 0.5s ease;
+    }
+    @media (min-width: 768px) {
+      .pet-sanctuary-inner { grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; align-items: stretch; }
     }
     .pet-sanctuary-wrap.is-fogged .pet-sanctuary-inner:not(.unsealed) {
       filter: blur(11px) grayscale(75%);
@@ -314,15 +258,19 @@
       pointer-events: none;
       user-select: none;
     }
+
+    /* 迷霧封印：改為橫向排列，矮橫幅也放得下 */
     .pet-fog-overlay {
       position: absolute;
       inset: 0;
       display: none;
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
+      gap: 4px 14px;
       text-align: center;
-      padding: 12px;
+      padding: 6px 12px;
       background: rgba(255, 255, 255, 0.65);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
@@ -330,38 +278,31 @@
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
     .pet-sanctuary-wrap.is-fogged .pet-fog-overlay { display: flex; }
-    .pet-fog-overlay.clearing {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(1.06);
-    }
+    .pet-fog-overlay.clearing { opacity: 0; pointer-events: none; transform: scale(1.06); }
     @keyframes rejectShake {
       0%, 100% { transform: translateX(0); }
       20%, 60% { transform: translateX(-8px); }
       40%, 80% { transform: translateX(8px); }
     }
     .pet-fog-overlay.shake-reject { animation: rejectShake 0.45s ease; }
-
     .pet-fog-badge {
       background: #fff1f2;
       color: #be123c;
       border: 2px solid #fda4af;
       border-radius: 999px;
-      padding: 4px 12px;
-      font-size: 13px;
+      padding: 3px 12px;
+      font-size: 12px;
       font-weight: 900;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      margin-bottom: 6px;
     }
     .btn-unseal {
-      margin-top: 8px;
       background: #0d9488;
       color: white;
       border: 2px solid #115e59;
-      padding: 6px 14px;
+      padding: 4px 14px;
       border-radius: 999px;
       font-weight: 900;
       font-size: 12px;
@@ -369,108 +310,45 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 4px 0 #115e59;
+      box-shadow: 0 3px 0 #115e59;
       transition: 0.15s;
     }
-    .btn-unseal:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 #115e59; }
+    .btn-unseal:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 #115e59; }
     .btn-unseal:disabled { opacity: 0.7; cursor: wait; }
 
-    .pet-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      gap: 4px;
-      flex-wrap: wrap;
-      z-index: 5;
-    }
+    /* 左側：草地舞台（整塊可點擊互動） */
+    .pet-left-stage { position: relative; height: 92px; min-width: 0; }
     .pet-status-pill {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      z-index: 5;
+      pointer-events: none;
       font-size: 11px;
       font-weight: 900;
       color: #365314;
       background: rgba(255,255,255,0.9);
-      padding: 2px 9px;
+      padding: 1px 9px;
       border-radius: 999px;
       border: 1.5px solid #86efac;
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
-    .pet-action-btns { display: flex; gap: 5px; align-items: center; }
-    .btn-feed {
-      background: #fef08a;
-      border: 2px solid #eab308;
-      padding: 2px 9px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 900;
-      color: #854d0e;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      box-shadow: 0 2px 0 #ca8a04;
-      transition: 0.15s;
-    }
-    .btn-feed:active:not(.empty) { transform: translateY(2px); box-shadow: none; }
-    .btn-feed.empty {
-      background: #f3f4f6;
-      border-color: #9ca3af;
-      color: #4b5563;
-      box-shadow: none;
-    }
-    .btn-open-dex {
-      background: #e0f2fe;
-      border: 2px solid #38bdf8;
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 900;
-      color: #0369a1;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      box-shadow: 0 2px 0 #0284c7;
-    }
-    .btn-open-dex:active { transform: translateY(2px); box-shadow: none; }
-
-    /* 🌿 橫向草地漫步舞台 */
-    .pet-meadow-track {
-      position: relative;
-      width: 100%;
-      height: 92px;
-      margin: 2px 0;
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-    }
+    .pet-meadow-track { position: absolute; inset: 0; cursor: pointer; }
     .meadow-clouds-mini {
-      position: absolute;
-      top: 4px;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-      font-size: 15px;
-      opacity: 0.65;
-      pointer-events: none;
+      position: absolute; top: 4px; left: 0; width: 100%;
+      display: flex; justify-content: space-around;
+      font-size: 14px; opacity: 0.6; pointer-events: none;
     }
     .meadow-flowers-mini {
-      position: absolute;
-      bottom: 3px;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 14px;
-      font-size: 11px;
-      opacity: 0.8;
-      pointer-events: none;
+      position: absolute; bottom: 1px; left: 0; width: 100%;
+      display: flex; justify-content: space-between;
+      padding: 0 14px; font-size: 11px; opacity: 0.8; pointer-events: none;
     }
     .pet-walker-box {
       position: absolute;
-      bottom: 8px;
+      bottom: 6px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -480,94 +358,139 @@
       z-index: 4;
     }
     .pet-speech-bubble {
+      --bx: 0px; /* 由 JS 依邊界微調水平位移，避免被橫幅切掉 */
       position: absolute;
-      bottom: 54px;
+      bottom: calc(100% + 6px);
       left: 50%;
-      transform: translateX(-50%) scale(0.8);
+      width: max-content;
+      max-width: 280px;
+      text-align: center;
+      line-height: 1.25;
+      transform: translateX(calc(-50% + var(--bx))) scale(0.8);
       background: #fff;
       border: 2px solid #3E2723;
       border-radius: 12px;
-      padding: 3px 9px;
+      padding: 2px 8px;
       font-size: 11px;
       font-weight: 900;
       color: #3E2723;
-      white-space: nowrap;
       box-shadow: 0 3px 8px rgba(0,0,0,0.15);
       opacity: 0;
       pointer-events: none;
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 12;
     }
     .pet-speech-bubble::after {
       content: '';
       position: absolute;
       bottom: -6px;
-      left: 50%;
+      left: calc(50% - var(--bx));
       transform: translateX(-50%) rotate(45deg);
-      width: 8px;
-      height: 8px;
+      width: 8px; height: 8px;
       background: #fff;
       border-right: 2px solid #3E2723;
       border-bottom: 2px solid #3E2723;
     }
-    .pet-speech-bubble.show {
-      opacity: 1;
-      transform: translateX(-50%) scale(1);
-    }
+    .pet-speech-bubble.show { opacity: 1; transform: translateX(calc(-50% + var(--bx))) scale(1); }
 
     .pet-stage-avatar {
-      width: 50px;
-      height: 50px;
+      --flip: 1; /* 1 = 面向左（原圖方向）、-1 = 面向右；由 JS 切換 */
+      width: 44px;
+      height: 44px;
       object-fit: contain;
+      transform: scaleX(var(--flip));
+      transform-origin: bottom center;
       filter: drop-shadow(0 4px 5px rgba(0,0,0,0.18));
-      transition: transform 0.2s;
     }
-/* ============================================================
-   🐾 優化萌寵動畫 (參考 index.html 的 Hop 與 Sway)
-   ============================================================ */
-@keyframes petHappyBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-@keyframes petWalkStep { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
-@keyframes petScratchAnim { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
-/* 新增：興奮跳躍與左右搖擺 */
-@keyframes petHop { 
-  0%, 100% { transform: translateY(0) scale(1); } 
-  50% { transform: translateY(-15px) scale(1.05); } 
-}
-@keyframes petSway {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(6deg); }
-}
 
-.pet-bob { animation: petHappyBob 1.8s ease-in-out infinite; }
-.pet-waddle { animation: petWalkStep 0.45s ease-in-out infinite; }
-.pet-scratch { animation: petScratchAnim 0.35s ease-in-out infinite; }
-.pet-hop { animation: petHop 0.4s ease-in-out infinite; }
-.pet-sway { animation: petSway 2s ease-in-out infinite; transform-origin: bottom center;}
+    /* 🐾 動畫：全部帶入 --flip，翻面方向不會被動畫的 transform 蓋掉 */
+    @keyframes petHappyBob {
+      0%, 100% { transform: translateY(0) scaleX(var(--flip)); }
+      50%      { transform: translateY(-4px) scaleX(var(--flip)); }
+    }
+    @keyframes petWalkStep {
+      0%, 100% { transform: translateY(0) scaleX(var(--flip)) rotate(-3deg); }
+      50%      { transform: translateY(-4px) scaleX(var(--flip)) rotate(3deg); }
+    }
+    @keyframes petScratchAnim {
+      0%, 100% { transform: scaleX(var(--flip)) rotate(0deg); }
+      25%      { transform: scaleX(var(--flip)) rotate(-14deg); }
+      75%      { transform: scaleX(var(--flip)) rotate(14deg); }
+    }
+    @keyframes petHop {
+      0%, 100% { transform: translateY(0) scaleX(var(--flip)) scale(1); }
+      50%      { transform: translateY(-12px) scaleX(var(--flip)) scale(1.05); }
+    }
+    @keyframes petSway {
+      0%, 100% { transform: scaleX(var(--flip)) rotate(-6deg); }
+      50%      { transform: scaleX(var(--flip)) rotate(6deg); }
+    }
+    .pet-bob { animation: petHappyBob 1.8s ease-in-out infinite; }
+    .pet-waddle { animation: petWalkStep 0.45s ease-in-out infinite; }
+    .pet-scratch { animation: petScratchAnim 0.35s ease-in-out infinite; }
+    .pet-hop { animation: petHop 0.4s ease-in-out infinite; }
+    .pet-sway { animation: petSway 2s ease-in-out infinite; }
 
-    @keyframes heartPop { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-45px) scale(1.6); } }
-    .heart-float { position: absolute; font-size: 22px; animation: heartPop 0.9s forwards ease-out; pointer-events: none; z-index: 20; }
+    @keyframes heartPop { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-38px) scale(1.5); } }
+    .heart-float { position: absolute; font-size: 20px; animation: heartPop 0.9s forwards ease-out; pointer-events: none; z-index: 20; }
 
-    /* 圖鑑與集氣條 */
+    /* 右側：名稱 / 按鈕 / 集氣條 / 圖鑑晶片，各佔一行 */
+    .pet-right-stats {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 4px;
+      min-width: 0;
+    }
+    .pet-name-line {
+      font-size: 13px;
+      font-weight: 900;
+      color: #14532d;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pet-action-btns { display: flex; gap: 6px; }
+    .btn-feed, .btn-open-dex {
+      flex: 1;
+      justify-content: center;
+      white-space: nowrap;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: 0.15s;
+    }
+    .btn-feed { background: #fef08a; border: 2px solid #eab308; color: #854d0e; box-shadow: 0 2px 0 #ca8a04; }
+    .btn-feed:active:not(.empty) { transform: translateY(2px); box-shadow: none; }
+    .btn-feed.empty { background: #f3f4f6; border-color: #9ca3af; color: #4b5563; box-shadow: none; }
+    .btn-open-dex { background: #e0f2fe; border: 2px solid #38bdf8; color: #0369a1; box-shadow: 0 2px 0 #0284c7; }
+    .btn-open-dex:active { transform: translateY(2px); box-shadow: none; }
+
+    #stGachaBarBox { width: 100%; }
+    .gacha-bar-wrap { width: 100%; height: 14px; background: #e5e7eb; border-radius: 99px; overflow: hidden; position: relative; border: 2px solid #d1d5db; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .gacha-bar-fill { height: 100%; background: linear-gradient(90deg, #fcd34d, #f59e0b); width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+    .gacha-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #78350f; text-shadow: 0 1px 0 rgba(255,255,255,0.6); }
+
     .pet-mini-dex {
       display: flex;
+      align-items: center;
       gap: 5px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 2px;
-      padding-top: 5px;
-      border-top: 1px dashed rgba(54, 83, 20, 0.25);
-      width: 100%;
-      max-height: 58px;
-      overflow-y: auto;
+      flex-wrap: nowrap;
+      height: 24px;
+      overflow-x: auto;
+      overflow-y: hidden;
       scrollbar-width: none;
     }
     .pet-mini-dex::-webkit-scrollbar { display: none; }
-    .pet-mini-chip { background: rgba(255,255,255,0.9); border: 1.5px solid #86efac; border-radius: 10px; padding: 2px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #166534; cursor: pointer; }
+    .pet-mini-dex > span:not(.pet-mini-chip) { font-size: 10px !important; line-height: 1.2; white-space: normal; }
+    .pet-mini-chip { flex-shrink: 0; white-space: nowrap; background: rgba(255,255,255,0.9); border: 1.5px solid #86efac; border-radius: 10px; padding: 1px 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #166534; cursor: pointer; }
     .pet-mini-chip.active-chip { border-color: #0284c7; background: #e0f2fe; color: #0369a1; }
-    
-    .gacha-bar-wrap { width: 96%; height: 15px; background: #e5e7eb; border-radius: 99px; margin-top: 4px; overflow: hidden; position: relative; border: 2px solid #d1d5db; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0; }
-    .gacha-bar-fill { height: 100%; background: linear-gradient(90deg, #fcd34d, #f59e0b); width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-    .gacha-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #78350f; text-shadow: 0 1px 0 rgba(255,255,255,0.6); }
 
     /* ============================================================
        🎒 右欄：書包確認清單 & 🔥 待處理任務 (自動歸類同項目在前後項)
@@ -812,23 +735,12 @@
       </button>
     </div>
 
-    <!-- 萌寵橫向佈局 -->
+    <!-- 萌寵橫向佈局：左側草地舞台、右側資訊欄 -->
     <div class="pet-sanctuary-inner" id="petSanctuaryInner">
-      
-      <!-- 左側：草地漫步區與互動按鈕 -->
-      <div class="pet-left-stage">
-        <div class="pet-top-bar">
-          <span class="pet-status-pill">👑 全冠王專屬小窩</span>
-          <div class="pet-action-btns">
-            <button class="btn-feed" id="btnFeedPet" onclick="window.feedPet()">
-              🍪 餵食 (<span id="cookieCountTxt">3</span>)
-            </button>
-            <button class="btn-open-dex" onclick="window.openFullDexModal()">
-              <i class="bi bi-book-half"></i> 百獸圖鑑
-            </button>
-          </div>
-        </div>
 
+      <!-- 左側：草地漫步舞台（點擊互動） -->
+      <div class="pet-left-stage">
+        <span class="pet-status-pill">👑 全冠王專屬小窩</span>
         <div class="pet-meadow-track" id="petMeadowTrack" onclick="window.interactWithPet()">
           <div class="meadow-clouds-mini"><span>☁️</span><span>⛅</span><span>🦋</span></div>
           <div class="meadow-flowers-mini"><span>🌼</span><span>🌱</span><span>🌷</span><span>🍀</span></div>
@@ -839,11 +751,19 @@
         </div>
       </div>
 
-      <!-- 右側：名稱、圖鑑晶片與集氣條 -->
+      <!-- 右側：名稱、按鈕、集氣條、圖鑑晶片 -->
       <div class="pet-right-stats">
-        <div id="stActivePetName" style="font-size:14px; font-weight:900; color:#14532d; text-align:right;">載入中...</div>
-        <div id="stPetMiniDex" class="pet-mini-dex" style="justify-content:flex-end;"></div>
-        <div id="stGachaBarBox" style="width:100%;"></div>
+        <div id="stActivePetName" class="pet-name-line">載入中...</div>
+        <div class="pet-action-btns">
+          <button class="btn-feed" id="btnFeedPet" onclick="window.feedPet()">
+            🍪 餵食 (<span id="cookieCountTxt">3</span>)
+          </button>
+          <button class="btn-open-dex" onclick="window.openFullDexModal()">
+            <i class="bi bi-book-half"></i> 百獸圖鑑
+          </button>
+        </div>
+        <div id="stGachaBarBox"></div>
+        <div id="stPetMiniDex" class="pet-mini-dex"></div>
       </div>
 
     </div>
@@ -1143,7 +1063,7 @@
       heart.className = 'heart-float';
       heart.innerText = '💖';
       heart.style.left = walker ? walker.style.left : '50%';
-      heart.style.bottom = '50px';
+      heart.style.bottom = '34px';
       track.appendChild(heart);
       
       window.playNativeSound('chomp');
@@ -1160,46 +1080,76 @@
     // 🌿 橫向草地漫步舞台 ＋ 對話氣泡
     // ============================================================
     let petPosPercent = 50;
+    let petAnimTimer = null;
+    let petLoopTimer = null;
+
+    // 氣泡：自動往內側位移，避免被橫幅左右邊界切掉
     function showPetBubble(text) {
       const bubble = document.getElementById('petSpeechBubble');
+      const track = document.getElementById('petMeadowTrack');
+      const walker = document.getElementById('petWalkerBox');
       if (!bubble) return;
       bubble.innerText = text;
+      bubble.style.setProperty('--bx', '0px');
+      if (track && walker) {
+        const tr = track.getBoundingClientRect();
+        const wr = walker.getBoundingClientRect();
+        const half = bubble.offsetWidth / 2 + 4;
+        const center = wr.left + wr.width / 2 - tr.left;
+        const clamped = Math.max(half, Math.min(tr.width - half, center));
+        bubble.style.setProperty('--bx', (clamped - center) + 'px');
+      }
       bubble.classList.add('show');
       clearTimeout(window._petBubbleTimer);
       window._petBubbleTimer = setTimeout(() => bubble.classList.remove('show'), 3200);
     }
 
-    window.interactWithPet = function() {
-      const wrap = document.getElementById('petSanctuaryWrap');
-      if (!wrap || wrap.classList.contains('is-fogged')) return;
-      window.playStudentPetCry(currentPartnerPet.kind);
-      const coins = (currentStudent && currentStudent.coins) || 0;
-      const needCoins = 10 - (coins % 10);
-      const talkLines = [
-        `主人太棒了！所有任務都討伐完畢！👑`,
-        `再存 ${needCoins} 枚金幣，就能請老師幫我抽新夥伴囉！🎰`,
-        `點右上角「百獸圖鑑」看看還有哪些神秘夥伴！📖`,
-        `專注計時滿 5 分鐘會掉好吃的能量餅乾喔！🍪`,
-        `${currentPartnerPet.name} 陪你一起成為超級英雄！✨`
-      ];
-      showPetBubble(talkLines[Math.floor(Math.random() * talkLines.length)]);
-    };
+    // 切換動畫狀態；ms 之後自動回到待機呼吸 (pet-bob)
+    function setPetAnim(cls, ms) {
+      const img = document.getElementById('stActivePetImg');
+      if (!img) return;
+      clearTimeout(petAnimTimer);
+      img.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch', 'pet-hop', 'pet-sway');
+      void img.offsetWidth; // 讓同一動畫可以重新播放
+      img.classList.add(cls);
+      if (ms) {
+        petAnimTimer = setTimeout(() => {
+          img.classList.remove(cls);
+          img.classList.add('pet-bob');
+        }, ms);
+      }
+    }
 
-// 豐富的對話詞庫 (配合新動畫)
+    // 讓寵物停在「當下位置」（點擊時不再繼續滑向舊目標）
+    function freezePet() {
+      const track = document.getElementById('petMeadowTrack');
+      const walker = document.getElementById('petWalkerBox');
+      if (!track || !walker) return;
+      const tr = track.getBoundingClientRect();
+      const wr = walker.getBoundingClientRect();
+      if (!tr.width) return;
+      const pct = ((wr.left + wr.width / 2 - tr.left) / tr.width) * 100;
+      walker.style.transition = 'none';
+      walker.style.left = pct + '%';
+      petPosPercent = pct;
+      void walker.offsetWidth;
+    }
+
+    function schedulePetLoop(ms) {
+      clearTimeout(petLoopTimer);
+      petLoopTimer = setTimeout(petTick, ms);
+    }
+
+    // 點擊互動：停步 → 跳一下 → 開心搖擺 → 回到待機
     window.interactWithPet = function() {
       const wrap = document.getElementById('petSanctuaryWrap');
       if (!wrap || wrap.classList.contains('is-fogged')) return;
       window.playStudentPetCry(currentPartnerPet.kind);
-      
-      const petImg = document.getElementById('stActivePetImg');
-      
-      // 點擊時觸發跳躍與開心搖擺
-      petImg.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch');
-      petImg.classList.add('pet-hop');
-      setTimeout(() => {
-        petImg.classList.remove('pet-hop');
-        petImg.classList.add('pet-sway');
-      }, 800);
+
+      freezePet();
+      setPetAnim('pet-hop', 0);
+      petAnimTimer = setTimeout(() => setPetAnim('pet-sway', 2000), 800);
+      schedulePetLoop(3800); // 互動結束後才繼續自動漫步
 
       const coins = (currentStudent && currentStudent.coins) || 0;
       const needCoins = 10 - (coins % 10);
@@ -1214,64 +1164,51 @@
       showPetBubble(talkLines[Math.floor(Math.random() * talkLines.length)]);
     };
 
-    // 自動漫步與行為循環
-    setInterval(() => {
+    // 自動漫步與行為循環：每個動作播完才排下一個，不會互相打斷
+    function petTick() {
       const wrap = document.getElementById('petSanctuaryWrap');
       const walker = document.getElementById('petWalkerBox');
       const petImg = document.getElementById('stActivePetImg');
-      if (!wrap || !walker || !petImg || wrap.classList.contains('is-fogged')) return;
+      if (!wrap || !walker || !petImg || wrap.classList.contains('is-fogged')) {
+        schedulePetLoop(2000);
+        return;
+      }
 
       const roll = Math.random();
-      // 清除所有動態 Class
-      petImg.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch', 'pet-hop', 'pet-sway');
+      let wait = 1500;
 
       if (roll < 0.5) {
-        // 🐾 行走：因為上方橫幅變寬了，擴大行走範圍 (10% ~ 90%)
-        const nextPos = Math.floor(10 + Math.random() * 80);
-        const movingRight = nextPos > petPosPercent;
-        petPosPercent = nextPos;
-        
-        // 根據距離動態調整移動時間 (更自然)
-        const moveTime = Math.max(1.5, Math.abs(nextPos - petPosPercent) * 0.05); 
-        walker.style.transition = `left ${moveTime}s linear`;
-        walker.style.left = `${petPosPercent}%`;
-        
-        petImg.style.transform = movingRight ? 'scaleX(-1)' : 'scaleX(1)';
-        petImg.classList.add('pet-waddle');
-        
-        setTimeout(() => {
-          petImg.classList.remove('pet-waddle');
-          petImg.classList.add('pet-bob');
-        }, moveTime * 1000);
-
+        // 🐾 行走：依距離決定時間（修正舊版距離永遠算成 0 的問題）
+        const nextPos = Math.floor(12 + Math.random() * 76);
+        const dist = Math.abs(nextPos - petPosPercent);
+        if (dist < 6) {
+          setPetAnim('pet-sway', 1600);
+          wait = 1600;
+        } else {
+          const moveTime = Math.max(1.2, dist * 0.06);
+          petImg.style.setProperty('--flip', nextPos > petPosPercent ? -1 : 1);
+          walker.style.transition = `left ${moveTime}s linear`;
+          walker.style.left = `${nextPos}%`;
+          petPosPercent = nextPos;
+          setPetAnim('pet-waddle', moveTime * 1000);
+          wait = moveTime * 1000;
+        }
       } else if (roll < 0.7) {
-        // 🐾 抓癢
-        petImg.classList.add('pet-scratch');
-        setTimeout(() => {
-          petImg.classList.remove('pet-scratch');
-          petImg.classList.add('pet-bob');
-        }, 1200);
-
+        setPetAnim('pet-scratch', 1200);   // 🐾 抓癢
+        wait = 1200;
       } else if (roll < 0.85) {
-        // 🐾 原地小跳躍 (參考 index.html 的 Hop)
-        petImg.classList.add('pet-hop');
-        setTimeout(() => {
-          petImg.classList.remove('pet-hop');
-          petImg.classList.add('pet-bob');
-        }, 1000);
-
+        setPetAnim('pet-hop', 1000);       // 🐾 原地小跳
+        wait = 1000;
       } else {
-        // 🐾 開心搖擺並說話
-        petImg.classList.add('pet-sway');
+        setPetAnim('pet-sway', 2000);      // 🐾 開心搖擺並說話
         if (Math.random() < 0.5) {
           showPetBubble(currentPartnerPet.kind === 'dog' ? "汪汪！今天也要努力喔～🌿" : "喵～想吃能量餅乾！☀️");
         }
-        setTimeout(() => {
-          petImg.classList.remove('pet-sway');
-          petImg.classList.add('pet-bob');
-        }, 2000);
+        wait = 2000;
       }
-    }, 4500); // 放慢一點讓動畫播完
+      schedulePetLoop(wait + 1200 + Math.random() * 1800);
+    }
+    schedulePetLoop(2500);
 
     // ============================================================
     // 🔄 向公會申請重新鑑定（真實讀取 Firebase 防作弊）
