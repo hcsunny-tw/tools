@@ -656,7 +656,23 @@ function getRankHtml(exp) {
         }
     });
 
-    document.getElementById('btnLogin').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+        try {
+            await signInWithPopup(auth, new GoogleAuthProvider());
+        } catch (e) {
+            console.error('登入失敗', e);
+            const hints = {
+                'auth/unauthorized-domain': '這個網址尚未加入 Firebase「已授權網域」（Authentication → Settings → Authorized domains）',
+                'auth/popup-blocked': '瀏覽器擋住了登入視窗，請允許此網站的彈出視窗後再試',
+                'auth/popup-closed-by-user': '登入視窗被關閉了，請再按一次登入',
+                'auth/cancelled-popup-request': '登入視窗被重複開啟，請稍候再試',
+                'auth/network-request-failed': '網路連線失敗，請檢查網路',
+                'auth/operation-not-supported-in-this-environment': '目前的開啟方式不支援登入（請用 https:// 或 localhost 網址，不要直接開檔案）',
+                'auth/operation-not-allowed': 'Firebase 尚未啟用 Google 登入方式'
+            };
+            alert('❌ 登入失敗\n\n【錯誤代碼】' + (e.code || '無') + '\n' + (hints[e.code] || (e.message || e)));
+        }
+    });
     document.getElementById('btnLogout').addEventListener('click', () => { if(confirm("確定要登出？")) signOut(auth).then(() => window.location.reload()); });
 
     function initApp() {
