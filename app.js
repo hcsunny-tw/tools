@@ -1,3 +1,11 @@
+// 🛡️ 防 XSS：所有要塞進 innerHTML 的使用者文字（姓名、委託標題、原因…）都先經過這裡
+function escapeHtml(v) {
+    return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+window.escapeHtml = escapeHtml;
+
 function getTaipeiDateString() { 
         return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
     }
@@ -5,7 +13,7 @@ function getTaipeiDateString() {
     function showToast(msg, actText, actCb) {
         const c = document.getElementById('toastContainer'); 
         const t = document.createElement('div'); t.className = 'toast-msg';
-        t.innerHTML = `<span>${msg}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;flex-shrink:0;">${actText}</button>` : ''); 
+        t.innerHTML = `<span>${escapeHtml(msg)}</span>` + (actText ? `<button class="btn sm" style="background:#fff;color:#333;border:none;flex-shrink:0;">${escapeHtml(actText)}</button>` : ''); 
         c.appendChild(t); 
         if(actText && actCb) { t.querySelector('button').onclick = ()=>{ actCb(); t.remove(); }; }
         setTimeout(()=> {
@@ -175,7 +183,7 @@ function getRankHtml(exp) {
     };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
+    import { getFirestore, doc, setDoc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     let app, db, auth;
@@ -253,9 +261,10 @@ function getRankHtml(exp) {
 
     function triggerAutoSave() {
         if (currentUser) {
-            localStorage.setItem(`guild_backup_${currentUser.uid}`, JSON.stringify(data));
+            try { localStorage.setItem(`guild_backup_${currentUser.uid}`, JSON.stringify({ savedAt: Date.now(), unsynced: true, data })); } catch (e) { console.warn('本機備份失敗', e); }
         }
         isDirty = true;
+        dirtyVersion++;
         updateSaveStatus('local');
 
         clearTimeout(saveTimeout); 
@@ -264,78 +273,146 @@ function getRankHtml(exp) {
         }, 15000); 
     }
 
-async function syncToCloud() {
-        if (!currentUser || !isDirty) return;
+// ============================================================
+    // ☁️ 雲端同步（含版本檢查：多裝置同時編輯時不會默默覆蓋對方）
+    // 每份文件帶 _rev；寫入時用 transaction 確認「雲端版本 = 我上次讀到的版本」才寫入。
+    // ============================================================
+    const DEVICE_ID = (() => {
+        try {
+            let d = localStorage.getItem('guild_device_id');
+            if (!d) { d = Math.random().toString(36).slice(2, 10); localStorage.setItem('guild_device_id', d); }
+            return d;
+        } catch (e) { return 'dev-' + Math.random().toString(36).slice(2, 8); }
+    })();
+    let remoteRev = { core: 0, assignments: 0, attendance: 0, logs: 0 };
+    let dirtyVersion = 0;          // 每次本機修改 +1，用來判斷「同步途中是否又有新修改」
+    let isSyncing = false;
+    let syncQueued = false;
+    let syncConflictPending = false;
+
+    const syncRef = (key) => doc(db, "users", currentUser.uid, "data", key);
+
+    function buildSyncPayloads(src) {
+        const c = JSON.parse(JSON.stringify(src));
+        return {
+            core: { roster: c.roster, teachers: c.teachers, questSettings: c.questSettings, discipline: c.discipline, settings: c.settings, coinPresets: c.coinPresets },
+            assignments: { assignments: c.assignments },
+            attendance: { attendance: c.attendance },
+            logs: { expLogs: c.expLogs }
+        };
+    }
+
+    async function guardedWrite(key, payload) {
+        const ref = syncRef(key);
+        return runTransaction(db, async (tx) => {
+            const snap = await tx.get(ref);
+            const cur = snap.exists() ? (snap.data()._rev || 0) : 0;
+            if (cur !== remoteRev[key]) return { ok: false, key, cur };
+            const next = cur + 1;
+            tx.set(ref, { ...payload, _rev: next, _device: DEVICE_ID, _updatedAt: Date.now() });
+            return { ok: true, key, next };
+        });
+    }
+
+    async function refreshRemoteRevs(keys) {
+        await Promise.all(keys.map(async (k) => {
+            const snap = await getDoc(syncRef(k));
+            remoteRev[k] = snap.exists() ? (snap.data()._rev || 0) : 0;
+        }));
+    }
+
+    async function handleSyncConflict(keys) {
+        syncConflictPending = true;
+        clearTimeout(saveTimeout);
+        updateSaveStatus('error', '雲端有較新資料');
+        try { localStorage.setItem(`guild_conflict_backup_${currentUser.uid}`, JSON.stringify({ at: new Date().toISOString(), data })); } catch (e) {}
+        const useCloud = confirm("⚠️ 偵測到另一台裝置已經更新過資料！\n\n【確定】＝ 載入雲端最新資料\n　　（你這台尚未同步的修改會被捨棄，但已在本機留下備份）\n【取消】＝ 保留我目前的內容，並覆蓋雲端");
+        if (useCloud) {
+            isDirty = false;
+            syncConflictPending = false;
+            await loadDataFromFirebase();
+            showToast("☁️ 已載入雲端最新資料");
+        } else {
+            try {
+                await refreshRemoteRevs(keys);
+                keys.forEach(k => { lastSyncedState[k] = ''; });
+                syncConflictPending = false;
+                isDirty = true;
+                await syncToCloud();
+            } catch (e) {
+                console.error(e);
+                syncConflictPending = false;
+                updateSaveStatus('error', '儲存失敗');
+            }
+        }
+    }
+
+    async function syncToCloud() {
+        if (!currentUser || !isDirty || syncConflictPending) return;
+        if (isSyncing) { syncQueued = true; return; }
+        isSyncing = true;
+        const versionAtStart = dirtyVersion;
         updateSaveStatus('uploading', '雲端同步中');
-        try { 
-            const cleanData = JSON.parse(JSON.stringify(data)); 
-            
-            const coreData = { roster: cleanData.roster, teachers: cleanData.teachers, questSettings: cleanData.questSettings, discipline: cleanData.discipline, settings: cleanData.settings, coinPresets: cleanData.coinPresets };
-            const assignData = { assignments: cleanData.assignments };
-            const attData = { attendance: cleanData.attendance };
-            const logsData = { expLogs: cleanData.expLogs };
+        try {
+            const payloads = buildSyncPayloads(data);
+            const strs = {};
+            const changedKeys = [];
+            Object.keys(payloads).forEach(k => {
+                strs[k] = JSON.stringify(payloads[k]);
+                if (lastSyncedState[k] !== strs[k]) changedKeys.push(k);
+            });
 
-            const promises = [];
-            
-            const coreStr = JSON.stringify(coreData);
-            const assignStr = JSON.stringify(assignData);
-            const attStr = JSON.stringify(attData);
-            const logsStr = JSON.stringify(logsData);
+            const results = await Promise.all(changedKeys.map(k => guardedWrite(k, payloads[k])));
+            results.filter(r => r.ok).forEach(r => { remoteRev[r.key] = r.next; lastSyncedState[r.key] = strs[r.key]; });
+            const conflictKeys = results.filter(r => !r.ok).map(r => r.key);
 
-            let needsPublicUpdate = false; 
-
-            if (lastSyncedState.core !== coreStr) {
-                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "core"), coreData));
-                lastSyncedState.core = coreStr;
-                needsPublicUpdate = true;
-            }
-            if (lastSyncedState.assignments !== assignStr) {
-                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "assignments"), assignData));
-                lastSyncedState.assignments = assignStr;
-                needsPublicUpdate = true;
-            }
-            if (lastSyncedState.attendance !== attStr) {
-                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "attendance"), attData));
-                lastSyncedState.attendance = attStr;
-            }
-            if (lastSyncedState.logs !== logsStr) {
-                promises.push(setDoc(doc(db, "users", currentUser.uid, "data", "logs"), logsData));
-                lastSyncedState.logs = logsStr;
+            if (conflictKeys.length > 0) {
+                isSyncing = false;
+                await handleSyncConflict(conflictKeys);
+                return;
             }
 
-            if (needsPublicUpdate || promises.length > 0) {
+            if (results.length > 0) {
+                const cleanData = JSON.parse(JSON.stringify(data));
                 const publicSummary = cleanData.roster.map((s, i) => {
                     const debts = [];
                     cleanData.assignments.forEach(a => {
-                        if(!a.archived) {
+                        if (!a.archived) {
                             const indices = a.assignedIndices || 'all';
                             if (indices === 'all' || indices.includes(i)) {
                                 const st = (a.statuses || [])[i] || 0;
-                                if (st === 0 || st === 2) { 
+                                if (st === 0 || st === 2) {
                                     debts.push({ title: a.title, st: st, subject: a.subject || '一般', date: a.date });
                                 }
                             }
                         }
                     });
-                    // 🌟 這裡新增了 exp 與 coins 資料
                     return { no: s.no, name: s.name, exp: s.exp || 0, coins: s.coins || 0, pets: s.pets || [], activePet: s.activePet || null, debts: debts };
                 });
-
-                promises.push(setDoc(doc(db, "public_boards", currentUser.uid), { 
+                await setDoc(doc(db, "public_boards", currentUser.uid), {
                     lastUpdated: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
-                    summary: publicSummary 
-                }));
+                    summary: publicSummary
+                });
             }
 
-            if (promises.length > 0) {
-                await Promise.all(promises);
+            if (dirtyVersion === versionAtStart) {
+                isDirty = false;
+                try { localStorage.removeItem(`guild_backup_${currentUser.uid}`); } catch (e) {}
+                updateSaveStatus('success');
+            } else {
+                // 同步途中使用者又改了東西：保持 dirty，稍後再送
+                updateSaveStatus('local');
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => syncToCloud(), 3000);
             }
-
-            isDirty = false;
-            updateSaveStatus('success'); 
-        } catch (e) { 
+        } catch (e) {
             console.error(e);
-            updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足' : '儲存失敗');
+            updateSaveStatus('error', e.code === 'permission-denied' ? '權限不足' : '儲存失敗（稍後自動重試）');
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => syncToCloud(), 30000);
+        } finally {
+            isSyncing = false;
+            if (syncQueued) { syncQueued = false; if (isDirty) syncToCloud(); }
         }
     }
 
@@ -377,6 +454,13 @@ async function syncToCloud() {
                 getDoc(coreRef), getDoc(assignRef), getDoc(attRef), getDoc(logsRef)
             ]);
 
+            remoteRev = {
+                core: coreSnap.exists() ? (coreSnap.data()._rev || 0) : 0,
+                assignments: assignSnap.exists() ? (assignSnap.data()._rev || 0) : 0,
+                attendance: attSnap.exists() ? (attSnap.data()._rev || 0) : 0,
+                logs: logsSnap.exists() ? (logsSnap.data()._rev || 0) : 0
+            };
+
             if (coreSnap.exists()) {
                 const coreData = coreSnap.data();
                 data.roster = coreData.roster || defaultData.roster;
@@ -390,11 +474,12 @@ async function syncToCloud() {
                 data.attendance = attSnap.exists() ? (attSnap.data().attendance || {}) : {};
                 data.expLogs = logsSnap.exists() ? (logsSnap.data().expLogs || []) : [];
 
+                const baseline = buildSyncPayloads(data);
                 lastSyncedState = {
-                    core: JSON.stringify(coreData),
-                    assignments: JSON.stringify(assignSnap.data() || {}),
-                    attendance: JSON.stringify(attSnap.data() || {}),
-                    logs: JSON.stringify(logsSnap.data() || {})
+                    core: JSON.stringify(baseline.core),
+                    assignments: JSON.stringify(baseline.assignments),
+                    attendance: JSON.stringify(baseline.attendance),
+                    logs: JSON.stringify(baseline.logs)
                 };
             } else {
                 const oldDocSnap = await getDoc(doc(db, "users", currentUser.uid, "data", "guildData"));
@@ -426,7 +511,27 @@ async function syncToCloud() {
                 if(typeof r.activePet === 'undefined') r.activePet = null; 
             });
             
-            onDataLoaded(); updateSaveStatus('success');
+            // 💾 上次若在同步前就關閉分頁，這裡提供還原本機備份
+            try {
+                const raw = localStorage.getItem(`guild_backup_${currentUser.uid}`);
+                if (raw) {
+                    const bk = JSON.parse(raw);
+                    if (bk && bk.unsynced && bk.data && Array.isArray(bk.data.roster) &&
+                        JSON.stringify(buildSyncPayloads(bk.data)) !== JSON.stringify(buildSyncPayloads(data))) {
+                        const when = new Date(bk.savedAt).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+                        if (confirm(`💾 發現一份尚未上傳雲端的本機備份（${when}）。\n\n【確定】＝ 還原這份備份並上傳\n【取消】＝ 捨棄備份，使用雲端資料`)) {
+                            data = bk.data;
+                            isDirty = true;
+                            dirtyVersion++;
+                            setTimeout(() => syncToCloud(), 2000);
+                        } else {
+                            localStorage.removeItem(`guild_backup_${currentUser.uid}`);
+                        }
+                    }
+                }
+            } catch (e) { console.warn('本機備份檢查失敗', e); }
+
+            onDataLoaded(); updateSaveStatus(isDirty ? 'local' : 'success');
         } catch (error) {
             console.error("🔥 Firebase 讀取失敗:", error);
             let errMsg = "⚠️ 資料庫連線失敗！\n\n【錯誤代碼】 " + (error.code || "無") + "\n【錯誤訊息】 " + (error.message || error);
@@ -444,7 +549,7 @@ async function syncToCloud() {
             document.getElementById('mainApp').style.display = 'flex'; 
             
             const emailDisp = document.getElementById('userEmailDisplay');
-            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> <span class="nav-text">${user.email.split('@')[0]}</span>`;
+            if(emailDisp) emailDisp.innerHTML = `<i class="bi bi-person-circle"></i> <span class="nav-text">${escapeHtml(user.email.split('@')[0])}</span>`;
             
             initApp();
         } else {
@@ -800,11 +905,11 @@ async function syncToCloud() {
 
             el.innerHTML = `
                 <div class="side-item-title" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
-                    <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${a.title}">${a.title}</span>
+                    <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(a.title)}">${escapeHtml(a.title)}</span>
                     <div style="display: flex; gap: 4px; flex-shrink: 0;">${missingBadge} ${gradeBadge}</div>
                 </div>
                 <div class="side-item-meta muted" style="display: flex; justify-content: space-between; margin-top: 4px;">
-                    <span>${a.date}</span><span>${a.teacher}</span>
+                    <span>${a.date}</span><span>${escapeHtml(a.teacher)}</span>
                 </div>
                 <div style="margin-top:6px; display:flex; align-items:center; gap:6px; font-size:12px;">
                     <div style="flex:1; height:6px; background:rgba(0,0,0,0.1); border-radius:3px; overflow:hidden;">
@@ -849,7 +954,7 @@ async function syncToCloud() {
 
         document.getElementById('quickDebtTitle').innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>【${student.name}】待清舊帳</span>
+                <span>【${escapeHtml(student.name)}】待清舊帳</span>
                 <i class="bi bi-x-circle-fill btn-close-debt" onclick="document.getElementById('quickDebtMenu').classList.remove('show'); document.getElementById('quickDebtMenu').dataset.currentSidx='';" style="cursor: pointer; font-size: 18px; color: var(--danger);"></i>
             </div>
         `;
@@ -859,7 +964,7 @@ async function syncToCloud() {
             const stLbl = debt.st === 2 ? '<span style="color:#c62828; font-size:11px;">(再訂正)</span>' : '<span style="color:#888; font-size:11px;">(未交)</span>';
             
             item.innerHTML = `
-                <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:bold;" title="${debt.title}">${debt.title} ${stLbl}</div>
+                <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:bold;" title="${escapeHtml(debt.title)}">${escapeHtml(debt.title)} ${stLbl}</div>
                 <button class="btn sm" style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--primary); color: #fff;"><i class="bi bi-check-lg"></i> 完成</button>
             `;
             
@@ -883,8 +988,8 @@ async function syncToCloud() {
         document.getElementById('dashEmptyState').style.display = 'none';
         document.getElementById('dashDetailPanel').classList.add('show');
         document.getElementById('dashDetailTitle').innerHTML = `
-            <span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${a.subject || '一般'}</span> 
-            ${a.title}
+            <span class="badge" style="background:var(--primary); color:#fff; font-size:14px; padding:2px 8px; border-radius:4px;">${escapeHtml(a.subject || '一般')}</span> 
+            ${escapeHtml(a.title)}
             <button class="btn sm ghost icon-only" title="編輯名稱" onclick="window.editAssignmentTitle(${a.id})" style="border:none; color:var(--muted);"><i class="bi bi-pencil-fill"></i></button>
         `;
 
@@ -945,7 +1050,7 @@ async function syncToCloud() {
                     <div class="seat s${st}" onclick="window.toggleStatus(${id}, ${i})">${s.no}</div>
                 </div>
                 <div class="seatName">
-                    <span style="display:inline-flex; align-items:center; gap:3px;">${s.name}${(() => {
+                    <span style="display:inline-flex; align-items:center; gap:3px;">${escapeHtml(s.name)}${(() => {
                         const rawPid = s.activePet || (s.pets && s.pets.length ? s.pets[s.pets.length - 1] : null);
                         const pid = rawPid && String(rawPid).startsWith('p') ? parseInt(String(rawPid).slice(1)) : rawPid;
                         const pet = pid ? gachaPool.find(p => String(p.id) === String(pid)) : null;
@@ -1141,9 +1246,9 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
 
             let tasksHtml = sortedDebts.map(t => {
                 let statusSpan = t.st === 2 ? `<span class="pill p-orange" style="transform:scale(0.85); transform-origin:right center; margin:0;">再訂正</span>` : `<span class="pill p-gray" style="transform:scale(0.85); transform-origin:right center; margin:0;">未交</span>`;
-                let subjTag = groupDebtsBySubject ? `<span style="font-size:10px; background:var(--tbl-head); color:var(--primary); padding:2px 4px; border-radius:4px; margin-right:4px;">${t.subject}</span>` : '';
+                let subjTag = groupDebtsBySubject ? `<span style="font-size:10px; background:var(--tbl-head); color:var(--primary); padding:2px 4px; border-radius:4px; margin-right:4px;">${escapeHtml(t.subject)}</span>` : '';
                 
-                return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${t.title}">${subjTag}🔸 ${t.title}</span> ${statusSpan}</div>`;
+                return `<div class="task-item-hover" style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; justify-content:space-between; gap:4px; cursor:pointer; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,0.1);" onclick="window.toggleCardTaskStatus(event, ${t.id}, ${i})"><span style="flex:1; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(t.title)}">${subjTag}🔸 ${escapeHtml(t.title)}</span> ${statusSpan}</div>`;
             }).join('');
 
             const badgeHtml = (debts.length > 0 && !isBatchExpMode) ? `<div class="debt-badge" style="top:5px; right:0px;" onclick="window.openQuickDebtMenu(event, ${i}, '${encodeURIComponent(JSON.stringify(debts))}')">${debts.length}</div>` : '';
@@ -1168,7 +1273,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                     </div>
                     <div style="flex:1; min-width:0; padding-right:20px;">
                         <div style="font-weight:900; font-size:20px; display:flex; align-items:baseline; gap:4px; flex-wrap:wrap;">
-                            ${s.name} ${getRankHtml(s.exp||0)}
+                            ${escapeHtml(s.name)} ${getRankHtml(s.exp||0)}
                         </div>
                         <div style="font-size:14px; margin-top:4px; font-weight:bold; color:var(--muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                             <span style="white-space:nowrap;">⭐ <span style="font-size:17px; color:var(--primary);">${s.exp||0}</span></span>
@@ -1381,10 +1486,10 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         const sp = document.getElementById('selBatchPlus');
         const sm = document.getElementById('selBatchMinus');
         if(sp && data.coinPresets && data.coinPresets.plus) {
-            sp.innerHTML = data.coinPresets.plus.map(p => `<option value="${p.v}|${p.l}">+${p.v} ${p.l}</option>`).join('');
+            sp.innerHTML = data.coinPresets.plus.map(p => `<option value="${p.v}|${escapeHtml(p.l)}">+${p.v} ${escapeHtml(p.l)}</option>`).join('');
         }
         if(sm && data.coinPresets && data.coinPresets.minus) {
-            sm.innerHTML = data.coinPresets.minus.map(p => `<option value="${p.v}|${p.l}">${p.v} ${p.l}</option>`).join('');
+            sm.innerHTML = data.coinPresets.minus.map(p => `<option value="${p.v}|${escapeHtml(p.l)}">${p.v} ${escapeHtml(p.l)}</option>`).join('');
         }
     };
 
@@ -1447,7 +1552,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 <div style="display: flex; align-items: flex-start; border-bottom: 1px dashed #ccc; padding: 6px 0; font-size: 14px; line-height: 1.4;">
                     <div style="width: 14px; height: 14px; border: 1.5px solid #333; margin-right: 8px; border-radius: 3px; flex-shrink: 0; margin-top: 2px;"></div>
                     <div style="flex: 1; font-weight: bold; color: #222;">
-                        ${t.title} <span style="color:#666; font-size: 12px; font-weight: normal;">(${dateText})</span> <span style="color:${statusColor}; margin-left: 4px;">${statusText}</span>
+                        ${escapeHtml(t.title)} <span style="color:#666; font-size: 12px; font-weight: normal;">(${dateText})</span> <span style="color:${statusColor}; margin-left: 4px;">${statusText}</span>
                     </div>
                 </div>
             `;
@@ -1456,7 +1561,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         return `
             <div style="border: 2px dashed #888; padding: 15px; border-radius: 8px; background: #fff; font-family: 'Microsoft JhengHei', sans-serif; page-break-inside: avoid; width: 100%; box-sizing: border-box; position: relative;">
                 <h2 style="margin: 0 0 10px 0; font-size: 18px; color: #000; border-bottom: 2px solid #000; padding-bottom: 5px; text-align: center;">
-                    ${studentData.name} 的任務單
+                    ${escapeHtml(studentData.name)} 的任務單
                 </h2>
                 
                 <div style="margin-bottom: 15px;">
@@ -1612,7 +1717,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             let btns = '';
             
             [{id:0,l:'出席'},{id:1,l:'遲到'},{id:2,l:'早退'},{id:3,l:'病假'},{id:5,l:'事假'},{id:4,l:'公假'}].forEach(o => {
-                btns += `<button class="att-btn ${r.status===o.id?'active':''}" data-status="${o.id}" onclick="window.setAttStatus('${date}', ${i}, ${o.id})">${o.l}</button>`;
+                btns += `<button class="att-btn ${r.status===o.id?'active':''}" data-status="${o.id}" onclick="window.setAttStatus('${date}', ${i}, ${o.id})">${escapeHtml(o.l)}</button>`;
             });
             
             let noteHtml = '';
@@ -1622,10 +1727,10 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 let noteBg = isTime ? '#dbeafe' : '#fee2e2';
                 let noteBorder = isTime ? '#bfdbfe' : '#fecaca';
                 let noteIcon = isTime ? 'bi-clock' : 'bi-pencil';
-                noteHtml = `<span class="att-note" style="display:inline-block; background:${noteBg}; color:${noteColor}; border-color:${noteBorder}; padding: 4px 8px; border-radius: 12px;"><i class="bi ${noteIcon}"></i> ${r.note}</span>`;
+                noteHtml = `<span class="att-note" style="display:inline-block; background:${noteBg}; color:${noteColor}; border-color:${noteBorder}; padding: 4px 8px; border-radius: 12px;"><i class="bi ${noteIcon}"></i> ${escapeHtml(r.note)}</span>`;
             }
 
-            div.innerHTML = `<div class="att-no">${s.no}</div><div class="att-name">${s.name} ${noteHtml}</div><div style="display:flex; flex-wrap:wrap; gap:4px;">${btns}</div>`;
+            div.innerHTML = `<div class="att-no">${s.no}</div><div class="att-name">${escapeHtml(s.name)} ${noteHtml}</div><div style="display:flex; flex-wrap:wrap; gap:4px;">${btns}</div>`;
             list.appendChild(div);
         });
 
@@ -1748,7 +1853,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         const d = document.getElementById('rosterEditor'); d.innerHTML = '';
         data.roster.forEach(s => {
             // ⭐ 編輯名單時加入小組設定
-            d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${s.name}" class="roster-name-input"><input type="number" value="${s.group || 1}" class="roster-group-input" style="width:60px; padding:8px;" title="組別" placeholder="組別"></div>`;
+            d.innerHTML += `<div class="roster-item"><input type="number" value="${s.no}" class="roster-no-input"><input value="${escapeHtml(s.name)}" class="roster-name-input"><input type="number" value="${s.group || 1}" class="roster-group-input" style="width:60px; padding:8px;" title="組別" placeholder="組別"></div>`;
         });
         if (document.getElementById('roster-content-teachers').classList.contains('show')) {
             renderTeacherEditor();
@@ -1762,7 +1867,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         teachersList.forEach(t => {
             d.innerHTML += `
                 <div class="teacher-item" style="display:flex; gap:8px; margin-bottom:8px;">
-                    <input value="${t}" class="teacher-name-input" style="flex:1; padding:8px;">
+                    <input value="${escapeHtml(t)}" class="teacher-name-input" style="flex:1; padding:8px;">
                     <button class="btn sm warn icon-only" onclick="this.parentElement.remove()" title="刪除"><i class="bi bi-trash"></i></button>
                 </div>`;
         });
@@ -1829,7 +1934,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 container.innerHTML = items.map((item, idx) => `
                     <div class="checklist-item" onclick="this.classList.toggle('done')">
                         <div style="width: 28px; height: 28px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:14px;">${idx+1}</div>
-                        ${item}
+                        ${escapeHtml(item)}
                     </div>`).join(''); 
             }
         };
@@ -1888,7 +1993,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
             }
         });
         if (missing.length === 0 && redo.length === 0) return;
-        let html = `<h4>${a.title}</h4><ul>`;
+        let html = `<h4>${escapeHtml(a.title)}</h4><ul>`;
         if (redo.length) html += `<li class="t-redo">再戰：${redo.join(', ')}</li>`;
         if (missing.length) html += `<li class="t-miss">未交：${missing.join(', ')}</li>`;
         html += `</ul>`;
@@ -1922,7 +2027,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                     });
                     if(c>=5) debts.push({name: s.name, c});
                 });
-                if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${d.name} (${d.c})</span>`);
+                if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${escapeHtml(d.name)} (${d.c})</span>`);
                 else list.innerHTML = '<p style="color:var(--success)">目前無人欠款！</p>';
             }
             document.getElementById('adminProfileModal').classList.add('show');
@@ -2079,13 +2184,13 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         const ts = data.teachers || []; 
         const sel = document.getElementById('ipTeacherSelect'); 
         if(sel) { 
-            sel.innerHTML = ts.map(t => `<option value="${t}">${t}</option>`).join('') + '<option value="custom">自行輸入...</option>'; 
+            sel.innerHTML = ts.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('') + '<option value="custom">自行輸入...</option>'; 
             document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none'; 
         }
         
         const fil = document.getElementById('teacherFilter');
         if(fil) { 
-            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${t}">${t}</option>`).join(''); 
+            fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join(''); 
             fil.value = currentFilter.teacher; 
         }
     }
@@ -2192,7 +2297,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         const list = document.getElementById('questConfigList'); list.innerHTML = '';
         Object.keys(tempQuestSettings).forEach(sub => {
             const div = document.createElement('div'); div.className = 'quest-config-card';
-            div.innerHTML = `<div class="quest-config-header"><span class="quest-config-title">${sub}</span><button class="btn sm warn btn-del-subj" data-sub="${sub}"><i class="bi bi-trash"></i> 移除</button></div><div class="quest-tags">${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${t} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${sub}" data-idx="${i}"></i></span>`).join('')}</div><div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${sub}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${sub}"><i class="bi bi-plus-lg"></i> 新增</button></div>`;
+            div.innerHTML = `<div class="quest-config-header"><span class="quest-config-title">${escapeHtml(sub)}</span><button class="btn sm warn btn-del-subj" data-sub="${escapeHtml(sub)}"><i class="bi bi-trash"></i> 移除</button></div><div class="quest-tags">${tempQuestSettings[sub].map((t, i) => `<span class="quest-tag">${escapeHtml(t)} <i class="bi bi-x-circle-fill btn-del-task" data-sub="${escapeHtml(sub)}" data-idx="${i}"></i></span>`).join('')}</div><div class="quest-add-row"><input placeholder="輸入新任務名稱..." id="newT_${escapeHtml(sub)}" style="flex:1; font-size:13px; padding:6px;"><button class="btn sm btn-add-task" data-sub="${escapeHtml(sub)}"><i class="bi bi-plus-lg"></i> 新增</button></div>`;
             list.appendChild(div);
         });
     }
@@ -2235,7 +2340,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
             div.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center; background:var(--bg); padding:8px; border-radius:6px; border:1px solid var(--tbl-border);';
             div.innerHTML = `
                 <span style="font-weight:bold; width: 40px; text-align:center; color:${currentCoinTab === 'plus' ? 'var(--success)' : 'var(--danger)'};">${item.v > 0 ? '+'+item.v : item.v}</span>
-                <span style="flex:1; font-weight:bold;">${item.l}</span>
+                <span style="flex:1; font-weight:bold;">${escapeHtml(item.l)}</span>
                 <button class="btn sm warn icon-only btn-del-coin" data-idx="${idx}"><i class="bi bi-trash"></i></button>
             `;
             list.appendChild(div);
@@ -2366,7 +2471,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
     
     document.getElementById('btnOpenAssignModal').addEventListener('click', () => {
         const c = document.getElementById('assignStudentListContainer'); c.innerHTML = '';
-        data.roster.forEach((s, i) => { const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i); const l = document.createElement('label'); l.className = 'assign-student-item'; l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${s.name}`; c.appendChild(l); });
+        data.roster.forEach((s, i) => { const chk = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.includes(i); const l = document.createElement('label'); l.className = 'assign-student-item'; l.innerHTML = `<input type="checkbox" data-idx="${i}" ${chk?'checked':''}> ${s.no}.${escapeHtml(s.name)}`; c.appendChild(l); });
         document.getElementById('assignStudentModal').classList.add('show');
     });
     document.getElementById('btnConfirmAssign').addEventListener('click', () => {
@@ -2866,7 +2971,7 @@ window.renderQuickSidebar = function() {
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; width: 100%;">
                 <div style="font-weight:900; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                    <span style="color:var(--primary); margin-right:2px;">${s.no}.</span>${s.name}
+                    <span style="color:var(--primary); margin-right:2px;">${s.no}.</span>${escapeHtml(s.name)}
                 </div>
                 <div style="display: ${isSidebarEditMode ? 'none' : 'flex'}; gap:6px; font-size:12px; font-weight:bold;">
                     <span style="color:var(--muted);">⭐${s.exp||0}</span>
@@ -3938,6 +4043,12 @@ let meadowAnimFrameId = null;
 let meadowLastTime = 0;
 let meadowBall = null;
 let meadowTimeOverride = 'auto'; // 'auto' | 'morning' | 'noon' | 'evening'
+// 🐾 草地動畫效能設定
+const MEADOW_ACTIVE_FRAME_MS = 1000 / 30;  // 活動時 30fps（走路只有 4 格，肉眼看不出差別，但省一半運算）
+const MEADOW_IDLE_FRAME_MS = 500;          // 午休／減少動態時：每 0.5 秒檢查一次即可
+let meadowMaxXCache = 450;
+let meadowMeasuredAt = -9999;
+const meadowReduceMotionMQ = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 let isSelfCheckinLock = false;   // B. 學生自助繳交鎖 (只准 灰0 <-> 黃1)
 let isHomeOnlyUnfinished = false; // 只看未完成座號篩選
 
@@ -4067,9 +4178,9 @@ function syncMeadowActors() {
         restList.innerHTML = restingIndices.map(sidx => {
             const st = data.roster[sidx];
             const pet = getStudentPartnerPetObj(st, sidx);
-            return `<div class="meadow-rest-item" title="${st.no}.${st.name} 還有委託待完成，完成後【${pet.name}】就能跳進草地奔跑！" onclick="window.showRestPetHint(${sidx})">
+            return `<div class="meadow-rest-item" title="${st.no}.${escapeHtml(st.name)} 還有委託待完成，完成後【${pet.name}】就能跳進草地奔跑！" onclick="window.showRestPetHint(${sidx})">
                 <img src="${pet.sit}" class="pixel-pet" alt="">
-                <span>${st.no}.${st.name}💤</span>
+                <span>${st.no}.${escapeHtml(st.name)}💤</span>
             </div>`;
         }).join('');
     }
@@ -4138,7 +4249,7 @@ function syncMeadowActors() {
         }
 
         const actor = meadowActors[sidx];
-        actor.labelEl.innerHTML = `👑 ${actor.no}.${actor.name}${isNoonNap ? ' 💤' : ''}`;
+        actor.labelEl.innerHTML = `👑 ${escapeHtml(actor.no)}.${escapeHtml(actor.name)}${isNoonNap ? ' 💤' : ''}`;
         actor.el.title = `${actor.no}.${actor.name} 的夥伴：${pet.name}${hasOwnPet ? '' : ' (見習夥伴)'}`;
         updateActorSpriteVisual(actor);
     });
@@ -4154,31 +4265,52 @@ window.showRestPetHint = function(sidx) {
 function updateActorSpriteVisual(actor) {
     if (!actor || !actor.spriteEl || !actor.pet) return;
     const pet = actor.pet;
-    const flipScale = actor.dir === 1 ? -1 : 1;
+    const isMoving = (actor.mode === 'walk' || actor.mode === 'chase') && !!pet.walk;
 
-    if ((actor.mode === 'walk' || actor.mode === 'chase') && pet.walk) {
-        const f = actor.frameIdx % 4;
-        const posPct = (f / 3) * 100;
-        actor.spriteEl.style.backgroundImage = `url("${pet.walk}")`;
-        actor.spriteEl.style.backgroundSize = '400% 100%';
-        actor.spriteEl.style.backgroundPosition = `${posPct}% 0%`;
-    } else if (actor.mode === 'scratch' && pet.scratch) {
-        const f = actor.frameIdx % 2;
-        const posPct = f * 100;
-        actor.spriteEl.style.backgroundImage = `url("${pet.scratch}")`;
-        actor.spriteEl.style.backgroundSize = '200% 100%';
-        actor.spriteEl.style.backgroundPosition = `${posPct}% 0%`;
-    } else {
-        actor.spriteEl.style.backgroundImage = `url("${pet.sit}")`;
-        actor.spriteEl.style.backgroundSize = '100% 100%';
-        actor.spriteEl.style.backgroundPosition = '0% 0%';
+    // 1) 決定這一幀要用哪張圖、第幾格
+    let sheet, frames, f;
+    if (isMoving) { sheet = pet.walk; frames = 4; f = actor.frameIdx % 4; }
+    else if (actor.mode === 'scratch' && pet.scratch) { sheet = pet.scratch; frames = 2; f = actor.frameIdx % 2; }
+    else { sheet = pet.sit; frames = 1; f = 0; }
+
+    // 2) 只有「圖片 / 格數 / 影格」真的改變時才寫樣式（避免每幀都重解析 base64 圖片）
+    const style = actor.spriteEl.style;
+    if (actor._sheet !== sheet) {
+        style.backgroundImage = `url("${sheet}")`;
+        style.backgroundSize = frames === 1 ? '100% 100%' : `${frames * 100}% 100%`;
+        actor._sheet = sheet;
+        actor._f = -1;
+    }
+    if (actor._f !== f) {
+        style.backgroundPosition = frames === 1 ? '0% 0%' : `${(f / (frames - 1)) * 100}% 0%`;
+        actor._f = f;
     }
 
-    const bobY = (actor.mode === 'walk' || actor.mode === 'chase') && (actor.frameIdx % 2 === 0) ? -2 : 0;
-    const totalY = bobY + (actor.jumpY || 0);
-    actor.el.style.transform = `translate3d(${Math.round(actor.x)}px, ${Math.round(totalY)}px, 0)`;
-    actor.spriteEl.style.transform = `scaleX(${flipScale})`;
+    // 3) 位置：取整後沒變就不寫
+    const bobY = isMoving && (actor.frameIdx % 2 === 0) ? -2 : 0;
+    const tx = Math.round(actor.x);
+    const ty = Math.round(bobY + (actor.jumpY || 0));
+    if (actor._tx !== tx || actor._ty !== ty) {
+        actor.el.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+        actor._tx = tx;
+        actor._ty = ty;
+    }
+
+    // 4) 面向：只有轉向時才寫
+    if (actor._dir !== actor.dir) {
+        style.transform = `scaleX(${actor.dir === 1 ? -1 : 1})`;
+        actor._dir = actor.dir;
+    }
 }
+
+// 量一次舞台寬度並快取（避免每幀強制重排 layout）
+function measureMeadowStage() {
+    const stage = document.getElementById('meadowStage');
+    const restPen = document.getElementById('meadowRestPen');
+    const penW = (restPen && restPen.style.display !== 'none') ? (restPen.offsetWidth + 16) : 0;
+    meadowMaxXCache = stage ? Math.max(80, stage.clientWidth - penW - 74) : 450;
+}
+window.addEventListener('resize', () => { meadowMeasuredAt = -9999; });
 
 function stepMeadowLoop(timestamp) {
     const homeView = document.getElementById('view-home');
@@ -4187,20 +4319,31 @@ function stepMeadowLoop(timestamp) {
         return;
     }
 
+    const isNoonNap = getEffectiveMeadowTimePeriod() === 'noon';
+    const reduceMotion = !!(meadowReduceMotionMQ && meadowReduceMotionMQ.matches);
+    const forceSit = isNoonNap || reduceMotion;
+
+    // 降頻：活動時 30fps；午休或「減少動態」時 2fps（只負責偵測時段何時結束）
+    const minMs = forceSit ? MEADOW_IDLE_FRAME_MS : MEADOW_ACTIVE_FRAME_MS;
     if (!meadowLastTime) meadowLastTime = timestamp;
-    const dt = Math.min(0.08, (timestamp - meadowLastTime) / 1000);
+    const elapsed = timestamp - meadowLastTime;
+    if (elapsed < minMs - 2) {
+        meadowAnimFrameId = requestAnimationFrame(stepMeadowLoop);
+        return;
+    }
+    const dt = Math.min(0.08, elapsed / 1000);
     meadowLastTime = timestamp;
 
-    const stage = document.getElementById('meadowStage');
-    const restPen = document.getElementById('meadowRestPen');
-    const penW = (restPen && restPen.style.display !== 'none') ? (restPen.offsetWidth + 16) : 0;
-    const maxX = stage ? Math.max(80, stage.clientWidth - penW - 74) : 450;
-    const isNoonNap = getEffectiveMeadowTimePeriod() === 'noon';
+    if (timestamp - meadowMeasuredAt > 500) {
+        measureMeadowStage();
+        meadowMeasuredAt = timestamp;
+    }
+    const maxX = meadowMaxXCache;
 
     Object.values(meadowActors).forEach(actor => {
-        if (isNoonNap) {
-            actor.mode = 'sit';
-            updateActorSpriteVisual(actor);
+        if (forceSit) {
+            if (actor.mode !== 'sit') { actor.mode = 'sit'; actor.frameIdx = 0; }
+            updateActorSpriteVisual(actor);   // 有快取，靜止時幾乎不碰 DOM
             return;
         }
 
@@ -4437,7 +4580,7 @@ function renderHomeView() {
             : `<span style="background:#dcfce7; color:#166534; padding:1px 6px; border-radius:999px; font-size:11px;">齊 (${done}/${total})</span>`;
 
         return `<button class="home-quest-pill ${isActive ? 'active' : ''}" onclick="window.selectHomeQuest(${a.id})">
-            <span>${a.subject ? `[${a.subject}] ` : ''}${a.title}</span>
+            <span>${a.subject ? `[${escapeHtml(a.subject)}] ` : ''}${escapeHtml(a.title)}</span>
             ${badgeHtml}
         </button>`;
     }).join('');
@@ -4498,7 +4641,7 @@ function renderHomeView() {
             </div>
             <div style="flex:1; min-width:0;">
                 <div style="font-weight:900; font-size:14px; display:flex; align-items:center; gap:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                    <span>${s.name}</span>
+                    <span>${escapeHtml(s.name)}</span>
                     ${allCleared ? '<span title="討伐全冠王！夥伴正在草地散步">👑</span>' : ''}
                 </div>
                 <div style="font-size:11px; color:var(--muted); font-weight:bold; display:flex; align-items:center; gap:4px; margin-top:2px;">
@@ -4662,7 +4805,7 @@ function renderStatsView() {
             const barColor = pct >= 90 ? '#16a34a' : (pct >= 70 ? '#2563eb' : '#ea580c');
             return `<div class="stats-bar-row">
                 <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:900;">
-                    <span>📚 ${sub}</span>
+                    <span>📚 ${escapeHtml(sub)}</span>
                     <span style="color:${barColor};">${pct}% 完勝 (${st.cleared}/${st.total})</span>
                 </div>
                 <div class="stats-bar-track">
@@ -4709,7 +4852,7 @@ function renderStatsView() {
         return `<div class="rank-podium-item">
             <span style="font-size:16px; width:24px; font-weight:900; color:var(--primary);">${medals[idx] || `${idx + 1}.`}</span>
             ${pet ? `<img src="${pet.sit}" class="pixel-pet" style="width:28px; height:28px; flex-shrink:0;">` : ''}
-            <span style="font-weight:900; font-size:14px; flex:1;">${item.s.no}. ${item.s.name}</span>
+            <span style="font-weight:900; font-size:14px; flex:1;">${item.s.no}. ${escapeHtml(item.s.name)}</span>
             <span style="font-weight:900; font-size:14px;">${valFormatter(item)}</span>
         </div>`;
     }).join('');
@@ -4740,8 +4883,8 @@ function renderStatsView() {
         data.roster.forEach((s, i) => {
             if (indices === 'all' || indices.includes(i)) {
                 const st = (a.statuses || [])[i] || 0;
-                if (st === 0) missingNos.push(`${s.no}.${s.name}`);
-                if (st === 2) redoNos.push(`${s.no}.${s.name}`);
+                if (st === 0) missingNos.push(`${s.no}.${escapeHtml(s.name)}`);
+                if (st === 2) redoNos.push(`${s.no}.${escapeHtml(s.name)}`);
             }
         });
         return { a, missingNos, redoNos, totalPending: missingNos.length + redoNos.length };
@@ -4760,7 +4903,7 @@ function renderStatsView() {
             </thead>
             <tbody>
                 ${taskHotspots.map(t => `<tr style="background:var(--card);">
-                    <td style="padding:8px; border:1px solid var(--tbl-border); font-weight:900; white-space:nowrap;">${t.a.date} 【${t.a.title}】</td>
+                    <td style="padding:8px; border:1px solid var(--tbl-border); font-weight:900; white-space:nowrap;">${t.a.date} 【${escapeHtml(t.a.title)}】</td>
                     <td style="padding:8px; border:1px solid var(--tbl-border); color:var(--danger); font-weight:bold;">${t.missingNos.join('、') || '-'}</td>
                     <td style="padding:8px; border:1px solid var(--tbl-border); color:#ea580c; font-weight:bold;">${t.redoNos.join('、') || '-'}</td>
                 </tr>`).join('')}
