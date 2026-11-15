@@ -348,7 +348,7 @@
     }
     .pet-walker-box {
       position: absolute;
-      bottom: 6px;
+      bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -398,41 +398,114 @@
       width: 44px;
       height: 44px;
       object-fit: contain;
-      transform: scaleX(var(--flip));
+      transform: scale(var(--flip), 1);
       transform-origin: bottom center;
       filter: drop-shadow(0 4px 5px rgba(0,0,0,0.18));
     }
 
-    /* 🐾 動畫：全部帶入 --flip，翻面方向不會被動畫的 transform 蓋掉 */
-    @keyframes petHappyBob {
-      0%, 100% { transform: translateY(0) scaleX(var(--flip)); }
-      50%      { transform: translateY(-4px) scaleX(var(--flip)); }
+    /* 🐾 動畫（參考 index.html：慢、小、有長時間休息）
+       全部帶入 --flip，翻面方向不會被動畫的 transform 蓋掉；
+       縮放以腳底為原點，壓扁/拉長才會像踩在地上 */
+    @keyframes petBreath {            /* 待機呼吸：3.4s、起伏 2.5px */
+      0%, 100% { transform: translateY(0) scale(var(--flip), 1); }
+      50%      { transform: translateY(-2.5px) scale(var(--flip), 1.015); }
     }
-    @keyframes petWalkStep {
-      0%, 100% { transform: translateY(0) scaleX(var(--flip)) rotate(-3deg); }
-      50%      { transform: translateY(-4px) scaleX(var(--flip)) rotate(3deg); }
+    @keyframes petWalkStep {          /* 走路：小步、慢節奏 */
+      0%, 100% { transform: translateY(0) scale(var(--flip), 1) rotate(-2deg); }
+      50%      { transform: translateY(-3px) scale(var(--flip), 1) rotate(2deg); }
     }
     @keyframes petScratchAnim {
-      0%, 100% { transform: scaleX(var(--flip)) rotate(0deg); }
-      25%      { transform: scaleX(var(--flip)) rotate(-14deg); }
-      75%      { transform: scaleX(var(--flip)) rotate(14deg); }
+      0%, 100% { transform: scale(var(--flip), 1) rotate(0deg); }
+      25%      { transform: scale(var(--flip), 1) rotate(-9deg); }
+      75%      { transform: scale(var(--flip), 1) rotate(9deg); }
     }
-    @keyframes petHop {
-      0%, 100% { transform: translateY(0) scaleX(var(--flip)) scale(1); }
-      50%      { transform: translateY(-12px) scaleX(var(--flip)) scale(1.05); }
+    @keyframes petHop {               /* 點擊：蓄力 → 跳起 → 落地壓扁 → 回彈（只播一次） */
+      0%   { transform: translateY(0) scale(calc(var(--flip) * 1), 1); }
+      16%  { transform: translateY(0) scale(calc(var(--flip) * 1.1), 0.84); }
+      42%  { transform: translateY(-15px) scale(calc(var(--flip) * 0.94), 1.09); }
+      70%  { transform: translateY(0) scale(calc(var(--flip) * 1.1), 0.88); }
+      86%  { transform: translateY(0) scale(calc(var(--flip) * 0.98), 1.03); }
+      100% { transform: translateY(0) scale(calc(var(--flip) * 1), 1); }
     }
-    @keyframes petSway {
-      0%, 100% { transform: scaleX(var(--flip)) rotate(-6deg); }
-      50%      { transform: scaleX(var(--flip)) rotate(6deg); }
+    @keyframes petIdleHop {           /* 閒置小跳：大跳一下、小跳一下（像 gardenHop） */
+      0%   { transform: translateY(0) scale(calc(var(--flip) * 1), 1); }
+      12%  { transform: translateY(0) scale(calc(var(--flip) * 1.06), 0.92); }
+      30%  { transform: translateY(-9px) scale(calc(var(--flip) * 0.96), 1.06); }
+      48%  { transform: translateY(0) scale(calc(var(--flip) * 1.07), 0.91); }
+      60%  { transform: translateY(0) scale(calc(var(--flip) * 1), 1); }
+      74%  { transform: translateY(-4px) scale(calc(var(--flip) * 0.98), 1.03); }
+      88%  { transform: translateY(0) scale(calc(var(--flip) * 1.03), 0.96); }
+      100% { transform: translateY(0) scale(calc(var(--flip) * 1), 1); }
     }
-    .pet-bob { animation: petHappyBob 1.8s ease-in-out infinite; }
-    .pet-waddle { animation: petWalkStep 0.45s ease-in-out infinite; }
-    .pet-scratch { animation: petScratchAnim 0.35s ease-in-out infinite; }
-    .pet-hop { animation: petHop 0.4s ease-in-out infinite; }
-    .pet-sway { animation: petSway 2s ease-in-out infinite; }
+    @keyframes petSway {              /* 開心搖擺：慢、±4°、腳底為軸 */
+      0%   { transform: scale(var(--flip), 1) rotate(-4deg); }
+      100% { transform: scale(var(--flip), 1) rotate(4deg); }
+    }
+    .pet-bob     { animation: petBreath 3.4s ease-in-out infinite; }
+    .pet-waddle  { animation: petWalkStep 0.62s ease-in-out infinite; }
+    .pet-scratch { animation: petScratchAnim 0.45s ease-in-out infinite; }
+    .pet-hop     { animation: petHop 0.7s ease-in-out 1; }
+    .pet-idlehop { animation: petIdleHop 1.5s ease-in-out 1; }
+    .pet-sway    { animation: petSway 1.3s ease-in-out infinite alternate; }
 
-    @keyframes heartPop { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-38px) scale(1.5); } }
-    .heart-float { position: absolute; font-size: 20px; animation: heartPop 0.9s forwards ease-out; pointer-events: none; z-index: 20; }
+    /* 腳下陰影：跟著動作縮放（跳起時變小變淡、落地時回到原樣） */
+    .pet-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: -3px;
+      width: 28px;
+      height: 7px;
+      margin-left: -14px;
+      border-radius: 50%;
+      background: rgba(30, 60, 10, 0.28);
+      filter: blur(1px);
+      z-index: -1;
+      pointer-events: none;
+    }
+    @keyframes petShBreath { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.92); opacity: 0.85; } }
+    @keyframes petShStep   { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.86); } }
+    @keyframes petShHop {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      16% { transform: scale(1.1); }
+      42% { transform: scale(0.55); opacity: 0.45; }
+      70% { transform: scale(1.12); opacity: 1; }
+      86% { transform: scale(0.98); }
+    }
+    @keyframes petShIdleHop {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      12% { transform: scale(1.05); }
+      30% { transform: scale(0.7); opacity: 0.6; }
+      48% { transform: scale(1.08); opacity: 1; }
+      74% { transform: scale(0.85); opacity: 0.8; }
+      88% { transform: scale(1.02); opacity: 1; }
+    }
+    .pet-shadow.sh-bob     { animation: petShBreath 3.4s ease-in-out infinite; }
+    .pet-shadow.sh-waddle  { animation: petShStep 0.62s ease-in-out infinite; }
+    .pet-shadow.sh-hop     { animation: petShHop 0.7s ease-in-out 1; }
+    .pet-shadow.sh-idlehop { animation: petShIdleHop 1.5s ease-in-out 1; }
+
+    /* 互動小驚喜：向上散開的愛心 / 花瓣（取代單顆愛心） */
+    .pet-burst { position: absolute; bottom: 30px; width: 0; height: 0; z-index: 20; pointer-events: none; }
+    .pet-petal {
+      position: absolute;
+      left: -7px; top: -7px;
+      font-size: 14px;
+      line-height: 1;
+      opacity: 0;
+      animation: petPetal 0.9s ease-out forwards;
+      animation-delay: calc(var(--i, 0) * 35ms);
+    }
+    @keyframes petPetal {
+      0%   { opacity: 1; transform: rotate(var(--a)) translateY(-6px) scale(0.3); }
+      100% { opacity: 0; transform: rotate(var(--a)) translateY(-38px) scale(1); }
+    }
+
+    /* 系統設定「減少動態」時全部靜止 */
+    @media (prefers-reduced-motion: reduce) {
+      .pet-bob, .pet-waddle, .pet-scratch, .pet-hop, .pet-idlehop, .pet-sway,
+      .pet-shadow, .pet-petal { animation: none !important; }
+      .pet-walker-box { transition: none !important; }
+    }
 
     /* 右側：名稱 / 按鈕 / 集氣條 / 圖鑑晶片，各佔一行 */
     .pet-right-stats {
@@ -747,6 +820,7 @@
           <div class="pet-walker-box" id="petWalkerBox">
             <div class="pet-speech-bubble" id="petSpeechBubble">主人今天也要加油喔！</div>
             <img id="stActivePetImg" src="" alt="萌寵夥伴" class="pixel-pet pet-stage-avatar pet-bob">
+            <span class="pet-shadow sh-bob" id="petShadow"></span>
           </div>
         </div>
       </div>
@@ -1057,14 +1131,8 @@
       }
       setCookieCount(cnt - 1);
 
-      const track = document.getElementById('petMeadowTrack');
-      const walker = document.getElementById('petWalkerBox');
-      const heart = document.createElement('div');
-      heart.className = 'heart-float';
-      heart.innerText = '💖';
-      heart.style.left = walker ? walker.style.left : '50%';
-      heart.style.bottom = '34px';
-      track.appendChild(heart);
+      spawnPetBurst(['💖'], 5);
+      petCheer(0);
       
       window.playNativeSound('chomp');
       const feedLines = [
@@ -1073,7 +1141,6 @@
         "太幸福啦～最喜歡主人了！💖"
       ];
       showPetBubble(feedLines[Math.floor(Math.random() * feedLines.length)]);
-      setTimeout(() => heart.remove(), 950);
     };
 
     // ============================================================
@@ -1081,7 +1148,10 @@
     // ============================================================
     let petPosPercent = 50;
     let petAnimTimer = null;
+    let petStartTimer = null;
     let petLoopTimer = null;
+    let petLastAction = '';
+    const petReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     // 氣泡：自動往內側位移，避免被橫幅左右邊界切掉
     function showPetBubble(text) {
@@ -1104,24 +1174,25 @@
       window._petBubbleTimer = setTimeout(() => bubble.classList.remove('show'), 3200);
     }
 
-    // 切換動畫狀態；ms 之後自動回到待機呼吸 (pet-bob)
+    // 切換動畫狀態（寵物與腳下陰影同步）；ms 之後自動回到待機呼吸
     function setPetAnim(cls, ms) {
       const img = document.getElementById('stActivePetImg');
+      const sh = document.getElementById('petShadow');
       if (!img) return;
       clearTimeout(petAnimTimer);
-      img.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch', 'pet-hop', 'pet-sway');
+      img.classList.remove('pet-bob', 'pet-waddle', 'pet-scratch', 'pet-hop', 'pet-idlehop', 'pet-sway');
+      if (sh) sh.className = 'pet-shadow';
       void img.offsetWidth; // 讓同一動畫可以重新播放
       img.classList.add(cls);
+      if (sh) sh.classList.add('sh-' + cls.replace('pet-', ''));
       if (ms) {
-        petAnimTimer = setTimeout(() => {
-          img.classList.remove(cls);
-          img.classList.add('pet-bob');
-        }, ms);
+        petAnimTimer = setTimeout(() => setPetAnim('pet-bob', 0), ms);
       }
     }
 
     // 讓寵物停在「當下位置」（點擊時不再繼續滑向舊目標）
     function freezePet() {
+      clearTimeout(petStartTimer);
       const track = document.getElementById('petMeadowTrack');
       const walker = document.getElementById('petWalkerBox');
       if (!track || !walker) return;
@@ -1140,16 +1211,44 @@
       petLoopTimer = setTimeout(petTick, ms);
     }
 
-    // 點擊互動：停步 → 跳一下 → 開心搖擺 → 回到待機
+    // 愛心 / 花瓣由寵物當下位置向上散開
+    function spawnPetBurst(emojis, count) {
+      if (petReduceMotion.matches) return;
+      const track = document.getElementById('petMeadowTrack');
+      const walker = document.getElementById('petWalkerBox');
+      if (!track || !walker) return;
+      const tr = track.getBoundingClientRect();
+      const wr = walker.getBoundingClientRect();
+      const box = document.createElement('div');
+      box.className = 'pet-burst';
+      box.style.left = (wr.left + wr.width / 2 - tr.left) + 'px';
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement('span');
+        s.className = 'pet-petal';
+        const base = count > 1 ? -65 + (130 * i) / (count - 1) : 0;
+        s.style.setProperty('--a', (base + (Math.random() * 16 - 8)) + 'deg');
+        s.style.setProperty('--i', i);
+        s.textContent = emojis[i % emojis.length];
+        box.appendChild(s);
+      }
+      track.appendChild(box);
+      setTimeout(() => box.remove(), 1200);
+    }
+
+    // 開心反應：停步 → 蓄力跳一下（落地壓扁回彈）→ 可選的開心搖擺 → 回到待機
+    function petCheer(swayMs) {
+      freezePet();
+      setPetAnim('pet-hop', 0);
+      petAnimTimer = setTimeout(() => setPetAnim(swayMs ? 'pet-sway' : 'pet-bob', swayMs || 0), 700);
+      schedulePetLoop(700 + (swayMs || 0) + 1800); // 反應結束後才繼續自動漫步
+    }
+
     window.interactWithPet = function() {
       const wrap = document.getElementById('petSanctuaryWrap');
       if (!wrap || wrap.classList.contains('is-fogged')) return;
       window.playStudentPetCry(currentPartnerPet.kind);
-
-      freezePet();
-      setPetAnim('pet-hop', 0);
-      petAnimTimer = setTimeout(() => setPetAnim('pet-sway', 2000), 800);
-      schedulePetLoop(3800); // 互動結束後才繼續自動漫步
+      petCheer(2200);
+      spawnPetBurst(['💖', '✨', '🌸'], 6);
 
       const coins = (currentStudent && currentStudent.coins) || 0;
       const needCoins = 10 - (coins % 10);
@@ -1164,50 +1263,69 @@
       showPetBubble(talkLines[Math.floor(Math.random() * talkLines.length)]);
     };
 
-    // 自動漫步與行為循環：每個動作播完才排下一個，不會互相打斷
+    // 自動漫步與行為循環：每個動作播完才排下一個，大部分時間安靜待機
     function petTick() {
       const wrap = document.getElementById('petSanctuaryWrap');
       const walker = document.getElementById('petWalkerBox');
       const petImg = document.getElementById('stActivePetImg');
-      if (!wrap || !walker || !petImg || wrap.classList.contains('is-fogged')) {
-        schedulePetLoop(2000);
+      if (document.hidden || petReduceMotion.matches ||
+          !wrap || !walker || !petImg || wrap.classList.contains('is-fogged')) {
+        schedulePetLoop(3000);
         return;
       }
 
-      const roll = Math.random();
-      let wait = 1500;
+      // 加權隨機；同一個「表演型」動作不連續出現
+      const r = Math.random();
+      let action = r < 0.40 ? 'walk' : r < 0.58 ? 'hop' : r < 0.70 ? 'scratch' : r < 0.85 ? 'sway' : 'rest';
+      if (action !== 'walk' && action === petLastAction) action = 'rest';
+      petLastAction = action;
 
-      if (roll < 0.5) {
-        // 🐾 行走：依距離決定時間（修正舊版距離永遠算成 0 的問題）
+      let wait = 2500;
+      if (action === 'walk') {
         const nextPos = Math.floor(12 + Math.random() * 76);
         const dist = Math.abs(nextPos - petPosPercent);
-        if (dist < 6) {
-          setPetAnim('pet-sway', 1600);
-          wait = 1600;
+        if (dist < 8) {
+          setPetAnim('pet-sway', 1800);
+          wait = 1800;
         } else {
-          const moveTime = Math.max(1.2, dist * 0.06);
-          petImg.style.setProperty('--flip', nextPos > petPosPercent ? -1 : 1);
-          walker.style.transition = `left ${moveTime}s linear`;
-          walker.style.left = `${nextPos}%`;
-          petPosPercent = nextPos;
-          setPetAnim('pet-waddle', moveTime * 1000);
-          wait = moveTime * 1000;
+          const dir = nextPos > petPosPercent ? -1 : 1;           // -1 = 面向右
+          const turning = String(petImg.style.getPropertyValue('--flip') || '1') !== String(dir);
+          const moveTime = Math.max(1.8, dist * 0.075);
+          const pause = turning ? 450 : 220;                       // 先轉身 / 停一下再出發
+          petImg.style.setProperty('--flip', dir);
+          setPetAnim('pet-bob', 0);
+          petStartTimer = setTimeout(() => {
+            walker.style.transition = `left ${moveTime}s ease-in-out`;
+            walker.style.left = `${nextPos}%`;
+            petPosPercent = nextPos;
+            setPetAnim('pet-waddle', moveTime * 1000);
+          }, pause);
+          wait = pause + moveTime * 1000;
         }
-      } else if (roll < 0.7) {
-        setPetAnim('pet-scratch', 1200);   // 🐾 抓癢
-        wait = 1200;
-      } else if (roll < 0.85) {
-        setPetAnim('pet-hop', 1000);       // 🐾 原地小跳
-        wait = 1000;
-      } else {
-        setPetAnim('pet-sway', 2000);      // 🐾 開心搖擺並說話
+      } else if (action === 'hop') {
+        setPetAnim('pet-idlehop', 1500);
+        wait = 1500;
+      } else if (action === 'scratch') {
+        setPetAnim('pet-scratch', 1500);
+        wait = 1500;
+      } else if (action === 'sway') {
+        setPetAnim('pet-sway', 2600);
         if (Math.random() < 0.5) {
           showPetBubble(currentPartnerPet.kind === 'dog' ? "汪汪！今天也要努力喔～🌿" : "喵～想吃能量餅乾！☀️");
         }
-        wait = 2000;
+        wait = 2600;
+      } else {
+        setPetAnim('pet-bob', 0);          // 安靜待機
+        wait = 1500;
       }
-      schedulePetLoop(wait + 1200 + Math.random() * 1800);
+      schedulePetLoop(wait + 1500 + Math.random() * 2500);
     }
+
+    // 分頁切到背景就暫停，回來再繼續（平板更省電）
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearTimeout(petLoopTimer);
+      else schedulePetLoop(1500);
+    });
     schedulePetLoop(2500);
 
     // ============================================================
