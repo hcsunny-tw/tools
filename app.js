@@ -259,7 +259,105 @@ function getRankHtml(exp) {
     let isDirty = false;
     let lastSyncedState = { core: '', assignments: '', attendance: '', logs: '' }; 
 
+// ============================================================
+    // 📊 今日戰績：老師今天「消滅」幾個委託、「批改」幾份作業
+    //   批改 ＝ 某位學生的作業今天被老師判定為「討伐成功(綠)」或「再挑戰(橘)」
+    //   消滅 ＝ 某個委託今天達成「全員討伐成功(綠)」
+    // 做法：每次存檔前比對狀態差異，把日期記在委託上（gradedOn / clearedOn）。
+    // 之後復原（退回灰/黃）會自動不再計入，不需要額外的流水帳。
+    // ============================================================
+    let statusSnapshot = {};
+
+    function getAssignedIdxList(a) {
+        const idx = a.assignedIndices;
+        return (!idx || idx === 'all') ? (data.roster || []).map((_, i) => i) : idx;
+    }
+    function isAssignmentAllGreen(a) {
+        const list = getAssignedIdxList(a);
+        if (list.length === 0) return false;
+        const st = a.statuses || [];
+        return list.every(i => (st[i] || 0) === 3);
+    }
+    function snapshotStatuses() {
+        statusSnapshot = {};
+        (data.assignments || []).forEach(a => {
+            statusSnapshot[a.id] = (a.statuses || []).slice();
+            // 載入前就已經全綠、又沒有日期標記的舊委託：標成 legacy，避免被誤算成「今天消滅」
+            if (!a.clearedOn && isAssignmentAllGreen(a)) a.clearedOn = 'legacy';
+        });
+    }
+    function trackStatusChanges() {
+        const today = getTaipeiDateString();
+        (data.assignments || []).forEach(a => {
+            const cur = a.statuses || [];
+            const prev = statusSnapshot[a.id] || [];
+            const n = Math.max(cur.length, prev.length);
+            for (let i = 0; i < n; i++) {
+                const c = cur[i] || 0, p = prev[i] || 0;
+                if (c === p) continue;
+                if (c === 2 || c === 3) {
+                    if (!a.gradedOn) a.gradedOn = {};
+                    a.gradedOn[i] = today;
+                } else if (a.gradedOn && a.gradedOn[i]) {
+                    delete a.gradedOn[i];
+                }
+            }
+            const allGreen = isAssignmentAllGreen(a);
+            if (allGreen && !a.clearedOn) a.clearedOn = today;
+            else if (!allGreen && a.clearedOn) delete a.clearedOn;
+            statusSnapshot[a.id] = cur.slice();
+        });
+    }
+    function getTodayStats() {
+        const today = getTaipeiDateString();
+        const stats = { passed: 0, redo: 0, clearedTitles: [], byTeacher: {} };
+        (data.assignments || []).forEach(a => {
+            const st = a.statuses || [];
+            const t = a.teacher || '未指定';
+            Object.entries(a.gradedOn || {}).forEach(([i, d]) => {
+                if (d !== today) return;
+                const s = st[i] || 0;
+                if (s !== 2 && s !== 3) return;
+                if (s === 3) stats.passed++; else stats.redo++;
+                (stats.byTeacher[t] = stats.byTeacher[t] || { graded: 0, cleared: 0 }).graded++;
+            });
+            if (a.clearedOn === today && isAssignmentAllGreen(a)) {
+                stats.clearedTitles.push(a.title);
+                (stats.byTeacher[t] = stats.byTeacher[t] || { graded: 0, cleared: 0 }).cleared++;
+            }
+        });
+        return stats;
+    }
+    function renderTodayStats() {
+        const bar = document.getElementById('todayStatsBar');
+        const ps = document.getElementById('psTodayStats');
+        if (!bar && !ps) return;
+        const s = getTodayStats();
+        const graded = s.passed + s.redo;
+        const cleared = s.clearedTitles.length;
+        const teachers = Object.keys(s.byTeacher);
+        const tip = [
+            cleared ? '今日消滅：' + s.clearedTitles.join('、') : '今天還沒有消滅任何委託',
+            teachers.length > 1 ? '各公會長：' + teachers.map(t => `${t} 批改${s.byTeacher[t].graded}份/消滅${s.byTeacher[t].cleared}件`).join('；') : ''
+        ].filter(Boolean).join('\n');
+
+        if (bar) {
+            bar.title = tip;
+            bar.innerHTML = `
+                <span class="ts-title">⚔️ 今日戰績</span>
+                <span class="ts-chip">🗡️ 消滅委託 <b>${cleared}</b> 件</span>
+                <span class="ts-chip">📝 批改作業 <b>${graded}</b> 份</span>
+                <span class="ts-sub">✅ 過關 ${s.passed}　🔁 需訂正 ${s.redo}</span>
+                ${cleared ? `<span class="ts-sub ts-titles">${escapeHtml(s.clearedTitles.slice(0, 3).join('、'))}${cleared > 3 ? ' …等' : ''}</span>` : ''}`;
+        }
+        if (ps) {
+            ps.innerHTML = `<div>🗡️ 消滅委託 <b>${cleared}</b> 件</div><div>📝 批改作業 <b>${graded}</b> 份</div><div style="font-size:11px;opacity:.7;">✅ ${s.passed}　🔁 ${s.redo}</div>`;
+        }
+    }
+    window.renderTodayStats = renderTodayStats;
+
     function triggerAutoSave() {
+        trackStatusChanges();   // 📊 記錄今日批改／消滅（在備份與上傳之前）
         if (currentUser) {
             try { localStorage.setItem(`guild_backup_${currentUser.uid}`, JSON.stringify({ savedAt: Date.now(), unsynced: true, data })); } catch (e) { console.warn('本機備份失敗', e); }
         }
@@ -596,6 +694,7 @@ function getRankHtml(exp) {
         checkAndResetDiscipline(); 
         renderCoinDropdowns(); 
         renderClassStars(); 
+        snapshotStatuses();   // 📊 以載入當下的狀態為基準，之後的變動才算「今日」
         renderAll(); 
         renderChecklists(); 
     }
@@ -660,6 +759,7 @@ function getRankHtml(exp) {
         }
         // 加入這一行：每次重新渲染畫面時，都更新左側常駐欄
         updatePersistentSidebar(); 
+        renderTodayStats();
     }
     window.renderAll = renderAll;
 
