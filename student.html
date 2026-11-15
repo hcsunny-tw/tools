@@ -1021,6 +1021,13 @@
       return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
     }
 
+    // 🛡️ 防 XSS：資料來自雲端公開看板，塞進 innerHTML 前一律先跳脫
+    function escapeHtml(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     function showToastMsg(msg) {
       const t = document.getElementById('stToast');
       if (!t) return;
@@ -1607,7 +1614,7 @@
     window.openFocusTimer = function(taskTitle, taskKey) {
       currentFocusedTaskKey = taskKey || null;
       window.openTool('timer');
-      document.getElementById('toolTitle').innerHTML = `<i class='bi bi-hourglass-split'></i> 專注：${taskTitle}`;
+      document.getElementById('toolTitle').innerHTML = `<i class='bi bi-hourglass-split'></i> 專注：${escapeHtml(taskTitle)}`;
     };
 
     function updateExpUI(exp) {
@@ -1685,9 +1692,8 @@
           .sort((a, b) => a[0].localeCompare(b[0], 'zh-Hant-TW'))
           .map(([book, count]) => {
             const isChecked = localStorage.getItem(getPackStorageKey(book)) === '1';
-            const safeBook = book.replace(/'/g, "\\'");
-            return `<span class="pack-item ${isChecked ? 'checked' : ''}" onclick="window.togglePack(this, '${safeBook}')">
-              <i class="bi ${isChecked ? 'bi-check-circle-fill' : 'bi-circle'}"></i> ${book}(${count})
+            return `<span class="pack-item ${isChecked ? 'checked' : ''}" data-book="${escapeHtml(book)}" onclick="window.togglePack(this, this.dataset.book)">
+              <i class="bi ${isChecked ? 'bi-check-circle-fill' : 'bi-circle'}"></i> ${escapeHtml(book)}(${count})
             </span>`;
           }).join('');
         
@@ -1700,14 +1706,13 @@
 
           const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
           const urgentHtml = isUrgent ? `<span class="urgent-tag"><i class="bi bi-fire"></i> 拖欠${overdueDays}天</span>` : '';
-          const safeTitle = (d.title || '').replace(/'/g, "\\'");
 
           cardsHtml += `
-            <div class="task-item ${isUrgent ? 'is-urgent' : ''} ${isSelfDone ? 'self-done' : ''}" id="taskCard_${taskKey}">
+            <div class="task-item ${isUrgent ? 'is-urgent' : ''} ${isSelfDone ? 'self-done' : ''}" id="taskCard_${escapeHtml(taskKey)}">
               <div>
                 <div class="task-header">
                   <div class="task-name">
-                    <span class="cat-tag">${d._cat}</span>${d.title}
+                    <span class="cat-tag">${escapeHtml(d._cat)}</span>${escapeHtml(d.title)}
                   </div>
                   ${badge}
                 </div>
@@ -1715,13 +1720,13 @@
               </div>
               <div class="task-footer-row">
                 <div style="font-size:11px; color:#888; font-weight:bold;">
-                  <i class="bi bi-calendar3"></i> ${d.date || '無日期'}${urgentHtml}
+                  <i class="bi bi-calendar3"></i> ${escapeHtml(d.date || '無日期')}${urgentHtml}
                 </div>
                 <div class="task-btn-group">
-                  <button class="quick-timer-btn" onclick="window.openFocusTimer('${safeTitle}', '${taskKey}')">
+                  <button class="quick-timer-btn" data-title="${escapeHtml(d.title || '')}" data-key="${escapeHtml(taskKey)}" onclick="window.openFocusTimer(this.dataset.title, this.dataset.key)">
                     <i class="bi bi-stopwatch"></i> 專注
                   </button>
-                  <button class="self-check-btn" onclick="window.toggleSelfDoneTask('${taskKey}')">
+                  <button class="self-check-btn" data-key="${escapeHtml(taskKey)}" onclick="window.toggleSelfDoneTask(this.dataset.key)">
                     <i class="bi bi-check2-circle"></i> ${isSelfDone ? '已寫完' : '寫完了'}
                   </button>
                 </div>
