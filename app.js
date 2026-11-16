@@ -267,6 +267,7 @@ function getRankHtml(exp) {
     // 之後復原（退回灰/黃）會自動不再計入，不需要額外的流水帳。
     // ============================================================
     let statusSnapshot = {};
+    let statusSnapshotOwner = null;   // 記錄「這份基準」屬於哪一個 assignments 陣列；資料被整份換掉時就知道基準過期了
 
     function getAssignedIdxList(a) {
         const idx = a.assignedIndices;
@@ -278,15 +279,34 @@ function getRankHtml(exp) {
         const st = a.statuses || [];
         return list.every(i => (st[i] || 0) === 3);
     }
+
+    // 🧹 一次性清理（v3）：舊版在每天第一次載入時，會在基準還是空的情況下就比對，
+    //    把所有舊作業誤蓋上當天日期，所以歷史統計也被污染。這裡把所有日期戳記清掉，
+    //    歷史戰績從此刻起重新累計（只執行一次，旗標存在 settings）。
+    function cleanPollutedTodayStamps() {
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        if (data.settings.todayStatsFix === 3) return false;
+        (data.assignments || []).forEach(a => {
+            delete a.gradedOn;
+            if (a.clearedOn) a.clearedOn = 'legacy';
+        });
+        data.settings.todayStatsFix = 3;
+        return true;
+    }
     function snapshotStatuses() {
         statusSnapshot = {};
+        statusSnapshotOwner = data.assignments;
+        const cleaned = cleanPollutedTodayStamps();
         (data.assignments || []).forEach(a => {
             statusSnapshot[a.id] = (a.statuses || []).slice();
             // 載入前就已經全綠、又沒有日期標記的舊委託：標成 legacy，避免被誤算成「今天消滅」
             if (!a.clearedOn && isAssignmentAllGreen(a)) a.clearedOn = 'legacy';
         });
+        return cleaned;   // 有清理過就需要存檔，讓雲端也變乾淨
     }
     function trackStatusChanges() {
+        // 🛡️ 還沒建立基準（剛載入／還原／整份資料被換掉）時，絕對不能比對，否則所有舊紀錄都會被當成「今天變動」
+        if (statusSnapshotOwner !== data.assignments) { snapshotStatuses(); return; }
         const today = getTaipeiDateString();
         (data.assignments || []).forEach(a => {
             const cur = a.statuses || [];
@@ -304,26 +324,36 @@ function getRankHtml(exp) {
             }
             const allGreen = isAssignmentAllGreen(a);
             if (allGreen && !a.clearedOn) a.clearedOn = today;
-            else if (!allGreen && a.clearedOn) delete a.clearedOn;
+            else if (!allGreen && a.clearedOn && a.clearedOn !== 'legacy') delete a.clearedOn;   // legacy 保留：新增學生等情況不會讓舊委託重新被算成今天消滅
             statusSnapshot[a.id] = cur.slice();
         });
     }
+    // 統計：歷史累計（含今天）＋今天明細（含項目名稱）
+    //   批改 ＝ 學生作業被老師判為「討伐成功(綠)」或「再挑戰(橘)」且目前仍維持該狀態
+    //   消滅 ＝ 委託達成「全員討伐成功」且目前仍是全綠
     function getTodayStats() {
         const today = getTaipeiDateString();
-        const stats = { passed: 0, redo: 0, clearedTitles: [], byTeacher: {} };
+        const stats = {
+            history: { graded: 0, cleared: 0 },
+            passed: 0, redo: 0,
+            clearedTitles: [],          // 今天消滅的委託
+            gradedTitles: {}            // 今天批改：委託名稱 → 份數
+        };
         (data.assignments || []).forEach(a => {
             const st = a.statuses || [];
-            const t = a.teacher || '未指定';
             Object.entries(a.gradedOn || {}).forEach(([i, d]) => {
-                if (d !== today) return;
+                if (!d || d === 'legacy') return;
                 const s = st[i] || 0;
                 if (s !== 2 && s !== 3) return;
-                if (s === 3) stats.passed++; else stats.redo++;
-                (stats.byTeacher[t] = stats.byTeacher[t] || { graded: 0, cleared: 0 }).graded++;
+                stats.history.graded++;
+                if (d === today) {
+                    if (s === 3) stats.passed++; else stats.redo++;
+                    stats.gradedTitles[a.title] = (stats.gradedTitles[a.title] || 0) + 1;
+                }
             });
-            if (a.clearedOn === today && isAssignmentAllGreen(a)) {
-                stats.clearedTitles.push(a.title);
-                (stats.byTeacher[t] = stats.byTeacher[t] || { graded: 0, cleared: 0 }).cleared++;
+            if (a.clearedOn && a.clearedOn !== 'legacy' && isAssignmentAllGreen(a)) {
+                stats.history.cleared++;
+                if (a.clearedOn === today) stats.clearedTitles.push(a.title);
             }
         });
         return stats;
@@ -332,23 +362,28 @@ function getRankHtml(exp) {
         const bar = document.getElementById('todayStatsBar');
         if (!bar) return;
         const s = getTodayStats();
-        const graded = s.passed + s.redo;
-        const cleared = s.clearedTitles.length;
-        const teachers = Object.keys(s.byTeacher);
+        const gradedToday = s.passed + s.redo;
+        const clearedToday = s.clearedTitles.length;
+        const rowCss = 'width:100%; display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px;';
+        const lineCss = 'width:100%; font-size:13px; font-weight:bold; line-height:1.6; color:var(--text-light);';
 
-        const clearedRow = cleared
-            ? `<div class="ts-row">🗡️ 今日消滅：${s.clearedTitles.map(t => escapeHtml(t)).join('、')}</div>`
-            : `<div class="ts-row" style="opacity:.7;">今天還沒有消滅任何委託，加油！</div>`;
-        const teacherRow = teachers.length > 1
-            ? `<div class="ts-row">👤 ${teachers.map(t => `${escapeHtml(t)}：批改 ${s.byTeacher[t].graded} 份／消滅 ${s.byTeacher[t].cleared} 件`).join('　｜　')}</div>`
-            : '';
+        const gradedNames = Object.entries(s.gradedTitles).map(([t, n]) => `${escapeHtml(t)}（${n}份）`).join('、');
+        const clearedNames = s.clearedTitles.map(t => escapeHtml(t)).join('、');
 
         bar.innerHTML = `
-            <span class="ts-title">⚔️ 今日老師戰績</span>
-            <span class="ts-chip">🗡️ 消滅委託 <b>${cleared}</b> 件</span>
-            <span class="ts-chip">📝 批改作業 <b>${graded}</b> 份</span>
-            <span class="ts-sub">✅ 過關 ${s.passed}　🔁 需訂正 ${s.redo}</span>
-            ${clearedRow}${teacherRow}`;
+            <div style="${rowCss}">
+                <span class="ts-title">📚 老師歷史戰績</span>
+                <span class="ts-chip">🗡️ 消滅委託 <b>${s.history.cleared}</b> 件</span>
+                <span class="ts-chip">📝 批改作業 <b>${s.history.graded}</b> 份</span>
+            </div>
+            <div style="${rowCss} border-top:2px dashed var(--tbl-border); padding-top:8px;">
+                <span class="ts-title">⚔️ 今天戰績</span>
+                <span class="ts-chip">🗡️ 消滅委託 <b>${clearedToday}</b> 件</span>
+                <span class="ts-chip">📝 批改作業 <b>${gradedToday}</b> 份</span>
+                <span class="ts-sub">✅ 過關 ${s.passed}　🔁 需訂正 ${s.redo}</span>
+                <div style="${lineCss}">🗡️ 今日消滅：${clearedToday ? clearedNames : '<span style="opacity:.6;">今天還沒有消滅任何委託</span>'}</div>
+                <div style="${lineCss}">📝 今日批改：${gradedToday ? gradedNames : '<span style="opacity:.6;">今天還沒有批改作業</span>'}</div>
+            </div>`;
     }
     window.renderTodayStats = renderTodayStats;
 
@@ -726,13 +761,14 @@ function getRankHtml(exp) {
         }
 
 
+        const statsCleaned = snapshotStatuses();   // 📊 一定要最先做：以載入當下的狀態為基準，之後的變動才算「今日」
+        if (statsCleaned) triggerAutoSave();
         populateTeacherDropdowns(); 
         updateSubjectDropdown(); 
         resetNewAssignmentState();
         checkAndResetDiscipline(); 
         renderCoinDropdowns(); 
         renderClassStars(); 
-        snapshotStatuses();   // 📊 以載入當下的狀態為基準，之後的變動才算「今日」
         renderAll(); 
         renderChecklists(); 
     }
@@ -3639,6 +3675,25 @@ function getStudentOwnedMap(student) {
     return map;
 }
 
+// 🔒 扭蛋門檻：學生還有「欠交(灰) / 需訂正(橘)」的未封存委託，就不能抽扭蛋
+//    （黃燈＝學生自己勾選已繳交、等老師批改，不擋；若想連黃燈也擋，把 2 改成 [0, 1, 2] 即可）
+const GACHA_BLOCKING_STATUSES = [0, 2];
+function getStudentPendingTasks(sidx) {
+    const list = [];
+    (data.assignments || []).forEach(a => {
+        if (a.archived) return;
+        const idxs = a.assignedIndices;
+        if (idxs && idxs !== 'all' && !idxs.includes(sidx)) return;
+        const st = (a.statuses || [])[sidx] || 0;
+        if (GACHA_BLOCKING_STATUSES.includes(st)) list.push({ title: a.title, subject: a.subject || '一般', st });
+    });
+    return list;
+}
+function describePendingTasks(tasks, max = 3) {
+    const names = tasks.slice(0, max).map(t => t.title).join('、');
+    return names + (tasks.length > max ? ` …等 ${tasks.length} 份` : '');
+}
+
 function updateGachaHeaderAndStats() {
     if (currentSummonStudentIdx === null || !data.roster[currentSummonStudentIdx]) return;
     const student = data.roster[currentSummonStudentIdx];
@@ -3689,9 +3744,28 @@ function updateGachaHeaderAndStats() {
         mainBtn.disabled = true;
         mainBtn.innerText = '開蛋囉！';
     } else {
+        const pending = getStudentPendingTasks(currentSummonStudentIdx);
         const canAfford = (student.coins || 0) >= SUMMON_COST;
-        mainBtn.disabled = !canAfford;
-        mainBtn.innerText = canAfford ? `轉一下把手 (${SUMMON_COST} 💰)` : `金幣不足 (需 ${SUMMON_COST} 💰)`;
+        if (pending.length > 0) {
+            mainBtn.disabled = true;
+            mainBtn.innerText = `🔒 還有 ${pending.length} 份作業沒消完`;
+        } else {
+            mainBtn.disabled = !canAfford;
+            mainBtn.innerText = canAfford ? `轉一下把手 (${SUMMON_COST} 💰)` : `金幣不足 (需 ${SUMMON_COST} 💰)`;
+        }
+        let hint = document.getElementById('gachaLockHint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.id = 'gachaLockHint';
+            hint.style.cssText = 'width:85%; max-width:260px; margin-top:6px; padding:6px 10px; border-radius:10px; background:#fff7ed; border:2px dashed #fb923c; color:#9a3412; font-size:12px; font-weight:bold; line-height:1.5; text-align:center;';
+            mainBtn.insertAdjacentElement('afterend', hint);
+        }
+        if (pending.length > 0) {
+            hint.style.display = 'block';
+            hint.textContent = '先把作業消完才能抽喔：' + describePendingTasks(pending);
+        } else {
+            hint.style.display = 'none';
+        }
     }
 }
 
@@ -3740,6 +3814,13 @@ window.triggerGachaSpin = function() {
     if (gachaState !== 'idle' || currentSummonStudentIdx === null) return;
     const student = data.roster[currentSummonStudentIdx];
     if (!student) return;
+
+    const pendingTasks = getStudentPendingTasks(currentSummonStudentIdx);
+    if (pendingTasks.length > 0) {
+        showToast(`🔒 還有 ${pendingTasks.length} 份作業沒消完，不能抽扭蛋：${describePendingTasks(pendingTasks)}`);
+        updateGachaHeaderAndStats();
+        return;
+    }
 
     if ((student.coins || 0) < SUMMON_COST) {
         showToast('⚠️ 金幣不足！快去完成委託賺取金幣吧！');
