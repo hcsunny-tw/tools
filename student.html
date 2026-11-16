@@ -161,7 +161,7 @@
       border: 1.5px solid #E6D2B5;
     }
     .avatar-circle {
-      width: 54px; height: 54px;
+      width: 65px; height: 65px;
       background: var(--primary); color: #fff;
       border-radius: 50%; display: grid; place-items: center;
       font-size: 24px; font-weight: 900;
@@ -197,35 +197,24 @@
     /* ============================================================
        🏅 個人榮耀徽章櫃
        ============================================================ */
-    .badge-head {
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: 12px; font-weight: 900; color: #78350f; margin-bottom: 4px;
-    }
-    .badge-head .badge-count { background: #fef3c7; border: 1.5px solid #f59e0b; border-radius: 999px; padding: 0 8px; font-size: 11px; }
     .badge-cabinet {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 5px;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      align-content: start;
-      scrollbar-width: thin;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
     }
     .honor-badge {
       background: #f5f5f4;
       border: 1.5px dashed #d6d3d1;
-      border-radius: 9px;
-      padding: 3px 2px;
+      border-radius: 10px;
+      padding: 5px 3px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0;
+      gap: 1px;
       opacity: 0.45;
       filter: grayscale(100%);
       transition: all 0.3s ease;
       user-select: none;
-      min-width: 0;
     }
     .honor-badge.unlocked {
       background: linear-gradient(145deg, #fffbeb, #fef3c7);
@@ -234,9 +223,9 @@
       filter: grayscale(0%);
       box-shadow: 0 2px 6px rgba(245, 158, 11, 0.18);
     }
-    .honor-badge .b-icon { font-size: 16px; line-height: 1.1; }
-    .honor-badge .b-name { font-size: 11px; font-weight: 900; color: #78350f; white-space: nowrap; line-height: 1.2; }
-    .honor-badge .b-desc { font-size: 9px; font-weight: bold; color: #92400e; opacity: 0.85; white-space: nowrap; line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .honor-badge .b-icon { font-size: 18px; line-height: 1.1; }
+    .honor-badge .b-name { font-size: 11px; font-weight: 900; color: #78350f; white-space: nowrap; }
+    .honor-badge .b-desc { font-size: 9px; font-weight: bold; color: #92400e; opacity: 0.85; white-space: nowrap; }
 
     /* ============================================================
        🐾 萌寵橫幅（精簡版）：整條約 110px，把空間還給下方作業區
@@ -406,8 +395,8 @@
 
     .pet-stage-avatar {
       --flip: 1; /* 1 = 面向左（原圖方向）、-1 = 面向右；由 JS 切換 */
-      width: 48px;
-      height: 48px;
+      width: 60px;
+      height: 60px;
       transform: scale(var(--flip), 1);
       transform-origin: bottom center;
       filter: drop-shadow(0 4px 5px rgba(0,0,0,0.18));
@@ -894,7 +883,6 @@
       </div>
 
       <!-- 🏅 個人榮耀徽章櫃 -->
-      <div class="badge-head"><span>🏅 榮耀成就</span><span class="badge-count" id="badgeCount">0 / 20</span></div>
       <div id="badgeCabinet" class="badge-cabinet"></div>
       
       <!-- 更新時間移至此處底部 -->
@@ -921,7 +909,7 @@
         <button onclick="window.closeFullDexModal()" style="background:#ef4444; color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-size:18px; font-weight:900; cursor:pointer;">&times;</button>
       </div>
       <div style="font-size:12px; color:#57534e; font-weight:bold; margin-bottom:8px;">
-        💡 存滿 10 枚金幣可請老師幫你抽扭蛋！點擊已收服的夥伴可切換代表並聽叫聲喔！
+        💡 作業全部消完、存滿 10 枚金幣，才能請老師幫你抽扭蛋！點擊已收服的夥伴可切換代表並聽叫聲喔！
       </div>
       <div id="fullDexGrid" class="dex-grid"></div>
     </div>
@@ -1031,6 +1019,13 @@
 
     function getTodayStr() {
       return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    }
+
+    // 🛡️ 防 XSS：資料來自雲端公開看板，塞進 innerHTML 前一律先跳脫
+    function escapeHtml(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function showToastMsg(msg) {
@@ -1431,48 +1426,13 @@
       const isCrown = (student.debts || []).length === 0;
       const exp = student.exp || 0;
       const coins = student.coins || 0;
-      const totalPets = Array.isArray(student.pets) ? student.pets.length : 0;
-
-      // 圖鑑資料：算貓狗種類數、稀有 (★3) 種類數
-      const ownedIds = new Set((Array.isArray(student.pets) ? student.pets : [])
-        .map(pid => String(pid).startsWith('p') ? parseInt(String(pid).slice(1)) : Number(pid)));
-      let catKinds = 0, dogKinds = 0, rareKinds = 0;
-      gachaPool.forEach(pet => {
-        if (!ownedIds.has(Number(pet.id))) return;
-        if (pet.kind === 'cat') catKinds++;
-        if (pet.kind === 'dog') dogKinds++;
-        if (pet.rarity >= 3) rareKinds++;
-      });
-      const cap = (v, m) => Math.min(v, m);
 
       const badges = [
-        // 勤勞
         { icon: "👑", name: "全冠王", desc: "目前零欠交", unlocked: isCrown },
-        // 等級（依班上目前 EXP 350~564 分布，往期末逐步拉開）
-        { icon: "💧", name: "水波小精靈", desc: "達 Lv.12 (400EXP)", unlocked: exp >= 400 },
-        { icon: "⚡", name: "閃電小超人", desc: "達 Lv.14 (500EXP)", unlocked: exp >= 500 },
-        { icon: "🦅", name: "獅鷲小騎士", desc: "達 Lv.16 (600EXP)", unlocked: exp >= 600 },
-        { icon: "⚔️", name: "雙劍小達人", desc: "達 Lv.18 (700EXP)", unlocked: exp >= 700 },
-        { icon: "🏰", name: "城堡守衛隊長", desc: "達 Lv.20 (800EXP)", unlocked: exp >= 800 },
-        { icon: "🌠", name: "彗星觀測者", desc: "達 Lv.25 (1100EXP)", unlocked: exp >= 1100 },
-        // 金幣
-        { icon: "🪙", name: "小存錢筒", desc: "持有 100 枚金幣", unlocked: coins >= 100 },
-        { icon: "💰", name: "小富翁", desc: "持有 350 枚金幣", unlocked: coins >= 350 },
-        { icon: "💎", name: "大富豪", desc: "持有 600 枚金幣", unlocked: coins >= 600 },
-        { icon: "🏦", name: "金幣之王", desc: "持有 1000 枚金幣", unlocked: coins >= 1000 },
-        // 萌寵
-        { icon: "🐣", name: "初次收服", desc: "收服第 1 隻夥伴", unlocked: uniquePetCount >= 1 },
-        { icon: "🐾", name: "馴獸大師", desc: `收服 ${cap(uniquePetCount, 5)}/5 種`, unlocked: uniquePetCount >= 5 },
-        { icon: "🦁", name: "百獸之友", desc: `收服 ${cap(uniquePetCount, 10)}/10 種`, unlocked: uniquePetCount >= 10 },
-        { icon: "📖", name: "圖鑑達人", desc: `收服 ${cap(uniquePetCount, 25)}/25 種`, unlocked: uniquePetCount >= 25 },
-        { icon: "🌈", name: "傳說圖鑑", desc: `收服 ${cap(uniquePetCount, 50)}/50 種`, unlocked: uniquePetCount >= 50 },
-        { icon: "🧸", name: "夥伴成群", desc: `擁有 ${cap(totalPets, 15)}/15 隻`, unlocked: totalPets >= 15 },
-        { icon: "🐱", name: "貓狗雙全", desc: `貓 ${cap(catKinds, 3)}/3・狗 ${cap(dogKinds, 3)}/3`, unlocked: catKinds >= 3 && dogKinds >= 3 },
-        { icon: "✨", name: "稀有收藏家", desc: "收服 1 隻 ★3 稀有", unlocked: rareKinds >= 1 },
-        { icon: "🔮", name: "閃亮珍藏家", desc: `★3 稀有 ${cap(rareKinds, 5)}/5 種`, unlocked: rareKinds >= 5 }
+        { icon: "⚔️", name: "資深勇者", desc: "達 Lv.5 (100EXP)", unlocked: exp >= 100 },
+        { icon: "💰", name: "小富翁", desc: "持有 30 枚金幣", unlocked: coins >= 30 },
+        { icon: "🐾", name: "馴獸大師", desc: `收服 ${uniquePetCount}/5 種`, unlocked: uniquePetCount >= 5 }
       ];
-      const countEl = document.getElementById('badgeCount');
-      if (countEl) countEl.textContent = `${badges.filter(x => x.unlocked).length} / ${badges.length}`;
 
       cabinet.innerHTML = badges.map(b => `
         <div class="honor-badge ${b.unlocked ? 'unlocked' : ''}">
@@ -1556,7 +1516,7 @@
       const gachaBarHtml = `
         <div class="gacha-bar-wrap">
           <div class="gacha-bar-fill" style="width:${gachaProgress}%"></div>
-          <div class="gacha-text">扭蛋集氣進度：${coins % 10} / 10 枚金幣</div>
+          <div class="gacha-text">${hasDebts ? `🔒 還有 ${debts.length} 份作業沒消完，暫時不能抽扭蛋` : `扭蛋集氣進度：${coins % 10} / 10 枚金幣`}</div>
         </div>`;
       if (gachaBarBox) gachaBarBox.innerHTML = gachaBarHtml;
 
@@ -1571,7 +1531,7 @@
         wrap.classList.remove('is-fogged');
         const entries = Object.entries(counts);
         if (entries.length === 0) {
-          miniDex.innerHTML = `<span style="font-size:11px; color:#365314; font-weight:bold;">💡 存滿 10 枚金幣即可請老師幫你轉扭蛋收服專屬萌寵！</span>`;
+          miniDex.innerHTML = `<span style="font-size:11px; color:#365314; font-weight:bold;">💡 作業全部消完、存滿 10 枚金幣，就能請老師幫你轉扭蛋收服專屬萌寵！</span>`;
         } else {
           miniDex.innerHTML = entries.map(([pid, cnt]) => {
             const pObj = gachaPool.find(x => String(x.id) === String(pid));
@@ -1654,7 +1614,7 @@
     window.openFocusTimer = function(taskTitle, taskKey) {
       currentFocusedTaskKey = taskKey || null;
       window.openTool('timer');
-      document.getElementById('toolTitle').innerHTML = `<i class='bi bi-hourglass-split'></i> 專注：${taskTitle}`;
+      document.getElementById('toolTitle').innerHTML = `<i class='bi bi-hourglass-split'></i> 專注：${escapeHtml(taskTitle)}`;
     };
 
     function updateExpUI(exp) {
@@ -1732,9 +1692,8 @@
           .sort((a, b) => a[0].localeCompare(b[0], 'zh-Hant-TW'))
           .map(([book, count]) => {
             const isChecked = localStorage.getItem(getPackStorageKey(book)) === '1';
-            const safeBook = book.replace(/'/g, "\\'");
-            return `<span class="pack-item ${isChecked ? 'checked' : ''}" onclick="window.togglePack(this, '${safeBook}')">
-              <i class="bi ${isChecked ? 'bi-check-circle-fill' : 'bi-circle'}"></i> ${book}(${count})
+            return `<span class="pack-item ${isChecked ? 'checked' : ''}" data-book="${escapeHtml(book)}" onclick="window.togglePack(this, this.dataset.book)">
+              <i class="bi ${isChecked ? 'bi-check-circle-fill' : 'bi-circle'}"></i> ${escapeHtml(book)}(${count})
             </span>`;
           }).join('');
         
@@ -1747,14 +1706,13 @@
 
           const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
           const urgentHtml = isUrgent ? `<span class="urgent-tag"><i class="bi bi-fire"></i> 拖欠${overdueDays}天</span>` : '';
-          const safeTitle = (d.title || '').replace(/'/g, "\\'");
 
           cardsHtml += `
-            <div class="task-item ${isUrgent ? 'is-urgent' : ''} ${isSelfDone ? 'self-done' : ''}" id="taskCard_${taskKey}">
+            <div class="task-item ${isUrgent ? 'is-urgent' : ''} ${isSelfDone ? 'self-done' : ''}" id="taskCard_${escapeHtml(taskKey)}">
               <div>
                 <div class="task-header">
                   <div class="task-name">
-                    <span class="cat-tag">${d._cat}</span>${d.title}
+                    <span class="cat-tag">${escapeHtml(d._cat)}</span>${escapeHtml(d.title)}
                   </div>
                   ${badge}
                 </div>
@@ -1762,13 +1720,13 @@
               </div>
               <div class="task-footer-row">
                 <div style="font-size:11px; color:#888; font-weight:bold;">
-                  <i class="bi bi-calendar3"></i> ${d.date || '無日期'}${urgentHtml}
+                  <i class="bi bi-calendar3"></i> ${escapeHtml(d.date || '無日期')}${urgentHtml}
                 </div>
                 <div class="task-btn-group">
-                  <button class="quick-timer-btn" onclick="window.openFocusTimer('${safeTitle}', '${taskKey}')">
+                  <button class="quick-timer-btn" data-title="${escapeHtml(d.title || '')}" data-key="${escapeHtml(taskKey)}" onclick="window.openFocusTimer(this.dataset.title, this.dataset.key)">
                     <i class="bi bi-stopwatch"></i> 專注
                   </button>
-                  <button class="self-check-btn" onclick="window.toggleSelfDoneTask('${taskKey}')">
+                  <button class="self-check-btn" data-key="${escapeHtml(taskKey)}" onclick="window.toggleSelfDoneTask(this.dataset.key)">
                     <i class="bi bi-check2-circle"></i> ${isSelfDone ? '已寫完' : '寫完了'}
                   </button>
                 </div>
