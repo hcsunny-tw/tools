@@ -2361,6 +2361,13 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
             document.getElementById('ipTeacherCustom').style.display = sel.value === 'custom' ? 'block' : 'none'; 
         }
         
+        const cts = document.getElementById('ipContactTeacher');
+        if (cts) {
+            const keep = cts.value;
+            cts.innerHTML = ts.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+            if (keep && ts.includes(keep)) cts.value = keep;
+        }
+        
         const fil = document.getElementById('teacherFilter');
         if(fil) { 
             fil.innerHTML = '<option value="all">所有公會長</option>' + ts.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join(''); 
@@ -2376,6 +2383,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         if(sel) {
             sel.innerHTML = '<option value="">📂 科目...</option>'; 
             Object.keys(db).forEach(s => { sel.add(new Option(s, s)); });
+            if (typeof renderQuestChips === 'function') renderQuestChips();
         }
         if(fil) { 
             fil.innerHTML = '<option value="all">📚 所有科目</option>';
@@ -2396,6 +2404,17 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
             sel.value = data.teachers[0]; 
             document.getElementById('ipTeacherCustom').style.display = 'none'; 
         }
+        const tHint = document.getElementById('teacherRememberHint'); if (tHint) tHint.textContent = '';
+        const pageRow = document.getElementById('questPageRow'); if (pageRow) pageRow.style.display = 'none';
+        currentPresetBase = null;
+        // 聯絡簿的發布導師：沿用上次記住的
+        const cts = document.getElementById('ipContactTeacher');
+        if (cts && data.teachers && data.teachers.length > 0) {
+            const remembered = (data.settings && data.settings.subjectTeachers && data.settings.subjectTeachers['聯絡簿']) || '';
+            cts.value = data.teachers.includes(remembered) ? remembered : data.teachers[0];
+        }
+        renderQuestChips();
+        renderStagedQuests();   // 已加入清單但還沒發布的項目會保留，不會因關掉視窗而消失
     }
 
     document.getElementById('btnOpenNewQuestWindowSidebar').addEventListener('click', () => { 
@@ -2435,29 +2454,227 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         } 
     });
 
-    document.getElementById('btnCreate').addEventListener('click', () => {
-        let t = document.getElementById('ipTeacherSelect').value; 
-        if(t === 'custom') t = document.getElementById('ipTeacherCustom').value.trim();
-        const title = document.getElementById('ipTitle').value.trim(); 
-        const sub = document.getElementById('selSubject').value; 
-        const d = document.getElementById('ipDate').value;
-        
-        if(!t || !title || !d) { showToast("⚠️ 請填寫完整內容"); return; }
-        
-        if(!data.teachers.includes(t)) data.teachers.push(t);
-        const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
-        
-        data.assignments.push({ 
-            id: Date.now(), title, teacher: t, subject: sub, date: d, 
-            assignedIndices: isAll ? 'all' : newAssignmentAssignedIndices, 
-            statuses: Array(data.roster.length).fill(0),
-            cheered: false
+    // ============================================================
+    // ⚡ 發布新委託：科目標籤、導師自動帶入、頁碼記憶、清單批次發布
+    //   - 科目 → 導師 的對應存在 data.settings.subjectTeachers（跟著雲端同步）
+    //   - 每種任務最後一次的頁碼存在 data.settings.lastPages（key = 科目|任務名稱）
+    //   - 可先「加入清單」累積多件，再一次「全部發布」
+    // ============================================================
+    let stagedQuests = [];
+    let currentPresetBase = null;
+    const qEl = (id) => document.getElementById(id);
+    const PAGE_RE = /\s*[Pp]\.?\s*(\d+(?:\s*[-~–－]\s*\d+)?)\s*$/;
+
+    function questSettingsObj() { if (!data.settings || typeof data.settings !== 'object') data.settings = {}; return data.settings; }
+    function getSubjectTeachers() { const st = questSettingsObj(); if (!st.subjectTeachers) st.subjectTeachers = {}; return st.subjectTeachers; }
+    function getLastPages() { const st = questSettingsObj(); if (!st.lastPages) st.lastPages = {}; return st.lastPages; }
+    function pageKey(sub, base) { return `${sub || ''}|${base || ''}`; }
+    function splitTitlePage(title) {
+        const t = String(title || '');
+        const m = t.match(PAGE_RE);
+        if (!m) return { base: t.trim(), page: '' };
+        return { base: t.replace(PAGE_RE, '').trim(), page: m[1].replace(/\s+/g, '') };
+    }
+    function nextPageOf(last) {
+        const nums = String(last || '').match(/\d+/g);
+        return nums ? String(Math.max(...nums.map(Number)) + 1) : '';
+    }
+    function nextQuestId() {
+        const used = new Set((data.assignments || []).map(a => a.id));
+        let id = Date.now();
+        while (used.has(id)) id++;
+        return id;
+    }
+
+    function renderQuestChips() {
+        const subWrap = qEl('subjectChips'), presetWrap = qEl('presetChips'), subSel = qEl('selSubject');
+        if (!subWrap || !presetWrap || !subSel) return;
+        const db = data.questSettings || {};
+        const cur = subSel.value;
+        const subs = Object.keys(db);
+        subWrap.innerHTML = subs.length
+            ? subs.map(x => `<button type="button" class="qchip ${x === cur ? 'active' : ''}" data-sub="${escapeHtml(x)}">${escapeHtml(x)}</button>`).join('')
+            : '<span style="font-size:12px; color:var(--muted);">尚未設定科目，請按右上角齒輪新增</span>';
+        const presets = (cur && db[cur]) ? db[cur] : [];
+        presetWrap.innerHTML = presets.map(p => `<button type="button" class="qchip preset ${p === currentPresetBase ? 'active' : ''}" data-preset="${escapeHtml(p)}">${escapeHtml(p)}</button>`).join('');
+        presetWrap.style.display = presets.length ? 'flex' : 'none';
+    }
+
+    function applySubjectTeacher(sub) {
+        const hint = qEl('teacherRememberHint');
+        if (hint) hint.textContent = '';
+        if (!sub) return;
+        const t = getSubjectTeachers()[sub];
+        const tsel = qEl('ipTeacherSelect');
+        if (t && (data.teachers || []).includes(t) && tsel) {
+            tsel.value = t;
+            qEl('ipTeacherCustom').style.display = 'none';
+            if (hint) hint.textContent = `（${sub} 固定由這位老師發布）`;
+        } else if (hint) {
+            hint.textContent = '（第一次發布此科目後會自動記住）';
+        }
+    }
+
+    function hideQuestPageRow() { const r = qEl('questPageRow'); if (r) r.style.display = 'none'; currentPresetBase = null; }
+
+    function updateCreateBtnLabel() {
+        const btn = qEl('btnCreate');
+        if (!btn) return;
+        const n = stagedQuests.length + (qEl('ipTitle').value.trim() ? 1 : 0);
+        btn.innerHTML = n > 1 ? `<i class="bi bi-send-fill"></i> 全部發布（${n} 件）` : '<i class="bi bi-send-fill"></i> 確認發布';
+    }
+
+    function renderStagedQuests() {
+        const box = qEl('stagedQuestList');
+        if (!box) return;
+        box.innerHTML = stagedQuests.map((it, i) => `
+            <div class="staged-item">
+                <div class="si-main">${escapeHtml(it.sub || '一般')}・${escapeHtml(it.title)}
+                    <div class="si-sub">👤 ${escapeHtml(it.t)}${it.assigned.length ? `・指定 ${it.assigned.length} 人` : ''}</div>
+                </div>
+                <button type="button" data-unstage="${i}" title="移除">✕</button>
+            </div>`).join('');
+        updateCreateBtnLabel();
+    }
+
+    function chooseQuestSubject(sub) {
+        const sel = qEl('selSubject');
+        sel.value = (sel.value === sub) ? '' : sub;
+        hideQuestPageRow();
+        applySubjectTeacher(sel.value);
+        renderQuestChips();
+    }
+
+    function choosePreset(base) {
+        const sub = qEl('selSubject').value;
+        currentPresetBase = base;
+        const last = getLastPages()[pageKey(sub, base)];
+        qEl('ipQuestPage').value = nextPageOf(last);
+        qEl('questPageHint').textContent = last ? `上次到 P.${last}，已自動接續` : '第一次使用：請輸入頁碼（沒有頁碼就清空）';
+        qEl('questPageRow').style.display = 'flex';
+        setTitlePage(qEl('ipQuestPage').value, base);
+        renderQuestChips();
+        updateCreateBtnLabel();
+    }
+
+    // 只替換標題結尾的「P.xx」，使用者另外輸入的文字不會被蓋掉
+    function setTitlePage(page, forceBase) {
+        const ip = qEl('ipTitle');
+        const cur = splitTitlePage(ip.value).base;
+        const base = forceBase || cur || currentPresetBase || '';
+        ip.value = base + (page ? ` P.${page}` : '');
+    }
+
+    window.stepQuestPage = function(delta) {
+        const ip = qEl('ipQuestPage');
+        let v = ip.value.trim();
+        if (!/\d/.test(v)) {
+            const last = getLastPages()[pageKey(qEl('selSubject').value, currentPresetBase)];
+            v = nextPageOf(last) || '1';
+        } else {
+            v = v.replace(/\d+/g, n => String(Math.max(1, parseInt(n, 10) + delta)));
+        }
+        ip.value = v;
+        setTitlePage(v);
+        updateCreateBtnLabel();
+    };
+
+    function readQuestForm() {
+        let t = qEl('ipTeacherSelect').value;
+        if (t === 'custom') t = qEl('ipTeacherCustom').value.trim();
+        const title = qEl('ipTitle').value.trim();
+        const sub = qEl('selSubject').value;
+        const d = qEl('ipDate').value;
+        if (!title) return null;
+        if (!t || !d) { showToast("⚠️ 請填寫完整內容"); return false; }
+        return { t, title, sub, d, assigned: [...newAssignmentAssignedIndices] };
+    }
+
+    function rememberQuestHabits(item) {
+        const map = getSubjectTeachers();
+        if (item.sub && !map[item.sub]) map[item.sub] = item.t;     // 第一次發布的科目：記住老師
+        const { base, page } = splitTitlePage(item.title);
+        if (page) getLastPages()[pageKey(item.sub, base)] = page;   // 記住這種任務最後一次的頁碼
+    }
+
+    function resetQuestEntryFields() {
+        qEl('ipTitle').value = '';
+        hideQuestPageRow();
+        newAssignmentAssignedIndices = [];
+        qEl('assignStatusText').innerText = "發布給：全體冒險者";
+        renderQuestChips();
+    }
+
+    function stageCurrentQuest() {
+        const item = readQuestForm();
+        if (item === false) return false;
+        if (item === null) { showToast("⚠️ 請先輸入任務內容"); return false; }
+        rememberQuestHabits(item);
+        stagedQuests.push(item);
+        resetQuestEntryFields();       // 科目、導師、日期保留，方便連續輸入下一件
+        renderStagedQuests();
+        return true;
+    }
+
+    function createAssignmentsFromItems(items) {
+        items.forEach(it => {
+            if (!data.teachers.includes(it.t)) data.teachers.push(it.t);
+            const isAll = !it.assigned.length || it.assigned.length === data.roster.length;
+            data.assignments.push({
+                id: nextQuestId(), title: it.title, teacher: it.t, subject: it.sub, date: it.d,
+                assignedIndices: isAll ? 'all' : [...it.assigned],
+                statuses: Array(data.roster.length).fill(0),
+                cheered: false
+            });
         });
-        
-        triggerAutoSave(); 
-        renderAll(); 
-        document.getElementById('panelNewQuest').classList.remove('show'); 
-        showToast("✨ 新委託已發布！");
+    }
+    window.__createAssignmentsFromItems = createAssignmentsFromItems;
+    window.__takeStagedQuests = function() { const items = stagedQuests; stagedQuests = []; renderStagedQuests(); return items; };
+
+    qEl('subjectChips')?.addEventListener('click', (e) => { const b = e.target.closest('.qchip'); if (b) chooseQuestSubject(b.dataset.sub); });
+    qEl('presetChips')?.addEventListener('click', (e) => { const b = e.target.closest('.qchip'); if (b) choosePreset(b.dataset.preset); });
+    qEl('stagedQuestList')?.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-unstage]');
+        if (!b) return;
+        stagedQuests.splice(parseInt(b.dataset.unstage, 10), 1);
+        renderStagedQuests();
+    });
+    qEl('ipQuestPage')?.addEventListener('input', () => { setTitlePage(qEl('ipQuestPage').value.trim()); updateCreateBtnLabel(); });
+    qEl('ipTitle')?.addEventListener('input', updateCreateBtnLabel);
+    qEl('ipTitle')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stageCurrentQuest(); } });
+    qEl('virtualKeypad')?.addEventListener('click', () => setTimeout(updateCreateBtnLabel, 0));
+    qEl('btnStageQuest')?.addEventListener('click', stageCurrentQuest);
+    qEl('btnQuestToday')?.addEventListener('click', () => { qEl('ipDate').value = getTaipeiDateString(); qEl('ipDate').dispatchEvent(new Event('change')); });
+
+    // 手動換導師時，記住「這個科目固定由誰發布」
+    qEl('ipTeacherSelect')?.addEventListener('change', (e) => {
+        const sub = qEl('selSubject').value;
+        if (sub && e.target.value && e.target.value !== 'custom') {
+            getSubjectTeachers()[sub] = e.target.value;
+            triggerAutoSave();
+            qEl('teacherRememberHint').textContent = `（已記住：${sub} 由 ${e.target.value} 發布）`;
+        }
+    });
+    qEl('ipContactTeacher')?.addEventListener('change', (e) => {
+        if (e.target.value) { getSubjectTeachers()['聯絡簿'] = e.target.value; triggerAutoSave(); }
+    });
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+        const pending = readQuestForm();
+        if (pending === false) return;
+        if (pending) { rememberQuestHabits(pending); stagedQuests.push(pending); }
+        if (!stagedQuests.length) { showToast("⚠️ 請填寫完整內容"); return; }
+
+        const items = stagedQuests;
+        stagedQuests = [];
+        createAssignmentsFromItems(items);
+        resetQuestEntryFields();
+        renderStagedQuests();
+
+        triggerAutoSave();
+        renderAll();
+        document.getElementById('panelNewQuest').classList.remove('show');
+        showToast(items.length > 1 ? `✨ 已發布 ${items.length} 件新委託！` : "✨ 新委託已發布！");
     });
 
     document.getElementById('btnOpenQuestSettings').addEventListener('click', () => { 
@@ -4204,9 +4421,11 @@ window.StepContactBookPage = function(delta) {
 };
 
 window.quickCreateContactBookQuest = function() {
-    let t = document.getElementById('ipTeacherSelect')?.value;
-    if (t === 'custom') t = document.getElementById('ipTeacherCustom')?.value.trim();
+    let t = document.getElementById('ipContactTeacher')?.value;
     if (!t) t = (data.teachers && data.teachers[0]) ? data.teachers[0] : '公會長';
+    if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+    if (!data.settings.subjectTeachers) data.settings.subjectTeachers = {};
+    data.settings.subjectTeachers['聯絡簿'] = t;
 
     const d = document.getElementById('ipDate')?.value || getTaipeiDateString();
     const pageIp = document.getElementById('ipContactBookPage');
@@ -4219,8 +4438,15 @@ window.quickCreateContactBookQuest = function() {
     if (!data.teachers.includes(t)) data.teachers.push(t);
     const isAll = !newAssignmentAssignedIndices.length || newAssignmentAssignedIndices.length === data.roster.length;
 
+    // 清單裡已加入、還沒發布的委託，一起發布，避免漏掉
+    const stagedItems = window.__takeStagedQuests ? window.__takeStagedQuests() : [];
+    if (stagedItems.length) window.__createAssignmentsFromItems(stagedItems);
+
+    const usedIds = new Set(data.assignments.map(a => a.id));
+    let newId = Date.now();
+    while (usedIds.has(newId)) newId++;
     const newQuest = {
-        id: Date.now(),
+        id: newId,
         title: titleStr,
         teacher: t,
         subject: '聯絡簿',
@@ -4236,7 +4462,7 @@ window.quickCreateContactBookQuest = function() {
     renderAll();
     document.getElementById('panelNewQuest').classList.remove('show');
     playSuccessSound();
-    showToast(`📓 已一鍵發布【${titleStr}】！`);
+    showToast(stagedItems.length ? `📓 已發布【${titleStr}】＋清單 ${stagedItems.length} 件！` : `📓 已一鍵發布【${titleStr}】！`);
 };
 
 // 綁定打開「發布新委託」視窗時，自動預填上次聯絡簿頁碼 +1 與今日日期預覽
