@@ -2254,8 +2254,8 @@ function getRankHtml(exp) {
                 if (indices === 'all' || indices.includes(i)) {
                     const st = (a.statuses || [])[i] || 0;
                     if (st === 0 || st === 2) {
-                        // 若有開啟隱藏今日再訂正功能，則排除
-                        if (typeof hideTodayRedo !== 'undefined' && hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        // 今天發布、被標成需訂正的作業：當天仍算全冠王
+                        if (isTodayRedoCrownExempt(a, st)) continue;   // 👑 今天發布的需訂正，當天仍算全冠王
                         pendingCount++;
                     }
                 }
@@ -2795,7 +2795,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                     if (indices === 'all' || indices.includes(i)) {
                     const st = (a.statuses || [])[i] || 0;
                     if (st === 0 || st === 2) {
-                        if (hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        if (isTodayRedoCrownExempt(a, st)) continue;   // 👑 當天仍算全冠王
                         pendingCount++;
                     }
                 }
@@ -3085,7 +3085,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 if (indices === 'all' || indices.includes(i)) {
                     const st = (a.statuses || [])[i] || 0;
                     if (st === 0 || st === 2) {
-                        if (hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        if (isTodayRedoCrownExempt(a, st)) continue;   // 👑 當天仍算全冠王
                         pendingCount++; 
                     }
                 }
@@ -6491,19 +6491,22 @@ function applyMeadowTimeTheme() {
     }
 }
 
+// 👑 全冠王規則：今天發布的作業被標成「需訂正」，當天仍然算全冠王；隔天還沒訂正就和未交一樣
+//    （只影響老師端的全冠王：草地、座位皇冠、全冠王人數、全冠王 +1 金幣；學生頁與扭蛋維持原規則）
+function isTodayRedoCrownExempt(a, st) {
+    return st === 2 && !!a && a.date === getTaipeiDateString();
+}
+
 function isStudentAllCleared(sidx) {
     if (!data || !data.roster) return false;
     const activeAssigns = (data.assignments || []).filter(a => !a.archived);
-    const todayStr = getTaipeiDateString();
-    let skipTodayRedo = false;
-    try { skipTodayRedo = !!hideTodayRedo; } catch (e) { skipTodayRedo = false; }
 
     for (let a of activeAssigns) {
         const indices = a.assignedIndices || 'all';
         if (indices === 'all' || (Array.isArray(indices) && indices.includes(sidx))) {
             const st = (a.statuses || [])[sidx] || 0;
             if (st === 0 || st === 2) {
-                if (skipTodayRedo && st === 2 && a.date === todayStr) continue;
+                if (isTodayRedoCrownExempt(a, st)) continue;
                 return false;
             }
         }
