@@ -1711,6 +1711,7 @@ function getRankHtml(exp) {
             <div style="display:flex; align-items:center; gap:8px; padding:6px 4px; border-bottom:1px dashed var(--tbl-border); font-size:13px;">
                 <b style="min-width:72px;">${escapeHtml(s.no)}號 ${escapeHtml(s.name)}</b>
                 <span class="muted" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px;">${escapeHtml(getStudentLink(s.no))}</span>
+                <button class="btn sm ghost" data-open-link="${escapeHtml(s.no)}" title="用新分頁打開，確認看得到這位學生的資料"><i class="bi bi-box-arrow-up-right"></i> 開啟</button>
                 <button class="btn sm ghost" data-copy-link="${escapeHtml(s.no)}"><i class="bi bi-clipboard"></i> 複製</button>
                 <button class="btn sm ghost warn" data-reset-link="${escapeHtml(s.no)}" title="舊的 QR Code 會失效"><i class="bi bi-arrow-repeat"></i> 重新產生</button>
             </div>`).join('') || '<div class="muted">名冊裡還沒有學生</div>';
@@ -1736,6 +1737,8 @@ function getRankHtml(exp) {
         if (show) renderStudentLinkList();
     });
     document.getElementById('studentLinkList')?.addEventListener('click', async (e) => {
+        const op = e.target.closest('[data-open-link]');
+        if (op) { const link = getStudentLink(op.dataset.openLink); if (link) window.open(link, '_blank'); return; }
         const cp = e.target.closest('[data-copy-link]');
         if (cp) {
             const link = getStudentLink(cp.dataset.copyLink);
@@ -1930,16 +1933,7 @@ function getRankHtml(exp) {
         cleanData.roster.forEach((s, i) => {
             const token = tokens[String(s.no)];
             if (!token) return;
-            const debts = [];
-            cleanData.assignments.forEach(a => {
-                if (!a.archived) {
-                    const indices = a.assignedIndices || 'all';
-                    if (indices === 'all' || indices.includes(i)) {
-                        const st = (a.statuses || [])[i] || 0;
-                        if (st === 0 || st === 2) debts.push({ title: a.title, st: st, subject: a.subject || '一般', date: a.date });
-                    }
-                }
-            });
+            const debts = getStudentDebts(i).map(({ a, st }) => ({ title: a.title, st: st, subject: a.subject || '一般', date: a.date }));
             const student = { no: s.no, name: s.name, exp: s.exp || 0, coins: s.coins || 0, pets: s.pets || [], activePet: s.activePet || null, debts };
             const key = JSON.stringify([student, redoHour]);
             if (publishedStudentCache[token] === key) return;   // 沒變就不重寫，省流量
@@ -1951,6 +1945,8 @@ function getRankHtml(exp) {
             writes.push(setDoc(doc(db, "public_boards", currentUser.uid, "students", token), { v: 2, revoked: true, lastUpdated })
                 .then(() => revokedWritten.add(token)));
         });
+        // 🕒 老師最後同步時間（學生頁顯示「老師最後同步」用，只有時間、沒有任何學生資料）
+        writes.push(setDoc(doc(db, "public_boards", currentUser.uid, "meta", "sync"), { lastSync: lastUpdated }));
         if (!boardStubWritten) {
             writes.push(setDoc(doc(db, "public_boards", currentUser.uid), { v: 2, lastUpdated, summary: [], note: '學生資料已改為每人一份專屬連結' })
                 .then(() => { boardStubWritten = true; }));
@@ -2248,18 +2244,7 @@ function getRankHtml(exp) {
         
         // 重新計算名單
         data.roster.forEach((s, i) => {
-            let pendingCount = 0;
-            for (let a of activeAssigns) {
-                const indices = a.assignedIndices || 'all';
-                if (indices === 'all' || indices.includes(i)) {
-                    const st = (a.statuses || [])[i] || 0;
-                    if (st === 0 || st === 2) {
-                        // 今天發布、被標成需訂正的作業：當天仍算全冠王
-                        if (isTodayRedoCrownExempt(a, st)) continue;   // 👑 今天發布的需訂正，當天仍算全冠王
-                        pendingCount++;
-                    }
-                }
-            }
+            const pendingCount = getStudentDebts(i, 'crown').length;   // 👑 全冠王規則
             if (pendingCount === 0) clearedStudents.push(s.no);
             if (pendingCount >= 5) helpStudents.push(s.no);
         });
@@ -2789,17 +2774,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         const activeAssigns = (data.assignments || []).filter(a => !a.archived);
         const clearedStudents = []; const helpStudents = [];
         data.roster.forEach((s, i) => {
-            let pendingCount = 0;
-            for (let a of activeAssigns) {
-                const indices = a.assignedIndices || 'all';
-                    if (indices === 'all' || indices.includes(i)) {
-                    const st = (a.statuses || [])[i] || 0;
-                    if (st === 0 || st === 2) {
-                        if (isTodayRedoCrownExempt(a, st)) continue;   // 👑 當天仍算全冠王
-                        pendingCount++;
-                    }
-                }
-            }
+            const pendingCount = getStudentDebts(i, 'crown').length;   // 👑 全冠王規則
             if (pendingCount === 0) clearedStudents.push(s.no);
             if (pendingCount >= 5) helpStudents.push(s.no);
         });
@@ -2824,19 +2799,9 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         }
 
         let studentDataList = data.roster.map((s, i) => {
-            let debts = [];
-            data.assignments.forEach(a => {
-                if(!a.archived) {
-                    const indices = a.assignedIndices || 'all';
-                    if(indices === 'all' || indices.includes(i)) {
-                        const taskSt = (a.statuses||[])[i] || 0;
-                        if(taskSt === 0 || taskSt === 2) {
-                            if (hideTodayRedo && taskSt === 2 && a.date === todayStr) return;
-                            debts.push({ id: a.id, title: a.title, st: taskSt, date: a.date, subject: a.subject || '其他' });
-                        }
-                    }
-                }
-            });
+            const debts = getStudentDebts(i)
+                .filter(({ a, st }) => !(hideTodayRedo && st === 2 && a.date === todayStr))   // 📅 按鈕只影響清單顯示
+                .map(({ a, st }) => ({ id: a.id, title: a.title, st: st, date: a.date, subject: a.subject || '其他' }));
             return { s: s, i: i, debts: debts, debtCount: debts.length };
         });
         if (hideClearStudents) {
@@ -3078,19 +3043,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         const activeAssigns = (data.assignments || []).filter(a => !a.archived);
         
         data.roster.forEach((s, i) => {
-            let pendingCount = 0;
-            for (let a of activeAssigns) {
-                const indices = a.assignedIndices || 'all';
-                const todayStr = getTaipeiDateString();
-                if (indices === 'all' || indices.includes(i)) {
-                    const st = (a.statuses || [])[i] || 0;
-                    if (st === 0 || st === 2) {
-                        if (isTodayRedoCrownExempt(a, st)) continue;   // 👑 當天仍算全冠王
-                        pendingCount++; 
-                    }
-                }
-            }
-            
+            const pendingCount = getStudentDebts(i, 'crown').length;   // 👑 全冠王規則
             if (pendingCount === 0) { 
                 changeCoin(i, 1, '全冠王獎勵', true); 
                 count++; 
@@ -3215,16 +3168,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
 
     window.printSingleStudent = function(idx) {
         const student = data.roster[idx];
-        let debts = [];
-        data.assignments.forEach(a => {
-            if(!a.archived) {
-                const indices = a.assignedIndices || 'all';
-                if(indices === 'all' || indices.includes(idx)) {
-                    const taskSt = (a.statuses||[])[idx] || 0;
-                    if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt, date: a.date });
-                }
-            }
-        });
+        const debts = getStudentDebts(idx).map(({ a, st }) => ({ title: a.title, st: st, date: a.date }));
         
         if(debts.length === 0) {
             showToast("🎉 該名冒險者目前無欠款，無須列印！");
@@ -3285,16 +3229,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         checked.forEach(cb => {
             const idx = parseInt(cb.dataset.sidx);
             const student = data.roster[idx];
-            let debts = [];
-            data.assignments.forEach(a => {
-                if(!a.archived) {
-                    const indices = a.assignedIndices || 'all';
-                    if(indices === 'all' || indices.includes(idx)) {
-                        const taskSt = (a.statuses||[])[idx] || 0;
-                        if(taskSt === 0 || taskSt === 2) debts.push({ title: a.title, st: taskSt, date: a.date });
-                    }
-                }
-            });
+            const debts = getStudentDebts(idx).map(({ a, st }) => ({ title: a.title, st: st, date: a.date }));
             if(debts.length > 0) {
                 printQueue.push({ student: student, debts: debts, count: debts.length });
             }
@@ -3694,13 +3629,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 list.innerHTML = ''; 
                 const debts = [];
                 data.roster.forEach((s, idx) => {
-                    let c = 0; 
-                    data.assignments.forEach(a => { 
-                        if(!a.archived) { 
-                            const st = (a.statuses||[])[idx]||0; 
-                            if(st===0||st===2) c++; 
-                        } 
-                    });
+                    const c = getStudentDebts(idx).length;   // 只算有指派給這位學生的
                     if(c>=5) debts.push({name: s.name, c});
                 });
                 if(debts.length) debts.forEach(d => list.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:6px 12px;border-radius:20px;font-weight:bold;margin-right:8px;">${escapeHtml(d.name)} (${d.c})</span>`);
@@ -5833,17 +5762,9 @@ function getStudentOwnedMap(student) {
 
 // 🔒 扭蛋門檻：學生還有「欠交(灰) / 需訂正(橘)」的未封存委託，就不能抽扭蛋
 //    （黃燈＝學生自己勾選已繳交、等老師批改，不擋；若想連黃燈也擋，把 2 改成 [0, 1, 2] 即可）
-const GACHA_BLOCKING_STATUSES = [0, 2];
+// 🎰 扭蛋門檻：照全冠王規則（今天發布的需訂正不擋；隔天還沒訂正就擋）
 function getStudentPendingTasks(sidx) {
-    const list = [];
-    (data.assignments || []).forEach(a => {
-        if (a.archived) return;
-        const idxs = a.assignedIndices;
-        if (idxs && idxs !== 'all' && !idxs.includes(sidx)) return;
-        const st = (a.statuses || [])[sidx] || 0;
-        if (GACHA_BLOCKING_STATUSES.includes(st)) list.push({ title: a.title, subject: a.subject || '一般', st });
-    });
-    return list;
+    return getStudentDebts(sidx, 'crown').map(({ a, st }) => ({ title: a.title, subject: a.subject || '一般', st }));
 }
 function describePendingTasks(tasks, max = 3) {
     const names = tasks.slice(0, max).map(t => t.title).join('、');
@@ -6497,21 +6418,30 @@ function isTodayRedoCrownExempt(a, st) {
     return st === 2 && !!a && a.date === getTaipeiDateString();
 }
 
+// 📌 欠交判斷（全系統共用，改規則只要改這裡）
+//    「欠交」＝ 沒封存、有指派給這位學生、狀態是 0（未交）或 2（需訂正）
+//    mode：'all'   全部欠交（清單、列印、匯出、學生頁資料）
+//          'crown' 全冠王規則（今天發布的需訂正不算；草地、皇冠、全冠王 +1 金幣、扭蛋）
+function isPendingStatus(st) { return st === 0 || st === 2; }
+function isAssignedTo(a, sidx) {
+    const idx = a.assignedIndices || 'all';
+    return idx === 'all' || (Array.isArray(idx) && idx.includes(sidx));
+}
+function getStudentDebts(sidx, mode = 'all') {
+    const out = [];
+    ((typeof data !== 'undefined' && data && data.assignments) || []).forEach(a => {
+        if (a.archived || !isAssignedTo(a, sidx)) return;
+        const st = (a.statuses || [])[sidx] || 0;
+        if (!isPendingStatus(st)) return;
+        if (mode === 'crown' && isTodayRedoCrownExempt(a, st)) return;
+        out.push({ a, st });
+    });
+    return out;
+}
+
 function isStudentAllCleared(sidx) {
     if (!data || !data.roster) return false;
-    const activeAssigns = (data.assignments || []).filter(a => !a.archived);
-
-    for (let a of activeAssigns) {
-        const indices = a.assignedIndices || 'all';
-        if (indices === 'all' || (Array.isArray(indices) && indices.includes(sidx))) {
-            const st = (a.statuses || [])[sidx] || 0;
-            if (st === 0 || st === 2) {
-                if (isTodayRedoCrownExempt(a, st)) continue;
-                return false;
-            }
-        }
-    }
-    return true;
+    return getStudentDebts(sidx, 'crown').length === 0;   // 👑 全冠王規則
 }
 
 function getStudentPartnerPetObj(student, fallbackIdx = 0) {

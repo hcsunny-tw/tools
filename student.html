@@ -859,7 +859,13 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.3); border: 2px solid #f59e0b;
     }
     #stToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  </style>
+  
+    /* 🆕 今天的新功課 */
+    .task-section-head { font-size: 13px; font-weight: 900; color: #78350f; margin: 6px 2px 2px; display: flex; align-items: center; gap: 6px; }
+    .task-section-head::after { content: ''; flex: 1; border-bottom: 2px dashed #fcd34d; }
+    .today-tag { margin-left: 6px; background: #dcfce7; color: #166534; border: 1.5px solid #86efac; border-radius: 999px; padding: 0 7px; font-size: 10.5px; font-weight: 900; }
+    .age-tag { margin-left: 6px; background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; border-radius: 999px; padding: 0 7px; font-size: 10.5px; font-weight: 900; }
+</style>
 </head>
 <body>
 
@@ -957,7 +963,7 @@
       
       <!-- 更新時間移至此處底部 -->
       <div id="updateTime" style="text-align: center; font-size: 11px; color: var(--muted); font-weight: bold; margin-top:auto;"></div>
-        <div id="appVersion" style="text-align: center; font-size: 10px; color: var(--muted); opacity: .7; font-weight: bold;">冒險者公會 v7.1.0</div>
+        <div id="appVersion" style="text-align: center; font-size: 10px; color: var(--muted); opacity: .7; font-weight: bold;">冒險者公會 v7.3.0</div>
     </div>
 
     <!-- 👉 右欄：待處理任務 -->
@@ -1070,13 +1076,20 @@
     const legacyLink = !token && urlParams.get('no') !== null;
     let no = NaN;
     async function fetchMyRecord() {
+      const metaP = getDoc(doc(db, "public_boards", uid, "meta", "sync")).then(m => (m.exists() ? m.data() : null)).catch(() => null);
       const snap = await getDoc(doc(db, "public_boards", uid, "students", token));
       if (!snap.exists()) return { missing: true };
       const d = snap.data();
       if (d.revoked || !d.student) return { revoked: true };
       setRedoRevealHourFromBoard(d);
       no = parseInt(d.student.no, 10);
-      return { lastUpdated: d.lastUpdated, student: d.student };
+      const meta = await metaP;
+      return { lastUpdated: d.lastUpdated, lastSync: meta && meta.lastSync, student: d.student };
+    }
+    // 🕒 兩行時間：老師最後同步（全班）＋你的資料更新（只有你這份變動時才會變）
+    function setUpdateTimeText(rec) {
+      const el = document.getElementById('updateTime'); if (!el || !rec) return;
+      el.innerText = rec.lastSync ? `老師最後同步：${rec.lastSync}\n你的資料更新：${rec.lastUpdated}` : `你的資料更新：${rec.lastUpdated}`;
     }
     function showLinkProblem(html) {
       document.getElementById('loading').classList.add('hidden');
@@ -1155,6 +1168,11 @@
       if (redoRevealHour < 0 || !d || d.st !== 2) return false;
       if ((d.date || '') !== getTodayStr()) return false;
       return getTaipeiClock().h < redoRevealHour;
+    }
+    // 👑 全冠王規則（和老師端一致）：今天發布、被標成需訂正的作業，當天不封印萌寵、不擋扭蛋；隔天還沒訂正就照常算
+    function blockingDebts(debts) {
+      const today = getTodayStr();
+      return (debts || []).filter(d => !(d && d.st === 2 && (d.date || '') === today));
     }
     function applyRedoEmbargo(student) {
       return { ...student, debts: (student.debts || []).filter(d => !isRedoHidden(d)) };
@@ -1889,10 +1907,10 @@
         const rec = await fetchMyRecord();
         if (rec.student) {
           const latestStudent = rec.student;
-          document.getElementById('updateTime').innerText = `最後更新：${rec.lastUpdated}`;
+          setUpdateTimeText(rec);
 
           if (latestStudent) {
-            const debts = applyRedoEmbargo(latestStudent).debts;
+            const debts = blockingDebts(applyRedoEmbargo(latestStudent).debts);   // 👑 今天的需訂正不擋
             if (debts.length === 0) {
               window.playNativeSound('clear');
               if (overlay) overlay.classList.add('clearing');
@@ -2029,7 +2047,7 @@
       const gachaBarBox = document.getElementById('stGachaBarBox');
       if (!wrap || !petImg || !petName) return;
 
-      const debts = student.debts || [];
+      const debts = blockingDebts(student.debts);   // 👑 全冠王規則：今天的需訂正不封印、不擋扭蛋
       const hasDebts = debts.length > 0;
       const petsArr = Array.isArray(student.pets) ? student.pets : [];
       const counts = {};
@@ -2216,8 +2234,11 @@
           return { ...d, _cat: cat };
         });
 
-        // 2. 🗂️ 自動將「同項目類別」排在前後項 (同類別再依名稱與日期排序)
+        // 2. 🆕 今天發布的作業排最上面；🗂️ 其他依「同項目類別」排在前後項 (同類別再依名稱與日期排序)
+        const todayStr = getTodayStr();
+        enrichedDebts.forEach(d => { d._isToday = (d.date || '') === todayStr; });
         enrichedDebts.sort((a, b) => {
+          if (a._isToday !== b._isToday) return a._isToday ? -1 : 1;
           if (a._cat !== b._cat) {
             return a._cat.localeCompare(b._cat, 'zh-Hant-TW');
           }
@@ -2237,14 +2258,20 @@
           }).join('');
         
         let cardsHtml = '';
+        const todayCount = enrichedDebts.filter(d => d._isToday).length;
+        const olderCount = enrichedDebts.length - todayCount;
+        const sectionHead = (txt) => `<div class="task-section-head">${txt}</div>`;
         enrichedDebts.forEach((d, idx) => {
+          if (idx === 0 && todayCount > 0) cardsHtml += sectionHead(`🆕 今天的新功課（${todayCount}）`);
+          if (!d._isToday && (idx === 0 || enrichedDebts[idx - 1]._isToday) && olderCount > 0) cardsHtml += sectionHead(todayCount > 0 ? `📌 之前還沒完成的（${olderCount}）` : `📌 還沒完成的（${olderCount}）`);
           const taskKey = encodeURIComponent(`${d.date || ''}_${d.subject || ''}_${d.title || idx}`);
           const isSelfDone = localStorage.getItem(getTaskDoneStorageKey(taskKey)) === '1';
           const overdueDays = calcOverdueDays(d.date);
           const isUrgent = overdueDays >= 3;
 
           const badge = d.st === 2 ? '<span class="badge redo">需訂正</span>' : '<span class="badge miss">尚未繳交</span>';
-          const urgentHtml = isUrgent ? `<span class="urgent-tag"><i class="bi bi-fire"></i> 拖欠${overdueDays}天</span>` : '';
+          const urgentHtml = isUrgent ? `<span class="urgent-tag"><i class="bi bi-fire"></i> 拖欠${overdueDays}天</span>`
+            : (d._isToday ? `<span class="today-tag">🆕 今天</span>` : (overdueDays >= 1 ? `<span class="age-tag">已經過了 ${overdueDays} 天</span>` : ''));
 
           cardsHtml += `
             <div class="task-item ${isUrgent ? 'is-urgent' : ''} ${isSelfDone ? 'self-done' : ''}" id="taskCard_${escapeHtml(taskKey)}">
@@ -2325,7 +2352,7 @@
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('contentArea').classList.remove('hidden');
         document.getElementById('fabTools').classList.remove('hidden');
-        document.getElementById('updateTime').innerText = `最後更新：${rec.lastUpdated}`;
+        setUpdateTimeText(rec);
         await palCloudPull();          // 💗 先把雲端的友好度合併進來
         renderFullStudentCard(rec.student);
       } catch (error) {
@@ -2346,7 +2373,7 @@
         lastLoadedAt = Date.now();
         if (!rec.student) return;
         const latest = rec.student;
-        document.getElementById('updateTime').innerText = `最後更新：${rec.lastUpdated}`;
+        setUpdateTimeText(rec);
         if (await palCloudPull()) palApplyStage(currentPartnerPet);   // 在家裡照顧過，回學校自動更新
         const hiddenNow = latest ? (latest.debts || []).filter(isRedoHidden).length : 0;
         if (latest && (JSON.stringify(latest) !== JSON.stringify(currentRawStudent) || prevHour !== redoRevealHour || hiddenNow !== shownHiddenCount)) renderFullStudentCard(latest);
