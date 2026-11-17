@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 老師自己的公會資料（名冊、委託、出缺席、加扣分紀錄）：只有老師本人能讀寫
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 舊的「全班看板」：已經不放任何學生資料，只有老師本人能讀寫
+    match /public_boards/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 每位學生自己的作業資料：
+    //   必須知道那位學生的專屬代碼，才讀得到「那一份」；不能列出全班；只有老師能寫入
+    match /public_boards/{userId}/students/{token} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 萌寵友好度：知道專屬代碼的學生，可以讀寫自己那一份
+    //   只有「老師有發出、而且沒有作廢」的代碼才能寫；內容格式和大小都有限制
+    match /public_boards/{userId}/pals/{token} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if isActiveStudent(userId, token) && isValidPal();
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    function isActiveStudent(userId, token) {
+      let path = /databases/$(database)/documents/public_boards/$(userId)/students/$(token);
+      return exists(path) && get(path).data.get('revoked', false) != true;
+    }
+
+    function isValidPal() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['v', 'pets', 'day', 'snack', 'updatedAt'])
+        && d.pets is map && d.pets.size() <= 100
+        && d.day is map && d.day.keys().hasOnly(['d', 'taps', 'clear'])
+        && d.day.taps is int && d.day.taps >= 0 && d.day.taps <= 3
+        && (!('snack' in d) || (
+              d.snack is map && d.snack.keys().hasOnly(['d', 'earned', 'eaten'])
+              && d.snack.earned is map && d.snack.earned.size() <= 10
+              && d.snack.eaten is map && d.snack.eaten.size() <= 10));
+    }
+  }
+}

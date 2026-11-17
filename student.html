@@ -957,7 +957,7 @@
       
       <!-- 更新時間移至此處底部 -->
       <div id="updateTime" style="text-align: center; font-size: 11px; color: var(--muted); font-weight: bold; margin-top:auto;"></div>
-        <div id="appVersion" style="text-align: center; font-size: 10px; color: var(--muted); opacity: .7; font-weight: bold;">冒險者公會 v7.0.0</div>
+        <div id="appVersion" style="text-align: center; font-size: 10px; color: var(--muted); opacity: .7; font-weight: bold;">冒險者公會 v7.1.0</div>
     </div>
 
     <!-- 👉 右欄：待處理任務 -->
@@ -1250,20 +1250,45 @@
     // ============================================================
     // 🍪 每日免費 3 塊餅乾 + 專注計時連動獲得能量餅乾
     // ============================================================
-    function getCookieStoreKey() {
-      return `hw_cookies_${uid}_${no}_${getTodayStr()}`;
+    // 🍪 餅乾：每天免費 3 塊＋專注計時最多再賺 3 塊（以「人」計算，不管開幾台裝置）
+    //   每台裝置各記「賺了幾塊、吃了幾塊」，雲端把各台加起來，所以兩台同時用也不會算錯
+    const SNACK_FREE_PER_DAY = 3;
+    const SNACK_EARN_CAP = 3;
+    function getDeviceId() {
+      try {
+        let id = localStorage.getItem('hw_device_id');
+        if (!id) { id = Math.random().toString(36).slice(2, 10); localStorage.setItem('hw_device_id', id); }
+        return id;
+      } catch (e) { return 'dev'; }
     }
+    function snackToday(d) {
+      const t = getTodayStr();
+      if (!d.snack || d.snack.d !== t) d.snack = { d: t, earned: {}, eaten: {} };
+      if (!d.snack.earned) d.snack.earned = {};
+      if (!d.snack.eaten) d.snack.eaten = {};
+      return d.snack;
+    }
+    const sumCounts = m => Object.values(m || {}).reduce((x, y) => x + (parseInt(y, 10) || 0), 0);
+    function snackEarnedToday() { return sumCounts(snackToday(palLoad()).earned); }
     function getCookieCount() {
-      const val = localStorage.getItem(getCookieStoreKey());
-      if (val === null) {
-        localStorage.setItem(getCookieStoreKey(), '3');
-        return 3;
-      }
-      return Math.max(0, parseInt(val) || 0);
+      const sn = snackToday(palLoad());
+      return Math.max(0, SNACK_FREE_PER_DAY + sumCounts(sn.earned) - sumCounts(sn.eaten));
     }
-    function setCookieCount(cnt) {
-      localStorage.setItem(getCookieStoreKey(), String(Math.max(0, cnt)));
-      updateCookieUI();
+    function snackBump(field) {
+      const d = palLoad(); const sn = snackToday(d); const dev = getDeviceId();
+      sn[field][dev] = (parseInt(sn[field][dev], 10) || 0) + 1;
+      palSave(d); updateCookieUI();
+    }
+    function eatCookie() { snackBump('eaten'); }
+    // 回傳 true = 有拿到；false = 今天已經拿滿
+    function earnCookie() {
+      if (snackEarnedToday() >= SNACK_EARN_CAP) return false;
+      snackBump('earned'); return true;
+    }
+    function updateCookieHint() {
+      const el = document.getElementById('cookieBonusHint'); if (!el) return;
+      const left = Math.max(0, SNACK_EARN_CAP - snackEarnedToday());
+      el.textContent = left > 0 ? `🍪 專注倒數滿 5 分鐘完成，獎勵能量餅乾 +1！（今天還能拿 ${left} 塊）` : '🍪 今天的專注餅乾已經拿滿 3 塊囉！專注還是很棒，明天再來拿 💪';
     }
     function updateCookieUI() {
       const cnt = getCookieCount();
@@ -1283,12 +1308,17 @@
       const cnt = getCookieCount();
       if (cnt <= 0) {
         window.playNativeSound('error');
+        if (snackEarnedToday() >= SNACK_EARN_CAP) {
+          showPetBubble("今天的餅乾都吃完囉～明天再請我吃吧！😋");
+          showToastMsg("🍪 今天的餅乾都用完了（免費 3 塊＋專注 3 塊），明天再來喔！");
+          return;
+        }
         showPetBubble("餅乾吃光囉！去專注計時滿 5 分鐘賺餅乾吧 ⏱️");
-        showToastMsg("🍪 今日免費餅乾已用完！完成 5 分鐘專注計時即可獲得 +1 塊餅乾！");
+        showToastMsg(`🍪 今日免費餅乾已用完！完成 5 分鐘專注計時即可獲得 +1 塊餅乾（今天還能拿 ${SNACK_EARN_CAP - snackEarnedToday()} 塊）！`);
         window.openTool('timer');
         return;
       }
-      setCookieCount(cnt - 1);
+      eatCookie();
       palGain(PAL_GAIN.feed, null);   // 💗 餵餅乾 +3
 
       spawnPetBurst(['💖'], 5);
@@ -1557,6 +1587,16 @@
           rec.wear = wear; rec.t = t; changed = true;
         }
       });
+      // 🍪 餅乾：同一天時，每台裝置的「賺／吃」取比較大的（各台分開記，所以加起來就是正確總數）
+      const sn = snackToday(d);
+      if (inc.snack && inc.snack.d === sn.d) {
+        ['earned', 'eaten'].forEach(f => {
+          Object.entries(inc.snack[f] || {}).slice(0, 10).forEach(([dev, n]) => {
+            const v = Math.min(99, Math.max(0, parseInt(n, 10) || 0));
+            if (/^[a-z0-9]{1,12}$/i.test(dev) && v > (parseInt(sn[f][dev], 10) || 0)) { sn[f][dev] = v; changed = true; }
+          });
+        });
+      }
       const day = palToday(d);
       if (inc.day && inc.day.d === day.d) {
         const taps = Math.min(PAL_GAIN.tapsPerDay, parseInt(inc.day.taps, 10) || 0);
@@ -1574,7 +1614,8 @@
         }
       });
       const day = palToday(d);
-      return { v: 1, pets, day: { d: day.d, taps: day.taps | 0, clear: !!day.clear }, updatedAt: Date.now() };
+      const sn = snackToday(d);
+      return { v: 1, pets, day: { d: day.d, taps: day.taps | 0, clear: !!day.clear }, snack: { d: sn.d, earned: sn.earned, eaten: sn.eaten }, updatedAt: Date.now() };
     }
     // 讀雲端並合併到這台裝置；回傳是否有新資料
     async function palCloudPull() {
@@ -1585,7 +1626,7 @@
         if (!snap.exists()) { palCloudSchedulePush(0); return false; }
         const d = palLoad();
         const changed = palMergeInto(d, snap.data());
-        if (changed) { try { localStorage.setItem(palStoreKey(), JSON.stringify(d)); } catch (e) {} }
+        if (changed) { try { localStorage.setItem(palStoreKey(), JSON.stringify(d)); } catch (e) {} updateCookieUI(); updateCookieHint(); }
         palCloudSchedulePush(800);   // 這台有、雲端沒有的，也補上去
         return changed;
       } catch (e) {
@@ -2373,10 +2414,26 @@
     }
     function updateDisplay() { timeDisplay.innerText = formatTime(timeInSeconds); }
 
-    // ⏱️ 用「開始／結束的時間點」計算，平板螢幕關掉或切去別的 App 再回來，時間都不會跑慢
-    let runStartedAt = 0;   // 碼表：這一段開始的時間
-    let runBaseSec = 0;     // 碼表：這一段開始前已累積的秒數
-    let runEndAt = 0;       // 倒數／番茄鐘：結束的時間
+    // ⏱️ 計時用「時鐘時間」和「瀏覽器內部的單調時間」兩者中走得比較少的那個：
+    //   切到別的 App、分頁在背景都照樣準；但把平板時鐘往後調，計時不會跟著快轉（防刷餅乾）
+    let runBaseSec = 0;     // 這一段開始前已累積（碼表）或剩下（倒數）的秒數
+    let runWall0 = 0, runMono0 = 0;
+    function runElapsedSec() {
+      const wall = (Date.now() - runWall0) / 1000;
+      const mono = (performance.now() - runMono0) / 1000;
+      return Math.max(0, Math.min(wall, mono));
+    }
+    function markRunStart() { runWall0 = Date.now(); runMono0 = performance.now(); }
+
+    // 🔒 同一時間只能有一個分頁在專注計時（開好幾個分頁不能一起刷）
+    const FOCUS_TAB_ID = Math.random().toString(36).slice(2);
+    function focusLockKey() { return `hw_focus_lock_${uid}_${token || no}`; }
+    function readFocusLock() { try { return JSON.parse(localStorage.getItem(focusLockKey()) || 'null'); } catch (e) { return null; } }
+    function focusLockBusyByOther() { const l = readFocusLock(); return !!(l && l.id !== FOCUS_TAB_ID && Date.now() - l.at < 4000); }
+    function takeFocusLock() { try { localStorage.setItem(focusLockKey(), JSON.stringify({ id: FOCUS_TAB_ID, at: Date.now() })); } catch (e) {} }
+    function focusLockIsMine() { const l = readFocusLock(); return !l || l.id === FOCUS_TAB_ID; }
+    function releaseFocusLock() { const l = readFocusLock(); if (l && l.id === FOCUS_TAB_ID) { try { localStorage.removeItem(focusLockKey()); } catch (e) {} } }
+    window.addEventListener('pagehide', releaseFocusLock);
 
     // 💡 計時中讓螢幕保持亮著（支援的平板／瀏覽器才有效，不支援也不影響計時）
     let wakeLock = null;
@@ -2388,7 +2445,7 @@
       if (document.hidden) return;
       if (isRunning) { keepScreenOn(); toolTick(); }   // 回來時立刻補算時間
     });
-    function stopRunning() { clearInterval(toolInterval); isRunning = false; allowScreenOff(); }
+    function stopRunning() { clearInterval(toolInterval); isRunning = false; allowScreenOff(); releaseFocusLock(); }
 
     window.openTool = function(mode) {
       currentMode = mode; stopRunning();
@@ -2397,6 +2454,7 @@
       panel.classList.remove('hidden');
       panel.style.transform = 'translateX(-50%)'; panel.style.left = '50%'; panel.style.top = '15%';
       document.getElementById('timerInputs').classList.add('hidden'); pomoStatus.classList.add('hidden');
+      updateCookieHint();
 
       if (mode === 'stopwatch') {
         document.getElementById('toolTitle').innerHTML = "<i class='bi bi-stopwatch'></i> 專注碼表";
@@ -2432,9 +2490,10 @@
     });
 
     function onFocusCompleteReward() {
-      if (initialTargetSeconds >= 300) {
-        setCookieCount(getCookieCount() + 1);
-        showToastMsg("🎉 專注挑戰成功！獲得 1 塊能量餅乾 🍪！");
+      if (initialTargetSeconds >= 300 && focusLockIsMine()) {
+        if (earnCookie()) showToastMsg(`🎉 專注挑戰成功！獲得 1 塊能量餅乾 🍪！（今天還能拿 ${SNACK_EARN_CAP - snackEarnedToday()} 塊）`);
+        else showToastMsg("🎉 專注挑戰成功！今天的專注餅乾已經拿滿 3 塊囉，明天再來 💪");
+        updateCookieHint();
       }
       if (currentFocusedTaskKey) {
         localStorage.setItem(getTaskDoneStorageKey(currentFocusedTaskKey), '1');
@@ -2444,11 +2503,19 @@
 
     function toolTick() {
       if (!isRunning) return;
-      const now = Date.now();
+      if (currentMode !== 'stopwatch') {
+        if (!focusLockIsMine()) {   // 別的分頁搶走了計時 → 這一頁停下來，不給獎勵
+          stopRunning(); btnStartPause.innerText = "繼續"; btnStartPause.className = "btn-start";
+          showToastMsg("⏸️ 另一個分頁開始專注計時了，這一頁先暫停");
+          return;
+        }
+        takeFocusLock();            // 每次更新都續約，表示「我還在計時」
+      }
+      const el = runElapsedSec();
       if (currentMode === 'stopwatch') {
-        timeInSeconds = runBaseSec + Math.floor((now - runStartedAt) / 1000);
+        timeInSeconds = runBaseSec + Math.floor(el);
       } else {
-        timeInSeconds = Math.max(0, Math.ceil((runEndAt - now) / 1000));
+        timeInSeconds = Math.max(0, Math.ceil(runBaseSec - el));
         if (timeInSeconds === 0) {
           window.playNativeSound('clear');
           if (currentMode === 'pomodoro') {
@@ -2462,11 +2529,11 @@
               pomoStatus.style.color = "#ef4444"; pomoStatus.style.background = "#fee2e2";
               timeInSeconds = WORK_MINUTES * 60;
             }
-            runEndAt = now + timeInSeconds * 1000;
+            runBaseSec = timeInSeconds; markRunStart();
           } else {
+            onFocusCompleteReward();   // 先發獎勵（這時還持有分頁鎖），再停止
             stopRunning();
             btnStartPause.innerText = "時間到！"; btnStartPause.className = "btn-start";
-            onFocusCompleteReward();
           }
         }
       }
@@ -2479,9 +2546,12 @@
         stopRunning(); btnStartPause.innerText = "繼續"; btnStartPause.className = "btn-start";
       } else {
         if (currentMode !== 'stopwatch' && timeInSeconds <= 0) return;   // 「時間到！」後要先按重設
+        if (currentMode !== 'stopwatch') {
+          if (focusLockBusyByOther()) { showToastMsg("⏱️ 另一個分頁正在專注計時中，一次只能計時一個喔！"); return; }
+          takeFocusLock();
+        }
         isRunning = true; btnStartPause.innerText = "暫停"; btnStartPause.className = "btn-pause";
-        if (currentMode === 'stopwatch') { runBaseSec = timeInSeconds; runStartedAt = Date.now(); }
-        else { runEndAt = Date.now() + timeInSeconds * 1000; }
+        runBaseSec = timeInSeconds; markRunStart();
         keepScreenOn();
         toolInterval = setInterval(toolTick, 250);
       }
