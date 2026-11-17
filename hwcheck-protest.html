@@ -1326,7 +1326,7 @@
             </a>
 
             <div class="copyright">
-                © 2026 ADVENTURER GUILD PROJECT v6.2.0. ALL RIGHTS RESERVED.
+                © 2026 ADVENTURER GUILD PROJECT v7.0.0. ALL RIGHTS RESERVED.
             </div>
         </div>
     </footer>
@@ -1423,6 +1423,17 @@
                    </div>
               </div>
 
+              <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; border: 2px dashed #38bdf8; margin-bottom: 12px;">
+                   <h3 style="margin:0 0 8px; font-size: 16px; color: #0369a1;">🔐 學生專屬連結（QR Code）</h3>
+                   <div class="muted" style="font-size:13px; line-height:1.6; margin-bottom:10px;">每位學生一個猜不到的專屬連結，網址裡沒有座號，改網址也看不到別人。發現連結外流時，可以幫那位同學「重新產生」，舊的 QR Code 會立刻失效。</div>
+                   <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">學生頁網址（通常不用改）</label>
+                   <input id="ipStudentPageUrl" type="text" style="width:100%; padding:6px 8px; margin-bottom:10px; font-size:12px;">
+                   <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                       <button class="btn sm" id="btnPrintStudentQR"><i class="bi bi-printer"></i> 列印全班 QR Code</button>
+                       <button class="btn sm secondary" id="btnToggleStudentLinks"><i class="bi bi-list-ul"></i> 顯示每人連結</button>
+                   </div>
+                   <div id="studentLinkList" style="display:none; margin-top:10px; max-height:280px; overflow-y:auto; background:var(--card); border-radius:8px; padding:4px 8px;"></div>
+              </div>
               <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
                    <h3 style="margin:0 0 8px; font-size: 16px; color: var(--primary);">🕘 學生端「需訂正」公布時間</h3>
                    <div class="muted" style="font-size:13px; line-height:1.6; margin-bottom:10px;">今天發布的作業如果被標成「需訂正」，學生的作業查看頁要到這個時間後才會顯示；「未交」一律馬上顯示。</div>
