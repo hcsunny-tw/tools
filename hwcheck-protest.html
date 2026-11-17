@@ -894,6 +894,57 @@
     .staged-item .si-main { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .staged-item .si-sub { font-size:11px; color:var(--muted); font-weight:bold; }
     .staged-item button { border:none; background:transparent; color:var(--danger, #b91c1c); font-size:18px; cursor:pointer; padding:0 4px; }
+
+    /* 🧰 工具箱優化 */
+    .tool-header { touch-action: none; user-select: none; -webkit-user-select: none; }
+    .tool-header-btns { display:flex; align-items:center; gap:1cqi; }
+    .tool-max { background:none; border:none; color:#fff; font-size:4.5cqi; cursor:pointer; opacity:.85; padding:0 1cqi; min-width:6cqi; min-height:6cqi; display:inline-flex; align-items:center; justify-content:center; }
+    .tool-max:hover, .tool-close:hover { opacity:1; }
+    .tool-window.is-max { resize: none; border-radius: 16px; }
+    .toolbox-menu { max-height: 75vh; overflow-y: auto; }
+    .toolbox-group-title { font-size:12px; font-weight:900; color:var(--muted); margin:10px 0 6px; letter-spacing:.05em; }
+    .toolbox-group-title:first-of-type { margin-top:2px; }
+    .timer-progress { width:100%; height:2.5cqi; background:rgba(0,0,0,.08); border-radius:2cqi; overflow:hidden; margin:-1cqi 0 2cqi; }
+    .timer-progress-fill { height:100%; width:0%; background:var(--success, #556B2F); transition: width .25s linear, background-color .3s; }
+    .timer-display-box.is-ending { color:#fff !important; background:var(--danger) !important; animation: timerPulse 1s ease-in-out infinite; }
+    .timer-display-box.is-done { color:#fff !important; background:var(--danger) !important; animation: timerFlash .5s steps(2) 6; }
+    @keyframes timerPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.04); } }
+    @keyframes timerFlash { 0% { opacity:1; } 50% { opacity:.25; } 100% { opacity:1; } }
+    .draw-options { display:flex; flex-wrap:wrap; gap:1.5cqi 3cqi; font-size:3.4cqi; font-weight:bold; color:var(--text-light); align-items:center; }
+    .draw-options label { display:flex; align-items:center; gap:1cqi; cursor:pointer; white-space:nowrap; }
+    .draw-options input { width:4cqi; height:4cqi; }
+    .draw-status { display:flex; justify-content:space-between; align-items:center; gap:2cqi; font-size:3.4cqi; font-weight:900; color:var(--primary); }
+    .draw-history { display:flex; flex-wrap:wrap; gap:1cqi; min-height:5cqi; }
+    .draw-history span { background:var(--tbl-head); border:1px solid var(--tbl-border); border-radius:999px; padding:.5cqi 2cqi; font-size:3cqi; font-weight:bold; }
+    .wheel-container { position: relative; }
+    .wheel-label { position:absolute; left:50%; top:50%; white-space:nowrap; font-weight:900; color:#3E2723; pointer-events:none; text-shadow:0 1px 0 rgba(255,255,255,.7); }
+    .decibel-setting { display:flex; align-items:center; gap:2cqi; width:100%; font-size:3.4cqi; font-weight:bold; color:var(--text-light); margin-top:2cqi; }
+    .decibel-setting input { flex:1; }
+    .decibel-threshold-mark { position:absolute; top:0; bottom:0; width:0.6cqi; background:#111; opacity:.55; z-index:2; }
+
+    /* ✏️ 可編輯清單、🎵 自訂音樂、👥 分組抽 */
+    .cl-footer { display:flex; gap:2cqi; margin-top:auto; }
+    .cl-footer .tool-btn { flex:1; font-size:3.8cqi; }
+    .cl-editor-btns { display:flex; gap:2cqi; }
+    .cl-editor-btns .tool-btn { flex:1; font-size:3.8cqi; }
+    .cl-editor { display:none; flex-direction:column; gap:2cqi; flex:1; }
+    .cl-editor textarea { flex:1; min-height:30cqi; font-size:4cqi; padding:2cqi; border-radius:2cqi; border:2px solid var(--tbl-border); background:var(--bg); color:var(--text-main); font-family:inherit; line-height:1.6; resize:vertical; }
+    .cl-editor .cl-hint { font-size:3cqi; color:var(--muted); font-weight:bold; }
+    .tool-window.is-editing .checklist-container, .tool-window.is-editing .cl-footer { display:none !important; }
+    .tool-window.is-editing .cl-editor { display:flex; }
+    .bgm-status { font-size:3.3cqi; font-weight:bold; color:var(--muted); min-height:4cqi; line-height:1.4; }
+    .bgm-status.err { color:var(--danger); }
+    .bgm-section-title { font-size:3.3cqi; font-weight:900; color:var(--text-light); margin-top:1cqi; }
+    .bgm-custom-row { display:flex; gap:1.5cqi; align-items:stretch; }
+    .bgm-custom-row .bgm-track { flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .bgm-del { background:none; border:2px dashed var(--tbl-border); border-radius:2cqi; color:var(--danger); font-size:4cqi; cursor:pointer; padding:0 2.5cqi; }
+    .bgm-add { display:flex; flex-direction:column; gap:1.5cqi; background:var(--bg); border:1px dashed var(--tbl-border); border-radius:2cqi; padding:2cqi; }
+    .bgm-add input[type=text] { font-size:3.5cqi; padding:1.5cqi; border-radius:1.5cqi; border:2px solid var(--tbl-border); background:var(--card); color:var(--text-main); }
+    .draw-options select { font-size:3.4cqi; padding:.8cqi 1.5cqi; border-radius:1.5cqi; border:2px solid var(--tbl-border); background:var(--card); color:var(--text-main); font-weight:bold; }
+    .group-draw-result { display:none; flex-direction:column; gap:1.2cqi; margin-top:2cqi; }
+    .group-draw-result.show { display:flex; }
+    .group-draw-result div { display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:2px solid var(--tbl-border); border-radius:2cqi; padding:1.5cqi 3cqi; font-size:4.5cqi; font-weight:900; }
+    .group-draw-result div b { color:var(--danger); }
 </style>
 </head>
 <body>
@@ -1371,6 +1422,12 @@
                        <button class="btn sm secondary" id="btnOpenCoinSettings"><i class="bi bi-coin"></i> 設定加扣分項目</button>
                    </div>
               </div>
+
+              <div style="background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--tbl-border); margin-bottom: 12px;">
+                   <h3 style="margin:0 0 8px; font-size: 16px; color: var(--primary);">🕘 學生端「需訂正」公布時間</h3>
+                   <div class="muted" style="font-size:13px; line-height:1.6; margin-bottom:10px;">今天發布的作業如果被標成「需訂正」，學生的作業查看頁要到這個時間後才會顯示；「未交」一律馬上顯示。</div>
+                   <select id="selRedoRevealHour" style="padding:6px 10px; width:auto; min-width:180px;"><option value="off">關閉（馬上顯示）</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00（預設）</option><option value="22">22:00</option><option value="23">23:00</option></select>
+              </div>
               
               <div style="background: #fff0f0; padding: 16px; border-radius: 8px; border: 2px dashed var(--danger); margin-top: 12px;">
                     <h3 style="margin:0 0 10px; font-size: 16px; color: var(--danger);">⚠️ 危險禁區</h3>
@@ -1533,34 +1590,75 @@
 <div class="toolbox-container">
       <div class="toolbox-menu" id="toolboxMenu">
           <h3 style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary); border-bottom: 2px dashed var(--tbl-border); padding-bottom: 8px;"><i class="bi bi-tools"></i> 實用小工具</h3>
-          <div class="toolbox-grid">
-              <button class="toolbox-btn" id="btnOpenStopwatch"><i class="bi bi-clock-history"></i> 碼表</button>
-              <button class="toolbox-btn" id="btnOpenTimer"><i class="bi bi-stopwatch"></i> 計時器</button>
-              <button class="toolbox-btn" id="btnOpenHgTimer"><i class="bi bi-hourglass-split" style="color: #e5a95b;"></i> 沙漏計時</button>
-              <button class="toolbox-btn" id="btnOpenNumDice"><i class="bi bi-123"></i> 數字骰</button>
-              <button class="toolbox-btn" id="btnOpenAlphaDice"><i class="bi bi-alphabet"></i> 字母骰</button>
-              <button class="toolbox-btn" id="btnOpenDraw"><i class="bi bi-gift"></i> 抽籤轉盤</button>
-              <button class="toolbox-btn" id="btnOpenMarquee"><i class="bi bi-broadcast"></i> 跑馬燈</button>
-              <button class="toolbox-btn" id="btnOpenDecibel"><i class="bi bi-mic"></i> 分貝偵測</button>
-              <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
-              <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
-              <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
-              <button class="toolbox-btn" id="btnOpenApple"><i class="bi bi-apple" style="color: #ef4444;"></i> 午飯蘋果</button>
-              <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
-              <button class="toolbox-btn" onclick="window.open('https://www.youtube.com/watch?v=4QBBPuxTPoY&list=PLsYcWPis8Nh3sSijq2qR61_KM-tRatuFj&index=3', '_blank')"><i class="bi bi-youtube" style="color: #ef4444;"></i> 沉浸暖身</button>
-          </div>
+          
+              <div class="toolbox-group-title">⏱️ 時間</div>
+              <div class="toolbox-grid">
+                  <button class="toolbox-btn" id="btnOpenTimer"><i class="bi bi-stopwatch"></i> 計時器</button>
+                  <button class="toolbox-btn" id="btnOpenHgTimer"><i class="bi bi-hourglass-split" style="color: #e5a95b;"></i> 沙漏計時</button>
+                  <button class="toolbox-btn" id="btnOpenStopwatch"><i class="bi bi-clock-history"></i> 碼表</button>
+              </div>
+              <div class="toolbox-group-title">🎲 抽選</div>
+              <div class="toolbox-grid">
+                  <button class="toolbox-btn" id="btnOpenDraw"><i class="bi bi-gift"></i> 抽籤轉盤</button>
+                  <button class="toolbox-btn" id="btnOpenNumDice"><i class="bi bi-123"></i> 數字骰</button>
+                  <button class="toolbox-btn" id="btnOpenAlphaDice"><i class="bi bi-alphabet"></i> 字母骰</button>
+              </div>
+              <div class="toolbox-group-title">📢 班級經營</div>
+              <div class="toolbox-grid">
+                  <button class="toolbox-btn" id="btnOpenMarquee"><i class="bi bi-broadcast"></i> 跑馬燈</button>
+                  <button class="toolbox-btn" id="btnOpenDecibel"><i class="bi bi-mic"></i> 分貝偵測</button>
+                  <button class="toolbox-btn" id="btnOpenApple"><i class="bi bi-apple" style="color: #ef4444;"></i> 午飯蘋果</button>
+                  <button class="toolbox-btn" id="btnOpenBGM"><i class="bi bi-music-note-beamed"></i> 背景音樂</button>
+                  <button class="toolbox-btn" id="btnOpenRecess"><i class="bi bi-backpack"></i> 下課準備</button>
+                  <button class="toolbox-btn" id="btnOpenDismissal"><i class="bi bi-door-open"></i> 放學準備</button>
+              </div>
+              <div class="toolbox-group-title">🔗 外部連結</div>
+              <div class="toolbox-grid">
+                  <button class="toolbox-btn" onclick="window.open('https://hcsunny-tw.github.io/tools/examtime.html', '_blank')"><i class="bi bi-card-checklist"></i> 考試看板</button>
+                  <button class="toolbox-btn" onclick="window.open('https://www.youtube.com/watch?v=4QBBPuxTPoY&list=PLsYcWPis8Nh3sSijq2qR61_KM-tRatuFj&index=3', '_blank')"><i class="bi bi-youtube" style="color: #ef4444;"></i> 沉浸暖身</button>
+              </div>
       </div>
       <div class="toolbox-toggle" id="btnToggleToolbox" title="百寶箱"><i class="bi bi-box-seam-fill"></i></div>
   </div>
   
   <div id="panelRecess" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-backpack"></i> 下課準備</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body"><div id="recessChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div></div>
+      <div class="tool-body">
+          <div id="recessChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div>
+          <div class="cl-footer">
+              <button class="tool-btn ghost" onclick="window.resetChecklist('recess')"><i class="bi bi-arrow-counterclockwise"></i> 全部重來</button>
+              <button class="tool-btn ghost" onclick="window.editChecklist('recess')"><i class="bi bi-pencil-square"></i> 編輯項目</button>
+          </div>
+          <div class="cl-editor">
+              <div class="cl-hint">一行一個項目，可以加表情符號，例如「💧 喝滿水壺」。會同步到雲端。</div>
+              <textarea id="recessEditText"></textarea>
+              <div class="cl-editor-btns">
+                  <button class="tool-btn ghost" onclick="window.restoreChecklistDefault('recess')"><i class="bi bi-arrow-repeat"></i> 恢復預設</button>
+                  <button class="tool-btn ghost" onclick="window.cancelChecklistEdit('recess')">取消</button>
+                  <button class="tool-btn" onclick="window.saveChecklist('recess')"><i class="bi bi-check-lg"></i> 儲存</button>
+              </div>
+          </div>
+      </div>
   </div>
 
   <div id="panelDismissal" class="tool-window">
       <div class="tool-header"><span><i class="bi bi-door-open"></i> 放學準備</span><button class="tool-close">&times;</button></div>
-      <div class="tool-body"><div id="dismissalChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div></div>
+      <div class="tool-body">
+          <div id="dismissalChecklist" class="checklist-container" style="display:flex; flex-direction:column; gap:2cqi;"></div>
+          <div class="cl-footer">
+              <button class="tool-btn ghost" onclick="window.resetChecklist('dismissal')"><i class="bi bi-arrow-counterclockwise"></i> 全部重來</button>
+              <button class="tool-btn ghost" onclick="window.editChecklist('dismissal')"><i class="bi bi-pencil-square"></i> 編輯項目</button>
+          </div>
+          <div class="cl-editor">
+              <div class="cl-hint">一行一個項目，可以加表情符號，例如「💧 喝滿水壺」。會同步到雲端。</div>
+              <textarea id="dismissalEditText"></textarea>
+              <div class="cl-editor-btns">
+                  <button class="tool-btn ghost" onclick="window.restoreChecklistDefault('dismissal')"><i class="bi bi-arrow-repeat"></i> 恢復預設</button>
+                  <button class="tool-btn ghost" onclick="window.cancelChecklistEdit('dismissal')">取消</button>
+                  <button class="tool-btn" onclick="window.saveChecklist('dismissal')"><i class="bi bi-check-lg"></i> 儲存</button>
+              </div>
+          </div>
+      </div>
   </div>
   
 <div id="panelApple" class="tool-window">
@@ -1584,10 +1682,23 @@
       <div class="tool-body">
           <audio id="bgmPlayer" loop preload="none"></audio>
           
+          <div id="bgmStatus" class="bgm-status">選一首音樂開始播放</div>
+          <div class="bgm-section-title">🎼 內建音樂</div>
           <div style="display:flex; flex-direction:column; gap:2cqi;">
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Relaxing_Piano_Music/Relaxing_Piano_Music.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
-              <button class="tool-btn ghost" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Carefree/Carefree.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
+              <button class="tool-btn ghost bgm-track" onclick="window.changeBGM('https://archive.org/download/HeroicAge/Heroic%20Age.mp3', this)"><i class="bi bi-fire"></i> 激昂探險</button>
+              <button class="tool-btn ghost bgm-track" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Relaxing_Piano_Music/Relaxing_Piano_Music.mp3', this)"><i class="bi bi-water"></i> 平靜溫柔</button>
+              <button class="tool-btn ghost bgm-track" onclick="window.changeBGM('https://archive.org/download/Kevin_MacLeod_-_Carefree/Carefree.mp3', this)"><i class="bi bi-emoji-smile"></i> 快樂輕鬆</button>
+          </div>
+          <div class="bgm-section-title">⭐ 我的音樂</div>
+          <div id="bgmCustomList" style="display:flex; flex-direction:column; gap:1.5cqi;"></div>
+          <div class="bgm-add">
+              <input type="text" id="bgmNewName" placeholder="音樂名稱（例如：專注鋼琴）">
+              <input type="text" id="bgmNewUrl" placeholder="mp3 網址（Google 雲端硬碟、Dropbox 分享連結也可以）">
+              <div style="display:flex; gap:1.5cqi;">
+                  <button class="tool-btn" id="btnBgmAdd" style="flex:1; font-size:3.6cqi;"><i class="bi bi-plus-lg"></i> 加入我的音樂</button>
+                  <button class="tool-btn ghost" id="btnBgmLocal" style="flex:1; font-size:3.6cqi;"><i class="bi bi-folder2-open"></i> 播放電腦裡的檔案</button>
+              </div>
+              <input type="file" id="bgmLocalFile" accept="audio/*" style="display:none;">
           </div>
           
           <div style="display:flex; align-items:center; gap:2cqi; margin-top:3cqi; background: var(--bg); padding: 2cqi; border-radius: 2cqi; border: 1px dashed var(--tbl-border);">
@@ -1635,7 +1746,9 @@
       <div class="tool-header"><span><i class="bi bi-stopwatch"></i> 計時器</span><button class="tool-close">&times;</button></div>
       <div class="tool-body">
            <div id="timerDisplay" class="timer-display-box">00:00</div>
+           <div class="timer-progress"><div class="timer-progress-fill" id="timerProgressFill"></div></div>
            <div style="display:flex; gap:2cqi; justify-content: center;">
+              <button class="tool-btn ghost btn-timer-preset" data-sec="30" style="flex:1;">+30秒</button>
               <button class="tool-btn ghost btn-timer-preset" data-min="1" style="flex:1;">+1分</button>
               <button class="tool-btn ghost btn-timer-preset" data-min="5" style="flex:1;">+5分</button>
               <button class="tool-btn ghost btn-timer-preset" data-min="10" style="flex:1;">+10分</button>
@@ -1774,10 +1887,21 @@
               <div class="draw-tab active" id="tabBasicDraw">文字模式</div>
               <div class="draw-tab" id="tabWheelDraw">轉盤模式</div>
           </div>
+          <div class="draw-options">
+              <label><input type="checkbox" id="drawExcludeAbsent" checked> 排除今天請假</label>
+              <label><input type="checkbox" id="drawNoRepeat" checked> 抽過不再抽</label>
+              <label>👥 範圍 <select id="drawGroupSelect"><option value="all">全班</option></select></label>
+          </div>
+          <div class="draw-status">
+              <span id="drawRemainText">可抽 0 人</span>
+              <button class="tool-btn ghost" id="btnDrawReset" style="padding:1cqi 3cqi; font-size:3.2cqi;"><i class="bi bi-arrow-counterclockwise"></i> 重新開始</button>
+          </div>
           
           <div id="viewBasicDraw">
               <div id="luckyDrawResult" class="dice-box" style="font-size:12cqi;">???</div>
               <button class="tool-btn" id="btnLuckyDraw" style="width:100%; margin-top:2cqi;"><i class="bi bi-dice-5-fill"></i> 抽出一位冒險者</button>
+              <button class="tool-btn ghost" id="btnGroupDraw" style="width:100%; margin-top:2cqi;"><i class="bi bi-people-fill"></i> 每組各抽一位</button>
+              <div id="groupDrawResult" class="group-draw-result"></div>
           </div>
           
           <div id="viewWheelDraw" style="display:none; text-align:center;">
@@ -1788,6 +1912,8 @@
               <div id="wheelWinnerName" style="font-size:6cqi; font-weight:900; color:var(--danger); height:8cqi;"></div>
               <button class="tool-btn" id="btnSpinWheel" style="width:100%; margin-top:2cqi;"><i class="bi bi-arrow-repeat"></i> 旋轉輪盤</button>
           </div>
+          <div style="font-size:3.2cqi; font-weight:bold; color:var(--muted);">已抽出：</div>
+          <div id="drawHistory" class="draw-history"></div>
       </div>
   </div>
 
@@ -1797,8 +1923,15 @@
           <i class="bi bi-mic-fill" id="micIcon" style="font-size:15cqi; color:var(--muted); transition:0.2s;"></i>
           <div class="decibel-bar-container">
               <div class="decibel-bar" id="decibelBar"></div>
+              <div class="decibel-threshold-mark" id="decibelMark" style="left:80%;"></div>
               <div class="decibel-text" id="decibelText">等待麥克風...</div>
           </div>
+          <div class="decibel-setting">
+              <span style="white-space:nowrap;">太吵門檻</span>
+              <input type="range" id="decibelThreshold" min="30" max="95" step="5" value="80">
+              <span id="decibelThresholdText" style="width:9cqi; text-align:right;">80%</span>
+          </div>
+          <div id="decibelOverCount" style="font-size:3.4cqi; font-weight:900; color:var(--muted); margin-top:1cqi;">太吵提醒：0 次</div>
           <button class="tool-btn" id="btnToggleMic" style="margin-top:4cqi; width:100%;"><i class="bi bi-play-circle"></i> 啟動偵測</button>
       </div>
   </div>

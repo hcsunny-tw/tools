@@ -387,6 +387,25 @@ function getRankHtml(exp) {
     }
     window.renderTodayStats = renderTodayStats;
 
+    // 🕘 學生端「需訂正」公布時間（今天發布的作業，標成需訂正後要到這個時間才在學生頁顯示）
+    //    存在 data.settings.redoRevealHour：數字 = 幾點（預設 21），-1 = 關閉
+    function getRedoRevealHour() {
+        const v = data.settings && data.settings.redoRevealHour;
+        return (typeof v === 'number' && v >= -1 && v <= 23) ? v : 21;
+    }
+    function syncRedoRevealUI() {
+        const sel = document.getElementById('selRedoRevealHour');
+        if (!sel) return;
+        const h = getRedoRevealHour();
+        sel.value = h < 0 ? 'off' : String(h);
+    }
+    document.getElementById('selRedoRevealHour')?.addEventListener('change', (e) => {
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        data.settings.redoRevealHour = e.target.value === 'off' ? -1 : parseInt(e.target.value, 10);
+        triggerAutoSave();
+        showToast(e.target.value === 'off' ? '🕘 需訂正會馬上顯示在學生頁' : `🕘 今天的需訂正會在 ${e.target.value}:00 後顯示在學生頁`);
+    });
+
     function triggerAutoSave() {
         trackStatusChanges();   // 📊 記錄今日批改／消滅（在備份與上傳之前）
         if (currentUser) {
@@ -545,6 +564,7 @@ function getRankHtml(exp) {
                 });
                 await setDoc(doc(db, "public_boards", currentUser.uid), {
                     lastUpdated: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+                    redoRevealHour: getRedoRevealHour(),
                     summary: publicSummary
                 });
             }
@@ -761,6 +781,7 @@ function getRankHtml(exp) {
         }
 
 
+        syncRedoRevealUI();
         const statsCleaned = snapshotStatuses();   // 📊 一定要最先做：以載入當下的狀態為基準，之後的變動才算「今日」
         if (statsCleaned) triggerAutoSave();
         populateTeacherDropdowns(); 
@@ -2100,20 +2121,59 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
         data.roster = r; triggerAutoSave(); showToast("✅ 名單已更新");
     });
 
-    function renderChecklists() {
-        const buildList = (items, cid) => { 
-            const container = document.getElementById(cid);
-            if(container) {
-                container.innerHTML = items.map((item, idx) => `
-                    <div class="checklist-item" onclick="this.classList.toggle('done')">
-                        <div style="width: 28px; height: 28px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:14px;">${idx+1}</div>
-                        ${escapeHtml(item)}
-                    </div>`).join(''); 
-            }
-        };
-        buildList(['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所'], 'recessChecklist'); 
-        buildList(['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿帶齊', '🎒 整理背包'], 'dismissalChecklist');
+    // ✏️ 下課／放學準備清單：老師可自行編輯，存在 data.settings.checklists（跟著雲端同步）
+    const DEFAULT_CHECKLISTS = {
+        recess: ['💧 喝滿水壺', '📚 準備下節課本', '🧹 桌面淨空', '🚻 上廁所'],
+        dismissal: ['🗑️ 座位周邊無垃圾', '🪑 椅子靠攏', '📓 聯絡簿帶齊', '🎒 整理背包']
+    };
+    const CHECKLIST_DOM = { recess: { list: 'recessChecklist', panel: 'panelRecess' }, dismissal: { list: 'dismissalChecklist', panel: 'panelDismissal' } };
+    function getChecklistItems(key) {
+        const saved = data.settings && data.settings.checklists && data.settings.checklists[key];
+        return (Array.isArray(saved) && saved.length) ? saved : DEFAULT_CHECKLISTS[key];
     }
+    function renderChecklists() {
+        Object.keys(CHECKLIST_DOM).forEach(key => {
+            const container = document.getElementById(CHECKLIST_DOM[key].list);
+            if (!container) return;
+            container.innerHTML = getChecklistItems(key).map((item, idx) => `
+                    <div class="checklist-item" onclick="this.classList.toggle('done')">
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: #fff; color: var(--primary); display:grid; place-items:center; border: 2px solid var(--primary); font-size:14px; flex-shrink:0;">${idx+1}</div>
+                        ${escapeHtml(item)}
+                    </div>`).join('');
+        });
+    }
+    window.resetChecklist = function(key) {
+        const dom = CHECKLIST_DOM[key]; if (!dom) return;
+        document.querySelectorAll(`#${dom.list} .checklist-item`).forEach(x => x.classList.remove('done'));
+    };
+    window.editChecklist = function(key) {
+        const dom = CHECKLIST_DOM[key]; if (!dom) return;
+        const ta = document.getElementById(`${key}EditText`);
+        if (ta) ta.value = getChecklistItems(key).join('\n');
+        document.getElementById(dom.panel)?.classList.add('is-editing');
+        if (ta) ta.focus();
+    };
+    window.cancelChecklistEdit = function(key) {
+        const dom = CHECKLIST_DOM[key]; if (!dom) return;
+        document.getElementById(dom.panel)?.classList.remove('is-editing');
+    };
+    window.saveChecklist = function(key) {
+        const dom = CHECKLIST_DOM[key]; if (!dom) return;
+        const ta = document.getElementById(`${key}EditText`);
+        const items = (ta ? ta.value : '').split('\n').map(x => x.trim()).filter(Boolean).slice(0, 20);
+        if (!items.length) { showToast('⚠️ 至少要有一個項目喔'); return; }
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        if (!data.settings.checklists) data.settings.checklists = {};
+        data.settings.checklists[key] = items;
+        triggerAutoSave();
+        renderChecklists();
+        document.getElementById(dom.panel)?.classList.remove('is-editing');
+        showToast('✅ 清單已更新');
+    };
+    window.restoreChecklistDefault = function(key) {
+        const ta = document.getElementById(`${key}EditText`);
+        if (ta) ta.value = DEFAULT_CHECKLISTS[key].join('\n');
+    };
 
     document.getElementById('btnLoadFromPaste').addEventListener('click', () => {
         const text = document.getElementById('taRosterPaste').value.trim();
@@ -2877,11 +2937,37 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         this.classList.toggle('active'); 
     });
 
+    // ============================================================
+    // 🧰 工具視窗管理：觸控/滑鼠/觸控筆拖曳、記住位置、放大投影、Esc 關閉
+    // ============================================================
+    const TOOL_IDS = ['panelRecess', 'panelDismissal', 'panelMarquee', 'panelTimer', 'panelStopwatch', 'panelNumDice', 'panelAlphaDice', 'panelDraw', 'panelDecibel', 'panelBGM', 'panelApple', 'panelHgTimer'];
+    const TOOL_POS_KEY = 'hwToolPositions';
+    function loadToolPositions() { try { return JSON.parse(localStorage.getItem(TOOL_POS_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function saveToolPosition(id, left, top) {
+        try { const all = loadToolPositions(); all[id] = { left: Math.round(left), top: Math.round(top) }; localStorage.setItem(TOOL_POS_KEY, JSON.stringify(all)); } catch (e) {}
+    }
+    // 讓視窗至少有標題列留在畫面內，避免拖出去拿不回來
+    function clampToolWindow(win) {
+        if (!win || win.classList.contains('is-max') || win.style.transform !== 'none') return;
+        const r = win.getBoundingClientRect();
+        const maxLeft = Math.max(0, window.innerWidth - Math.min(r.width, 120));
+        const maxTop = Math.max(0, window.innerHeight - 48);
+        win.style.left = Math.min(Math.max(-r.width + 120, r.left), maxLeft) + 'px';
+        win.style.top = Math.min(Math.max(0, r.top), maxTop) + 'px';
+    }
+
     function openTool(id) { 
         const win = document.getElementById(id); 
         if(win) {
+            const saved = loadToolPositions()[id];
+            if (saved && !win.classList.contains('is-max') && !win.classList.contains('show')) {
+                win.style.transform = 'none';
+                win.style.left = saved.left + 'px';
+                win.style.top = saved.top + 'px';
+            }
             win.classList.add('show'); 
             bringToFront(win);
+            clampToolWindow(win);
         }
         document.getElementById('toolboxMenu').classList.remove('show'); 
         document.getElementById('btnToggleToolbox').classList.remove('active'); 
@@ -2892,34 +2978,104 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         el.style.zIndex = 5006;
     }
 
-    
-['panelRecess', 'panelDismissal', 'panelMarquee', 'panelTimer', 'panelStopwatch', 'panelNumDice', 'panelAlphaDice', 'panelDraw', 'panelDecibel', 'panelBGM', 'panelApple', 'panelHgTimer'].forEach(id => {
+    function toggleToolMax(win) {
+        const btn = win.querySelector('.tool-max');
+        if (win.classList.contains('is-max')) {
+            win.classList.remove('is-max');
+            win.style.cssText = win.dataset.prevStyle || '';
+            delete win.dataset.prevStyle;
+            if (btn) { btn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>'; btn.title = '放大（投影用）'; }
+        } else {
+            win.dataset.prevStyle = win.style.cssText;
+            win.classList.add('is-max');
+            win.style.cssText = 'transform:translateX(-50%); left:50%; top:3vh; width:min(96vw, 120vh); height:94vh; max-width:none; max-height:none; z-index:5006;';
+            if (btn) { btn.innerHTML = '<i class="bi bi-fullscreen-exit"></i>'; btn.title = '縮回'; }
+        }
+        // 讓轉盤、沙漏這類依尺寸繪製的工具重新排版
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    TOOL_IDS.forEach(id => {
         const win = document.getElementById(id);
         if(!win) return;
-        
-        win.addEventListener('mousedown', () => bringToFront(win));
-        
         const header = win.querySelector('.tool-header');
-        let isDragging = false, startX, startY, startLeft, startTop;
-        
-        header.addEventListener('mousedown', (e) => {
-            isDragging = true;
+        if (!header) return;
+
+        // 在標題列加上「放大」按鈕（雙擊標題列也可以）
+        const closeBtn = header.querySelector('.tool-close');
+        if (closeBtn && !header.querySelector('.tool-max')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'tool-header-btns';
+            const maxBtn = document.createElement('button');
+            maxBtn.type = 'button';
+            maxBtn.className = 'tool-max';
+            maxBtn.title = '放大（投影用）';
+            maxBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>';
+            maxBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleToolMax(win); });
+            closeBtn.replaceWith(wrap);
+            wrap.appendChild(maxBtn);
+            wrap.appendChild(closeBtn);
+        }
+        header.addEventListener('dblclick', (e) => { if (!e.target.closest('button')) toggleToolMax(win); });
+
+        win.addEventListener('pointerdown', () => bringToFront(win));
+
+        let drag = null;
+        header.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('button') || win.classList.contains('is-max')) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
             const rect = win.getBoundingClientRect();
             win.style.transform = 'none';
             win.style.left = rect.left + 'px';
             win.style.top = rect.top + 'px';
-            startX = e.clientX; startY = e.clientY;
-            startLeft = rect.left; startTop = rect.top;
+            drag = { id: e.pointerId, x: e.clientX, y: e.clientY, left: rect.left, top: rect.top };
+            try { header.setPointerCapture(e.pointerId); } catch (err) {}
             bringToFront(win);
+            e.preventDefault();
         });
-        
-        document.addEventListener('mousemove', (e) => {
-            if(!isDragging) return;
-            win.style.left = (startLeft + e.clientX - startX) + 'px';
-            win.style.top = (startTop + e.clientY - startY) + 'px';
+        header.addEventListener('pointermove', (e) => {
+            if (!drag || e.pointerId !== drag.id) return;
+            win.style.left = (drag.left + e.clientX - drag.x) + 'px';
+            win.style.top = (drag.top + e.clientY - drag.y) + 'px';
         });
-        
-        document.addEventListener('mouseup', () => isDragging = false);
+        const endDrag = (e) => {
+            if (!drag || (e && e.pointerId !== drag.id)) return;
+            drag = null;
+            clampToolWindow(win);
+            const r = win.getBoundingClientRect();
+            saveToolPosition(id, r.left, r.top);
+        };
+        header.addEventListener('pointerup', endDrag);
+        header.addEventListener('pointercancel', endDrag);
+    });
+
+    window.addEventListener('resize', () => {
+        TOOL_IDS.forEach(id => { const w = document.getElementById(id); if (w && w.classList.contains('show')) clampToolWindow(w); });
+    });
+
+    // Esc：先縮回放大的視窗，再關掉最上層的工具視窗；最後收起百寶箱選單
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        const open = TOOL_IDS.map(id => document.getElementById(id)).filter(w => w && w.classList.contains('show'));
+        if (open.length) {
+            const top = open.sort((x, y) => (parseInt(y.style.zIndex) || 0) - (parseInt(x.style.zIndex) || 0))[0];
+            if (top.classList.contains('is-max')) toggleToolMax(top);
+            else top.classList.remove('show');
+            return;
+        }
+        document.getElementById('toolboxMenu').classList.remove('show');
+        document.getElementById('btnToggleToolbox').classList.remove('active');
+    });
+
+    // 點選單外面就收起百寶箱
+    document.addEventListener('pointerdown', (e) => {
+        const menu = document.getElementById('toolboxMenu');
+        if (menu && menu.classList.contains('show') && !e.target.closest('.toolbox-container')) {
+            menu.classList.remove('show');
+            document.getElementById('btnToggleToolbox').classList.remove('active');
+        }
     });
 
     document.getElementById('btnOpenRecess').onclick = () => openTool('panelRecess');
@@ -2930,9 +3086,9 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
     document.getElementById('btnOpenStopwatch').onclick = () => openTool('panelStopwatch');
     document.getElementById('btnOpenNumDice').onclick = () => openTool('panelNumDice');
     document.getElementById('btnOpenAlphaDice').onclick = () => openTool('panelAlphaDice');
-    document.getElementById('btnOpenDraw').onclick = () => { openTool('panelDraw'); renderWheel(); };
+    document.getElementById('btnOpenDraw').onclick = () => { openTool('panelDraw'); renderWheel(); renderDrawStatus(); };
     document.getElementById('btnOpenDecibel').onclick = () => openTool('panelDecibel');
-    document.getElementById('btnOpenBGM').onclick = () => openTool('panelBGM');
+    document.getElementById('btnOpenBGM').onclick = () => { openTool('panelBGM'); if (window.renderBgmCustom) window.renderBgmCustom(); };
 
     document.getElementById('btnOpenApple').onclick = () => { openTool('panelApple'); renderLunchApple(); };
 
@@ -3024,10 +3180,16 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         }
     }, 1000);
     
+    // ============================================================
+    // 🎵 背景音樂：載入失敗會提示、可加入自己的音樂（存雲端）、可播放電腦裡的檔案
+    // ============================================================
     const bgmPlayer = document.getElementById('bgmPlayer');
     const bgmVol = document.getElementById('bgmVolume');
     const btnPlayBGM = document.getElementById('btnPlayBGM');
     const btnStopBGM = document.getElementById('btnStopBGM');
+    let bgmCurrentName = '';
+    let bgmLoadTimer = null;
+    let bgmLocalUrl = null;
     
     if (bgmVol) {
         bgmVol.addEventListener('input', (e) => {
@@ -3035,7 +3197,15 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         });
     }
 
+    function setBgmStatus(text, isErr) {
+        const el = document.getElementById('bgmStatus');
+        if (!el) return;
+        el.textContent = text;
+        el.classList.toggle('err', !!isErr);
+    }
+
     function updateBgmUI() {
+        if (!bgmPlayer || !btnPlayBGM) return;
         if (!bgmPlayer.paused && bgmPlayer.currentTime > 0) {
             btnPlayBGM.innerHTML = '<i class="bi bi-pause-fill"></i> 暫停';
             btnPlayBGM.style.background = 'var(--accent)'; 
@@ -3045,41 +3215,119 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         }
     }
 
-    window.changeBGM = function(url, btn) {
+    function highlightBgmTrack(btn) {
+        document.querySelectorAll('#panelBGM .bgm-track').forEach(b => {
+            b.style.borderColor = 'var(--tbl-border)';
+            b.style.background = 'transparent';
+        });
+        if (btn) {
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.background = 'var(--tbl-alt)';
+        }
+    }
+
+    // 常見分享連結轉成可以直接播放的網址
+    function normalizeAudioUrl(raw) {
+        let url = String(raw || '').trim();
+        if (!url) return { url: '' };
+        if (/youtube\.com|youtu\.be/i.test(url)) return { url: '', error: 'YouTube 連結沒辦法直接當背景音樂，請改用 mp3 連結，或用「播放電腦裡的檔案」' };
+        const drive = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{10,})/i);
+        if (drive) return { url: `https://drive.google.com/uc?export=download&id=${drive[1]}`, note: 'Google 雲端硬碟的檔案要設定為「知道連結的任何人都能查看」' };
+        if (/dropbox\.com/i.test(url)) url = url.replace(/([?&])dl=0/, '$1raw=1').replace(/([?&])dl=1/, '$1raw=1');
+        if (!/^https?:\/\//i.test(url)) return { url: '', error: '網址要用 http:// 或 https:// 開頭' };
+        return { url };
+    }
+
+    window.changeBGM = function(url, btn, name) {
         if (!bgmPlayer) return;
-        
+        const norm = normalizeAudioUrl(url);
+        if (!norm.url && !String(url).startsWith('blob:')) { setBgmStatus('❌ ' + (norm.error || '網址不正確'), true); showToast('⚠️ ' + (norm.error || '網址不正確')); return; }
+        const playUrl = String(url).startsWith('blob:') ? url : norm.url;
+        bgmCurrentName = name || (btn ? btn.textContent.trim() : '音樂');
         btnPlayBGM.innerHTML = '<i class="bi bi-hourglass-split"></i> 載入中...';
+        setBgmStatus(`⏳ 正在載入「${bgmCurrentName}」…`);
         
-        bgmPlayer.src = url;
-        bgmPlayer.volume = bgmVol.value;
+        bgmPlayer.src = playUrl;
+        bgmPlayer.volume = bgmVol ? bgmVol.value : 0.4;
+
+        clearTimeout(bgmLoadTimer);
+        bgmLoadTimer = setTimeout(() => {
+            if (bgmPlayer.paused || bgmPlayer.currentTime === 0) setBgmStatus(`⌛「${bgmCurrentName}」載入很久了，可能是網路慢或網址失效，可以換一首試試`, true);
+        }, 12000);
         
         bgmPlayer.play().then(() => {
             updateBgmUI();
         }).catch(e => {
-            console.log("等待互動後播放", e);
+            if (e && e.name === 'NotAllowedError') setBgmStatus('👆 瀏覽器需要你再按一次「播放」才能出聲');
             updateBgmUI();
         });
-        
-        const btns = document.querySelectorAll('#panelBGM .tool-btn.ghost');
-        btns.forEach(b => {
-            if (b.id !== 'btnStopBGM') {
-                b.style.borderColor = 'var(--tbl-border)';
-                b.style.background = 'transparent';
-            }
-        });
-        if(btn) {
-            btn.style.borderColor = 'var(--primary)';
-            btn.style.background = 'var(--tbl-alt)';
-        }
+        highlightBgmTrack(btn);
     };
+
+    // 我的音樂（存在 data.settings.bgmTracks，換電腦也看得到）
+    function getBgmTracks() { return (data.settings && Array.isArray(data.settings.bgmTracks)) ? data.settings.bgmTracks : []; }
+    function renderBgmCustom() {
+        const box = document.getElementById('bgmCustomList');
+        if (!box) return;
+        const tracks = getBgmTracks();
+        box.innerHTML = tracks.length
+            ? tracks.map((t, i) => `<div class="bgm-custom-row">
+                    <button class="tool-btn ghost bgm-track" data-bgm-idx="${i}" title="${escapeHtml(t.url)}"><i class="bi bi-music-note"></i> ${escapeHtml(t.name)}</button>
+                    <button class="bgm-del" data-bgm-del="${i}" title="移除">✕</button>
+                </div>`).join('')
+            : '<div class="bgm-status">還沒有加入自己的音樂</div>';
+    }
+    window.renderBgmCustom = renderBgmCustom;
+    document.getElementById('bgmCustomList')?.addEventListener('click', (e) => {
+        const del = e.target.closest('[data-bgm-del]');
+        if (del) {
+            const i = parseInt(del.dataset.bgmDel, 10);
+            const t = getBgmTracks()[i];
+            if (t && confirm(`要移除「${t.name}」嗎？`)) {
+                data.settings.bgmTracks.splice(i, 1);
+                triggerAutoSave(); renderBgmCustom();
+            }
+            return;
+        }
+        const play = e.target.closest('[data-bgm-idx]');
+        if (play) {
+            const t = getBgmTracks()[parseInt(play.dataset.bgmIdx, 10)];
+            if (t) window.changeBGM(t.url, play, t.name);
+        }
+    });
+    document.getElementById('btnBgmAdd')?.addEventListener('click', () => {
+        const nameEl = document.getElementById('bgmNewName'), urlEl = document.getElementById('bgmNewUrl');
+        const norm = normalizeAudioUrl(urlEl.value);
+        if (!norm.url) { showToast('⚠️ ' + (norm.error || '請貼上音樂網址')); return; }
+        const name = nameEl.value.trim() || `我的音樂 ${getBgmTracks().length + 1}`;
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        if (!Array.isArray(data.settings.bgmTracks)) data.settings.bgmTracks = [];
+        data.settings.bgmTracks.push({ name: name.slice(0, 30), url: norm.url });
+        triggerAutoSave();
+        nameEl.value = ''; urlEl.value = '';
+        renderBgmCustom();
+        showToast(norm.note ? `✅ 已加入「${name}」（提醒：${norm.note}）` : `✅ 已加入「${name}」`);
+        const btns = document.querySelectorAll('#bgmCustomList [data-bgm-idx]');
+        window.changeBGM(norm.url, btns[btns.length - 1], name);   // 加入後直接試播，馬上知道能不能用
+    });
+    // 播放電腦裡的檔案（只在這次開著的時候有效，不會上傳）
+    document.getElementById('btnBgmLocal')?.addEventListener('click', () => document.getElementById('bgmLocalFile')?.click());
+    document.getElementById('bgmLocalFile')?.addEventListener('change', (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        if (bgmLocalUrl) URL.revokeObjectURL(bgmLocalUrl);
+        bgmLocalUrl = URL.createObjectURL(f);
+        window.changeBGM(bgmLocalUrl, null, f.name.replace(/\.[^.]+$/, ''));
+        e.target.value = '';
+    });
 
     btnPlayBGM.addEventListener('click', () => {
         if (bgmPlayer) {
             if (!bgmPlayer.getAttribute('src')) {
-                const firstSongBtn = document.querySelectorAll('#panelBGM .tool-btn.ghost')[0];
+                const firstSongBtn = document.querySelector('#panelBGM .bgm-track');
                 if (firstSongBtn) firstSongBtn.click();
             } else {
-                if (bgmPlayer.paused) bgmPlayer.play();
+                if (bgmPlayer.paused) bgmPlayer.play().catch(() => {});
                 else bgmPlayer.pause();
                 updateBgmUI();
             }
@@ -3088,8 +3336,18 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
 
     if (bgmPlayer) {
         bgmPlayer.addEventListener('play', updateBgmUI);
-        bgmPlayer.addEventListener('pause', updateBgmUI);
+        bgmPlayer.addEventListener('pause', () => { updateBgmUI(); if (bgmPlayer.error) return; /* 載入失敗時保留錯誤訊息 */ if (bgmPlayer.getAttribute('src') && bgmCurrentName && bgmPlayer.currentTime > 0) setBgmStatus(`⏸️ 已暫停「${bgmCurrentName}」`); });
         bgmPlayer.addEventListener('canplay', updateBgmUI); 
+        bgmPlayer.addEventListener('playing', () => { clearTimeout(bgmLoadTimer); setBgmStatus(`🎶 正在播放「${bgmCurrentName}」`); updateBgmUI(); });
+        bgmPlayer.addEventListener('waiting', () => { if (!bgmPlayer.error) setBgmStatus(`⏳ 緩衝中…「${bgmCurrentName}」`); });
+        bgmPlayer.addEventListener('error', () => {
+            if (!bgmPlayer.getAttribute('src')) return;
+            clearTimeout(bgmLoadTimer);
+            const msg = `❌「${bgmCurrentName}」載入失敗，可能是網址失效、檔案沒有開放分享，或學校網路擋掉了。請換一首，或加入自己的音樂。`;
+            setBgmStatus(msg, true);
+            showToast('⚠️ 背景音樂載入失敗，請換一首試試');
+            updateBgmUI();
+        });
     }
 
     btnStopBGM.addEventListener('click', () => {
@@ -3097,6 +3355,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
             bgmPlayer.pause();
             bgmPlayer.currentTime = 0; 
             updateBgmUI();
+            if (bgmCurrentName) setBgmStatus(`⏹️ 已停止「${bgmCurrentName}」`);
         }
     });
 
@@ -3139,7 +3398,10 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
     document.getElementById('btnMqHide').addEventListener('click', () => document.getElementById('topMarquee').style.display = 'none');
 
     document.getElementById('btnQuickDebtMarquee').addEventListener('click', () => {
-        const contactBookTask = data.assignments.find(a => !a.archived && a.title.includes('聯絡簿'));
+        // 取「最新的」聯絡簿（原本會抓到最舊的一筆）
+        const contactBookTask = data.assignments
+            .filter(a => !a.archived && String(a.title || '').includes('聯絡簿'))
+            .sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')) || (y.id - x.id))[0];
         
         if (!contactBookTask) {
             showToast('⚠️ 目前看板上沒有名為「聯絡簿」的委託單！');
@@ -3162,72 +3424,98 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         if (missingStudents.length === 0) {
             inputEl.value = '🎉 全班聯絡簿皆已繳交完成！';
         } else {
-            inputEl.value = `⚠️ 聯絡簿未交 / 待訂正：${missingStudents.join(', ')} 號，請盡速交至講台！`;
+            inputEl.value = `⚠️ ${contactBookTask.title} 未交 / 待訂正：${missingStudents.join(', ')} 號，請盡速交至講台！`;
         }
     });
 
-    let timerInt = null; let timerSec = 0;
-    function updateTimer() { document.getElementById('timerDisplay').innerText = `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`; }
-    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => { timerSec += parseInt(e.target.dataset.min) * 60; updateTimer(); }));
+    // ⏲️ 計時器：用「結束時間」計算剩餘秒數，切到別的分頁或螢幕休眠也不會慢掉
+    let timerInt = null;        // 正在倒數時的 interval
+    let timerSec = 0;           // 剩餘秒數（暫停或尚未開始時使用）
+    let timerTotal = 0;         // 這一輪的總秒數（進度條用）
+    let timerEndAt = 0;         // 倒數結束的時間戳
+    let timerLastBeep = null;
+    function timerRemaining() { return timerInt ? Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000)) : timerSec; }
+    function updateTimer() {
+        const left = timerRemaining();
+        const box = document.getElementById('timerDisplay');
+        box.innerText = `${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
+        const fill = document.getElementById('timerProgressFill');
+        if (fill) {
+            const pct = timerTotal > 0 ? Math.max(0, Math.min(100, (left / timerTotal) * 100)) : 0;
+            fill.style.width = pct + '%';
+            fill.style.backgroundColor = left <= 10 && timerTotal > 0 ? 'var(--danger)' : (pct <= 30 ? '#f59e0b' : '');
+        }
+        box.classList.toggle('is-ending', !!timerInt && left > 0 && left <= 10);
+    }
+    function setTimerBtn(state) {
+        const btn = document.getElementById('btnTimerStart');
+        if (state === 'running') { btn.innerHTML = `<i class="bi bi-pause-fill"></i> 暫停`; btn.classList.add('warn'); }
+        else if (state === 'paused') { btn.innerHTML = `<i class="bi bi-play-fill"></i> 繼續`; btn.classList.remove('warn'); }
+        else { btn.innerHTML = `<i class="bi bi-play-fill"></i> 開始`; btn.classList.remove('warn'); }
+    }
+    function timerTick() {
+        const left = timerRemaining();
+        if (left > 0 && left <= 3 && timerLastBeep !== left) {
+            timerLastBeep = left;
+            if (window.playTimerTickSound) window.playTimerTickSound();
+        }
+        updateTimer();
+        if (left <= 0) {
+            clearInterval(timerInt); timerInt = null; timerSec = 0;
+            setTimerBtn('idle');
+            const box = document.getElementById('timerDisplay');
+            box.classList.remove('is-ending');
+            box.classList.remove('is-done'); void box.offsetWidth; box.classList.add('is-done');
+            setTimeout(() => box.classList.remove('is-done'), 3200);
+            if (window.playTimerVictoryMusic) window.playTimerVictoryMusic(); 
+            showToast("⏰ 時間到！任務結束！"); 
+        }
+    }
+    document.querySelectorAll('.btn-timer-preset').forEach(b => b.addEventListener('click', (e) => {
+        const btn = e.currentTarget;
+        const add = btn.dataset.sec ? parseInt(btn.dataset.sec, 10) : parseInt(btn.dataset.min, 10) * 60;
+        if (timerInt) { timerEndAt += add * 1000; timerTotal += add; }   // 倒數中也能直接加時間
+        else { timerSec += add; timerTotal = timerSec; }
+        updateTimer();
+    }));
     
 document.getElementById('btnTimerStart').addEventListener('click', (e) => { 
         const ctx = resumeAudio(); 
-        const unlockOsc = ctx.createOscillator(); 
-        const unlockGain = ctx.createGain();
-        unlockGain.gain.value = 0; 
-        unlockOsc.connect(unlockGain); 
-        unlockGain.connect(ctx.destination);
-        unlockOsc.start(); unlockOsc.stop(ctx.currentTime + 0.1);
+        try {
+            const unlockOsc = ctx.createOscillator(); 
+            const unlockGain = ctx.createGain();
+            unlockGain.gain.value = 0; 
+            unlockOsc.connect(unlockGain); 
+            unlockGain.connect(ctx.destination);
+            unlockOsc.start(); unlockOsc.stop(ctx.currentTime + 0.1);
+        } catch (err) {}
 
-        const displayBox = document.getElementById('timerDisplay');
-        const btn = document.getElementById('btnTimerStart'); 
-        
-        if(timerInt) { 
-            clearInterval(timerInt); timerInt=null; 
-            btn.innerHTML=`<i class="bi bi-play-fill"></i> 繼續`; 
-            btn.classList.remove('warn');
-        } else { 
-            const inM = parseInt(document.getElementById('timerInput').value); const inS = parseInt(document.getElementById('timerInputSec').value);
-            if (!isNaN(inM) || !isNaN(inS)) { 
-                timerSec = (inM || 0) * 60 + (inS || 0); 
-                document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value=''; 
-                updateTimer(); 
-            }
-            
-            if(timerSec > 0) { 
-                btn.innerHTML=`<i class="bi bi-pause-fill"></i> 暫停`; 
-                btn.classList.add('warn');
-                
-                displayBox.style.backgroundColor = 'var(--bg)'; 
-                displayBox.style.color = 'var(--primary)';
-                
-                timerInt = setInterval(() => { 
-                    if(timerSec > 0) { 
-                        timerSec--; 
-                        updateTimer(); 
-                        
-                        if (timerSec > 0 && timerSec <= 3) {
-                            if (window.playTimerTickSound) window.playTimerTickSound();
-                        }
-                    } 
-                    
-                    if(timerSec <= 0) { 
-                        clearInterval(timerInt); timerInt=null; 
-                        
-                        btn.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; 
-                        btn.classList.remove('warn'); 
-                        
-                        if (window.playTimerVictoryMusic) window.playTimerVictoryMusic(); 
-                        showToast("⏰ 時間到！任務結束！"); 
-                    } 
-                }, 1000);
-            } 
-        } 
+        if (timerInt) {
+            timerSec = timerRemaining();
+            clearInterval(timerInt); timerInt = null;
+            setTimerBtn('paused');
+            updateTimer();
+            return;
+        }
+        const inM = parseInt(document.getElementById('timerInput').value); const inS = parseInt(document.getElementById('timerInputSec').value);
+        if (!isNaN(inM) || !isNaN(inS)) { 
+            timerSec = Math.max(0, (inM || 0) * 60 + (inS || 0)); 
+            timerTotal = timerSec;
+            document.getElementById('timerInput').value=''; document.getElementById('timerInputSec').value=''; 
+        }
+        if (timerSec <= 0) { showToast('⏲️ 請先輸入時間或點 +30秒／+1分'); return; }
+        if (timerTotal < timerSec) timerTotal = timerSec;
+        timerEndAt = Date.now() + timerSec * 1000;
+        timerLastBeep = null;
+        timerInt = setInterval(timerTick, 250);
+        setTimerBtn('running');
+        updateTimer();
     });
     
     document.getElementById('btnTimerReset').addEventListener('click', () => { 
-        clearInterval(timerInt); timerInt=null; timerSec=0; updateTimer(); 
-        const btn = document.getElementById('btnTimerStart'); btn.innerHTML=`<i class="bi bi-play-fill"></i> 開始`; btn.classList.remove('warn');
+        clearInterval(timerInt); timerInt=null; timerSec=0; timerTotal=0; updateTimer(); 
+        document.getElementById('timerDisplay').classList.remove('is-ending', 'is-done');
+        setTimerBtn('idle');
     });
 
     let swInt = null, swStart = 0, swElapsed = 0;
@@ -3248,51 +3536,244 @@ document.getElementById('btnTimerStart').addEventListener('click', (e) => {
     });
 
     function rollDiceBox(boxId, getResultFn) {
-        resumeAudio(); const box = document.getElementById(boxId); box.classList.add('dice-rolling');
+        const box = document.getElementById(boxId);
+        if (box.dataset.rolling === '1') return;          // 擲骰中再按不會重複觸發
+        box.dataset.rolling = '1';
+        resumeAudio(); box.classList.add('dice-rolling');
         let count = 0;
-        const intv = setInterval(() => { box.innerText = getResultFn(true); playTickSound(); count++; if(count > 15) { clearInterval(intv); box.classList.remove('dice-rolling'); box.innerText = getResultFn(false); playSuccessSound(); } }, 50);
+        const intv = setInterval(() => { box.innerText = getResultFn(true); playTickSound(); count++; if(count > 15) { clearInterval(intv); box.classList.remove('dice-rolling'); box.innerText = getResultFn(false); box.dataset.rolling = ''; playSuccessSound(); } }, 50);
     }
     document.getElementById('btnRollNumDice').addEventListener('click', () => {
-        const min = parseInt(document.getElementById('diceMin').value) || 1;
-        const max = parseInt(document.getElementById('diceMax').value) || 6;
+        let min = parseInt(document.getElementById('diceMin').value); if (isNaN(min)) min = 1;
+        let max = parseInt(document.getElementById('diceMax').value); if (isNaN(max)) max = 6;
+        if (min > max) [min, max] = [max, min];          // 範圍填反也能用
         rollDiceBox('numDiceResult', () => Math.floor(Math.random() * (max - min + 1)) + min);
     });
     document.getElementById('btnRollAlphaDice').addEventListener('click', () => {
         rollDiceBox('alphaDiceResult', () => String.fromCharCode(65 + Math.floor(Math.random() * 26)));
     });
 
-    document.getElementById('tabBasicDraw').onclick = () => { document.getElementById('tabBasicDraw').classList.add('active'); document.getElementById('tabWheelDraw').classList.remove('active'); document.getElementById('viewBasicDraw').style.display='block'; document.getElementById('viewWheelDraw').style.display='none'; };
+    // ============================================================
+    // 🎁 抽籤／轉盤：可排除今天請假、抽過不再抽（同一天內記住）、轉盤顯示座號姓名
+    // ============================================================
+    const DRAW_ABSENT_STATUSES = [3, 4, 5];              // 病假、公假、事假（遲到、早退仍可抽）
+    const drawKey = () => `hwDrawn_${(currentUser && currentUser.uid) || 'local'}_${getTaipeiDateString()}`;
+    function loadDrawn() { try { return JSON.parse(localStorage.getItem(drawKey()) || '[]') || []; } catch (e) { return []; } }
+    function saveDrawn(list) { try { localStorage.setItem(drawKey(), JSON.stringify(list)); } catch (e) {} }
+    function drawLabel(i) { const s = data.roster[i]; return s ? `${s.no}號 ${s.name}` : ''; }
+    function getDrawGroups() { return [...new Set((data.roster || []).map(s => s.group || 1))].sort((x, y) => x - y); }
+    function getSelectedDrawGroup() {
+        const sel = document.getElementById('drawGroupSelect');
+        return (!sel || sel.value === 'all') ? 'all' : parseInt(sel.value, 10);
+    }
+    function getDrawEligible(groupOverride) {
+        const roster = data.roster || [];
+        let idxs = roster.map((_, i) => i);
+        const g = groupOverride !== undefined ? groupOverride : getSelectedDrawGroup();
+        if (g !== 'all') idxs = idxs.filter(i => (roster[i].group || 1) === g);
+        const ex = document.getElementById('drawExcludeAbsent');
+        const att = data.attendance && data.attendance[getTaipeiDateString()];
+        if ((!ex || ex.checked) && Array.isArray(att)) {
+            idxs = idxs.filter(i => !DRAW_ABSENT_STATUSES.includes((att[i] || {}).status));
+        }
+        return idxs;
+    }
+    function getDrawPool(groupOverride) {
+        const eligible = getDrawEligible(groupOverride);
+        const nr = document.getElementById('drawNoRepeat');
+        if (nr && !nr.checked) return eligible;
+        const drawnNos = new Set(loadDrawn());
+        return eligible.filter(i => !drawnNos.has(data.roster[i].no));
+    }
+    // 抽過不再抽：全部抽完就自動重來
+    // 只把「這個範圍」的抽籤紀錄清掉，其他組的紀錄保留
+    function ensureDrawPool(groupOverride, silent) {
+        let pool = getDrawPool(groupOverride);
+        const eligible = getDrawEligible(groupOverride);
+        if (pool.length === 0 && eligible.length > 0) {
+            const scopeNos = new Set(eligible.map(i => data.roster[i].no));
+            saveDrawn(loadDrawn().filter(no => !scopeNos.has(no)));
+            if (!silent) {
+                const g = groupOverride !== undefined ? groupOverride : getSelectedDrawGroup();
+                showToast(g === 'all' ? '🔄 全部都抽過了，已重新開始！' : `🔄 第 ${g} 組都抽過了，這組重新開始！`);
+            }
+            pool = getDrawPool(groupOverride);
+        }
+        return pool;
+    }
+    function markDrawn(i) {
+        const s = data.roster[i]; if (!s) return;
+        const list = loadDrawn();
+        if (!list.includes(s.no)) { list.push(s.no); saveDrawn(list); }
+        renderDrawStatus();
+    }
+    function renderDrawGroupSelect() {
+        const sel = document.getElementById('drawGroupSelect');
+        if (!sel) return;
+        const keep = sel.value;
+        const groups = getDrawGroups();
+        const html = '<option value="all">全班</option>' + groups.map(g => `<option value="${g}">第 ${g} 組</option>`).join('');
+        if (sel.innerHTML !== html) sel.innerHTML = html;
+        sel.value = (keep !== 'all' && groups.includes(parseInt(keep, 10))) ? keep : 'all';
+        const gb = document.getElementById('btnGroupDraw');
+        if (gb) gb.style.display = groups.length > 1 ? '' : 'none';   // 只有一組時不需要「每組各抽一位」
+    }
+    function renderDrawStatus() {
+        const remainEl = document.getElementById('drawRemainText');
+        const histEl = document.getElementById('drawHistory');
+        if (!remainEl || !histEl) return;
+        renderDrawGroupSelect();
+        const gSel = getSelectedDrawGroup();
+        const scopeLabel = gSel === 'all' ? '' : `第 ${gSel} 組：`;
+        const eligible = getDrawEligible();
+        const pool = getDrawPool();
+        const nr = document.getElementById('drawNoRepeat');
+        const scopeTotal = gSel === 'all' ? (data.roster || []).length : (data.roster || []).filter(s => (s.group || 1) === gSel).length;
+        const absentInScope = scopeTotal - eligible.length;
+        remainEl.innerText = scopeLabel + ((nr && !nr.checked)
+            ? `可抽 ${pool.length} 人${absentInScope ? `（已排除請假 ${absentInScope} 人）` : ''}`
+            : `還沒抽到 ${pool.length} 人／共 ${eligible.length} 人${absentInScope ? `（排除請假 ${absentInScope}）` : ''}`);
+        const byNo = new Map((data.roster || []).map((s, i) => [s.no, i]));
+        const drawn = loadDrawn().filter(no => byNo.has(no));
+        histEl.innerHTML = drawn.length
+            ? drawn.slice(-20).map(no => `<span>${escapeHtml(drawLabel(byNo.get(no)))}</span>`).join('')
+            : '<span style="background:none; border:none; opacity:.6;">還沒有</span>';
+    }
+
+    document.getElementById('tabBasicDraw').onclick = () => { document.getElementById('tabBasicDraw').classList.add('active'); document.getElementById('tabWheelDraw').classList.remove('active'); document.getElementById('viewBasicDraw').style.display='block'; document.getElementById('viewWheelDraw').style.display='none'; renderDrawStatus(); };
     document.getElementById('tabWheelDraw').onclick = () => { document.getElementById('tabWheelDraw').classList.add('active'); document.getElementById('tabBasicDraw').classList.remove('active'); document.getElementById('viewWheelDraw').style.display='block'; document.getElementById('viewBasicDraw').style.display='none'; renderWheel(); };
+    ['drawExcludeAbsent', 'drawNoRepeat', 'drawGroupSelect'].forEach(id => document.getElementById(id)?.addEventListener('change', () => {
+        const gr = document.getElementById('groupDrawResult'); if (gr) gr.classList.remove('show');
+        renderWheel(); renderDrawStatus();
+    }));
+
+    // 👥 每組各抽一位（沿用「排除請假」「抽過不再抽」的設定）
+    document.getElementById('btnGroupDraw')?.addEventListener('click', () => {
+        const btn = document.getElementById('btnGroupDraw');
+        const box = document.getElementById('groupDrawResult');
+        if (!box || !btn || btn.disabled) return;
+        resumeAudio();
+        const results = [];
+        const resetGroups = [];
+        getDrawGroups().forEach(g => {
+            const before = getDrawPool(g).length;
+            const pool = ensureDrawPool(g, true);
+            if (before === 0 && pool.length) resetGroups.push(g);
+            if (!pool.length) { results.push({ g, idx: null }); return; }
+            const winner = pool[Math.floor(Math.random() * pool.length)];
+            results.push({ g, idx: winner });
+        });
+        if (!results.some(r => r.idx !== null)) { showToast('⚠️ 今天沒有可以抽的冒險者（可能都請假了）'); return; }
+        btn.disabled = true;
+        box.classList.add('show');
+        let c = 0;
+        const roll = setInterval(() => {
+            box.innerHTML = results.map(r => {
+                const pool = getDrawEligible(r.g);
+                const show = pool.length ? drawLabel(pool[Math.floor(Math.random() * pool.length)]) : '—';
+                return `<div><span>第 ${r.g} 組</span><b>${escapeHtml(show)}</b></div>`;
+            }).join('');
+            playTickSound(); c++;
+            if (c > 16) {
+                clearInterval(roll);
+                box.innerHTML = results.map(r => `<div><span>第 ${r.g} 組</span><b>${r.idx === null ? '（今天都請假）' : escapeHtml(drawLabel(r.idx))}</b></div>`).join('');
+                results.forEach(r => { if (r.idx !== null) markDrawn(r.idx); });
+                if (resetGroups.length) showToast(`🔄 第 ${resetGroups.join('、')} 組都抽過了，已重新開始`);
+                playSuccessSound(); confetti(); btn.disabled = false;
+            }
+        }, 60);
+    });
+    document.getElementById('btnDrawReset')?.addEventListener('click', () => {
+        const g = getSelectedDrawGroup();
+        if (g === 'all') saveDrawn([]);
+        else {   // 只重置目前選的這一組
+            const scopeNos = new Set((data.roster || []).filter(s => (s.group || 1) === g).map(s => s.no));
+            saveDrawn(loadDrawn().filter(no => !scopeNos.has(no)));
+        }
+        const gr = document.getElementById('groupDrawResult'); if (gr) gr.classList.remove('show');
+        document.getElementById('luckyDrawResult').innerText = '???';
+        document.getElementById('wheelWinnerName').innerText = '';
+        renderWheel(); renderDrawStatus();
+        showToast(g === 'all' ? '🔄 抽籤名單已重新開始' : `🔄 第 ${g} 組已重新開始`);
+    });
 
     document.getElementById('btnLuckyDraw').addEventListener('click', () => { 
         resumeAudio(); const btn = document.getElementById('btnLuckyDraw'); const res = document.getElementById('luckyDrawResult'); 
         if (!data.roster || !data.roster.length) return; if (btn.disabled) return; 
+        const pool = ensureDrawPool();
+        if (!pool.length) { showToast('⚠️ 這個範圍今天沒有可以抽的冒險者（可能都請假了）'); return; }
+        const gr = document.getElementById('groupDrawResult'); if (gr) gr.classList.remove('show');
+        const winner = pool[Math.floor(Math.random() * pool.length)];
         btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> 轉動中...`; res.classList.add('dice-rolling');
-        let c = 0; const intv = setInterval(() => { res.innerText = data.roster[Math.floor(Math.random() * data.roster.length)].name; playTickSound(); c++; if(c>20) { clearInterval(intv); res.classList.remove('dice-rolling'); playSuccessSound(); confetti(); btn.disabled=false; btn.innerHTML=`<i class="bi bi-dice-5-fill"></i> 再次抽出`; } }, 50);
+        let c = 0; const intv = setInterval(() => {
+            res.innerText = drawLabel(pool[Math.floor(Math.random() * pool.length)]); playTickSound(); c++;
+            if(c>20) { clearInterval(intv); res.classList.remove('dice-rolling'); res.innerText = drawLabel(winner); markDrawn(winner); playSuccessSound(); confetti(); btn.disabled=false; btn.innerHTML=`<i class="bi bi-dice-5-fill"></i> 再次抽出`; }
+        }, 50);
     });
 
     let currentWheelDeg = 0;
+    let wheelPool = [];
+    const WHEEL_COLORS = ['#FDE68A', '#BBF7D0', '#BFDBFE', '#FBCFE8', '#DDD6FE', '#FED7AA'];
     function renderWheel() {
-        const c = document.getElementById('wheelCanvas'); if(!data.roster || !data.roster.length) { c.style.background = '#ccc'; return; }
-        const slice = 360 / data.roster.length; let grad = [];
-        data.roster.forEach((s, i) => { const color = i % 2 === 0 ? '#FAF0E6' : '#E6D2B5'; grad.push(`${color} ${i*slice}deg ${(i+1)*slice}deg`); });
+        const c = document.getElementById('wheelCanvas');
+        renderDrawStatus();
+        if (!c) return;
+        wheelPool = getDrawPool();
+        c.innerHTML = '';
+        if (!wheelPool.length) { c.style.background = '#ccc'; return; }
+        const n = wheelPool.length, slice = 360 / n; const grad = [];
+        wheelPool.forEach((idx, i) => {
+            let color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+            if (n > 1 && i === n - 1 && color === WHEEL_COLORS[0]) color = WHEEL_COLORS[1];   // 頭尾不要同色
+            grad.push(`${color} ${i*slice}deg ${(i+1)*slice}deg`);
+            const s = data.roster[idx];
+            const lab = document.createElement('span');
+            lab.className = 'wheel-label';
+            lab.textContent = n <= 12 ? `${s.no} ${s.name}` : String(s.no);
+            const fs = n <= 8 ? 3.6 : (n <= 12 ? 3 : (n <= 24 ? 2.8 : 2.2));
+            lab.style.fontSize = fs + 'cqi';
+            // 文字沿半徑排列，放在每一格的中央
+            lab.style.transform = `translate(-50%, -50%) rotate(${(i + 0.5) * slice}deg) translateY(-${n <= 12 ? 17 : 21}cqi) rotate(90deg)`;
+            c.appendChild(lab);
+        });
         c.style.background = `conic-gradient(${grad.join(', ')})`;
     }
     document.getElementById('btnSpinWheel').addEventListener('click', () => {
-        if (!data.roster || !data.roster.length) return; resumeAudio(); const c = document.getElementById('wheelCanvas'); const btn = document.getElementById('btnSpinWheel'); btn.disabled=true; document.getElementById('wheelWinnerName').innerText = "轉動中...";
+        if (!data.roster || !data.roster.length) return;
+        if (!ensureDrawPool().length) { showToast('⚠️ 今天沒有可以抽的冒險者（可能都請假了）'); return; }
+        renderWheel();                                   // 用最新名單（含剛剛抽過的移除）重畫
+        resumeAudio(); const c = document.getElementById('wheelCanvas'); const btn = document.getElementById('btnSpinWheel'); btn.disabled=true; document.getElementById('wheelWinnerName').innerText = "轉動中...";
+        const pool = wheelPool.slice();
         const spinDeg = Math.floor(Math.random() * 360) + 1440; currentWheelDeg += spinDeg; c.style.transform = `rotate(${currentWheelDeg}deg)`;
         setTimeout(() => { 
             const actualDeg = currentWheelDeg % 360; 
-            const idx = Math.floor((360 - actualDeg) / (360 / data.roster.length)) % data.roster.length;
-            document.getElementById('wheelWinnerName').innerText = `🎉 ${data.roster[idx].name}`; playSuccessSound(); confetti(); btn.disabled=false;
+            const pos = Math.floor((360 - actualDeg) / (360 / pool.length)) % pool.length;
+            const winner = pool[pos];
+            document.getElementById('wheelWinnerName').innerText = `🎉 ${drawLabel(winner)}`; markDrawn(winner); playSuccessSound(); confetti(); btn.disabled=false;
         }, 4000);
     });
 
+    // 🎤 分貝偵測：可調整「太吵門檻」，並計算提醒次數
     let micStream = null, audioCtx2 = null, analyser = null, micInt = null;
+    let micOverCount = 0, micIsOver = false, micOverSince = 0;
+    const thrInput = document.getElementById('decibelThreshold');
+    function getMicThreshold() { return thrInput ? parseInt(thrInput.value, 10) || 80 : 80; }
+    function syncMicThresholdUI() {
+        const v = getMicThreshold();
+        const t = document.getElementById('decibelThresholdText'); if (t) t.innerText = v + '%';
+        const m = document.getElementById('decibelMark'); if (m) m.style.left = v + '%';
+        try { localStorage.setItem('hwMicThreshold', String(v)); } catch (e) {}
+    }
+    if (thrInput) {
+        try { const saved = parseInt(localStorage.getItem('hwMicThreshold'), 10); if (saved >= 30 && saved <= 95) thrInput.value = saved; } catch (e) {}
+        thrInput.addEventListener('input', syncMicThresholdUI);
+        syncMicThresholdUI();
+    }
     document.getElementById('btnToggleMic').addEventListener('click', async (e) => {
         const btn = e.currentTarget; const bar = document.getElementById('decibelBar'); const txt = document.getElementById('decibelText'); const icon = document.getElementById('micIcon');
+        const countEl = document.getElementById('decibelOverCount');
         if(micStream) {
-            clearInterval(micInt); micStream.getTracks().forEach(t=>t.stop()); micStream=null; audioCtx2.close(); audioCtx2=null;
+            clearInterval(micInt); micStream.getTracks().forEach(t=>t.stop()); micStream=null; if (audioCtx2) audioCtx2.close(); audioCtx2=null;
             btn.innerHTML=`<i class="bi bi-play-circle"></i> 啟動偵測`; btn.classList.remove('warn'); bar.style.width='0%'; txt.innerText='已停止'; icon.style.color='var(--muted)';
         } else {
             try {
@@ -3301,17 +3782,32 @@ document.getElementById('btnTimerStart').addEventListener('click', (e) => {
                 const src = audioCtx2.createMediaStreamSource(micStream); analyser = audioCtx2.createAnalyser(); analyser.fftSize = 256; src.connect(analyser);
                 const dataArray = new Uint8Array(analyser.frequencyBinCount);
                 btn.innerHTML=`<i class="bi bi-stop-circle"></i> 停止偵測`; btn.classList.add('warn'); icon.style.color='var(--danger)';
+                micOverCount = 0; micIsOver = false; micOverSince = 0;
+                if (countEl) { countEl.innerText = '太吵提醒：0 次'; countEl.style.color = 'var(--muted)'; }
                 
                 micInt = setInterval(() => {
                     analyser.getByteFrequencyData(dataArray);
                     let sum = 0; for(let i=0; i<dataArray.length; i++) sum+=dataArray[i];
                     let vol = sum / dataArray.length; 
                     let pct = Math.min(100, Math.floor((vol / 120) * 100)); 
+                    const thr = getMicThreshold();
                     bar.style.width = pct + '%';
-                    bar.style.backgroundColor = pct > 80 ? 'var(--danger)' : (pct > 50 ? '#f97316' : 'var(--success)');
-                    txt.innerText = pct > 80 ? '太吵了！⚠️' : (pct > 50 ? '有點聲音' : '很安靜');
+                    bar.style.backgroundColor = pct >= thr ? 'var(--danger)' : (pct >= thr * 0.65 ? '#f97316' : 'var(--success)');
+                    txt.innerText = pct >= thr ? '太吵了！⚠️' : (pct >= thr * 0.65 ? '有點聲音' : '很安靜');
+                    // 持續超過門檻 0.8 秒才算一次，避免拍手、掉東西就被算進去
+                    const now = Date.now();
+                    if (pct >= thr) {
+                        if (!micOverSince) micOverSince = now;
+                        if (!micIsOver && now - micOverSince >= 800) {
+                            micIsOver = true; micOverCount++;
+                            if (countEl) { countEl.innerText = `太吵提醒：${micOverCount} 次`; countEl.style.color = 'var(--danger)'; }
+                            if (window.playTickSound) window.playTickSound();
+                        }
+                    } else if (pct < thr * 0.8) {
+                        micOverSince = 0; micIsOver = false;
+                    }
                 }, 100);
-            } catch(err) { alert('無法取得麥克風權限！'); }
+            } catch(err) { micStream = null; showToast('⚠️ 無法取得麥克風權限，請在瀏覽器網址列旁允許使用麥克風'); }
         }
     });
 
