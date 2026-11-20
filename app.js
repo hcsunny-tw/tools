@@ -6,9 +6,26 @@ function escapeHtml(v) {
 }
 window.escapeHtml = escapeHtml;
 
-function getTaipeiDateString() { 
-        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-'); 
+function getTaipeiDateString() {
+        return new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
     }
+
+// 📅 上課日工具（週一～週五）：週六、週日自動跳過（國定假日不在內）
+//    日期一律是 'YYYY-MM-DD' 字串，用 UTC 計算，不受裝置時區影響
+function parseYMD(s) { const p = String(s || '').split('-').map(Number); return new Date(Date.UTC(p[0], (p[1] || 1) - 1, p[2] || 1)); }
+function addDaysYMD(s, n) { const dt = parseYMD(s); dt.setUTCDate(dt.getUTCDate() + n); return dt.toISOString().slice(0, 10); }
+function isWeekendYMD(s) { const w = parseYMD(s).getUTCDay(); return w === 0 || w === 6; }
+function nextSchoolDayFrom(s) { let d = s; for (let i = 0; i < 3 && isWeekendYMD(d); i++) d = addDaysYMD(d, 1); return d; }   // 自己是上課日就回傳自己
+function nextSchoolDayAfter(s) { return nextSchoolDayFrom(addDaysYMD(s, 1)); }
+// 從 from 到 to 之間經過幾個「上課日」（週五 → 下週一 = 1）；to 不晚於 from 時為 0
+function schoolDaysBetween(from, to) {
+    if (!from || !to || to <= from) return 0;
+    let n = 0, d = from;
+    for (let guard = 0; d < to && guard < 4000; guard++) { d = addDaysYMD(d, 1); if (!isWeekendYMD(d)) n++; }
+    return n;
+}
+// 發布委託的預設日期：平日是今天；週六、週日自動跳到下週一
+function getDefaultQuestDate() { return nextSchoolDayFrom(getTaipeiDateString()); }
     
     function showToast(msg, actText, actCb) {
         const c = document.getElementById('toastContainer'); 
@@ -2213,7 +2230,7 @@ function getRankHtml(exp) {
 
     function onDataLoaded() {
         const today = getTaipeiDateString();
-        if (!data.attendance || !data.attendance[today]) {
+        if (!isWeekendYMD(today) && (!data.attendance || !data.attendance[today])) {   // 📅 週六、週日不提醒點名
             document.getElementById('attendanceReminderModal').classList.add('show');
         }
 
@@ -2410,7 +2427,7 @@ function getRankHtml(exp) {
             const isSameDay = (todayStr === a.date);
             const d1 = new Date(a.date.replace(/-/g, '/'));
             const d2 = new Date(todayStr.replace(/-/g, '/'));
-            const diffDays = Math.floor(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
+            const diffDays = schoolDaysBetween(a.date, todayStr);   // 📅 只算上課日：週五的作業下週一完成 = 隔天，一樣 +2
 
             const newEarned = { handIn: currentEarned.handIn, complete: 0 };
 
@@ -2800,7 +2817,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
 
         let studentDataList = data.roster.map((s, i) => {
             const debts = getStudentDebts(i)
-                .filter(({ a, st }) => !(hideTodayRedo && st === 2 && a.date === todayStr))   // 📅 按鈕只影響清單顯示
+                .filter(({ a, st }) => !(hideTodayRedo && isTodayRedoCrownExempt(a, st)))   // 📅 按鈕只影響清單顯示
                 .map(({ a, st }) => ({ id: a.id, title: a.title, st: st, date: a.date, subject: a.subject || '其他' }));
             return { s: s, i: i, debts: debts, debtCount: debts.length };
         });
@@ -3007,7 +3024,7 @@ document.getElementById('btnToggleClearStudents').addEventListener('click', (e) 
                 if (indices === 'all' || indices.includes(i)) {
                     const st = (a.statuses || [])[i] || 0;
                     if (st === 0 || st === 2) {
-                        if (hideTodayRedo && st === 2 && a.date === todayStr) continue;
+                        if (hideTodayRedo && isTodayRedoCrownExempt(a, st)) continue;
                         pendingCount++; 
                     }
                 }
@@ -3828,7 +3845,9 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
         document.getElementById('ipTitle').value = ''; 
         document.getElementById('selSubject').value = ''; 
         document.getElementById('selPresetTask').innerHTML = '<option value="">📜 常用...</option>';
-        document.getElementById('ipDate').value = getTaipeiDateString(); 
+        document.getElementById('ipDate').value = getDefaultQuestDate();   // 📅 週六、週日自動填下週一
+        const btnQToday = document.getElementById('btnQuestToday');
+        if (btnQToday) btnQToday.textContent = isWeekendYMD(getTaipeiDateString()) ? '下週一' : '今天';
         newAssignmentAssignedIndices = []; 
         document.getElementById('assignStatusText').innerText = "發布給：全體冒險者";
         const sel = document.getElementById('ipTeacherSelect'); 
@@ -4076,7 +4095,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
     qEl('ipTitle')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stageCurrentQuest(); } });
     qEl('virtualKeypad')?.addEventListener('click', () => setTimeout(updateCreateBtnLabel, 0));
     qEl('btnStageQuest')?.addEventListener('click', stageCurrentQuest);
-    qEl('btnQuestToday')?.addEventListener('click', () => { qEl('ipDate').value = getTaipeiDateString(); qEl('ipDate').dispatchEvent(new Event('change')); });
+    qEl('btnQuestToday')?.addEventListener('click', () => { qEl('ipDate').value = getDefaultQuestDate(); qEl('ipDate').dispatchEvent(new Event('change')); });
 
     // 手動換導師時，記住「這個科目固定由誰發布」
     qEl('ipTeacherSelect')?.addEventListener('change', (e) => {
@@ -4220,7 +4239,7 @@ document.getElementById('btnImportJSONTrigger').addEventListener('click', () => 
             const isSameDay = (todayStr === a.date);
             const d1 = new Date(a.date.replace(/-/g, '/'));
             const d2 = new Date(todayStr.replace(/-/g, '/'));
-            const diffDays = Math.floor(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
+            const diffDays = schoolDaysBetween(a.date, todayStr);   // 📅 只算上課日：週五的作業下週一完成 = 隔天，一樣 +2
 
             data.roster.forEach((st, i) => { 
                 if(idxs === 'all' || idxs.includes(i)) {
@@ -6255,7 +6274,7 @@ function formatShortDateMD(dateStr) {
 }
 
 window.updateContactBookPreview = function() {
-    const dateVal = document.getElementById('ipDate')?.value || getTaipeiDateString();
+    const dateVal = document.getElementById('ipDate')?.value || getDefaultQuestDate();
     const md = formatShortDateMD(dateVal);
     const pageVal = (document.getElementById('ipContactBookPage')?.value || '').trim();
     const previewEl = document.getElementById('routineContactDatePreview');
@@ -6287,7 +6306,7 @@ window.quickCreateContactBookQuest = function() {
     if (!data.settings.subjectTeachers) data.settings.subjectTeachers = {};
     data.settings.subjectTeachers['聯絡簿'] = t;
 
-    const d = document.getElementById('ipDate')?.value || getTaipeiDateString();
+    const d = document.getElementById('ipDate')?.value || getDefaultQuestDate();
     const pageIp = document.getElementById('ipContactBookPage');
     const pageVal = pageIp ? pageIp.value.trim() : '';
     if (pageVal) {
@@ -6412,10 +6431,12 @@ function applyMeadowTimeTheme() {
     }
 }
 
-// 👑 全冠王規則：今天發布的作業被標成「需訂正」，當天仍然算全冠王；隔天還沒訂正就和未交一樣
-//    （只影響老師端的全冠王：草地、座位皇冠、全冠王人數、全冠王 +1 金幣；學生頁與扭蛋維持原規則）
+// 👑 全冠王規則：今天發布的作業被標成「需訂正」，到下一個上課日之前都仍然算全冠王；下一個上課日還沒訂正就和未交一樣
+//    📅 週五的需訂正：週六、週日都還不算欠款，下週一才算（國定假日不在內）
 function isTodayRedoCrownExempt(a, st) {
-    return st === 2 && !!a && a.date === getTaipeiDateString();
+    if (st !== 2 || !a || !a.date) return false;
+    const today = getTaipeiDateString();
+    return a.date <= today && today < nextSchoolDayAfter(a.date);
 }
 
 // 📌 欠交判斷（全系統共用，改規則只要改這裡）

@@ -963,7 +963,7 @@
       
       <!-- 更新時間移至此處底部 -->
       <div id="updateTime" style="text-align: center; font-size: 11px; color: var(--muted); font-weight: bold; margin-top:auto;"></div>
-        <div id="appVersion" style="text-align: center; font-size: 10px; color: var(--muted); opacity: .7; font-weight: bold;">冒險者公會 v7.3.0</div>
+        <div id="appVersion" style="text-align: center; font-size: 10px; color: var(--muted); opacity: .7; font-weight: bold;">冒險者公會 v7.4.0</div>
     </div>
 
     <!-- 👉 右欄：待處理任務 -->
@@ -1164,22 +1164,44 @@
       const get = t => parseInt((parts.find(p => p.type === t) || {}).value || '0', 10);
       return { h: get('hour') % 24, m: get('minute'), s: get('second') };
     }
+    // 📅 上課日工具（週一～週五）：週六、週日自動跳過（國定假日不在內）
+    function parseYMD(s) { const p = String(s || '').split('-').map(Number); return new Date(Date.UTC(p[0], (p[1] || 1) - 1, p[2] || 1)); }
+    function addDaysYMD(s, n) { const dt = parseYMD(s); dt.setUTCDate(dt.getUTCDate() + n); return dt.toISOString().slice(0, 10); }
+    function isWeekendYMD(s) { const w = parseYMD(s).getUTCDay(); return w === 0 || w === 6; }
+    function nextSchoolDayAfter(s) { let d = addDaysYMD(s, 1); for (let i = 0; i < 3 && isWeekendYMD(d); i++) d = addDaysYMD(d, 1); return d; }
+    // 需訂正的公布日：下一個上課日的前一天（週一～週四 = 當天；週五 = 週日）
+    function redoRevealDay(date) { return addDaysYMD(nextSchoolDayAfter(date), -1); }
     function isRedoHidden(d) {
       if (redoRevealHour < 0 || !d || d.st !== 2) return false;
-      if ((d.date || '') !== getTodayStr()) return false;
+      const date = d.date || '', today = getTodayStr();
+      if (!date || date > today) return false;
+      const rd = redoRevealDay(date);
+      if (today < rd) return true;          // 週五的需訂正：週六整天、週日公布時間前都先藏著
+      if (today > rd) return false;
       return getTaipeiClock().h < redoRevealHour;
     }
-    // 👑 全冠王規則（和老師端一致）：今天發布、被標成需訂正的作業，當天不封印萌寵、不擋扭蛋；隔天還沒訂正就照常算
-    function blockingDebts(debts) {
+    // 👑 全冠王規則（和老師端一致）：需訂正在「下一個上課日」之前不封印萌寵；週五的要到下週一才算
+    function isRedoGraceDebt(d) {
+      if (!d || d.st !== 2 || !d.date) return false;
       const today = getTodayStr();
-      return (debts || []).filter(d => !(d && d.st === 2 && (d.date || '') === today));
+      return d.date <= today && today < nextSchoolDayAfter(d.date);
+    }
+    function blockingDebts(debts) {
+      return (debts || []).filter(d => !isRedoGraceDebt(d));
     }
     function applyRedoEmbargo(student) {
       return { ...student, debts: (student.debts || []).filter(d => !isRedoHidden(d)) };
     }
-    function msUntilRedoReveal() {
-      const c = getTaipeiClock();
-      return ((redoRevealHour - c.h) * 3600 - c.m * 60 - c.s) * 1000 + 1500;
+    function msUntilRedoReveal() {   // 距離「最快要公布的那一筆」還有多久（可能跨週末）
+      const c = getTaipeiClock(), today = getTodayStr();
+      let best = Infinity;
+      ((typeof currentRawStudent !== 'undefined' && currentRawStudent && currentRawStudent.debts) || []).forEach(d => {
+        if (!isRedoHidden(d)) return;
+        const days = Math.round((parseYMD(redoRevealDay(d.date)) - parseYMD(today)) / 86400000);
+        const ms = (days * 86400 + (redoRevealHour - c.h) * 3600 - c.m * 60 - c.s) * 1000 + 1500;
+        if (ms < best) best = ms;
+      });
+      return Math.min(isFinite(best) ? best : 60000, 3 * 3600 * 1000);   // 最多 3 小時重新檢查一次（平板睡著也不會算錯）
     }
 
     // 🛡️ 防 XSS：資料來自雲端公開看板，塞進 innerHTML 前一律先跳脫
